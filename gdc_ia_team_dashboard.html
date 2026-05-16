@@ -431,10 +431,24 @@ async function syncDrive() {
     // Parse JSONP response
     var json = txt.replace(/^_gcb\(/, '').replace(/\)$/, '');
     var data = JSON.parse(json);
+    // Remap bridge fields (type/name/url/date/children) to dashboard format (t/n/u/d/c)
+    function remapTree(nodes) {
+      if(!nodes) return [];
+      return nodes.map(function(n) {
+        return {
+          t: n.type || 'docx',
+          n: n.name || '',
+          d: n.date || '',
+          u: null, // bridge returns full URL, we store it directly
+          url: n.url || '',
+          c: n.children ? remapTree(n.children) : []
+        };
+      });
+    }
     // Update trees
     Object.keys(data).forEach(function(k) {
       var el = document.getElementById('tree-' + k);
-      if(el){ el.innerHTML=''; buildTree(data[k], el, 0); }
+      if(el){ el.innerHTML=''; buildTreeFromBridge(data[k], el, 0); }
     });
     // Update recent list from all agents
     var allFiles = [];
@@ -637,6 +651,39 @@ const TREES = {
 };
 
 const IC = {folder:'ic-folder',xlsx:'ic-xlsx',pdf:'ic-pdf',docx:'ic-docx'};
+
+function buildTreeFromBridge(nodes, container, depth) {
+  depth = depth || 0;
+  if(!nodes) return;
+  nodes.forEach(function(node) {
+    var isF = node.type === 'folder';
+    var root = document.createElement('div'); root.className = 'tree-root';
+    var row = document.createElement('div'); row.className = 'tree-row';
+    row.style.paddingLeft = (10 + depth * 14) + 'px';
+    var tog = document.createElement('span');
+    tog.className = 'tree-tog' + (isF && node.children && node.children.length ? ' open' : isF ? ' ' : ' leaf');
+    tog.textContent = '▶'; row.appendChild(tog);
+    var ic = document.createElement('span');
+    ic.className = 'tree-icon ' + (IC[node.type] || 'ic-docx');
+    ic.textContent = node.type === 'folder' ? 'DIR' : (node.type||'DOC').toUpperCase(); row.appendChild(ic);
+    if (node.url) {
+      var lnk = document.createElement('a');
+      lnk.className = 'tree-link'; lnk.href = node.url; lnk.target = '_blank'; lnk.rel = 'noopener noreferrer';
+      lnk.textContent = '↗'; lnk.title = node.name || '';
+      lnk.onclick = function(e) { e.stopPropagation(); };
+      row.appendChild(lnk);
+    }
+    var nm = document.createElement('span'); nm.className = 'tree-name' + (isF ? ' fn' : ''); nm.textContent = node.name || ''; row.appendChild(nm);
+    if (node.date) { var dt = document.createElement('span'); dt.className = 'tree-date'; dt.textContent = node.date; row.appendChild(dt); }
+    root.appendChild(row);
+    if (isF && node.children && node.children.length) {
+      var ch = document.createElement('div'); ch.className = 'tree-children';
+      buildTreeFromBridge(node.children, ch, depth + 1); root.appendChild(ch);
+      row.onclick = function() { var cl = ch.classList.toggle('closed'); tog.classList.toggle('open', !cl); };
+    }
+    container.appendChild(root);
+  });
+}
 function buildTree(nodes, container, depth) {
   depth = depth || 0;
   nodes.forEach(function(node) {
