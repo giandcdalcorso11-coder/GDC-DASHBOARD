@@ -426,11 +426,24 @@ async function saveStep(name, idx) {
   _pd[name] = idx;
   setSyncStatus('sync');
   try {
-    await fetch(SB_URL + '/rest/v1/pipeline_states', {
-      method: 'POST',
-      headers: { ...sbHeaders(true), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ user_id: _userId, company_name: name, step_index: idx, updated_at: new Date().toISOString() })
-    });
+    // Try PATCH first (update existing)
+    var patchRes = await fetch(
+      SB_URL + '/rest/v1/pipeline_states?user_id=eq.' + _userId + '&company_name=eq.' + encodeURIComponent(name),
+      {
+        method: 'PATCH',
+        headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ step_index: idx, updated_at: new Date().toISOString() })
+      }
+    );
+    // If no rows updated (new company), INSERT
+    var updated = patchRes.headers.get('content-range');
+    if (!updated || updated === '*/0') {
+      await fetch(SB_URL + '/rest/v1/pipeline_states', {
+        method: 'POST',
+        headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ user_id: _userId, company_name: name, step_index: idx, updated_at: new Date().toISOString() })
+      });
+    }
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('err'); }
 }
