@@ -348,6 +348,8 @@ async function doLogin() {
     if (data.access_token) {
       _token = data.access_token;
       _userId = data.user.id;
+      // Save session for auto-login on reload
+      try { sessionStorage.setItem('gdc_token', _token); sessionStorage.setItem('gdc_uid', _userId); } catch(e){}
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'block';
       await loadPipelineStates();
@@ -364,10 +366,35 @@ async function doLogin() {
 
 function doLogout() {
   _token = null; _userId = null; _pd = {};
+  try { sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid'); } catch(e){}
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pwd').value = '';
 }
+
+// Auto-login on page load if session exists
+(async function() {
+  try {
+    var t = sessionStorage.getItem('gdc_token');
+    var u = sessionStorage.getItem('gdc_uid');
+    if (t && u) {
+      _token = t; _userId = u;
+      // Verify token is still valid
+      var res = await fetch(SB_URL + '/auth/v1/user', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + t }
+      });
+      if (res.ok) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-screen').style.display = 'block';
+        await loadPipelineStates();
+        initApp();
+      } else {
+        sessionStorage.removeItem('gdc_token');
+        sessionStorage.removeItem('gdc_uid');
+      }
+    }
+  } catch(e) {}
+})();
 
 // ── PIPELINE STATES (Supabase) ──
 let _pd = {};
