@@ -607,15 +607,7 @@ function sortC(list,mode){
   if(mode==='cr')return list.sort(function(a,b){var f=function(d){return d.split('/').reverse().join('-');};return f(b.d).localeCompare(f(a.d));});
   return list;
 }
-function buildTL(steps,off,name,cur){
-  return steps.map(function(s,i){
-    var g=i+off,cls='tl-step';
-    if(cur===7&&g===7)cls+=' rej cur';
-    else if(g<cur)cls+=' done';
-    else if(g===cur)cls+=' cur';
-    return '<div class="'+cls+'" onclick="clickS(\''+name+'\','+g+',event)" title="'+s.k+'"><div class="tl-dot">'+(g<cur?'✓':'')+'</div><div class="tl-lbl">'+s.l+'</div></div>';
-  }).join('');
-}
+
 async function advS(name,delta,e){e.stopPropagation();var c=gi(name),nx=Math.max(0,Math.min(ALL.length-1,c+delta));await saveStep(name,nx);rp5();rp6();updateHomeStats();}
 async function clickS(name,idx,e){e.stopPropagation();await saveStep(name,idx);rp5();rp6();updateHomeStats();}
 
@@ -632,34 +624,72 @@ function setF6(f){f6=f;e6=null;rp6();}function setS6(v){s6=v;e6=null;rp6();}func
 
 const FILTERS=[{k:'tutti',l:'Tutte'},{k:'priority',l:'★ Priorità'},{k:'Tech/3D',l:'Tech/3D'},{k:'Lifestyle/Fitness',l:'Fitness'},{k:'Travel Tech / eSIM',l:'Travel'},{k:'Automotive Locale',l:'Auto'},{k:'Internazionale',l:'Intl.'}];
 
+// Store company index for safe onclick handling
+var _cosIdx = {};
+COS.forEach(function(c,i){ _cosIdx[c.n] = i; });
+
+function getRowName(el){
+  var row=el.closest('.prow');
+  return COS[parseInt(row.dataset.ci)].n;
+}
+function cardToggle(el,fn){ var name=getRowName(el); if(!fn)fn=el.closest('.prow').dataset.fn; window[fn](name); }
+function cardAdv(btn,delta){
+  var name=getRowName(btn);
+  var minI=parseInt(btn.dataset.mi||0);
+  var maxI=parseInt(btn.dataset.mx||7);
+  var cur=gi(name);
+  var nx=Math.max(minI,Math.min(maxI,cur+delta));
+  _pd[name]=nx;
+  rp5();rp6();updateHomeStats();
+  saveStep(name,nx);
+}
+function cardClickS(dot,gIdx){
+  var name=getRowName(dot);
+  _pd[name]=gIdx;
+  rp5();rp6();updateHomeStats();
+  saveStep(name,gIdx);
+}
+
 function card(c,expN,togFn,steps,off,minI,maxI){
   var col=SC2[c.s]||{bg:'rgba(255,255,255,.05)',c:'#888'};
   var ini=c.n.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
-  var isE=expN===c.n,cur=gi(c.n),tl=buildTL(steps,off,c.n,cur);
-  return '<div class="prow'+(isE?' exp':'')+'">'+
-    '<div class="prow-hdr" onclick="'+togFn+'(\''+c.n+'\')">'+
-    '<div class="prow-av" style="background:'+col.bg+';color:'+col.c+';">'+ini+'</div>'+
-    '<div class="prow-info"><div class="prow-name">'+c.n+'</div><div class="prow-sec">'+c.s+' · Mod.'+c.o+'</div></div>'+
-    '<div class="prow-right"><span class="sc s'+c.sc+'">SCORE '+c.sc+'</span>'+
-    (c.tag==='PRIORITÀ'?'<span class="ptag"><span class="pstar">★</span> PRIORITÀ</span>':'<span class="ptag">'+c.tag+'</span>')+
-    '<div class="pchev'+(isE?' open':'')+'">▾</div></div></div>'+
-    '<div class="pipe-tl"><div class="tl-steps">'+tl+'</div>'+
-    '<div class="tl-status-row"><div class="tl-cur-lbl">Stato: <span style="color:'+scC(cur)+'">'+ALL[cur].k+'</span></div>'+
-    '<div class="tl-btns"><button class="tl-btn" onclick="advS(\''+c.n+'\',-1,event)"'+(cur<=minI?' disabled':'')+'>◀</button>'+
-    '<button class="tl-btn pri" onclick="advS(\''+c.n+'\',1,event)"'+(cur>=maxI?' disabled':'')+'>▶</button></div></div></div>'+
-    '<div class="prow-det'+(isE?' open':'')+'">'+
+  var isE=expN===c.n,cur=gi(c.n);
+  var idx=_cosIdx[c.n];
+  var tl=steps.map(function(s,i){
+    var g=i+off,cls='tl-step';
+    if(cur===7&&g===7)cls+=' rej cur';
+    else if(g<cur)cls+=' done';
+    else if(g===cur)cls+=' cur';
+    var dot=g<cur?'&#10003;':'';
+    return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div></div>';
+  }).join('');
+  var chev='<div class="pchev'+(isE?' open':'')+'">&#9662;</div>';
+  var det='<div class="prow-det'+(isE?' open':'')+'">'+
     '<div class="pd-grid"><div>'+
     '<div class="pd-f"><div class="pd-k">Email</div><div class="pd-v">'+c.e+'</div></div>'+
     '<div class="pd-f"><div class="pd-k">Instagram</div><div class="pd-v">'+c.ig+'</div></div>'+
     '<div class="pd-f"><div class="pd-k">Sito</div><div class="pd-v">'+c.si+'</div></div></div>'+
-    '<div><div class="pd-f"><div class="pd-k">Origine</div><div class="pd-v">Mod.'+c.o+' — '+OM[c.o]+'</div></div>'+
+    '<div><div class="pd-f"><div class="pd-k">Origine</div><div class="pd-v">Mod.'+c.o+' - '+OM[c.o]+'</div></div>'+
     '<div class="pd-f"><div class="pd-k">Scoperta</div><div class="pd-v">'+c.d+'</div></div>'+
     '<div class="pd-f"><div class="pd-k">Lingua</div><div class="pd-v">'+c.l+'</div></div></div>'+
     '<div><div class="pd-f"><div class="pd-k">Score</div><div class="pd-v">'+c.sc+'/9</div></div>'+
     '<div class="pd-f"><div class="pd-k">Tag</div><div class="pd-v">'+c.tag+'</div></div></div></div>'+
     '<div class="pd-note">'+c.nt+'</div>'+
     '<div class="pd-acts"><button class="pact pri">A5 Scheda</button><button class="pact">A6 Media Kit</button><button class="pact">A7 Compliance</button></div>'+
-    '</div></div>';
+    '</div>';
+  var tl_section='<div class="pipe-tl"><div class="tl-steps">'+tl+'</div>'+
+    '<div class="tl-status-row"><div class="tl-cur-lbl">Stato: <span style="color:'+scC(cur)+'">'+ALL[cur].k+'</span></div>'+
+    '<div class="tl-btns">'+
+    '<button class="tl-btn" onclick="cardAdv(this,-1)" data-mi="'+minI+'" data-mx="'+maxI+'"'+(cur<=minI?' disabled':'')+'>&#9664;</button>'+
+    '<button class="tl-btn pri" onclick="cardAdv(this,1)" data-mi="'+minI+'" data-mx="'+maxI+'"'+(cur>=maxI?' disabled':'')+'>&#9654;</button>'+
+    '</div></div></div>';
+  var sc_badge='<span class="sc s'+c.sc+'">SCORE '+c.sc+'</span>';
+  var tag_badge=c.tag==='PRIORITÀ'?'<span class="ptag"><span class="pstar">&#9733;</span> PRIORITÀ</span>':'<span class="ptag">'+c.tag+'</span>';
+  var hdr='<div class="prow-hdr" onclick="cardToggle(this,this.closest(\'.prow\').dataset.fn)">'+
+    '<div class="prow-av" style="background:'+col.bg+';color:'+col.c+';">'+ini+'</div>'+
+    '<div class="prow-info"><div class="prow-name">'+c.n+'</div><div class="prow-sec">'+c.s+' - Mod.'+c.o+'</div></div>'+
+    '<div class="prow-right">'+sc_badge+tag_badge+chev+'</div></div>';
+  return '<div class="prow'+(isE?' exp':'')+'" data-ci="'+idx+'" data-fn="'+togFn+'">'+hdr+tl_section+det+'</div>';
 }
 
 function rp5(){
