@@ -32,6 +32,8 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .tab{font-size:12px;padding:5px 10px;border-radius:5px;cursor:pointer;color:var(--t2);border:none;background:transparent;font-family:var(--sa);transition:all .12s;}
 .tab:hover{color:var(--t);background:var(--bg3);}
 .tab.on{color:var(--ac);background:var(--a2);}
+.tab-divider{width:1px;height:18px;background:var(--b2);align-self:center;flex-shrink:0;margin:0 2px;}
+.tab-section-lbl{font-family:var(--mo);font-size:8px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;align-self:center;padding:0 2px;flex-shrink:0;}
 .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .sync-status{display:flex;align-items:center;gap:4px;font-family:var(--mo);font-size:9px;padding:3px 8px;border-radius:20px;border:1px solid;}
 .ss-ok{color:var(--tl);border-color:rgba(0,212,170,.2);}
@@ -184,7 +186,23 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .rep-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:18px;}
 .rep-card{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:12px;cursor:pointer;transition:border-color .12s;}
 .rep-card:hover{border-color:var(--b2);}
+.team-section-lbl{grid-column:1/-1;font-family:var(--mo);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;padding:4px 0 2px;border-bottom:1px solid var(--b);margin-bottom:4px;}
 /* COPY TOOLTIP */
+/* HUB */
+#hub-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg);}
+.hub-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:600px;}
+.hub-card{background:var(--bg2);border:1px solid var(--b2);border-radius:12px;padding:32px 24px;cursor:pointer;transition:all .15s;text-align:center;position:relative;overflow:hidden;}
+.hub-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--hc,transparent);}
+.hub-card:hover{border-color:var(--b2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.hub-icon{font-size:32px;margin-bottom:12px;}
+.hub-title{font-size:18px;font-weight:700;margin-bottom:6px;}
+.hub-sub{font-size:12px;color:var(--t2);line-height:1.5;}
+.hub-badge{font-family:var(--mo);font-size:9px;padding:2px 8px;border-radius:20px;border:1px solid;display:inline-block;margin-top:10px;}
+.hub-header{text-align:center;margin-bottom:32px;}
+.hub-logo{font-size:20px;font-weight:700;margin-bottom:4px;}
+.hub-user{font-family:var(--mo);font-size:10px;color:var(--t3);}
+.hub-logout{position:absolute;top:20px;right:20px;font-family:var(--mo);font-size:9px;color:var(--t3);border:1px solid var(--b);background:transparent;padding:4px 10px;border-radius:4px;cursor:pointer;}
+.hub-logout:hover{color:var(--t);background:var(--bg3);}
 .cptt{position:fixed;z-index:9999;background:var(--bg2);border:1px solid var(--b2);border-radius:6px;padding:10px 12px;box-shadow:0 4px 20px rgba(0,0,0,.5);display:none;max-width:380px;}
 .cptt.show{display:block;}
 .cptt-url{font-family:var(--mo);font-size:9px;color:var(--t2);word-break:break-all;margin-bottom:8px;line-height:1.4;}
@@ -194,28 +212,46 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .cptt-ok{font-family:var(--mo);font-size:9px;color:var(--tl);display:none;}
 @media(min-width:1400px){.page{padding:24px 36px;}}
 @media(max-width:1100px){.ag-grid{grid-template-columns:repeat(3,1fr);}.stats{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:800px){
+/* iPad landscape */
+@media(max-width:1100px){
+  .ag-grid{grid-template-columns:repeat(3,1fr);}
+  .stats{grid-template-columns:repeat(3,1fr);}
+}
+/* iPad portrait */
+@media(max-width:820px){
   .ag-grid{grid-template-columns:repeat(2,1fr);}
   .stats{grid-template-columns:repeat(2,1fr);}
   .two-col{grid-template-columns:1fr;}
   .topbar{height:auto;padding:8px 12px;flex-wrap:wrap;}
-  .tabs{order:2;width:100%;margin-top:4px;}
+  .tabs{order:2;width:100%;margin-top:4px;gap:3px;}
   .tab{font-size:11px;padding:4px 8px;}
+  .tab-section-lbl{font-size:8px;}
   .topbar-right{order:1;margin-left:auto;}
   .logo-s{display:none;}
-  .page{padding:12px 14px;}
+  .page{padding:14px 16px;}
   .pd-grid{grid-template-columns:1fr 1fr;}
   .ps-grid{grid-template-columns:repeat(2,1fr);}
   .rep-grid{grid-template-columns:repeat(2,1fr);}
-  .sync-btn{font-size:9px;padding:3px 8px;}
+  .tl-lbl{font-size:8px;max-width:58px;}
+  .hub-card-grid{grid-template-columns:1fr 1fr;gap:12px;}
 }
-@media(max-width:480px){
+/* Mobile */
+@media(max-width:520px){
   .ag-grid{grid-template-columns:1fr 1fr;}
+  .stats{grid-template-columns:repeat(2,1fr);}
   .tabs{gap:2px;}
   .tab{font-size:10px;padding:3px 6px;}
-  .stats{grid-template-columns:repeat(3,1fr);}
-  .tl-lbl{font-size:7px;max-width:48px;}
+  .tab-section-lbl{display:none;}
+  .tab-divider{height:14px;}
+  .page{padding:10px 12px;}
+  .pd-grid{grid-template-columns:1fr;}
+  .tl-lbl{font-size:7px;max-width:44px;}
   .tl-dot{width:16px;height:16px;font-size:8px;}
+  .hub-card-grid{grid-template-columns:1fr;max-width:340px;}
+  .hub-card{padding:24px 18px;}
+  .sync-btn,.logout-btn{font-size:9px;padding:3px 7px;}
+  .ss-dot{display:none;}
+  #sync-lbl{font-size:9px;}
 }
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 </style>
@@ -237,19 +273,48 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 </div>
 
 <!-- APP -->
+<!-- HUB -->
+<div id="hub-screen">
+  <button class="hub-logout" onclick="doLogout()">Esci</button>
+  <div>
+    <div class="hub-header">
+      <div class="hub-logo">GDC WORKSPACE</div>
+      <div class="hub-user" id="hub-user">gdciateam@gmail.com</div>
+    </div>
+    <div class="hub-card-grid">
+      <div class="hub-card" style="--hc:var(--ac)" onclick="openSection('ia-team')">
+        <div class="hub-icon">🤖</div>
+        <div class="hub-title">GDC IA TEAM</div>
+        <div class="hub-sub">Sistema agenti AI per social media, sponsorizzazioni e compliance</div>
+        <div class="hub-badge" style="color:var(--ac);border-color:rgba(200,255,0,.3);background:var(--a2);">● Attivo</div>
+      </div>
+      <div class="hub-card" style="--hc:var(--bl)" onclick="openSection('studio')">
+        <div class="hub-icon">🖨️</div>
+        <div class="hub-title">GDC STUDIO</div>
+        <div class="hub-sub">Gestione stampante 3D, filamenti, ordini e contabilità print studio</div>
+        <div class="hub-badge" style="color:var(--t3);border-color:var(--b);">◌ In costruzione</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="app-screen">
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:16px;overflow:hidden;">
     <div style="flex-shrink:0;"><div class="logo">GDC IA TEAM</div><div class="logo-s">@GIANDCDALCORSO</div></div>
     <div class="tabs" id="tabs">
-      <button class="tab on" onclick="go('home')">Home</button>
-      <button class="tab" onclick="go('a1')">A1</button>
-      <button class="tab" onclick="go('a2')">A2</button>
-      <button class="tab" onclick="go('a3')">A3</button>
-      <button class="tab" onclick="go('a4')">A4</button>
-      <button class="tab" onclick="go('a5')">A5</button>
-      <button class="tab" onclick="go('a6')">A6</button>
-      <button class="tab" onclick="go('a7')">A7</button>
+      <button class="tab on" data-page="home" onclick="go('home')">Home</button>
+      <div class="tab-divider"></div>
+      <span class="tab-section-lbl">Social</span>
+      <button class="tab" data-page="a1" onclick="go('a1')">A1</button>
+      <button class="tab" data-page="a2" onclick="go('a2')">A2</button>
+      <button class="tab" data-page="a3" onclick="go('a3')">A3</button>
+      <button class="tab" data-page="a4" onclick="go('a4')">A4</button>
+      <div class="tab-divider"></div>
+      <span class="tab-section-lbl">Marketing</span>
+      <button class="tab" data-page="a5" onclick="go('a5')">A5</button>
+      <button class="tab" data-page="a6" onclick="go('a6')">A6</button>
+      <button class="tab" data-page="a7" onclick="go('a7')">A7</button>
     </div>
   </div>
   <div class="topbar-right">
@@ -335,6 +400,17 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
   <div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:28px;text-align:center;font-family:var(--mo);font-size:10px;color:var(--t3);">Nessun file presente nel Drive</div>
 </div>
 
+<!-- STUDIO (placeholder) -->
+<div class="page" id="page-studio" style="max-width:600px;margin:60px auto;text-align:center;">
+  <div style="font-size:48px;margin-bottom:16px;">🖨️</div>
+  <div style="font-size:22px;font-weight:700;margin-bottom:8px;">GDC STUDIO</div>
+  <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:24px;">Gestionale per la stampante 3D — filamenti, ordini, contabilità e hardware.<br>In sviluppo, disponibile presto.</div>
+  <div style="font-family:var(--mo);font-size:10px;color:var(--t3);border:1px solid var(--b);border-radius:8px;padding:16px;">
+    Previsto: calcolatore prezzi · archivio filamenti · pipeline ordini · bilancio
+  </div>
+  <button onclick="openSection('ia-team')" style="margin-top:24px;font-family:var(--mo);font-size:10px;padding:8px 18px;border-radius:4px;border:1px solid var(--b2);background:transparent;color:var(--t2);cursor:pointer;">← Torna a GDC IA TEAM</button>
+</div>
+
 </div><!-- end app-screen -->
 
 <div class="cptt" id="cptt"><div class="cptt-url" id="cptt-url"></div><div class="cptt-btns"><button class="cptt-copy" onclick="doCopy()">📋 Copia link</button><button class="cptt-close" onclick="closeCptt()">✕</button><span class="cptt-ok" id="cptt-ok">✓ Copiato!</span></div></div>
@@ -372,12 +448,9 @@ async function doLogin() {
     if (data.access_token) {
       _token = data.access_token;
       _userId = data.user.id;
-      // Save session for auto-login on reload
       try { sessionStorage.setItem('gdc_token', _token); sessionStorage.setItem('gdc_uid', _userId); } catch(e){}
       document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app-screen').style.display = 'block';
-      await loadPipelineStates();
-      initApp();
+      showHub();
     } else {
       err.textContent = 'Email o password non corretti.';
       btn.disabled = false; btn.textContent = 'Accedi';
@@ -392,8 +465,30 @@ function doLogout() {
   _token = null; _userId = null; _pd = {};
   try { sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid'); } catch(e){}
   document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('hub-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pwd').value = '';
+}
+
+function showHub() {
+  document.getElementById('hub-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+async function openSection(section) {
+  document.getElementById('hub-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  if(section === 'studio') {
+    // Show studio placeholder
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    document.getElementById('page-studio').classList.add('on');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  } else {
+    // Load IA TEAM
+    await loadPipelineStates();
+    initApp();
+    go('home');
+  }
 }
 
 // Auto-login on page load if session exists
@@ -409,12 +504,14 @@ function doLogout() {
       });
       if (res.ok) {
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-screen').style.display = 'block';
-        await loadPipelineStates();
-        initApp();
+        showHub();
       } else {
+        // Token expired — try to refresh or show login
         sessionStorage.removeItem('gdc_token');
         sessionStorage.removeItem('gdc_uid');
+        _token = null; _userId = null;
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app-screen').style.display = 'none';
       }
     }
   } catch(e) {}
@@ -422,6 +519,7 @@ function doLogout() {
 
 // ── DRIVE SYNC ──
 async function syncDrive() {
+  if(!_token){ alert('Effettua il login prima di sincronizzare.'); return; }
   var btn = document.getElementById('sync-drive-btn');
   if(btn){ btn.disabled=true; btn.textContent='...'; }
   setSyncStatus('sync');
@@ -545,7 +643,9 @@ function go(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   document.getElementById('page-' + id).classList.add('on');
-  document.querySelectorAll('.tab')[PAGES.indexOf(id)].classList.add('on');
+  // Find the tab button by data-page attribute
+  var btn = document.querySelector('.tab[data-page="'+id+'"]');
+  if(btn) btn.classList.add('on');
 }
 
 // ── INIT APP ──
@@ -564,21 +664,29 @@ function initApp() {
 
 // ── AGENTS ──
 const AGENTS = [
-  {id:'a1',code:'A1',name:'Data Collector',role:'data collector & data transformer',ok:true,files:3,mod:'v3'},
-  {id:'a2',code:'A2',name:'Analyst',role:'analyst — report PDF mensile',ok:true,files:5,mod:'v3'},
-  {id:'a3',code:'A3',name:'Planner',role:'planner — piano editoriale',ok:true,files:2,mod:'v6'},
-  {id:'a4',code:'A4',name:'Brief & Script',role:'brief & script post',ok:true,files:3,mod:'v1'},
-  {id:'a5',code:'A5',name:'Company Researcher',role:'company resercher & information',ok:true,files:10,mod:'v6'},
-  {id:'a6',code:'A6',name:'Media Kit Generator',role:'media kit generator & company relation',ok:true,files:8,mod:'v2'},
-  {id:'a7',code:'A7',name:'Compliance',role:'FIPAV · contratti · on demand',ok:false,files:0,mod:'—'}
+  {id:'a1',code:'AGENTE 1',name:'Data Collector & Transformer',role:'Raccolta dati IG via Cowork',ok:true,files:3,mod:'v3',team:'Social'},
+  {id:'a2',code:'AGENTE 2',name:'Analyst',role:'Report PDF mensile dark theme',ok:true,files:5,mod:'v3',team:'Social'},
+  {id:'a3',code:'AGENTE 3',name:'Planner',role:'Piano editoriale mensile',ok:true,files:2,mod:'v6',team:'Social'},
+  {id:'a4',code:'AGENTE 4',name:'Brief & Script Post',role:'Script post · 4 modalità',ok:true,files:3,mod:'v1',team:'Social'},
+  {id:'a5',code:'AGENTE 5',name:'Company Researcher',role:'Ricerca e mappatura aziende',ok:true,files:10,mod:'v6',team:'Marketing'},
+  {id:'a6',code:'AGENTE 6',name:'Media Kit Generator',role:'Media kit + relazione aziende',ok:true,files:8,mod:'v2',team:'Marketing'},
+  {id:'a7',code:'AGENTE 7',name:'Compliance',role:'FIPAV · contratti · on demand',ok:false,files:0,mod:'—',team:'Marketing'}
 ];
 function renderAgents() {
-  document.getElementById('ag-grid').innerHTML = AGENTS.map(a => `
-    <div class="acard" style="--acc:${a.ok?'var(--ac)':'var(--t3)'}" onclick="go('${a.id}')">
+  var social = AGENTS.filter(a=>a.team==='Social');
+  var marketing = AGENTS.filter(a=>a.team==='Marketing');
+  function cardHTML(a) {
+    return `<div class="acard" style="--acc:${a.ok?'var(--ac)':'var(--t3)'}" onclick="go('${a.id}')">
       <div class="ac-top"><span class="ac-code">${a.code}</span><div class="ac-pill ${a.ok?'ok':'idle'}"><div class="pdot"></div>${a.ok?'Funzionante':'In attesa'}</div></div>
       <div class="ac-name">${a.name}</div><div class="ac-role">${a.role}</div>
       <div class="ac-foot"><span>${a.files} file · ${a.mod}</span><span>→</span></div>
-    </div>`).join('');
+    </div>`;
+  }
+  document.getElementById('ag-grid').innerHTML =
+    '<div class="team-section-lbl">SOCIAL TEAM</div>' +
+    social.map(cardHTML).join('') +
+    '<div class="team-section-lbl" style="margin-top:8px;">MARKETING TEAM</div>' +
+    marketing.map(cardHTML).join('');
 }
 
 // ── TIMELINE HOME ──
