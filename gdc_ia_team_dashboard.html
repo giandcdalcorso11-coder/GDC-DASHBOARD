@@ -25,7 +25,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 
 /* APP */
 #app-screen{display:none;}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:50px;border-bottom:1px solid var(--b);background:var(--bg2);position:sticky;top:0;z-index:100;gap:8px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 12px;height:50px;border-bottom:1px solid var(--b);background:var(--bg2);position:sticky;top:0;z-index:100;gap:6px;flex-wrap:nowrap;}
 .logo{font-size:15px;font-weight:700;letter-spacing:.02em;white-space:nowrap;}
 .logo-s{font-family:var(--mo);font-size:9px;color:var(--t3);letter-spacing:.06em;}
 .tabs{display:flex;gap:2px;flex-wrap:wrap;}
@@ -194,7 +194,29 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .cptt-ok{font-family:var(--mo);font-size:9px;color:var(--tl);display:none;}
 @media(min-width:1400px){.page{padding:24px 36px;}}
 @media(max-width:1100px){.ag-grid{grid-template-columns:repeat(3,1fr);}.stats{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:800px){.ag-grid{grid-template-columns:repeat(2,1fr);}.stats{grid-template-columns:repeat(2,1fr);}.two-col{grid-template-columns:1fr;}}
+@media(max-width:800px){
+  .ag-grid{grid-template-columns:repeat(2,1fr);}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .two-col{grid-template-columns:1fr;}
+  .topbar{height:auto;padding:8px 12px;flex-wrap:wrap;}
+  .tabs{order:2;width:100%;margin-top:4px;}
+  .tab{font-size:11px;padding:4px 8px;}
+  .topbar-right{order:1;margin-left:auto;}
+  .logo-s{display:none;}
+  .page{padding:12px 14px;}
+  .pd-grid{grid-template-columns:1fr 1fr;}
+  .ps-grid{grid-template-columns:repeat(2,1fr);}
+  .rep-grid{grid-template-columns:repeat(2,1fr);}
+  .sync-btn{font-size:9px;padding:3px 8px;}
+}
+@media(max-width:480px){
+  .ag-grid{grid-template-columns:1fr 1fr;}
+  .tabs{gap:2px;}
+  .tab{font-size:10px;padding:3px 6px;}
+  .stats{grid-template-columns:repeat(3,1fr);}
+  .tl-lbl{font-size:7px;max-width:48px;}
+  .tl-dot{width:16px;height:16px;font-size:8px;}
+}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 </style>
 </head>
@@ -232,6 +254,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
   </div>
   <div class="topbar-right">
     <div class="sync-status ss-ok" id="sync-status"><div class="ss-dot"></div><span id="sync-lbl">Connesso</span></div>
+    <button class="sync-btn" id="sync-drive-btn" onclick="syncDrive()">↻ Sync</button>
     <button class="logout-btn" onclick="doLogout()">Esci</button>
   </div>
 </div>
@@ -320,6 +343,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 // ── SUPABASE CONFIG ──
 const SB_URL = 'https://pnzabwfsgkvejnrtrjcp.supabase.co';
 const SB_KEY = 'sb_publishable_DCzX82HTZ1avt-NJxGAz4Q_6ZlxMudV';
+const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbwDNwou2ECt_kE30Bps7XG0UGIAP4O87H1XcLuB3SGS4Xo4XT3iIRjLkzJhAvW6YgE/exec';
 
 let _token = null;
 let _userId = null;
@@ -395,6 +419,57 @@ function doLogout() {
     }
   } catch(e) {}
 })();
+
+// ── DRIVE SYNC ──
+async function syncDrive() {
+  var btn = document.getElementById('sync-drive-btn');
+  if(btn){ btn.disabled=true; btn.textContent='...'; }
+  setSyncStatus('sync');
+  try {
+    var res = await fetch(BRIDGE_URL + '?callback=_gcb&t=' + Date.now());
+    var txt = await res.text();
+    // Parse JSONP response
+    var json = txt.replace(/^_gcb\(/, '').replace(/\)$/, '');
+    var data = JSON.parse(json);
+    // Update trees
+    Object.keys(data).forEach(function(k) {
+      var el = document.getElementById('tree-' + k);
+      if(el){ el.innerHTML=''; buildTree(data[k], el, 0); }
+    });
+    // Update recent list from all agents
+    var allFiles = [];
+    var labels = {a1:'AG1',a2:'AG2',a3:'AG3',a4:'AG4',a5:'AG5',a6:'AG6'};
+    var typeColors = {xlsx:'var(--tl)',pdf:'var(--co)',docx:'var(--bl)'};
+    Object.keys(data).forEach(function(k) {
+      flatFilesForRecent(data[k], labels[k]||k.toUpperCase(), allFiles, typeColors);
+    });
+    allFiles.sort(function(a,b){ return b.d.split('/').reverse().join('').localeCompare(a.d.split('/').reverse().join('')); });
+    var recentEl = document.getElementById('recent');
+    if(recentEl && allFiles.length) {
+      recentEl.innerHTML = allFiles.slice(0,6).map(function(f){
+        return '<div class="ri"><span class="ri-ag">'+f.ag+'</span><span class="ri-name">'+f.n+'</span>'+
+               '<span class="ri-type" style="color:'+f.c+'">'+f.t.toUpperCase()+'</span>'+
+               '<span class="ri-date">'+f.d+'</span></div>';
+      }).join('');
+    }
+    setSyncStatus('ok');
+    if(btn){ btn.disabled=false; btn.textContent='✓ Sincronizzato'; setTimeout(function(){btn.textContent='↻ Sync Drive';},2000); }
+  } catch(err) {
+    console.error('Sync error:', err);
+    setSyncStatus('err');
+    if(btn){ btn.disabled=false; btn.textContent='↻ Sync Drive'; }
+  }
+}
+
+function flatFilesForRecent(nodes, label, out, colors) {
+  if(!nodes) return;
+  nodes.forEach(function(n) {
+    if(n.type !== 'folder' && n.date) {
+      out.push({ag:label, n:n.name, d:n.date, t:n.type, c:colors[n.type]||'var(--t2)'});
+    }
+    if(n.children) flatFilesForRecent(n.children, label, out, colors);
+  });
+}
 
 // ── PIPELINE STATES (Supabase) ──
 let _pd = {};
