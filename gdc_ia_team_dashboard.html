@@ -404,8 +404,8 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 </div>
 
 <!-- STUDIO -->
-<div class="page" id="page-studio" style="padding:0;height:calc(100vh - 50px);max-width:100%;overflow:hidden;">
-  <iframe id="studio-iframe" src="gdc_studio.html" style="width:100%;height:100%;border:none;" allow="clipboard-write"></iframe>
+<div class="page" id="page-studio" style="padding:0;margin:0;max-width:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;display:none;">
+  <iframe id="studio-iframe" src="" style="width:100%;height:100%;border:none;" allow="clipboard-write"></iframe>
 </div>
 
 </div><!-- end app-screen -->
@@ -474,14 +474,15 @@ function showHub() {
 
 async function openSection(section) {
   document.getElementById('hub-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
   if(section === 'studio') {
-    // Show studio placeholder
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-    document.getElementById('page-studio').classList.add('on');
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    // Open studio in fullscreen overlay
+    const sp = document.getElementById('page-studio');
+    sp.style.display = 'block';
+    const iframe = document.getElementById('studio-iframe');
+    // Pass token via URL hash
+    iframe.src = 'gdc_studio.html#' + encodeURIComponent(JSON.stringify({t:_token,u:_userId}));
   } else {
-    // Load IA TEAM
+    document.getElementById('app-screen').style.display = 'block';
     await loadPipelineStates();
     initApp();
     go('home');
