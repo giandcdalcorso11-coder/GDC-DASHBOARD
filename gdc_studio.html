@@ -496,12 +496,23 @@ function renderFilaments(el){
     const pct=b.grammiResidui>0?Math.round((b.grammiResidui/b.grammiTotali)*100):0;
     const bc=pct>50?'#16A34A':pct>20?'#D97706':'#DC2626';
     const c=card();
-    c.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:7px"><div><div style="font-weight:700;font-size:13px">'+b.colore+'</div><div style="font-size:11px;color:#9CA3AF">'+b.tipo+' · '+b.data+'</div></div><button onclick="delFil('+b.id+')" style="background:none;border:none;color:#9CA3AF;font-size:14px;cursor:pointer">✕</button></div>';
+    // Header
+    const hd=mk('div','');hd.style.cssText='display:flex;justify-content:space-between;margin-bottom:7px';
+    hd.innerHTML='<div><div style="font-weight:700;font-size:13px">'+b.colore+'</div><div style="font-size:11px;color:#9CA3AF">'+b.tipo+' · '+b.data+'</div></div>';
+    const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:#9CA3AF;font-size:14px;cursor:pointer';db.onclick=()=>delFil(b.id);
+    hd.appendChild(db);c.appendChild(hd);
     if(b.grammiResidui>0){
-      c.innerHTML+='<div class="fil-bar"><div class="fil-fill" style="width:'+pct+'%;background:'+bc+'"></div></div><div style="font-size:11px;color:'+bc+';font-weight:700;margin-bottom:6px">'+b.grammiResidui+'g ('+pct+'%)</div>';
-      const ri=mk('input','inp');ri.type='number';ri.defaultValue=b.grammiResidui;ri.style.cssText='padding:5px 8px;font-size:12px';ri.onblur=e=>updFil(b.id,{grammiResidui:Math.max(0,Math.min(b.grammiTotali,parseFloat(e.target.value)||0))});c.appendChild(ri);
+      // Bar
+      const bar=mk('div','fil-bar');const fill=mk('div','fil-fill');fill.style.cssText='width:'+pct+'%;background:'+bc;bar.appendChild(fill);c.appendChild(bar);
+      // Label
+      const gl=mk('div','');gl.style.cssText='font-size:11px;color:'+bc+';font-weight:700;margin-bottom:6px';gl.textContent=b.grammiResidui+'g ('+pct+'%)';c.appendChild(gl);
+      // Input
+      const ri=mk('input','inp');ri.type='number';ri.value=b.grammiResidui;ri.style.cssText='padding:5px 8px;font-size:12px';
+      ri.onblur=e=>{const v=Math.max(0,Math.min(b.grammiTotali,parseFloat(e.target.value)||0));updFil(b.id,{grammiResidui:v});};
+      c.appendChild(ri);
     }
-    c.innerHTML+='<div style="font-size:11px;color:#9CA3AF;margin-top:6px">'+b.grammiTotali+'g · '+(b.prezzoPagato>0?'€'+b.prezzoPagato.toFixed(2):'🎁 Regalo')+'</div>';
+    // Footer
+    const ft=mk('div','');ft.style.cssText='font-size:11px;color:#9CA3AF;margin-top:6px';ft.textContent=b.grammiTotali+'g · '+(b.prezzoPagato>0?'€'+b.prezzoPagato.toFixed(2):'🎁 Regalo');c.appendChild(ft);
     g.appendChild(c);
   });
   el.appendChild(g);
