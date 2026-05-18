@@ -270,18 +270,14 @@ async function loadData(){
 
 // ── INIT ──
 (async function init(){
-  // Read auth from hash (passed from parent dashboard)
   try{
-    const hash=decodeURIComponent(window.location.hash.slice(1));
-    if(hash){const d=JSON.parse(hash);_token=d.t;_userId=d.u;sessionStorage.setItem('gdc_token',_token);sessionStorage.setItem('gdc_uid',_userId);}
-    else{_token=sessionStorage.getItem('gdc_token');_userId=sessionStorage.getItem('gdc_uid');}
+    // Read token from sessionStorage (set by dashboard on login)
+    _token=sessionStorage.getItem('gdc_token');
+    _userId=sessionStorage.getItem('gdc_uid');
     if(!_token||!_userId){goHub();return;}
-    // Verify token
-    const r=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+_token}});
-    if(!r.ok){goHub();return;}
     await loadData();
     switchTab('calc');
-  }catch(e){console.error(e);goHub();}
+  }catch(e){console.error('Studio init error:',e);goHub();}
 })();
 
 // ── NAVIGATION ──
