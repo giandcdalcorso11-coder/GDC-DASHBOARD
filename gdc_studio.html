@@ -270,14 +270,22 @@ async function loadData(){
 
 // ── INIT ──
 (async function init(){
+  const el=document.getElementById('content');
   try{
-    // Read token from sessionStorage (set by dashboard on login)
     _token=sessionStorage.getItem('gdc_token');
     _userId=sessionStorage.getItem('gdc_uid');
-    if(!_token||!_userId){goHub();return;}
+    if(!_token||!_userId){
+      // Show error instead of black screen
+      if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:#DC2626;font-size:14px;">Sessione scaduta.<br><br><button onclick="window.location.href=\'gdc_ia_team_dashboard.html\'" style="padding:10px 20px;border-radius:8px;border:none;background:#111827;color:#fff;cursor:pointer;font-size:14px">← Torna al login</button></div>';
+      return;
+    }
+    if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:#9CA3AF;font-size:13px;">Caricamento dati…</div>';
     await loadData();
     switchTab('calc');
-  }catch(e){console.error('Studio init error:',e);goHub();}
+  }catch(e){
+    console.error('Studio init error:',e);
+    if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:#DC2626;font-size:14px;">Errore: '+e.message+'<br><br><button onclick="window.location.href=\'gdc_ia_team_dashboard.html\'" style="padding:10px 20px;border-radius:8px;border:none;background:#111827;color:#fff;cursor:pointer;font-size:14px">← Torna al login</button></div>';
+  }
 })();
 
 // ── NAVIGATION ──
