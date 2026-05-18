@@ -67,7 +67,8 @@ input,textarea,button{font-family:inherit;}
 .fil-fill{height:100%;border-radius:2px;}
 
 /* HARDWARE MAP */
-#hw-map{position:relative;height:400px;background:#FAFAFA;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;margin-bottom:12px;user-select:none;}
+#hw-map{position:relative;height:520px;background:#FAFAFA;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;margin-bottom:12px;user-select:none;}
+@media(min-width:1200px){#hw-map{height:600px;}}
 .hw-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;text-align:center;}
 .hw-item{position:absolute;z-index:20;background:#fff;border-radius:10px;padding:8px 10px;min-width:100px;max-width:130px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:grab;touch-action:none;}
 .hw-item:active{cursor:grabbing;}
@@ -519,7 +520,22 @@ function renderOrders(el){
   const g=mk('div','g3');
   list.forEach(o=>{
     const c=mk('div','order-card');
-    c.innerHTML='<div style="margin-bottom:10px"><div style="font-size:15px;font-weight:800;margin-bottom:2px">'+o.nome+'</div>'+(o.sottotitolo?'<div style="font-size:12px;color:#6B7280">'+o.sottotitolo+'</div>':'')+'<div style="font-size:12px;color:#9CA3AF;margin-top:2px">👤 '+(o.cliente||'—')+'</div><div style="font-size:12px;color:#9CA3AF">Pezzi: '+(o.pezzi||'—')+' · €'+(o.prezzo||'—')+'</div></div>';
+    // Header with editable fields
+    const ohdr=mk('div','');ohdr.style.marginBottom='10px';
+    // Nome
+    const nomeEl=mk('div','');nomeEl.style.cssText='font-size:15px;font-weight:800;margin-bottom:4px;border-bottom:1px dashed #E5E7EB;cursor:text;min-height:22px';nomeEl.contentEditable='true';nomeEl.textContent=o.nome||'';nomeEl.onblur=()=>updOrder(o.id,{nome:nomeEl.textContent.trim()});
+    // Sottotitolo
+    const subEl=mk('div','');subEl.style.cssText='font-size:12px;color:#6B7280;margin-bottom:3px;border-bottom:1px dashed #E5E7EB;cursor:text;min-height:16px';subEl.contentEditable='true';subEl.textContent=o.sottotitolo||'';subEl.onblur=()=>updOrder(o.id,{sottotitolo:subEl.textContent.trim()});
+    // Cliente
+    const cliRow=mk('div','');cliRow.style.cssText='font-size:12px;color:#9CA3AF;margin-bottom:3px;display:flex;align-items:center;gap:4px';
+    cliRow.innerHTML='<span>👤</span>';const cliEl=mk('span','');cliEl.style.cssText='border-bottom:1px dashed #E5E7EB;cursor:text;flex:1';cliEl.contentEditable='true';cliEl.textContent=o.cliente||'';cliEl.onblur=()=>updOrder(o.id,{cliente:cliEl.textContent.trim()});cliRow.appendChild(cliEl);
+    // Pezzi e prezzo
+    const prRow=mk('div','');prRow.style.cssText='font-size:12px;color:#9CA3AF;display:flex;gap:12px';
+    const pzSpan=mk('span','');pzSpan.innerHTML='Pezzi: ';const pzEl=mk('span','');pzEl.style.cssText='border-bottom:1px dashed #E5E7EB;cursor:text;min-width:20px';pzEl.contentEditable='true';pzEl.textContent=o.pezzi||'';pzEl.onblur=()=>updOrder(o.id,{pezzi:pzEl.textContent.trim()});pzSpan.appendChild(pzEl);
+    const prSpan=mk('span','');prSpan.innerHTML='€ ';const prEl=mk('span','');prEl.style.cssText='border-bottom:1px dashed #E5E7EB;cursor:text;min-width:20px';prEl.contentEditable='true';prEl.textContent=o.prezzo||'';prEl.onblur=()=>updOrder(o.id,{prezzo:prEl.textContent.trim()});prSpan.appendChild(prEl);
+    prRow.appendChild(pzSpan);prRow.appendChild(prSpan);
+    ohdr.appendChild(nomeEl);ohdr.appendChild(subEl);ohdr.appendChild(cliRow);ohdr.appendChild(prRow);
+    c.appendChild(ohdr);
     const sd=mk('div','');sd.style.cssText='border-top:1px solid #E5E7EB;padding-top:8px;margin-bottom:8px;display:flex;gap:5px;flex-wrap:wrap';
     Object.entries(SS).forEach(([s,cfg])=>{const p=mk('span','pill');p.style.cssText='border-color:'+(o.stato===s?cfg.color:'#E5E7EB')+';background:'+(o.stato===s?cfg.color+'22':'transparent')+';color:'+(o.stato===s?cfg.color:'#9CA3AF');p.textContent=cfg.label;p.onclick=()=>updOrder(o.id,{stato:s});sd.appendChild(p);});
     c.appendChild(sd);
@@ -546,7 +562,8 @@ function showAddOrder(el){
 
 // ── BILANCIO ──
 function renderFinance(el){
-  el.innerHTML='<div class="ttl">💰 Bilancio</div>';
+  el.innerHTML='';
+  const titleDiv=mk('div','ttl');titleDiv.textContent='💰 Bilancio';el.appendChild(titleDiv);
   const saldati=orders.filter(o=>o.stato==='completato'&&o.pagato);
   const credito=orders.filter(o=>o.stato==='completato'&&!o.pagato);
   const pipeline=orders.filter(o=>o.stato!=='completato'&&o.prezzo);
@@ -559,7 +576,7 @@ function renderFinance(el){
     const map={incassato:{label:'Incassato',items:saldati,color:'#16A34A',bg:'#F0FDF4',isSpese:false,val:ri},credito:{label:'Da incassare',items:credito,color:'#D97706',bg:'#FFFBEB',isSpese:false,val:rc},pipeline:{label:'Pipeline',items:pipeline,color:'#2563EB',bg:'#EFF6FF',isSpese:false,val:rp},materiale:{label:'Materiale',items:speseMat,color:'#7C3AED',bg:'#F5F3FF',isSpese:true,val:cM},attrezzatura:{label:'Attrezzatura',items:speseAtt,color:'#DC2626',bg:'#FEF2F2',isSpese:true,val:cA}};
     const d=map[finDetail];
     const hdr=mk('div','');hdr.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:16px';
-    const bb=mk('button','');bb.textContent='←';bb.style.cssText='background:none;border:none;cursor:pointer;color:#6B7280;font-size:22px;padding:0';bb.onclick=()=>{finDetail=null;renderFinance(el);};hdr.appendChild(bb);const tt=mk('div','ttl');tt.style.marginBottom='0';tt.textContent=d.label;hdr.appendChild(tt);el.appendChild(hdr);
+    const bb=mk('button','');bb.textContent='← Indietro';bb.style.cssText='background:#F3F4F6;border:none;cursor:pointer;color:#111827;font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px';bb.onclick=()=>{finDetail=null;el.innerHTML='';renderFinance(el);};hdr.appendChild(bb);const tt=mk('div','ttl');tt.style.marginBottom='0';tt.textContent=d.label;hdr.appendChild(tt);el.appendChild(hdr);
     el.innerHTML+='<div style="background:'+d.bg+';border-radius:12px;padding:16px;text-align:center;margin-bottom:16px"><div style="font-size:30px;font-weight:800;color:'+d.color+'">€'+d.val.toFixed(2)+'</div></div>';
     if(d.isSpese){const ab=btn('+ Aggiungi spesa',()=>showAddExp(el,finDetail),'s',true);ab.style.marginBottom='10px';el.appendChild(ab);}
     if(!d.items.length){const e=mk('div','');e.style.cssText='text-align:center;color:#9CA3AF;font-size:13px;padding:40px 0';e.textContent='Nessuna voce';el.appendChild(e);}
