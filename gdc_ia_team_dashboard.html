@@ -475,13 +475,8 @@ function showHub() {
 async function openSection(section) {
   document.getElementById('hub-screen').style.display = 'none';
   if(section === 'studio') {
-    // Token is already in sessionStorage from login — just open the page
-    const sp = document.getElementById('page-studio');
-    sp.style.display = 'block';
-    const iframe = document.getElementById('studio-iframe');
-    if(!iframe.src || iframe.src === window.location.href) {
-      iframe.src = 'gdc_studio.html';
-    }
+    // Open Studio in same tab — sessionStorage is shared
+    window.location.href = 'gdc_studio.html';
   } else {
     document.getElementById('app-screen').style.display = 'block';
     await loadPipelineStates();
