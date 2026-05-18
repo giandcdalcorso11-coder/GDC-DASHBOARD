@@ -226,16 +226,16 @@ async function confirmReset(){
       fetch(SB_URL+'/rest/v1/studio_hardware?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()}),
       fetch(SB_URL+'/rest/v1/studio_projects?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()})
     ]);
-    // Re-seed
+    // Re-seed with upsert
     await Promise.all([
-      sbPost('studio_filaments',SEED_F),
-      sbPost('studio_orders',SEED_O),
-      sbPost('studio_expenses',SEED_E),
-      sbPost('studio_hardware',SEED_HW)
+      sbPost('studio_filaments',SEED_F,true),
+      sbPost('studio_orders',SEED_O,true),
+      sbPost('studio_expenses',SEED_E,true),
+      sbPost('studio_hardware',SEED_HW,true)
     ]);
     filaments=SEED_F;orders=SEED_O;expenses=SEED_E;hardware=SEED_HW;projects=[];
     setSS('saved');
-    switchTab('calc');
+    switchTab('hardware');
     alert('Dati reinseriti correttamente!');
   }catch(e){console.error(e);setSS('saved');alert('Errore: '+e.message);}
 }
@@ -258,10 +258,11 @@ async function sbPatch(tbl,id,patch){
   const body=toSnake({...patch,updated_at:new Date().toISOString()});
   await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id+'&user_id=eq.'+_userId,{method:'PATCH',headers:{...sbH(),'Prefer':'return=minimal'},body:JSON.stringify(body)});
 }
-async function sbPost(tbl,rows){
+async function sbPost(tbl,rows,upsert){
   const isArr=Array.isArray(rows);
   const data=isArr?rows.map(r=>({...toSnake(r),user_id:_userId,updated_at:new Date().toISOString()})):{...toSnake(rows),user_id:_userId,updated_at:new Date().toISOString()};
-  await fetch(SB_URL+'/rest/v1/'+tbl,{method:'POST',headers:{...sbH(),'Prefer':'return=minimal'},body:JSON.stringify(data)});
+  const prefer=upsert?'resolution=merge-duplicates,return=minimal':'return=minimal';
+  await fetch(SB_URL+'/rest/v1/'+tbl,{method:'POST',headers:{...sbH(),'Prefer':prefer},body:JSON.stringify(data)});
 }
 async function sbDel(tbl,id){
   await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id+'&user_id=eq.'+_userId,{method:'DELETE',headers:sbH()});
@@ -279,17 +280,16 @@ function fromRow(r){
 
 async function loadData(){
   try{
-    const [f,o,e,p,h]=await Promise.all([sbGet('studio_filaments'),sbGet('studio_orders'),sbGet('studio_expenses'),sbGet('studio_projects'),sbGet('studio_hardware')]);
-    // If empty, seed
-    if(!f.length){await sbPost('studio_filaments',SEED_F);filaments=SEED_F;}
-    else filaments=f.map(fromRow);
-    if(!o.length){await sbPost('studio_orders',SEED_O);orders=SEED_O;}
-    else orders=o.map(fromRow);
-    if(!e.length){await sbPost('studio_expenses',SEED_E);expenses=SEED_E;}
-    else expenses=e.map(fromRow);
-    if(!h.length){await sbPost('studio_hardware',SEED_HW);hardware=SEED_HW;}
-    else hardware=h.map(fromRow);
-    projects=p.length?p.map(r=>({...(r.data||{}),id:r.id})):[];
+    const [f,o,e,p,h]=await Promise.all([
+      sbGet('studio_filaments'),sbGet('studio_orders'),
+      sbGet('studio_expenses'),sbGet('studio_projects'),sbGet('studio_hardware')
+    ]);
+    // NEVER auto-seed — only load what's in DB or use in-memory fallback
+    filaments = f.length ? f.map(fromRow) : SEED_F;
+    orders    = o.length ? o.map(fromRow) : SEED_O;
+    expenses  = e.length ? e.map(fromRow) : SEED_E;
+    hardware  = h.length ? h.map(fromRow) : SEED_HW;
+    projects  = p.length ? p.map(r=>({...(r.data||{}),id:r.id})) : [];
   }catch(err){
     console.error('Load error',err);
     filaments=SEED_F;orders=SEED_O;expenses=SEED_E;hardware=SEED_HW;projects=[];
@@ -309,7 +309,7 @@ async function loadData(){
     }
     if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:#9CA3AF;font-size:13px;">Caricamento dati…</div>';
     await loadData();
-    switchTab('calc');
+    switchTab('hardware');
   }catch(e){
     console.error('Studio init error:',e);
     if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:#DC2626;font-size:14px;">Errore: '+e.message+'<br><br><button onclick="window.location.href=\'gdc_ia_team_dashboard.html\'" style="padding:10px 20px;border-radius:8px;border:none;background:#111827;color:#fff;cursor:pointer;font-size:14px">← Torna al login</button></div>';
@@ -673,13 +673,24 @@ function showAddExp(el,cat){
 }
 
 // ── HARDWARE ──
+function updateSvgLines(){
+  const svg=document.getElementById('hw-svg');if(!svg)return;
+  svg.innerHTML='';
+  hardware.filter(h=>h.tipo!=='stampante').forEach(h=>{
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1','50%');line.setAttribute('y1','50%');
+    line.setAttribute('x2','calc(50% + '+h.x+'px)');line.setAttribute('y2','calc(50% + '+h.y+'px)');
+    line.setAttribute('stroke','#D1D5DB');line.setAttribute('stroke-width','1.5');line.setAttribute('stroke-dasharray','4,3');
+    svg.appendChild(line);
+  });
+}
 function renderHardware(el){
   el.innerHTML='<div class="ttl">⚙️ Macchinario</div>';
   const layout=mk('div','page-2col');
   const left=mk('div','');
   const mapDiv=mk('div','');mapDiv.id='hw-map';
 
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none';
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.id='hw-svg';svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none';
   const stampante=hardware.find(h=>h.tipo==='stampante');
   const resto=hardware.filter(h=>h.tipo!=='stampante');
   resto.forEach(h=>{const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1','50%');line.setAttribute('y1','50%');line.setAttribute('x2','calc(50% + '+h.x+'px)');line.setAttribute('y2','calc(50% + '+h.y+'px)');line.setAttribute('stroke','#E5E7EB');line.setAttribute('stroke-width','1.5');line.setAttribute('stroke-dasharray','4,3');svg.appendChild(line);});
@@ -694,7 +705,7 @@ function renderHardware(el){
       '<div style="margin-top:5px;display:flex;gap:3px;flex-wrap:wrap">'+Object.entries(SHW).map(([s,cfg])=>'<span onclick="updHW('+h.id+',\'stato\',\''+s+'\')" style="padding:2px 6px;border-radius:10px;border:1.5px solid '+(h.stato===s?cfg.color:'#E5E7EB')+';background:'+(h.stato===s?cfg.color+'22':'transparent')+';color:'+(h.stato===s?cfg.color:'#9CA3AF')+';font-size:9px;font-weight:700;cursor:pointer">'+cfg.label+'</span>').join('')+'</div>';
     let dragging=false,ox=0,oy=0;
     d.onmousedown=e=>{if(e.target.tagName==='BUTTON'||e.target.tagName==='SPAN')return;e.preventDefault();const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();dragging=true;ox=e.clientX-(r.left+r.width/2)-h.x;oy=e.clientY-(r.top+r.height/2)-h.y;d.style.cursor='grabbing';};
-    document.addEventListener('mousemove',e=>{if(!dragging)return;const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();const nx=Math.round(e.clientX-(r.left+r.width/2)-ox),ny=Math.round(e.clientY-(r.top+r.height/2)-oy);d.style.left='calc(50% + '+nx+'px)';d.style.top='calc(50% + '+ny+'px)';h.x=nx;h.y=ny;});
+    document.addEventListener('mousemove',e=>{if(!dragging)return;const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();const nx=Math.round(e.clientX-(r.left+r.width/2)-ox),ny=Math.round(e.clientY-(r.top+r.height/2)-oy);d.style.left='calc(50% + '+nx+'px)';d.style.top='calc(50% + '+ny+'px)';h.x=nx;h.y=ny;updateSvgLines();});
     document.addEventListener('mouseup',()=>{if(dragging){dragging=false;d.style.cursor='grab';updHW(h.id,'x',h.x);updHW(h.id,'y',h.y);}});
     mapDiv.appendChild(d);
   });
