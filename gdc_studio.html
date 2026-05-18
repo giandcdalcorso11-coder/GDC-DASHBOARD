@@ -262,7 +262,8 @@ async function sbPost(tbl,rows,upsert){
   const isArr=Array.isArray(rows);
   const data=isArr?rows.map(r=>({...toSnake(r),user_id:_userId,updated_at:new Date().toISOString()})):{...toSnake(rows),user_id:_userId,updated_at:new Date().toISOString()};
   const prefer=upsert?'resolution=merge-duplicates,return=minimal':'return=minimal';
-  await fetch(SB_URL+'/rest/v1/'+tbl,{method:'POST',headers:{...sbH(),'Prefer':prefer},body:JSON.stringify(data)});
+  const r=await fetch(SB_URL+'/rest/v1/'+tbl,{method:'POST',headers:{...sbH(),'Prefer':prefer},body:JSON.stringify(data)});
+  if(!r.ok){const err=await r.text();console.error('sbPost error',tbl,r.status,err);throw new Error(err);}
 }
 async function sbDel(tbl,id){
   await fetch(SB_URL+'/rest/v1/'+tbl+'?id=eq.'+id+'&user_id=eq.'+_userId,{method:'DELETE',headers:sbH()});
@@ -517,7 +518,7 @@ function showAddFil(el){
   c.appendChild(g2([inp('Tipo','PLA',v=>form.tipo=v),inp('Grammi totali','1000',v=>form.grammiTotali=v,'number')]));
   const pi=inp('Prezzo €','',v=>form.prezzoPagato=v,'number');pi.style.cssText='margin-top:8px;margin-bottom:8px';c.appendChild(pi);
   const di=inp('Data acquisto','',v=>form.data=v);di.style.marginBottom='8px';c.appendChild(di);
-  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.colore)return;const id=Date.now();const fil={id,colore:form.colore,tipo:form.tipo,grammiTotali:parseFloat(form.grammiTotali)||1000,grammiResidui:parseFloat(form.grammiTotali)||1000,prezzoPagato:parseFloat(form.prezzoPagato)||0,data:form.data||todayIT()};filaments=[...filaments,fil];setSS('saving');sbPost('studio_filaments',fil).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderFilaments(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderFilaments(document.getElementById('content')),'gh',true)]));
+  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.colore)return;const id=Date.now();const fil={id,colore:form.colore,tipo:form.tipo,grammiTotali:parseFloat(form.grammiTotali)||1000,grammiResidui:parseFloat(form.grammiTotali)||1000,prezzoPagato:parseFloat(form.prezzoPagato)||0,data:form.data||todayIT()};filaments=[...filaments,fil];setSS('saving');sbPost('studio_filaments',fil).then(()=>setSS('saved')).catch(e=>{console.error('Filament insert:',e);setSS('saved');});renderFilaments(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderFilaments(document.getElementById('content')),'gh',true)]));
   el.prepend(c);
 }
 
@@ -583,7 +584,7 @@ function showAddOrder(el){
   [['Nome ordine','nome'],['Sottotitolo','sottotitolo'],['Contatto','cliente']].forEach(([ph,k])=>{const i=inp(ph,'',v=>form[k]=v);i.style.marginBottom='8px';c.appendChild(i);});
   const gg=g2([inp('N. pezzi','',v=>form.pezzi=v,'number'),inp('Prezzo €','',v=>form.prezzo=v,'number')]);gg.style.marginBottom='8px';c.appendChild(gg);
   const sd=g3(Object.entries(SS).map(([s,cfg])=>{const b=mk('button','stab');b.style.cssText='font-size:11px;border-color:'+(form.stato===s?cfg.color:'#E5E7EB')+';background:'+(form.stato===s?cfg.color+'18':'#fff')+';color:'+(form.stato===s?cfg.color:'#6B7280');b.textContent=cfg.label;b.onclick=e=>{e.preventDefault();form.stato=s;showAddOrder(el);};return b;}));sd.style.marginBottom='8px';c.appendChild(sd);
-  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.nome)return;const o={id:Date.now(),...form,pagato:false,data:todayIT(),bobinaUsage:[]};orders=[o,...orders];setSS('saving');sbPost('studio_orders',o).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderOrders(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderOrders(document.getElementById('content')),'gh',true)]));
+  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.nome)return;const o={id:Date.now(),nome:form.nome,sottotitolo:form.sottotitolo,cliente:form.cliente,pezzi:String(form.pezzi||''),stato:form.stato,prezzo:String(form.prezzo||''),pagato:false,data:todayIT(),bobinaUsage:[]};orders=[o,...orders];setSS('saving');sbPost('studio_orders',o).then(()=>setSS('saved')).catch(e=>{console.error('Order insert error:',e);setSS('saved');});renderOrders(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderOrders(document.getElementById('content')),'gh',true)]));
   el.prepend(c);
 }
 
