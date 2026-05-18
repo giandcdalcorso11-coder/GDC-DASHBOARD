@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>GDC Print Studio</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#F7F8FA;font-family:system-ui,-apple-system,sans-serif;font-size:14px;min-height:100vh;}
+input,textarea,button{font-family:inherit;}
+.card{background:#fff;border-radius:12px;border:1px solid #E5E7EB;padding:11px;margin-bottom:8px;}
+.lbl{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.inp{width:100%;padding:9px 11px;border-radius:8px;border:1px solid #E5E7EB;font-size:13px;color:#111827;background:#fff;outline:none;box-sizing:border-box;}
+.inp:focus{border-color:#111827;}
+.btn{padding:11px 16px;border-radius:9px;border:none;font-weight:700;font-size:13px;cursor:pointer;width:100%;}
+.btn-p{background:#111827;color:#fff;}
+.btn-s{background:#F3F4F6;color:#111827;}
+.btn-g{background:#16A34A;color:#fff;}
+.btn-gh{background:transparent;color:#6B7280;border:1px solid #E5E7EB;}
+.btn-o{background:#EA580C;color:#fff;}
+.btn-sm{padding:7px 12px;font-size:12px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.ttl{font-size:16px;font-weight:800;color:#111827;letter-spacing:-.02em;margin-bottom:13px;}
+.pill{padding:3px 9px;border-radius:20px;border:1.5px solid;font-size:10px;font-weight:700;cursor:pointer;background:transparent;display:inline-block;}
+/* Nav */
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.97);border-top:1px solid #E5E7EB;z-index:20;padding:5px 4px 10px;}
+.nav-inner{display:flex;justify-content:center;max-width:480px;margin:0 auto;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;cursor:pointer;padding:4px 2px;}
+.nb-icon{font-size:18px;}
+.nb-lbl{font-size:8px;font-weight:500;color:#9CA3AF;}
+.nb.on .nb-lbl{color:#111827;font-weight:800;}
+.nb-dot{width:14px;height:2px;border-radius:1px;background:#111827;display:none;}
+.nb.on .nb-dot{display:block;}
+/* Topbar */
+.topbar{padding:14px 14px 4px;background:#F7F8FA;position:sticky;top:0;z-index:10;}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;}
+.logo-box{width:28px;height:28px;border-radius:7px;background:#111827;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-name{font-size:14px;font-weight:800;color:#111827;letter-spacing:-.02em;}
+.logo-sub{font-size:10px;color:#9CA3AF;}
+.save-btn{padding:5px 14px;border-radius:20px;border:none;font-weight:700;font-size:11px;cursor:pointer;}
+.hub-btn{padding:5px 12px;border-radius:20px;background:#F3F4F6;color:#6B7280;border:none;font-weight:700;font-size:11px;cursor:pointer;}
+/* Content */
+.content{padding:12px 14px 110px;}
+/* Filament bar */
+.fil-bar{height:3px;background:#E5E7EB;border-radius:2px;margin-bottom:4px;}
+.fil-fill{height:100%;border-radius:2px;}
+/* Sub tabs */
+.subtabs{display:flex;gap:6px;margin-bottom:12px;}
+.stab{flex:1;padding:7px;border-radius:8px;border:1.5px solid;font-weight:700;font-size:12px;cursor:pointer;}
+/* Map */
+#hw-map{position:relative;height:300px;background:#FAFAFA;border-radius:12px;border:1px solid #E5E7EB;overflow:hidden;margin-bottom:12px;user-select:none;}
+.hw-item{position:absolute;z-index:20;background:#fff;border-radius:10px;padding:7px 9px;min-width:88px;max-width:115px;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:grab;touch-action:none;}
+.hw-item:active{cursor:grabbing;}
+.hw-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="logo-box">⚡</div>
+      <div><div class="logo-name">GDC Print Studio</div><div class="logo-sub">@giandcdalcorso</div></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="save-btn" id="save-btn" style="background:#16A34A;color:#fff;" onclick="manualSave()">✓ Salvato</button>
+      <button class="hub-btn" onclick="goHub()">← Hub</button>
+    </div>
+  </div>
+</div>
+
+<div class="content" id="content"></div>
+
+<div class="nav">
+  <div class="nav-inner">
+    <button class="nb on" id="nb-calc"     onclick="switchTab('calc')">    <span class="nb-icon">🖨️</span><span class="nb-lbl">Calcolatore</span><div class="nb-dot"></div></button>
+    <button class="nb"    id="nb-filament" onclick="switchTab('filament')"><span class="nb-icon">🧵</span><span class="nb-lbl">Magazzino</span><div class="nb-dot"></div></button>
+    <button class="nb"    id="nb-orders"   onclick="switchTab('orders')">  <span class="nb-icon">📋</span><span class="nb-lbl">Ordini</span><div class="nb-dot"></div></button>
+    <button class="nb"    id="nb-finance"  onclick="switchTab('finance')"> <span class="nb-icon">💰</span><span class="nb-lbl">Bilancio</span><div class="nb-dot"></div></button>
+    <button class="nb"    id="nb-hardware" onclick="switchTab('hardware')"><span class="nb-icon">⚙️</span><span class="nb-lbl">Macchina</span><div class="nb-dot"></div></button>
+    <button class="nb"    id="nb-chat"     onclick="switchTab('chat')">    <span class="nb-icon">💬</span><span class="nb-lbl">Chat</span><div class="nb-dot"></div></button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const SB_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SB_KEY='sb_publishable_DCzX82HTZ1avt-NJxGAz4Q_6ZlxMudV';
+
+// ── CONSTANTS ──
+const POST_PROD=["Rimozione supporti","Levigatura","Colorazione base","Colorazione avanzata","Assemblaggio","Finitura lucida","Altro"];
+const RISK=[{val:"low",label:"Basso",color:"#22C55E"},{val:"mid",label:"Medio",color:"#F59E0B"},{val:"high",label:"Alto",color:"#EF4444"}];
+const PERCEIVED=["Gadget","Funzionale","Decorativo","Custom","Professionale"];
+const PERCEIVED_MULT={Gadget:1.0,Funzionale:1.2,Decorativo:1.3,Custom:1.6,Professionale:2.0};
+const RISK_MULT={low:1.0,mid:1.15,high:1.3};
+const ENERGY_RATE=0.28,BAMBU_WATT=0.15;
+const SS={lavorazione:{label:"In lavorazione",color:"#2563EB"},possibilita:{label:"Possibilità",color:"#D97706"},completato:{label:"Completato",color:"#16A34A"}};
+const TIPI={stampante:"🖨️",componente:"🔩",accessorio:"📦",mod_stampata:"✨"};
+const STATI_HW={ok:{label:"OK",color:"#16A34A"},attenzione:{label:"Attenzione",color:"#D97706"},sostituire:{label:"Da sost.",color:"#DC2626"}};
+
+// ── SEED DATA ──
+const SEED_F=[
+  {id:1,colore:"Bianco (bundle b/n)",tipo:"PLA",grammiTotali:1000,grammiResidui:0,prezzoPagato:24,data:"30/04/2025"},
+  {id:2,colore:"Nero (bundle b/n)",tipo:"PLA",grammiTotali:1000,grammiResidui:0,prezzoPagato:24,data:"30/04/2025"},
+  {id:3,colore:"Rosa (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:4,colore:"Rosso (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:5,colore:"Blu (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:6,colore:"Bianco (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:7,colore:"Nero (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:8,colore:"Verde (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:9,colore:"Arancione (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:10,colore:"Giallo (bundle colorati)",tipo:"PLA",grammiTotali:250,grammiResidui:0,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:11,colore:"Bianco",tipo:"PLA",grammiTotali:1000,grammiResidui:0,prezzoPagato:15,data:"24/10/2025"},
+  {id:12,colore:"Nero",tipo:"PLA",grammiTotali:1000,grammiResidui:0,prezzoPagato:18,data:"26/10/2025"},
+  {id:13,colore:"Blu",tipo:"PLA",grammiTotali:1000,grammiResidui:0,prezzoPagato:18,data:"29/10/2025"},
+  {id:14,colore:"Bianco Refill x4kg",tipo:"PLA",grammiTotali:4000,grammiResidui:0,prezzoPagato:56,data:"27/12/2025"},
+  {id:15,colore:"Verde Acqua",tipo:"PLA",grammiTotali:1000,grammiResidui:800,prezzoPagato:24,data:"08/03/2026"},
+  {id:16,colore:"Bianco Refill x4kg",tipo:"PLA",grammiTotali:4000,grammiResidui:3800,prezzoPagato:48.44,data:"15/03/2026"},
+  {id:17,colore:"Nero Refill x4kg",tipo:"PLA",grammiTotali:4000,grammiResidui:3800,prezzoPagato:48.44,data:"15/03/2026"},
+  {id:18,colore:"Arancione",tipo:"PLA",grammiTotali:1000,grammiResidui:800,prezzoPagato:12.11,data:"15/03/2026"},
+  {id:19,colore:"Rosso",tipo:"PLA",grammiTotali:250,grammiResidui:250,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:20,colore:"Rosa",tipo:"PLA",grammiTotali:250,grammiResidui:50,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:21,colore:"Giallo",tipo:"PLA",grammiTotali:250,grammiResidui:100,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:22,colore:"Verde",tipo:"PLA",grammiTotali:250,grammiResidui:250,prezzoPagato:5.75,data:"15/07/2025"},
+  {id:23,colore:"Blu",tipo:"PLA",grammiTotali:1000,grammiResidui:800,prezzoPagato:18,data:"29/10/2025"},
+  {id:24,colore:"Blu (regalo)",tipo:"TPU",grammiTotali:500,grammiResidui:400,prezzoPagato:0,data:"2026"}
+];
+const SEED_O=[
+  {id:1,nome:"Statua Antei",sottotitolo:"",cliente:"Costantino",pezzi:"1",stato:"completato",prezzo:"50",pagato:true,data:"2025"},
+  {id:2,nome:"Portapenne Di Properzio",sottotitolo:"",cliente:"Francesco",pezzi:"1",stato:"completato",prezzo:"15",pagato:true,data:"2025"},
+  {id:3,nome:"Lampadario sistema solare",sottotitolo:"",cliente:"Toronho",pezzi:"1",stato:"completato",prezzo:"70",pagato:true,data:"2025"},
+  {id:4,nome:"Portachiavi 4 vele + braccia gatto",sottotitolo:"",cliente:"Manuel",pezzi:"",stato:"completato",prezzo:"45",pagato:false,data:"2026"},
+  {id:5,nome:"Mano portabottiglie",sottotitolo:"",cliente:"Catorina",pezzi:"1",stato:"completato",prezzo:"12",pagato:false,data:"2026"},
+  {id:6,nome:"Portachiavi Let's Beach",sottotitolo:"",cliente:"Cristiana",pezzi:"100",stato:"lavorazione",prezzo:"100",pagato:false,data:"04/2026"},
+  {id:7,nome:"Statuetta Antei baby",sottotitolo:"",cliente:"Costantino",pezzi:"1",stato:"possibilita",prezzo:"",pagato:false,data:"04/2026"},
+  {id:8,nome:"Funko Pop x5 family",sottotitolo:"",cliente:"Daniele Fisio",pezzi:"5",stato:"possibilita",prezzo:"",pagato:false,data:"04/2026"},
+  {id:9,nome:"Funko Pop bambini",sottotitolo:"",cliente:"Paolo Nicolai",pezzi:"",stato:"possibilita",prezzo:"",pagato:false,data:"04/2026"},
+  {id:10,nome:"Portachiavi NFC",sottotitolo:"",cliente:"Maurizio M.",pezzi:"",stato:"possibilita",prezzo:"",pagato:false,data:"04/2026"},
+  {id:11,nome:"Portachiavi NFC volume",sottotitolo:"",cliente:"Tommaso",pezzi:"",stato:"possibilita",prezzo:"",pagato:false,data:"04/2026"},
+  {id:12,nome:"Portachiavi Attivita Giovanile",sottotitolo:"Playaburg",cliente:"Coronzo Piazza",pezzi:"",stato:"possibilita",prezzo:"",pagato:false,data:"04/2026"}
+];
+const SEED_E=[
+  {id:1,descrizione:"Stampante Bambu Lab",sottotitolo:"A1 Combo",importo:"510.56",categoria:"attrezzatura",data:"30/04/2025"},
+  {id:2,descrizione:"Essiccatore",sottotitolo:"",importo:"45.00",categoria:"attrezzatura",data:"24/02/2026"},
+  {id:3,descrizione:"Telecamera Tapo",sottotitolo:"",importo:"23.00",categoria:"attrezzatura",data:"01/03/2026"},
+  {id:4,descrizione:"Sacchetti sottovuoto",sottotitolo:"",importo:"32.00",categoria:"attrezzatura",data:"17/03/2026"},
+  {id:5,descrizione:"Bundle Bianco+Nero",sottotitolo:"2x1kg PLA",importo:"48.00",categoria:"materiale",data:"30/04/2025"},
+  {id:6,descrizione:"Bundle Colorati x8",sottotitolo:"8x250g PLA",importo:"46.00",categoria:"materiale",data:"15/07/2025"},
+  {id:7,descrizione:"Bianco 1kg PLA",sottotitolo:"",importo:"15.00",categoria:"materiale",data:"24/10/2025"},
+  {id:8,descrizione:"Nero 1kg PLA",sottotitolo:"",importo:"18.00",categoria:"materiale",data:"26/10/2025"},
+  {id:9,descrizione:"Blu 1kg PLA",sottotitolo:"",importo:"18.00",categoria:"materiale",data:"29/10/2025"},
+  {id:10,descrizione:"Bianco Refill 4kg PLA",sottotitolo:"",importo:"56.00",categoria:"materiale",data:"27/12/2025"},
+  {id:11,descrizione:"Verde Acqua 1kg PLA",sottotitolo:"",importo:"24.00",categoria:"materiale",data:"08/03/2026"},
+  {id:12,descrizione:"Bundle Mar26",sottotitolo:"4kgB+4kgN+1kgA",importo:"109.00",categoria:"materiale",data:"15/03/2026"}
+];
+const SEED_HW=[
+  {id:1,nome:"Bambu Lab A1 Combo",tipo:"stampante",stato:"ok",note:"Stampante principale",data:"30/04/2025",x:0,y:0},
+  {id:2,nome:"Essiccatore",tipo:"accessorio",stato:"ok",note:"",data:"24/02/2026",x:-130,y:110},
+  {id:3,nome:"Telecamera Tapo",tipo:"accessorio",stato:"ok",note:"Monitoraggio remoto",data:"01/03/2026",x:130,y:110}
+];
+
+// ── STATE ──
+let _token=null,_userId=null;
+let filaments=[],orders=[],expenses=[],projects=[],hardware=[];
+let curTab='calc',filSubTab='uso',ordSubTab='lavorazione',finDetail=null;
+let calcView='list',calcEditId=null,calcResult=null;
+let calcFields={tempo_min:'',kwh:'',kwhManual:false,bobinaUsage:[],tempBobine:[],postProd:[],risk:'mid',perceived:'Funzionale',energyRate:'0.28',projectName:'',qty:'1'};
+
+function todayIT(){return new Date().toLocaleDateString('it-IT');}
+
+// ── AUTH ──
+function goHub(){window.location.href='gdc_ia_team_dashboard.html';}
+
+function setSaveStatus(s){
+  const el=document.getElementById('save-btn');if(!el)return;
+  if(s==='saving'){el.style.background='#9CA3AF';el.textContent='…';}
+  else{el.style.background='#16A34A';el.textContent='✓ Salvato';}
+}
+
+function manualSave(){setSaveStatus('saving');Promise.all([sbSaveAll()]).then(()=>setSaveStatus('saved'));}
+
+// ── SUPABASE ──
+function sbH(auth){const h={'Content-Type':'application/json','apikey':SB_KEY};if(auth&&_token)h['Authorization']='Bearer '+_token;return h;}
+
+async function sbGet(table){
+  const r=await fetch(SB_URL+'/rest/v1/'+table+'?user_id=eq.'+_userId+'&select=*&order=id',{headers:sbH(true)});
+  return r.json();
+}
+async function sbPatch(table,id,patch){
+  patch.updated_at=new Date().toISOString();
+  await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id+'&user_id=eq.'+_userId,{method:'PATCH',headers:{...sbH(true),'Prefer':'return=minimal'},body:JSON.stringify(toSnake(patch))});
+}
+async function sbInsert(table,row){
+  const body={...toSnake(row),user_id:_userId,updated_at:new Date().toISOString()};
+  await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...sbH(true),'Prefer':'return=minimal'},body:JSON.stringify(body)});
+}
+async function sbDelete(table,id){
+  await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id+'&user_id=eq.'+_userId,{method:'DELETE',headers:sbH(true)});
+}
+
+function toSnake(o){
+  const m={grammiResidui:'grammi_residui',grammiTotali:'grammi_totali',prezzoPagato:'prezzo_pagato',bobinaUsage:'bobina_usage'};
+  const r={};Object.entries(o).forEach(([k,v])=>{r[m[k]||k]=v;});return r;
+}
+function fromSnake(o){
+  return{id:o.id,colore:o.colore,tipo:o.tipo,grammiTotali:o.grammi_totali,grammiResidui:o.grammi_residui,prezzoPagato:o.prezzo_pagato,data:o.data,
+    nome:o.nome,sottotitolo:o.sottotitolo,cliente:o.cliente,pezzi:o.pezzi,stato:o.stato,prezzo:o.prezzo,pagato:o.pagato,bobinaUsage:o.bobina_usage||[],
+    descrizione:o.descrizione,importo:o.importo,categoria:o.categoria,note:o.note,x:o.x,y:o.y};
+}
+
+async function sbLoad(){
+  try{
+    const [f,o,e,p,h]=await Promise.all([sbGet('studio_filaments'),sbGet('studio_orders'),sbGet('studio_expenses'),sbGet('studio_projects'),sbGet('studio_hardware')]);
+    filaments=Array.isArray(f)&&f.length?f.map(fromSnake):null;
+    orders=Array.isArray(o)&&o.length?o.map(fromSnake):null;
+    expenses=Array.isArray(e)&&e.length?e.map(fromSnake):null;
+    projects=Array.isArray(p)&&p.length?p.map(x=>({...(x.data||{}),id:x.id})):[];
+    hardware=Array.isArray(h)&&h.length?h.map(fromSnake):null;
+    if(!filaments){filaments=SEED_F;await sbSeedTable('studio_filaments',SEED_F);}
+    if(!orders){orders=SEED_O;await sbSeedTable('studio_orders',SEED_O);}
+    if(!expenses){expenses=SEED_E;await sbSeedTable('studio_expenses',SEED_E);}
+    if(!hardware){hardware=SEED_HW;await sbSeedTable('studio_hardware',SEED_HW);}
+  }catch(e){filaments=SEED_F;orders=SEED_O;expenses=SEED_E;hardware=SEED_HW;projects=[];}
+}
+
+async function sbSeedTable(table,data){
+  const uid=_userId;
+  await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...sbH(true),'Prefer':'return=minimal'},
+    body:JSON.stringify(data.map(r=>({...toSnake(r),user_id:uid,updated_at:new Date().toISOString()})))});
+}
+
+async function sbSaveAll(){
+  // Projects are saved individually on change
+}
+
+// ── INIT ──
+(async function init(){
+  try{
+    const t=sessionStorage.getItem('gdc_token'),u=sessionStorage.getItem('gdc_uid');
+    if(t&&u){
+      _token=t;_userId=u;
+      const r=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+t}});
+      if(!r.ok)throw new Error('token expired');
+      await sbLoad();
+      switchTab('calc');
+    }else{window.location.href='gdc_ia_team_dashboard.html';}
+  }catch(e){window.location.href='gdc_ia_team_dashboard.html';}
+})();
+
+// ── NAVIGATION ──
+function switchTab(t){
+  curTab=t;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  const btn=document.getElementById('nb-'+t);if(btn)btn.classList.add('on');
+  render();
+}
+
+function render(){
+  const el=document.getElementById('content');
+  if(!el)return;
+  el.innerHTML='';
+  ({calc:renderCalc,filament:renderFilaments,orders:renderOrders,finance:renderFinance,hardware:renderHardware,chat:renderChat})[curTab](el);
+}
+
+// ── HELPERS ──
+function el(tag,style,html){const d=document.createElement(tag);if(style)Object.assign(d.style,typeof style==='string'?{cssText:style}:style);if(html)d.innerHTML=html;return d;}
+function btn(label,onclick,cls,sm){const b=document.createElement('button');b.className='btn btn-'+(cls||'p')+(sm?' btn-sm':'');b.textContent=label;b.onclick=onclick;return b;}
+function inp(ph,val,oninput,type){const i=document.createElement('input');i.className='inp';i.placeholder=ph||'';i.value=val||'';i.type=type||'text';if(oninput)i.oninput=e=>oninput(e.target.value);return i;}
+function g2(children){const d=document.createElement('div');d.className='g2';children.forEach(c=>{if(c)d.appendChild(c);});return d;}
+function card(html,style){const d=document.createElement('div');d.className='card';if(style)Object.assign(d.style,style);if(html)d.innerHTML=html;return d;}
+function lbl(txt){const d=document.createElement('div');d.className='lbl';d.textContent=txt;return d;}
+
+// ── CALCOLATORE ──
+function renderCalc(el){
+  if(calcView==='list'){renderCalcList(el);return;}
+  renderCalcEdit(el);
+}
+
+function renderCalcList(el){
+  el.innerHTML='<div class="ttl">🖨️ Calcolatore Prezzi</div>';
+  const nb=btn('+ Nuovo progetto',()=>{calcView='edit';calcEditId=null;calcResult=null;calcFields={tempo_min:'',kwh:'',kwhManual:false,bobinaUsage:[],tempBobine:[],postProd:[],risk:'mid',perceived:'Funzionale',energyRate:'0.28',projectName:'',qty:'1'};render();},'p');
+  nb.style.marginBottom='12px';el.appendChild(nb);
+  if(!projects.length){const e=document.createElement('div');e.style.cssText='text-align:center;color:#9CA3AF;font-size:13px;padding:32px 0';e.textContent='Nessun progetto salvato';el.appendChild(e);return;}
+  const g=document.createElement('div');g.className='g2';
+  projects.forEach(p=>{
+    const c=card();c.style.cursor='pointer';c.style.position='relative';
+    c.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+p.nome+'</div>';
+    if(p.result)c.innerHTML+='<div style="font-size:20px;font-weight:800">€'+p.result.prezzoConsigliato.toFixed(0)+'</div><div style="font-size:10px;color:#9CA3AF">'+(p.result.pezzi>1?p.result.pezzi+' pz · ':'')+'€'+p.result.prezzoPezzo.toFixed(2)+'/pz</div>';
+    else c.innerHTML+='<div style="font-size:11px;color:#D97706">Non calcolato</div>';
+    c.innerHTML+='<div style="font-size:10px;color:#9CA3AF;margin-top:3px">'+p.data+'</div>';
+    const db=document.createElement('button');db.textContent='✕';db.style.cssText='position:absolute;top:7px;right:7px;background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:13px';
+    db.onclick=e=>{e.stopPropagation();projects=projects.filter(x=>x.id!==p.id);sbDelete('studio_projects',p.id);render();};
+    c.appendChild(db);c.onclick=()=>{calcView='edit';calcEditId=p.id;calcFields=p.fields||{};calcResult=p.result||null;render();};
+    g.appendChild(c);
+  });
+  el.appendChild(g);
+}
+
+function renderCalcEdit(el){
+  const f=calcFields;
+  // Header
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px';
+  const bb=document.createElement('button');bb.textContent='←';bb.style.cssText='background:none;border:none;cursor:pointer;color:#6B7280;font-size:20px;padding:0';bb.onclick=()=>{calcView='list';render();};
+  hdr.appendChild(bb);const tt=document.createElement('div');tt.className='ttl';tt.style.marginBottom='0';tt.textContent=(calcEditId?'Modifica':'Nuovo')+' Progetto';hdr.appendChild(tt);el.appendChild(hdr);
+
+  // Nome
+  const nc=card();nc.appendChild(lbl('Nome progetto'));const ni=inp('es. Portachiavi',f.projectName,v=>f.projectName=v);nc.appendChild(ni);el.appendChild(nc);
+
+  // Dati stampa
+  const dc=card();dc.appendChild(lbl('Dati stampa'));
+  const dg=document.createElement('div');dg.className='g2';dg.style.marginBottom='8px';
+  [['Tempo (min)',f.tempo_min,v=>{f.tempo_min=v;if(!f.kwhManual&&v){f.kwh=((parseFloat(v)||0)/60*BAMBU_WATT).toFixed(3);render();}else render();},'number'],
+   ['kWh',f.kwh,v=>{f.kwh=v;f.kwhManual=true;},'number'],
+   ['€/kWh',f.energyRate,v=>f.energyRate=v,'number'],
+   ['Quantità',f.qty,v=>f.qty=v,'number']
+  ].forEach(([ph,val,cb,type])=>{const d=document.createElement('div');d.appendChild(inp(ph,val,cb,type));dg.appendChild(d);});
+  dc.appendChild(dg);el.appendChild(dc);
+
+  // Bobine
+  const bc=card();bc.appendChild(lbl('Bobine usate'));
+  const allBobine=[...filaments.filter(b=>b.grammiResidui>0),...(f.tempBobine||[])];
+  allBobine.forEach(b=>{
+    const usage=(f.bobinaUsage||[]).find(u=>u.id===b.id);const isSel=!!usage;
+    const row=document.createElement('div');row.style.cssText='padding:9px 11px;border-radius:9px;border:2px solid '+(isSel?'#111827':'#E5E7EB')+';background:'+(isSel?'#F3F4F6':'#fff')+';cursor:pointer;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center';
+    row.innerHTML='<div><div style="font-weight:700;font-size:12px">'+b.colore+'</div><div style="font-size:10px;color:#9CA3AF">'+b.grammiResidui+'g · €'+(b.prezzoPagato/b.grammiTotali*1000).toFixed(0)+'/kg</div></div>'+(isSel?'<span>✓</span>':'');
+    row.onclick=()=>{if(isSel)f.bobinaUsage=(f.bobinaUsage||[]).filter(u=>u.id!==b.id);else f.bobinaUsage=[...(f.bobinaUsage||[]),{id:b.id,grammi:''}];render();};
+    bc.appendChild(row);
+    if(isSel){const gr=document.createElement('div');gr.style.cssText='display:flex;gap:6px;margin-top:4px;padding-left:8px;margin-bottom:6px';gr.innerHTML='<div style="font-size:10px;color:#6B7280;padding-top:7px;flex-shrink:0">Grammi:</div>';const gi=inp('es. 45',usage.grammi,v=>{const u=f.bobinaUsage.find(x=>x.id===b.id);if(u)u.grammi=v;},'number');gi.style.cssText='padding:6px 9px;font-size:12px';gr.appendChild(gi);bc.appendChild(gr);}
+  });
+  el.appendChild(bc);
+
+  // Post produzione
+  const pc=card();pc.appendChild(lbl('Post produzione'));
+  const pd=document.createElement('div');pd.style.cssText='display:flex;flex-wrap:wrap;gap:5px';
+  POST_PROD.forEach(p=>{const s=f.postProd.includes(p);const d=document.createElement('div');d.style.cssText='padding:5px 10px;border-radius:14px;border:1.5px solid '+(s?'#111827':'#E5E7EB')+';background:'+(s?'#111827':'#fff')+';color:'+(s?'#fff':'#111827')+';font-size:11px;font-weight:600;cursor:pointer';d.textContent=p;d.onclick=()=>{if(s)f.postProd=f.postProd.filter(x=>x!==p);else f.postProd=[...f.postProd,p];render();};pd.appendChild(d);});
+  pc.appendChild(pd);el.appendChild(pc);
+
+  // Rischio + Perceived
+  const rc=card();rc.appendChild(lbl('Rischio'));
+  const rdiv=document.createElement('div');rdiv.className='g3';rdiv.style.marginBottom='10px';
+  RISK.forEach(r=>{const d=document.createElement('div');d.style.cssText='padding:8px 5px;border-radius:8px;border:2px solid '+(f.risk===r.val?r.color:'#E5E7EB')+';background:'+(f.risk===r.val?r.color+'15':'#fff')+';text-align:center;cursor:pointer';d.innerHTML='<div style="font-weight:700;font-size:12px;color:'+(f.risk===r.val?r.color:'#6B7280')+'">'+r.label+'</div>';d.onclick=()=>{f.risk=r.val;render();};rdiv.appendChild(d);});
+  rc.appendChild(rdiv);rc.appendChild(lbl('Valore percepito'));
+  const pvdiv=document.createElement('div');pvdiv.className='g2';
+  PERCEIVED.forEach(p=>{const d=document.createElement('div');d.style.cssText='padding:8px;border-radius:8px;border:2px solid '+(f.perceived===p?'#111827':'#E5E7EB')+';background:'+(f.perceived===p?'#F3F4F6':'#fff')+';cursor:pointer;display:flex;justify-content:space-between;align-items:center';d.innerHTML='<span style="font-weight:600;font-size:11px">'+p+'</span><span style="font-size:10px;color:#9CA3AF">×'+PERCEIVED_MULT[p].toFixed(1)+'</span>';d.onclick=()=>{f.perceived=p;render();};pvdiv.appendChild(d);});
+  rc.appendChild(pvdiv);el.appendChild(rc);
+
+  const cb2=btn('Calcola prezzo →',doCalc,'p');cb2.style.marginBottom='8px';el.appendChild(cb2);
+
+  if(calcResult){
+    const r=calcResult;
+    const rc2=card('',{border:'2px solid #111827'});
+    rc2.innerHTML='<div style="font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px">Breakdown'+(r.pezzi>1?' ×'+r.pezzi+' pz':'')+'</div>';
+    [['🧵 Filamenti',r.costoFil],['⚡ Energia',r.costoEnergia],['✋ Post',r.costoPost]].forEach(([l,v])=>{rc2.innerHTML+='<div style="display:flex;justify-content:space-between;padding-bottom:5px;margin-bottom:5px;border-bottom:1px solid #E5E7EB"><span style="font-size:12px;color:#6B7280">'+l+'</span><span style="font-size:12px;font-weight:700">€'+v.toFixed(2)+(r.pezzi>1?' → €'+(v*r.pezzi).toFixed(2):'')+'</span></div>';});
+    rc2.innerHTML+='<div style="background:#F3F4F6;border-radius:9px;padding:12px;margin-top:8px;text-align:center"><div style="font-size:10px;color:#9CA3AF;font-weight:600;margin-bottom:2px">PREZZO CONSIGLIATO</div><div style="font-size:28px;font-weight:800">€'+r.prezzoConsigliato.toFixed(2)+'</div>'+(r.pezzi>1?'<div style="font-size:12px;color:#6B7280">€'+r.prezzoPezzo.toFixed(2)+' / pezzo</div>':'')+'</div>';
+    const ag=g2([btn('Salva bozza',saveProjCalc,'s',true),btn('→ Ordini',sendToOrders,'g',true)]);ag.style.marginTop='8px';rc2.appendChild(ag);el.appendChild(rc2);
+  }else{const sb=btn('Salva bozza senza calcolare',saveProjCalc,'gh');sb.style.marginTop='4px';el.appendChild(sb);}
+}
+
+function doCalc(){
+  const f=calcFields;
+  const allBobine=[...filaments.filter(b=>b.grammiResidui>0),...(f.tempBobine||[])];
+  const pezzi=parseInt(f.qty)||1;
+  let costoFil=0;(f.bobinaUsage||[]).forEach(bu=>{const bob=allBobine.find(b=>b.id===bu.id);const g=parseFloat(bu.grammi)||0;if(bob&&g>0)costoFil+=(g/bob.grammiTotali)*bob.prezzoPagato;});
+  const costoEnergia=(parseFloat(f.kwh)||0)*(parseFloat(f.energyRate)||ENERGY_RATE);
+  const pc={"Rimozione supporti":1.5,"Levigatura":3,"Colorazione base":4,"Colorazione avanzata":8,"Assemblaggio":5,"Finitura lucida":6,"Altro":3};
+  const costoPost=(f.postProd||[]).reduce((a,p)=>a+(pc[p]||2),0);
+  const sub=costoFil+costoEnergia+costoPost;
+  const prezzoPezzo=sub*RISK_MULT[f.risk]*PERCEIVED_MULT[f.perceived];
+  calcResult={costoFil,costoEnergia,costoPost,subtotalePezzo:sub,prezzoPezzo,prezzoConsigliato:prezzoPezzo*pezzi,pezzi};
+  render();
+}
+
+function saveProjCalc(){
+  const id=calcEditId||Date.now();
+  const proj={id,fields:calcFields,result:calcResult,nome:calcFields.projectName||'Progetto senza nome',data:todayIT()};
+  if(calcEditId)projects=projects.map(p=>p.id===id?proj:p);else projects=[proj,...projects];
+  setSaveStatus('saving');
+  sbInsert('studio_projects',{id,data:proj}).then(()=>setSaveStatus('saved'));
+  calcView='list';render();
+}
+
+function sendToOrders(){
+  if(!calcResult)return;
+  const r=calcResult,f=calcFields;
+  const o={id:Date.now(),nome:f.projectName||'Stampa senza nome',sottotitolo:'',cliente:'',pezzi:f.qty,stato:'lavorazione',prezzo:r.prezzoConsigliato.toFixed(2),pagato:false,data:todayIT(),bobinaUsage:f.bobinaUsage||[]};
+  orders=[o,...orders];
+  setSaveStatus('saving');
+  sbInsert('studio_orders',o).then(()=>setSaveStatus('saved'));
+  if(calcEditId){projects=projects.filter(p=>p.id!==calcEditId);sbDelete('studio_projects',calcEditId);}
+  calcView='list';render();
+}
+
+// ── MAGAZZINO ──
+function renderFilaments(el){
+  el.innerHTML='<div class="ttl">🧵 Magazzino</div>';
+  const inUso=filaments.filter(b=>b.grammiResidui>0);
+  const archivio=filaments.filter(b=>b.grammiResidui<=0);
+  const tabRow=document.createElement('div');tabRow.className='subtabs';
+  [['uso','In uso ('+inUso.length+')'],['archivio','Archivio ('+archivio.length+')']].forEach(([id,lbl])=>{
+    const b=document.createElement('button');b.className='stab';b.style.cssText='border-color:'+(filSubTab===id?'#111827':'#E5E7EB')+';background:'+(filSubTab===id?'#111827':'#fff')+';color:'+(filSubTab===id?'#fff':'#6B7280');b.textContent=lbl;b.onclick=()=>{filSubTab=id;renderFilaments(el);};tabRow.appendChild(b);
+  });
+  el.appendChild(tabRow);
+  const list=filSubTab==='uso'?inUso:archivio;
+  const g=document.createElement('div');g.className='g2';
+  list.forEach(b=>{
+    const pct=b.grammiResidui>0?Math.round((b.grammiResidui/b.grammiTotali)*100):0;
+    const bc=pct>50?'#16A34A':pct>20?'#D97706':'#DC2626';
+    const c=card();
+    c.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:5px"><div><div style="font-weight:700;font-size:12px">'+b.colore+'</div><div style="font-size:10px;color:#9CA3AF">'+b.tipo+' · '+b.data+'</div></div><button onclick="delFil('+b.id+')" style="background:none;border:none;color:#9CA3AF;font-size:13px;cursor:pointer">✕</button></div>';
+    if(b.grammiResidui>0){c.innerHTML+='<div class="fil-bar"><div class="fil-fill" style="width:'+pct+'%;background:'+bc+'"></div></div><div style="font-size:10px;color:'+bc+';font-weight:700;margin-bottom:4px">'+b.grammiResidui+'g ('+pct+'%)</div>';
+    const ri=document.createElement('input');ri.type='number';ri.defaultValue=b.grammiResidui;ri.className='inp';ri.style.cssText='padding:4px 7px;font-size:11px';
+    ri.onblur=e=>updFil(b.id,{grammiResidui:Math.max(0,Math.min(b.grammiTotali,parseFloat(e.target.value)||0))});c.appendChild(ri);}
+    c.innerHTML+='<div style="font-size:10px;color:#9CA3AF;margin-top:4px">'+b.grammiTotali+'g · '+(b.prezzoPagato>0?'€'+b.prezzoPagato.toFixed(2):'🎁 Regalo')+'</div>';
+    g.appendChild(c);
+  });
+  el.appendChild(g);
+  if(!list.length){const e=document.createElement('div');e.style.cssText='text-align:center;color:#9CA3AF;font-size:13px;padding:24px 0';e.textContent='Nessuna bobina';el.appendChild(e);}
+  if(filSubTab==='uso'){const ab=btn('+ Aggiungi bobina',()=>showAddFil(el),'s');ab.style.marginTop='4px';el.appendChild(ab);}
+}
+
+function updFil(id,patch){filaments=filaments.map(f=>f.id===id?{...f,...patch}:f);setSaveStatus('saving');sbPatch('studio_filaments',id,patch).then(()=>setSaveStatus('saved'));renderFilaments(document.getElementById('content'));}
+function delFil(id){filaments=filaments.filter(f=>f.id!==id);sbDelete('studio_filaments',id);renderFilaments(document.getElementById('content'));}
+function showAddFil(el){
+  const form={colore:'',tipo:'PLA',grammiTotali:'1000',prezzoPagato:'',data:''};
+  const c=card();c.appendChild(lbl('Nuova bobina'));
+  const ni=inp('Colore','',v=>form.colore=v);ni.style.marginBottom='7px';c.appendChild(ni);
+  const g2d=g2([inp('Tipo','PLA',v=>form.tipo=v),inp('Grammi','1000',v=>form.grammiTotali=v,'number')]);g2d.style.marginBottom='7px';c.appendChild(g2d);
+  const pi=inp('Prezzo €','',v=>form.prezzoPagato=v,'number');pi.style.marginBottom='7px';c.appendChild(pi);
+  const di=inp('Data','',v=>form.data=v);di.style.marginBottom='7px';c.appendChild(di);
+  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.colore)return;const id=Date.now();const fil={id,colore:form.colore,tipo:form.tipo,grammiTotali:parseFloat(form.grammiTotali)||1000,grammiResidui:parseFloat(form.grammiTotali)||1000,prezzoPagato:parseFloat(form.prezzoPagato)||0,data:form.data||todayIT()};filaments=[...filaments,fil];setSaveStatus('saving');sbInsert('studio_filaments',fil).then(()=>setSaveStatus('saved'));renderFilaments(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderFilaments(document.getElementById('content')),'gh',true)]));
+  el.prepend(c);
+}
+
+// ── ORDINI ──
+function renderOrders(el){
+  el.innerHTML='<div class="ttl">📋 Ordini</div>';
+  const groups={lavorazione:orders.filter(o=>o.stato==='lavorazione'),possibilita:orders.filter(o=>o.stato==='possibilita'),completato:orders.filter(o=>o.stato==='completato')};
+  const tabRow=document.createElement('div');tabRow.style.cssText='display:flex;gap:5px;margin-bottom:12px';
+  Object.entries(SS).forEach(([k,cfg])=>{const b=document.createElement('button');b.className='stab';b.style.cssText='border-color:'+(ordSubTab===k?cfg.color:'#E5E7EB')+';background:'+(ordSubTab===k?cfg.color+'18':'#fff')+';color:'+(ordSubTab===k?cfg.color:'#6B7280')+';font-size:10px';b.innerHTML=cfg.label+'<br><span style="font-size:9px;opacity:.7">('+groups[k].length+')</span>';b.onclick=()=>{ordSubTab=k;renderOrders(el);};tabRow.appendChild(b);});
+  el.appendChild(tabRow);
+  const ab=btn('+ Nuovo ordine',()=>showAddOrder(el),'s');ab.style.marginBottom='10px';el.appendChild(ab);
+  const list=groups[ordSubTab];
+  if(!list.length){const e=document.createElement('div');e.style.cssText='text-align:center;color:#9CA3AF;font-size:13px;padding:32px 0';e.textContent='Nessun ordine';el.appendChild(e);return;}
+  list.forEach(o=>{
+    const c=card();
+    c.innerHTML='<div style="margin-bottom:8px"><div style="font-size:14px;font-weight:800;margin-bottom:2px">'+o.nome+'</div>'+(o.sottotitolo?'<div style="font-size:12px;color:#6B7280">'+o.sottotitolo+'</div>':'')+'<div style="font-size:12px;color:#9CA3AF">👤 '+(o.cliente||'—')+'</div><div style="font-size:12px;color:#9CA3AF">Pezzi: '+(o.pezzi||'—')+' · €'+(o.prezzo||'—')+'</div></div>';
+    const sd=document.createElement('div');sd.style.cssText='border-top:1px solid #E5E7EB;padding-top:6px;margin-bottom:6px;display:flex;gap:4px;flex-wrap:wrap';
+    Object.entries(SS).forEach(([s,cfg])=>{const p=document.createElement('span');p.className='pill';p.style.cssText='border-color:'+(o.stato===s?cfg.color:'#E5E7EB')+';background:'+(o.stato===s?cfg.color+'22':'transparent')+';color:'+(o.stato===s?cfg.color:'#9CA3AF');p.textContent=cfg.label;p.onclick=()=>updOrder(o.id,{stato:s});sd.appendChild(p);});
+    c.appendChild(sd);
+    const pd=document.createElement('div');pd.style.cssText='border-top:1px solid #E5E7EB;padding-top:6px;display:flex;justify-content:space-between;align-items:center';
+    const pgd=document.createElement('div');pgd.style.cssText='display:flex;gap:4px';
+    [{val:true,label:'Saldato',color:'#16A34A'},{val:false,label:'Non saldato',color:'#9CA3AF'}].forEach(opt=>{const p=document.createElement('span');p.className='pill';p.style.cssText='border-color:'+(o.pagato===opt.val?opt.color:'#E5E7EB')+';background:'+(o.pagato===opt.val?opt.color+'22':'transparent')+';color:'+(o.pagato===opt.val?opt.color:'#9CA3AF');p.textContent=opt.label;p.onclick=()=>updOrder(o.id,{pagato:opt.val});pgd.appendChild(p);});
+    const db=document.createElement('button');db.textContent='✕';db.style.cssText='background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:13px';db.onclick=()=>delOrder(o.id);
+    pd.appendChild(pgd);pd.appendChild(db);c.appendChild(pd);el.appendChild(c);
+  });
+}
+
+function updOrder(id,patch){orders=orders.map(o=>o.id===id?{...o,...patch}:o);setSaveStatus('saving');sbPatch('studio_orders',id,patch).then(()=>setSaveStatus('saved'));renderOrders(document.getElementById('content'));}
+function delOrder(id){orders=orders.filter(o=>o.id!==id);sbDelete('studio_orders',id);renderOrders(document.getElementById('content'));}
+function showAddOrder(el){
+  const form={nome:'',sottotitolo:'',cliente:'',pezzi:'',prezzo:'',stato:'possibilita'};
+  const c=card();c.appendChild(lbl('Nuovo ordine'));
+  [['Nome','nome'],['Sottotitolo','sottotitolo'],['Contatto','cliente']].forEach(([ph,k])=>{const i=inp(ph,'',v=>form[k]=v);i.style.marginBottom='7px';c.appendChild(i);});
+  const g=g2([inp('Pezzi','',v=>form.pezzi=v,'number'),inp('Prezzo €','',v=>form.prezzo=v,'number')]);g.style.marginBottom='7px';c.appendChild(g);
+  const sd=document.createElement('div');sd.className='g3';sd.style.marginBottom='7px';
+  Object.entries(SS).forEach(([s,cfg])=>{const b=document.createElement('button');b.className='stab';b.style.cssText='font-size:10px;border-color:'+(form.stato===s?cfg.color:'#E5E7EB')+';background:'+(form.stato===s?cfg.color+'18':'#fff')+';color:'+(form.stato===s?cfg.color:'#6B7280');b.textContent=cfg.label;b.onclick=e=>{e.preventDefault();form.stato=s;showAddOrder(el);};sd.appendChild(b);});
+  c.appendChild(sd);
+  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.nome)return;const o={id:Date.now(),...form,pagato:false,data:todayIT()};orders=[o,...orders];setSaveStatus('saving');sbInsert('studio_orders',o).then(()=>setSaveStatus('saved'));renderOrders(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderOrders(document.getElementById('content')),'gh',true)]));
+  el.prepend(c);
+}
+
+// ── BILANCIO ──
+function renderFinance(el){
+  el.innerHTML='<div class="ttl">💰 Bilancio</div>';
+  const saldati=orders.filter(o=>o.stato==='completato'&&o.pagato);
+  const credito=orders.filter(o=>o.stato==='completato'&&!o.pagato);
+  const pipeline=orders.filter(o=>o.stato!=='completato'&&o.prezzo);
+  const speseMat=expenses.filter(e=>e.categoria==='materiale');
+  const speseAtt=expenses.filter(e=>e.categoria==='attrezzatura');
+  const sum=arr=>arr.reduce((a,x)=>a+(parseFloat(x.prezzo||x.importo)||0),0);
+  const ri=sum(saldati),rc=sum(credito),rp=sum(pipeline),cMat=sum(speseMat),cAtt=sum(speseAtt),bil=ri-cMat-cAtt;
+  const SECS=[{id:'incassato',label:'Incassato',val:ri,color:'#16A34A',bg:'#F0FDF4',items:saldati,isSpese:false},{id:'credito',label:'Da incassare',val:rc,color:'#D97706',bg:'#FFFBEB',items:credito,isSpese:false},{id:'pipeline',label:'Pipeline',val:rp,color:'#2563EB',bg:'#EFF6FF',items:pipeline,isSpese:false},{id:'materiale',label:'Materiale',val:cMat,color:'#7C3AED',bg:'#F5F3FF',items:speseMat,isSpese:true},{id:'attrezzatura',label:'Attrezzatura',val:cAtt,color:'#DC2626',bg:'#FEF2F2',items:speseAtt,isSpese:true}];
+  if(finDetail){
+    const d=SECS.find(s=>s.id===finDetail);
+    const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px';
+    const bb=document.createElement('button');bb.textContent='←';bb.style.cssText='background:none;border:none;cursor:pointer;color:#6B7280;font-size:20px;padding:0';bb.onclick=()=>{finDetail=null;renderFinance(el);};hdr.appendChild(bb);const tt=document.createElement('div');tt.className='ttl';tt.style.marginBottom='0';tt.textContent=d.label;hdr.appendChild(tt);el.appendChild(hdr);
+    el.innerHTML+='<div style="background:'+d.bg+';border-radius:11px;padding:12px;text-align:center;margin-bottom:12px"><div style="font-size:26px;font-weight:800;color:'+d.color+'">€'+d.val.toFixed(2)+'</div></div>';
+    if(d.isSpese){const ab=btn('+ Aggiungi spesa',()=>showAddExpense(el,finDetail),'s',true);ab.style.marginBottom='8px';el.appendChild(ab);}
+    if(!d.items.length){const e=document.createElement('div');e.style.cssText='text-align:center;color:#9CA3AF;font-size:13px;padding:24px 0';e.textContent='Nessuna voce';el.appendChild(e);}
+    d.items.forEach(item=>{
+      const val=parseFloat(item.prezzo||item.importo||0);
+      const c=card();c.innerHTML='<div style="margin-bottom:6px"><div style="font-size:13px;font-weight:700">'+(item.descrizione||item.nome||'')+'</div><div style="font-size:11px;color:#6B7280">'+(item.sottotitolo||item.cliente||'')+'</div><div style="font-size:11px;color:#9CA3AF">'+(item.data||'')+'</div></div>';
+      const bot=document.createElement('div');bot.style.cssText='border-top:1px solid #E5E7EB;padding-top:6px;display:flex;justify-content:space-between;align-items:center';bot.innerHTML='<div style="font-weight:800;font-size:15px;color:'+d.color+'">€'+val.toFixed(2)+'</div>';
+      if(d.isSpese){const db=document.createElement('button');db.textContent='✕';db.style.cssText='background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:13px';db.onclick=()=>{expenses=expenses.filter(e=>e.id!==item.id);sbDelete('studio_expenses',item.id);renderFinance(el);};bot.appendChild(db);}
+      c.appendChild(bot);el.appendChild(c);
+    });
+    return;
+  }
+  el.innerHTML+='<div class="lbl">Entrate</div>';
+  const g1=document.createElement('div');g1.className='g2';g1.style.marginBottom='10px';
+  SECS.slice(0,3).forEach(s=>{const d=document.createElement('div');d.style.cssText='background:'+s.bg+';border-radius:11px;padding:10px;text-align:center;cursor:pointer;border:1px solid '+s.color+'22';d.innerHTML='<div style="font-size:9px;font-weight:700;color:'+s.color+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px">'+s.label+'</div><div style="font-size:17px;font-weight:800;color:'+s.color+'">€'+s.val.toFixed(2)+'</div>';d.onclick=()=>{finDetail=s.id;renderFinance(el);};g1.appendChild(d);});
+  el.appendChild(g1);
+  el.innerHTML+='<div class="lbl">Spese</div>';
+  const g2d=document.createElement('div');g2d.className='g2';g2d.style.marginBottom='10px';
+  SECS.slice(3).forEach(s=>{const d=document.createElement('div');d.style.cssText='background:'+s.bg+';border-radius:11px;padding:10px;text-align:center;cursor:pointer;border:1px solid '+s.color+'22';d.innerHTML='<div style="font-size:9px;font-weight:700;color:'+s.color+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px">'+s.label+'</div><div style="font-size:17px;font-weight:800;color:'+s.color+'">€'+s.val.toFixed(2)+'</div>';d.onclick=()=>{finDetail=s.id;renderFinance(el);};g2d.appendChild(d);});
+  el.appendChild(g2d);
+  el.appendChild(card('<div style="text-align:center"><div style="font-size:9px;font-weight:700;color:'+(bil>=0?'#16A34A':'#DC2626')+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px">Bilancio Netto</div><div style="font-size:26px;font-weight:800;color:'+(bil>=0?'#16A34A':'#DC2626')+'">'+(bil>=0?'':'-')+'€'+Math.abs(bil).toFixed(2)+'</div></div>',{background:bil>=0?'#F0FDF4':'#FEF2F2',border:'1px solid '+(bil>=0?'#16A34A':'#DC2626')+'33'}));
+}
+
+function showAddExpense(el,cat){
+  const form={descrizione:'',sottotitolo:'',importo:'',categoria:cat,data:''};
+  const c=card();c.appendChild(lbl('Nuova spesa'));
+  [['Titolo spesa','descrizione'],['Sottotitolo','sottotitolo']].forEach(([ph,k])=>{const i=inp(ph,'',v=>form[k]=v);i.style.marginBottom='7px';c.appendChild(i);});
+  const g=g2([inp('Importo €','',v=>form.importo=v,'number'),inp('Data','',v=>form.data=v)]);g.style.marginBottom='7px';c.appendChild(g);
+  c.appendChild(g2([btn('Salva',()=>{if(!form.descrizione)return;const e={id:Date.now(),...form};expenses=[...expenses,e];setSaveStatus('saving');sbInsert('studio_expenses',e).then(()=>setSaveStatus('saved'));renderFinance(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderFinance(document.getElementById('content')),'gh',true)]));
+  el.prepend(c);
+}
+
+// ── HARDWARE ──
+function renderHardware(el){
+  el.innerHTML='<div class="ttl">⚙️ Macchinario</div>';
+  const mapDiv=document.createElement('div');mapDiv.id='hw-map';
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none';
+  const stampante=hardware.find(h=>h.tipo==='stampante');
+  const resto=hardware.filter(h=>h.tipo!=='stampante');
+  resto.forEach(h=>{const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1','50%');line.setAttribute('y1','50%');line.setAttribute('x2','calc(50% + '+h.x+'px)');line.setAttribute('y2','calc(50% + '+h.y+'px)');line.setAttribute('stroke','#E5E7EB');line.setAttribute('stroke-width','1.5');line.setAttribute('stroke-dasharray','4,3');svg.appendChild(line);});
+  mapDiv.appendChild(svg);
+  if(stampante){const d=document.createElement('div');d.className='hw-center';d.innerHTML='<div style="background:#111827;border-radius:14px;padding:10px 16px;display:inline-block;box-shadow:0 4px 12px rgba(0,0,0,.15)"><div style="font-size:22px">🖨️</div><div style="font-size:11px;font-weight:800;color:#fff;margin-top:2px">'+stampante.nome+'</div></div>';mapDiv.appendChild(d);}
+  resto.forEach(h=>{
+    const st=STATI_HW[h.stato]||STATI_HW.ok;
+    const d=document.createElement('div');d.className='hw-item';d.style.cssText='left:calc(50% + '+h.x+'px);top:calc(50% + '+h.y+'px);transform:translate(-50%,-50%);border:1.5px solid '+st.color+'66';
+    d.innerHTML='<div style="display:flex;justify-content:space-between;gap:3px"><span style="font-size:13px">'+(TIPI[h.tipo]||'📦')+'</span><button onclick="delHW('+h.id+')" style="background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:10px;padding:0">✕</button></div><div style="font-size:10px;font-weight:700;margin-top:2px">'+h.nome+'</div>'+(h.note?'<div style="font-size:9px;color:#9CA3AF">'+h.note+'</div>':'')+
+      '<div style="margin-top:4px;display:flex;gap:3px;flex-wrap:wrap">'+Object.entries(STATI_HW).map(([s,cfg])=>'<span onclick="updHW('+h.id+',\'stato\',\''+s+'\')" style="padding:2px 6px;border-radius:10px;border:1.5px solid '+(h.stato===s?cfg.color:'#E5E7EB')+';background:'+(h.stato===s?cfg.color+'22':'transparent')+';color:'+(h.stato===s?cfg.color:'#9CA3AF')+';font-size:9px;font-weight:700;cursor:pointer">'+cfg.label+'</span>').join('')+'</div>';
+    // Drag
+    let dragging=false,ox=0,oy=0;
+    d.onmousedown=e=>{e.preventDefault();const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();dragging=true;ox=e.clientX-(r.left+r.width/2)-h.x;oy=e.clientY-(r.top+r.height/2)-h.y;d.style.cursor='grabbing';};
+    document.addEventListener('mousemove',e=>{if(!dragging)return;const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();const nx=Math.round(e.clientX-(r.left+r.width/2)-ox),ny=Math.round(e.clientY-(r.top+r.height/2)-oy);d.style.left='calc(50% + '+nx+'px)';d.style.top='calc(50% + '+ny+'px)';h.x=nx;h.y=ny;});
+    document.addEventListener('mouseup',()=>{if(dragging){dragging=false;d.style.cursor='grab';updHW(h.id,'x',h.x);updHW(h.id,'y',h.y);}});
+    // Touch
+    d.ontouchstart=e=>{const touch=e.touches[0];const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();ox=touch.clientX-(r.left+r.width/2)-h.x;oy=touch.clientY-(r.top+r.height/2)-h.y;dragging=true;};
+    d.ontouchmove=e=>{if(!dragging)return;e.preventDefault();const touch=e.touches[0];const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();const nx=Math.round(touch.clientX-(r.left+r.width/2)-ox),ny=Math.round(touch.clientY-(r.top+r.height/2)-oy);d.style.left='calc(50% + '+nx+'px)';d.style.top='calc(50% + '+ny+'px)';h.x=nx;h.y=ny;};
+    d.ontouchend=()=>{if(dragging){dragging=false;updHW(h.id,'x',h.x);updHW(h.id,'y',h.y);}};
+    mapDiv.appendChild(d);
+  });
+  const hint=document.createElement('div');hint.style.cssText='position:absolute;bottom:8px;right:10px;font-size:9px;color:#9CA3AF';hint.textContent='trascina per spostare';mapDiv.appendChild(hint);
+  el.appendChild(mapDiv);
+  el.appendChild(btn('+ Aggiungi componente',()=>showAddHW(el),'s'));
+}
+
+function updHW(id,k,v){hardware=hardware.map(h=>h.id===id?{...h,[k]:v}:h);setSaveStatus('saving');sbPatch('studio_hardware',id,{[k]:v}).then(()=>setSaveStatus('saved'));}
+function delHW(id){hardware=hardware.filter(h=>h.id!==id);sbDelete('studio_hardware',id);renderHardware(document.getElementById('content'));}
+function showAddHW(el){
+  const form={nome:'',tipo:'accessorio',stato:'ok',note:'',data:''};
+  const c=card();c.appendChild(lbl('Nuovo componente'));
+  const ni=inp('Nome','',v=>form.nome=v);ni.style.marginBottom='7px';c.appendChild(ni);
+  const tipiDiv=document.createElement('div');tipiDiv.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:7px';
+  Object.entries(TIPI).forEach(([k,v])=>{const b=document.createElement('button');b.className='stab';b.style.cssText='padding:6px 2px;font-size:9px;font-weight:700;border-color:'+(form.tipo===k?'#111827':'#E5E7EB')+';background:'+(form.tipo===k?'#F3F4F6':'#fff');b.innerHTML=v+'<br>'+k;b.onclick=e=>{e.preventDefault();form.tipo=k;showAddHW(el);};tipiDiv.appendChild(b);});
+  c.appendChild(tipiDiv);
+  const ni2=inp('Note','',v=>form.note=v);ni2.style.marginBottom='7px';c.appendChild(ni2);
+  const ni3=inp('Data','',v=>form.data=v);ni3.style.marginBottom='7px';c.appendChild(ni3);
+  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.nome)return;const angle=Math.random()*Math.PI*2,dist=120+Math.random()*30;const hw={id:Date.now(),...form,data:form.data||todayIT(),x:Math.round(Math.cos(angle)*dist),y:Math.round(Math.sin(angle)*dist)};hardware=[...hardware,hw];setSaveStatus('saving');sbInsert('studio_hardware',hw).then(()=>setSaveStatus('saved'));renderHardware(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderHardware(document.getElementById('content')),'gh',true)]));
+  el.prepend(c);
+}
+
+// ── CHAT ──
+function renderChat(el){
+  el.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center';
+  el.innerHTML='<div style="font-size:40px;margin-bottom:16px">💬</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Chat AI</div><div style="font-size:13px;color:#9CA3AF;line-height:1.7;max-width:300px">Assistente AI per aggiornare magazzino, ordini e spese.<br><br>In costruzione — disponibile presto.</div>';
+}
+</script>
+</body>
+</html>

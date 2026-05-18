@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>GDC IA TEAM</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js">
+</script>
 <style>
 :root{--bg:#0d0d0f;--bg2:#141416;--bg3:#1a1a1e;--b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);--t:#f0f0f0;--t2:#888;--t3:#444;--ac:#c8ff00;--a2:rgba(200,255,0,.1);--bl:#4a9eff;--tl:#00d4aa;--am:#ffb830;--co:#ff7c5c;--mo:ui-monospace,'SF Mono',monospace;--sa:system-ui,-apple-system,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -253,6 +254,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
   .ss-dot{display:none;}
   #sync-lbl{font-size:9px;}
 }
+
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 </style>
 </head>
@@ -401,15 +403,9 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
   <div style="background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:28px;text-align:center;font-family:var(--mo);font-size:10px;color:var(--t3);">Nessun file presente nel Drive</div>
 </div>
 
-<!-- STUDIO (placeholder) -->
-<div class="page" id="page-studio" style="max-width:600px;margin:60px auto;text-align:center;">
-  <div style="font-size:48px;margin-bottom:16px;">🖨️</div>
-  <div style="font-size:22px;font-weight:700;margin-bottom:8px;">GDC STUDIO</div>
-  <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:24px;">Gestionale per la stampante 3D — filamenti, ordini, contabilità e hardware.<br>In sviluppo, disponibile presto.</div>
-  <div style="font-family:var(--mo);font-size:10px;color:var(--t3);border:1px solid var(--b);border-radius:8px;padding:16px;">
-    Previsto: calcolatore prezzi · archivio filamenti · pipeline ordini · bilancio
-  </div>
-  <button onclick="openSection('ia-team')" style="margin-top:24px;font-family:var(--mo);font-size:10px;padding:8px 18px;border-radius:4px;border:1px solid var(--b2);background:transparent;color:var(--t2);cursor:pointer;">← Torna a GDC IA TEAM</button>
+<!-- STUDIO -->
+<div class="page" id="page-studio" style="padding:0;height:calc(100vh - 50px);max-width:100%;overflow:hidden;">
+  <iframe id="studio-iframe" src="gdc_studio.html" style="width:100%;height:100%;border:none;" allow="clipboard-write"></iframe>
 </div>
 
 </div><!-- end app-screen -->
@@ -1012,6 +1008,7 @@ function openLink(url,e){
 function doCopy(){var tt=document.getElementById('cptt');if(navigator.clipboard)navigator.clipboard.writeText(tt._url).then(function(){var ok=document.getElementById('cptt-ok');ok.style.display='inline';setTimeout(function(){ok.style.display='none';closeCptt();},1500);});}
 function closeCptt(){document.getElementById('cptt').classList.remove('show');}
 document.addEventListener('click',function(e){var tt=document.getElementById('cptt');if(tt&&!tt.contains(e.target))tt.classList.remove('show');});
+
 </script>
 </body>
 </html>
