@@ -499,8 +499,18 @@ function renderFilaments(el){
     // Header
     const hd=mk('div','');hd.style.cssText='display:flex;justify-content:space-between;margin-bottom:7px';
     hd.innerHTML='<div><div style="font-weight:700;font-size:13px">'+b.colore+'</div><div style="font-size:11px;color:#9CA3AF">'+b.tipo+' · '+b.data+'</div></div>';
+    // Actions: reset (only in archivio) + delete
+    const acts=mk('div','');acts.style.cssText='display:flex;gap:4px;align-items:center';
+    if(filSubTab==='archivio'){
+      const rb=mk('button','btn btn-s btn-sm');rb.textContent='↺ Ripristina';rb.style.cssText='padding:3px 8px;font-size:10px;background:#F0FDF4;color:#16A34A;border:1px solid #86EFAC';
+      rb.onclick=()=>{
+        const newG=parseFloat(prompt('Inserisci grammi residui (max '+b.grammiTotali+'):', Math.round(b.grammiTotali*0.8)))||0;
+        if(newG>0) updFil(b.id,{grammiResidui:Math.min(newG,b.grammiTotali)});
+      };
+      acts.appendChild(rb);
+    }
     const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:#9CA3AF;font-size:14px;cursor:pointer';db.onclick=()=>delFil(b.id);
-    hd.appendChild(db);c.appendChild(hd);
+    acts.appendChild(db);hd.appendChild(acts);c.appendChild(hd);
     if(b.grammiResidui>0){
       // Bar
       const bar=mk('div','fil-bar');const fill=mk('div','fil-fill');fill.style.cssText='width:'+pct+'%;background:'+bc;bar.appendChild(fill);c.appendChild(bar);
@@ -529,7 +539,10 @@ function showAddFil(el){
   c.appendChild(g2([inp('Tipo','PLA',v=>form.tipo=v),inp('Grammi totali','1000',v=>form.grammiTotali=v,'number')]));
   const pi=inp('Prezzo €','',v=>form.prezzoPagato=v,'number');pi.style.cssText='margin-top:8px;margin-bottom:8px';c.appendChild(pi);
   const di=inp('Data acquisto','',v=>form.data=v);di.style.marginBottom='8px';c.appendChild(di);
-  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.colore)return;const id=Date.now();const fil={id,colore:form.colore,tipo:form.tipo,grammiTotali:parseFloat(form.grammiTotali)||1000,grammiResidui:parseFloat(form.grammiTotali)||1000,prezzoPagato:parseFloat(form.prezzoPagato)||0,data:form.data||todayIT()};filaments=[...filaments,fil];setSS('saving');sbPost('studio_filaments',fil).then(()=>setSS('saved')).catch(e=>{console.error('Filament insert:',e);setSS('saved');});renderFilaments(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderFilaments(document.getElementById('content')),'gh',true)]));
+  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.colore)return;const id=Date.now();const id2=Date.now();const fil={id:id2,colore:form.colore,tipo:form.tipo,grammiTotali:parseFloat(form.grammiTotali)||1000,grammiResidui:parseFloat(form.grammiTotali)||1000,prezzoPagato:parseFloat(form.prezzoPagato)||0,data:form.data||todayIT()};filaments=[...filaments,fil];setSS('saving');sbPost('studio_filaments',fil).catch(e=>console.error('Fil insert:',e));
+// Se ha un prezzo, aggiunge automaticamente la spesa materiale
+if(fil.prezzoPagato>0){const exp={id:Date.now()+1,descrizione:fil.colore+' '+fil.grammiTotali+'g '+fil.tipo,sottotitolo:'',importo:String(fil.prezzoPagato),categoria:'materiale',data:fil.data||todayIT()};expenses=[...expenses,exp];sbPost('studio_expenses',exp).catch(e=>console.error('Exp insert:',e));}
+setSS('saved');renderFilaments(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderFilaments(document.getElementById('content')),'gh',true)]));
   el.prepend(c);
 }
 
