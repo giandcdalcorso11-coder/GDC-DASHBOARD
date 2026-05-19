@@ -12,14 +12,16 @@ input,textarea,button{font-family:inherit;}
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#fff;border-bottom:1px solid #E5E7EB;position:sticky;top:0;z-index:100;gap:12px;}
 @media(max-width:768px){
-  .topbar{flex-wrap:wrap;height:auto;padding:8px 12px;gap:6px;}
+  .topbar{flex-wrap:wrap;height:auto;padding:8px 12px 0;gap:6px;}
   .logo-row{flex-shrink:0;}
   .topbar-right{order:1;margin-left:auto;}
+  .nav-tabs-wrap{display:none;}
   .nav-tabs{order:2;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;justify-content:flex-start;padding-bottom:4px;scrollbar-width:none;}
   .nav-tabs::-webkit-scrollbar{display:none;}
   .ntab{font-size:12px;padding:6px 10px;white-space:nowrap;flex-shrink:0;}
   .ntab-icon{font-size:13px;}
   .content{padding:12px;}
+  .mobile-nav-bar{display:flex!important;}
 }
 .logo-row{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .logo-box{width:28px;height:28px;border-radius:7px;background:#111827;display:flex;align-items:center;justify-content:center;font-size:14px;}
@@ -132,6 +134,20 @@ input,textarea,button{font-family:inherit;}
     <button class="save-btn" id="save-btn" style="background:#16A34A;color:#fff;">✓ Salvato</button>
     <button class="hub-btn"  onclick="goHub()">← Hub</button>
   </div>
+</div>
+
+<!-- MOBILE NAV BAR - shown only on mobile -->
+<div class="mobile-nav-bar" style="display:none;align-items:center;background:#fff;border-bottom:1px solid #E5E7EB;padding:0 4px;position:sticky;top:52px;z-index:99;">
+  <button id="nav-arrow-l" onclick="scrollNav(-1)" style="background:none;border:none;font-size:18px;color:#9CA3AF;padding:8px 6px;cursor:pointer;flex-shrink:0;">‹</button>
+  <div id="mobile-tabs" style="display:flex;overflow-x:auto;flex:1;gap:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+    <button class="ntab on"  id="mnb-hardware" onclick="switchTab('hardware')"><span class="ntab-icon">⚙️</span> Macchina</button>
+    <button class="ntab"     id="mnb-calc"     onclick="switchTab('calc')">    <span class="ntab-icon">🖨️</span> Calcolatore</button>
+    <button class="ntab"     id="mnb-filament" onclick="switchTab('filament')"><span class="ntab-icon">🧵</span> Magazzino</button>
+    <button class="ntab"     id="mnb-orders"   onclick="switchTab('orders')">  <span class="ntab-icon">📋</span> Ordini</button>
+    <button class="ntab"     id="mnb-finance"  onclick="switchTab('finance')"> <span class="ntab-icon">💰</span> Bilancio</button>
+    <button class="ntab"     id="mnb-chat"     onclick="switchTab('chat')">    <span class="ntab-icon">💬</span> Chat</button>
+  </div>
+  <button id="nav-arrow-r" onclick="scrollNav(1)" style="background:none;border:none;font-size:18px;color:#9CA3AF;padding:8px 6px;cursor:pointer;flex-shrink:0;">›</button>
 </div>
 
 <div class="content" id="content">
@@ -332,7 +348,12 @@ function switchTab(t){
   curTab=t;
   document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
   const btn=document.getElementById('nb-'+t);if(btn)btn.classList.add('on');
+  const mbtn=document.getElementById('mnb-'+t);if(mbtn){mbtn.classList.add('on');mbtn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}
   render();
+}
+function scrollNav(dir){
+  const el=document.getElementById('mobile-tabs');
+  if(el)el.scrollBy({left:dir*120,behavior:'smooth'});
 }
 
 function render(){
@@ -710,11 +731,14 @@ function showAddExp(el,cat){
 // ── HARDWARE ──
 function updateSvgLines(){
   const svg=document.getElementById('hw-svg');if(!svg)return;
+  const map=document.getElementById('hw-map');if(!map)return;
+  const w=map.offsetWidth,h2=map.offsetHeight;
+  const cx=w/2,cy=h2/2;
   svg.innerHTML='';
   hardware.filter(h=>h.tipo!=='stampante').forEach(h=>{
     const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1','50%');line.setAttribute('y1','50%');
-    line.setAttribute('x2','calc(50% + '+h.x+'px)');line.setAttribute('y2','calc(50% + '+h.y+'px)');
+    line.setAttribute('x1',cx);line.setAttribute('y1',cy);
+    line.setAttribute('x2',cx+h.x);line.setAttribute('y2',cy+h.y);
     line.setAttribute('stroke','#D1D5DB');line.setAttribute('stroke-width','1.5');line.setAttribute('stroke-dasharray','4,3');
     svg.appendChild(line);
   });
