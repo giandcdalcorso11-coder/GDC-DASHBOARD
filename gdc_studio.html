@@ -12,16 +12,16 @@ input,textarea,button{font-family:inherit;}
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:#fff;border-bottom:1px solid #E5E7EB;position:sticky;top:0;z-index:100;gap:12px;}
 @media(max-width:768px){
-  .topbar{flex-wrap:wrap;height:auto;padding:8px 12px 0;gap:6px;}
-  .logo-row{flex-shrink:0;}
-  .topbar-right{order:1;margin-left:auto;}
-  .nav-tabs-wrap{display:none;}
-  .nav-tabs{order:2;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;justify-content:flex-start;padding-bottom:4px;scrollbar-width:none;}
-  .nav-tabs::-webkit-scrollbar{display:none;}
-  .ntab{font-size:12px;padding:6px 10px;white-space:nowrap;flex-shrink:0;}
-  .ntab-icon{font-size:13px;}
+  .topbar{padding:8px 12px;height:48px;}
+  #desktop-nav{display:none!important;}
+  #mobile-nav-bar{display:block!important;position:sticky;top:48px;z-index:99;}
+  #mobile-tabs .ntab{flex:1;font-size:11px;padding:8px 4px;white-space:nowrap;border-radius:0;border:none;border-bottom:2px solid transparent;justify-content:center;flex-direction:column;gap:2px;}
+  #mobile-tabs .ntab.on{background:#F9FAFB;border-bottom:2px solid #111827;color:#111827;}
+  #mobile-tabs .ntab-icon{font-size:16px;}
   .content{padding:12px;}
-  .mobile-nav-bar{display:flex!important;}
+}
+@media(min-width:769px){
+  #mobile-nav-bar{display:none!important;}
 }
 .logo-row{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .logo-box{width:28px;height:28px;border-radius:7px;background:#111827;display:flex;align-items:center;justify-content:center;font-size:14px;}
@@ -136,18 +136,16 @@ input,textarea,button{font-family:inherit;}
   </div>
 </div>
 
-<!-- MOBILE NAV BAR - shown only on mobile -->
-<div class="mobile-nav-bar" style="display:none;align-items:center;background:#fff;border-bottom:1px solid #E5E7EB;padding:0 4px;position:sticky;top:52px;z-index:99;">
-  <button id="nav-arrow-l" onclick="scrollNav(-1)" style="background:none;border:none;font-size:18px;color:#9CA3AF;padding:8px 6px;cursor:pointer;flex-shrink:0;">‹</button>
-  <div id="mobile-tabs" style="display:flex;overflow-x:auto;flex:1;gap:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;">
-    <button class="ntab on"  id="mnb-hardware" onclick="switchTab('hardware')"><span class="ntab-icon">⚙️</span> Macchina</button>
-    <button class="ntab"     id="mnb-calc"     onclick="switchTab('calc')">    <span class="ntab-icon">🖨️</span> Calcolatore</button>
-    <button class="ntab"     id="mnb-filament" onclick="switchTab('filament')"><span class="ntab-icon">🧵</span> Magazzino</button>
-    <button class="ntab"     id="mnb-orders"   onclick="switchTab('orders')">  <span class="ntab-icon">📋</span> Ordini</button>
-    <button class="ntab"     id="mnb-finance"  onclick="switchTab('finance')"> <span class="ntab-icon">💰</span> Bilancio</button>
-    <button class="ntab"     id="mnb-chat"     onclick="switchTab('chat')">    <span class="ntab-icon">💬</span> Chat</button>
+<!-- MOBILE NAV BAR - shown only on mobile, hidden on desktop -->
+<div class="mobile-nav-bar" id="mobile-nav-bar" style="display:none;background:#fff;border-bottom:1px solid #E5E7EB;">
+  <div id="mobile-tabs" style="display:flex;width:100%;scrollbar-width:none;">
+    <button class="ntab on" id="mnb-hardware" onclick="switchTab('hardware')"><span class="ntab-icon">⚙️</span> Macchina</button>
+    <button class="ntab"    id="mnb-calc"     onclick="switchTab('calc')">    <span class="ntab-icon">🖨️</span> Calcolatore</button>
+    <button class="ntab"    id="mnb-filament" onclick="switchTab('filament')"><span class="ntab-icon">🧵</span> Magazzino</button>
+    <button class="ntab"    id="mnb-orders"   onclick="switchTab('orders')">  <span class="ntab-icon">📋</span> Ordini</button>
+    <button class="ntab"    id="mnb-finance"  onclick="switchTab('finance')"> <span class="ntab-icon">💰</span> Bilancio</button>
+    <button class="ntab"    id="mnb-chat"     onclick="switchTab('chat')">    <span class="ntab-icon">💬</span> Chat</button>
   </div>
-  <button id="nav-arrow-r" onclick="scrollNav(1)" style="background:none;border:none;font-size:18px;color:#9CA3AF;padding:8px 6px;cursor:pointer;flex-shrink:0;">›</button>
 </div>
 
 <div class="content" id="content">
