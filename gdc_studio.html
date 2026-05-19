@@ -632,12 +632,36 @@ function renderOrders(el){
 function updOrder(id,patch){orders=orders.map(o=>o.id===id?{...o,...patch}:o);setSS('saving');sbPatch('studio_orders',id,patch).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderOrders(document.getElementById('content'));}
 function delOrder(id){orders=orders.filter(o=>o.id!==id);sbDel('studio_orders',id);renderOrders(document.getElementById('content'));}
 function showAddOrder(el){
+  const existing=el.querySelector('.add-order-form');
+  if(existing)existing.remove();
   const form={nome:'',sottotitolo:'',cliente:'',pezzi:'',prezzo:'',stato:'possibilita'};
-  const c=card();c.appendChild(lbl('Nuovo ordine'));
-  [['Nome ordine','nome'],['Sottotitolo','sottotitolo'],['Contatto','cliente']].forEach(([ph,k])=>{const i=inp(ph,'',v=>form[k]=v);i.style.marginBottom='8px';c.appendChild(i);});
-  const gg=g2([inp('N. pezzi','',v=>form.pezzi=v,'number'),inp('Prezzo €','',v=>form.prezzo=v,'number')]);gg.style.marginBottom='8px';c.appendChild(gg);
-  const sd=g3(Object.entries(SS).map(([s,cfg])=>{const b=mk('button','stab');b.style.cssText='font-size:11px;border-color:'+(form.stato===s?cfg.color:'#E5E7EB')+';background:'+(form.stato===s?cfg.color+'18':'#fff')+';color:'+(form.stato===s?cfg.color:'#6B7280');b.textContent=cfg.label;b.onclick=e=>{e.preventDefault();form.stato=s;showAddOrder(el);};return b;}));sd.style.marginBottom='8px';c.appendChild(sd);
-  c.appendChild(g2([btn('Aggiungi',()=>{if(!form.nome)return;const o={id:Date.now(),nome:form.nome,sottotitolo:form.sottotitolo,cliente:form.cliente,pezzi:String(form.pezzi||''),stato:form.stato,prezzo:String(form.prezzo||''),pagato:false,data:todayIT(),bobinaUsage:[]};orders=[o,...orders];setSS('saving');sbPost('studio_orders',o).then(()=>setSS('saved')).catch(e=>{console.error('Order insert error:',e);setSS('saved');});renderOrders(document.getElementById('content'));},'g',true),btn('Annulla',()=>renderOrders(document.getElementById('content')),'gh',true)]));
+  const c=card();c.classList.add('add-order-form');c.appendChild(lbl('Nuovo ordine'));
+  const nomeInp=inp('Nome ordine','',v=>form.nome=v);nomeInp.style.marginBottom='8px';c.appendChild(nomeInp);
+  const subInp=inp('Sottotitolo','',v=>form.sottotitolo=v);subInp.style.marginBottom='8px';c.appendChild(subInp);
+  const cliInp=inp('Contatto','',v=>form.cliente=v);cliInp.style.marginBottom='8px';c.appendChild(cliInp);
+  const gg=g2([inp('N. pezzi','',v=>form.pezzi=v,'number'),inp('Prezzo euro','',v=>form.prezzo=v,'number')]);gg.style.marginBottom='8px';c.appendChild(gg);
+  const sd=mk('div','g3');sd.style.marginBottom='8px';
+  function refreshStato(){
+    sd.innerHTML='';
+    Object.entries(SS).forEach(([s,cfg])=>{
+      const b=mk('button','stab');
+      b.style.cssText='font-size:11px;border-color:'+(form.stato===s?cfg.color:'#E5E7EB')+';background:'+(form.stato===s?cfg.color+'18':'#fff')+';color:'+(form.stato===s?cfg.color:'#6B7280');
+      b.textContent=cfg.label;
+      b.onclick=e=>{e.preventDefault();form.stato=s;refreshStato();};
+      sd.appendChild(b);
+    });
+  }
+  refreshStato();c.appendChild(sd);
+  c.appendChild(g2([
+    btn('Aggiungi',()=>{
+      if(!form.nome)return;
+      const o={id:Date.now(),nome:form.nome,sottotitolo:form.sottotitolo,cliente:form.cliente,pezzi:String(form.pezzi||''),stato:form.stato,prezzo:String(form.prezzo||''),pagato:false,data:todayIT(),bobinaUsage:[]};
+      orders=[o,...orders];setSS('saving');
+      sbPost('studio_orders',o).then(()=>setSS('saved')).catch(e=>{console.error('Order insert error:',e);setSS('saved');});
+      renderOrders(document.getElementById('content'));
+    },'g',true),
+    btn('Annulla',()=>renderOrders(document.getElementById('content')),'gh',true)
+  ]));
   el.prepend(c);
 }
 
