@@ -480,7 +480,7 @@ async function openSection(section) {
   } else {
     document.getElementById('app-screen').style.display = 'block';
     await loadPipelineStates();
-    initApp();
+    await initApp();
     go('home');
   }
 }
@@ -558,6 +558,14 @@ async function syncDrive() {
                '<span class="ri-date">'+f.d+'</span></div>';
       }).join('');
     }
+    // Save to Supabase so cache persists across devices
+    try {
+      await fetch(SB_URL + '/rest/v1/drive_cache', {
+        method: 'POST',
+        headers: { ...sbHeaders(true), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ user_id: _userId, data: data, updated_at: new Date().toISOString() })
+      });
+    } catch(e){ console.warn('Cache save failed:', e); }
     setSyncStatus('ok');
     if(btn){ btn.disabled=false; btn.textContent='✓ Sincronizzato'; setTimeout(function(){btn.textContent='↻ Sync Drive';},2000); }
   } catch(err) {
@@ -643,15 +651,55 @@ function go(id) {
 }
 
 // ── INIT APP ──
-function initApp() {
+async function initApp() {
   renderAgents();
   renderTimeline();
-  renderRecent();
   renderReports();
-  Object.keys(TREES).forEach(k => {
-    const el = document.getElementById('tree-' + k);
-    if (el) { el.innerHTML = ''; buildTree(TREES[k], el, 0); }
-  });
+  // Load drive trees from Supabase cache or fallback to hardcode
+  try {
+    var cacheRes = await fetch(SB_URL + '/rest/v1/drive_cache?user_id=eq.' + _userId + '&select=data', {
+      headers: sbHeaders(true)
+    });
+    var cacheRows = await cacheRes.json();
+    var cached = cacheRows && cacheRows.length ? cacheRows[0].data : null;
+    if(cached) {
+      var data = cached;
+      // Use buildTreeFromBridge for cached data (bridge format)
+      Object.keys(data).forEach(function(k) {
+        var el = document.getElementById('tree-' + k);
+        if(el){ el.innerHTML=''; buildTreeFromBridge(data[k], el, 0); }
+      });
+      // Update recent files from cache
+      var allFiles=[];
+      var labels={a1:'AG1',a2:'AG2',a3:'AG3',a4:'AG4',a5:'AG5',a6:'AG6'};
+      var typeColors={xlsx:'var(--tl)',pdf:'var(--co)',docx:'var(--bl)'};
+      Object.keys(data).forEach(function(k){
+        flatFilesForRecent(data[k],labels[k]||k.toUpperCase(),allFiles,typeColors);
+      });
+      allFiles.sort(function(a,b){return b.d.split('/').reverse().join('').localeCompare(a.d.split('/').reverse().join(''));});
+      var recentEl=document.getElementById('recent');
+      if(recentEl&&allFiles.length){
+        recentEl.innerHTML=allFiles.slice(0,6).map(function(f){
+          return '<div class="ri"><span class="ri-ag">'+f.ag+'</span><span class="ri-name">'+f.n+'</span>'+
+                 '<span class="ri-type" style="color:'+f.c+'">'+f.t.toUpperCase()+'</span>'+
+                 '<span class="ri-date">'+f.d+'</span></div>';
+        }).join('');
+      }
+    } else {
+      // No cache yet — use hardcoded trees
+      Object.keys(TREES).forEach(function(k) {
+        var el = document.getElementById('tree-' + k);
+        if(el){ el.innerHTML=''; buildTree(TREES[k], el, 0); }
+      });
+      renderRecent();
+    }
+  } catch(e) {
+    Object.keys(TREES).forEach(function(k) {
+      var el = document.getElementById('tree-' + k);
+      if(el){ el.innerHTML=''; buildTree(TREES[k], el, 0); }
+    });
+    renderRecent();
+  }
   rp5(); rp6();
   updateHomeStats();
 }
