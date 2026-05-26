@@ -641,6 +641,9 @@ async function saveStep(name, idx) {
 }
 
 function gi(name) { return _pd[name] !== undefined ? _pd[name] : 0; }
+function gn(name) { return _pnote[name] || ''; }
+function gd(name, stepIdx) { return (_pdates[name] && _pdates[name][stepIdx]) ? _pdates[name][stepIdx] : ''; }
+function todayIT() { return new Date().toLocaleDateString('it-IT'); }
 
 // ── NAVIGATION ──
 const PAGES = ['home','a1','a2','a3','a4','a5','a6','a7'];
