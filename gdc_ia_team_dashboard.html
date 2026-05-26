@@ -1002,7 +1002,13 @@ const COS = [
 
 function scC(i){if(i===7)return'var(--co)';if(i>=6)return'var(--tl)';if(i>=4)return'var(--ac)';if(i>=2)return'var(--bl)';return'var(--t3)';}
 function sortC(list,mode){
-  if(mode==='av')return list.sort(function(a,b){return gi(b.n)-gi(a.n);});
+  if(mode==='av')return list.sort(function(a,b){
+    var ia=gi(a.n),ib=gi(b.n);
+    // Rifiutato (7) always last
+    if(ia===7&&ib!==7)return 1;
+    if(ib===7&&ia!==7)return -1;
+    return ib-ia;
+  });
   if(mode==='az')return list.sort(function(a,b){return a.n.localeCompare(b.n);});
   if(mode==='cr')return list.sort(function(a,b){var f=function(d){return d.split('/').reverse().join('-');};return f(b.d).localeCompare(f(a.d));});
   return list;
