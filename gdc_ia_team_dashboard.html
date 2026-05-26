@@ -589,7 +589,7 @@ function flatFilesForRecent(nodes, label, out, colors) {
 }
 
 // ── PIPELINE STATES (Supabase) ──
-let _pd = {};
+let _pd = {}; let _pnote = {}; let _pdates = {};
 
 function setSyncStatus(state) {
   const el = document.getElementById('sync-status');
@@ -602,13 +602,17 @@ function setSyncStatus(state) {
 
 async function loadPipelineStates() {
   try {
-    const res = await fetch(SB_URL + '/rest/v1/pipeline_states?select=company_name,step_index', {
+    const res = await fetch(SB_URL + '/rest/v1/pipeline_states?select=company_name,step_index,note,step_dates', {
       headers: { ...sbHeaders(true), 'Prefer': 'return=representation' }
     });
     const data = await res.json();
-    _pd = {};
+    _pd = {}; _pnote = {}; _pdates = {};
     if (Array.isArray(data)) {
-      data.forEach(row => { _pd[row.company_name] = row.step_index; });
+      data.forEach(row => {
+        _pd[row.company_name] = row.step_index;
+        _pnote[row.company_name] = row.note || '';
+        _pdates[row.company_name] = row.step_dates || {};
+      });
     }
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('err'); }
@@ -616,6 +620,8 @@ async function loadPipelineStates() {
 
 async function saveStep(name, idx) {
   _pd[name] = idx;
+  if(!_pdates[name]) _pdates[name] = {};
+  if(!_pdates[name][idx]) _pdates[name][idx] = todayIT();
   setSyncStatus('sync');
   try {
     // Try PATCH first (update existing)
@@ -624,7 +630,7 @@ async function saveStep(name, idx) {
       {
         method: 'PATCH',
         headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ step_index: idx, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ step_index: idx, step_dates: _pdates[name], updated_at: new Date().toISOString() })
       }
     );
     // If no rows updated (new company), INSERT
@@ -633,7 +639,7 @@ async function saveStep(name, idx) {
       await fetch(SB_URL + '/rest/v1/pipeline_states', {
         method: 'POST',
         headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ user_id: _userId, company_name: name, step_index: idx, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ user_id: _userId, company_name: name, step_index: idx, step_dates: _pdates[name]||{}, note: '', updated_at: new Date().toISOString() })
       });
     }
     setSyncStatus('ok');
@@ -641,6 +647,19 @@ async function saveStep(name, idx) {
 }
 
 function gi(name) { return _pd[name] !== undefined ? _pd[name] : 0; }
+async function saveNote(name, note) {
+  _pnote[name] = note;
+  try {
+    await fetch(SB_URL + '/rest/v1/pipeline_states?user_id=eq.' + _userId + '&company_name=eq.' + encodeURIComponent(name), {
+      method: 'PATCH',
+      headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ note: note, updated_at: new Date().toISOString() })
+    });
+  } catch(e) { console.warn('saveNote error', e); }
+}
+function gn(name) { return (_pnote && _pnote[name]) ? _pnote[name] : ""; }
+function gd(name, stepIdx) { return (_pdates && _pdates[name] && _pdates[name][stepIdx]) ? _pdates[name][stepIdx] : ""; }
+function todayIT() { return new Date().toLocaleDateString("it-IT"); }
 function gn(name) { return _pnote[name] || ''; }
 function gd(name, stepIdx) { return (_pdates[name] && _pdates[name][stepIdx]) ? _pdates[name][stepIdx] : ''; }
 function todayIT() { return new Date().toLocaleDateString('it-IT'); }
