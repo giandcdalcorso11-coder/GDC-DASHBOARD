@@ -970,13 +970,14 @@ function card(c,expN,togFn,steps,off,minI,maxI){
   var ini=c.n.split(' ').slice(0,2).map(function(w){return w[0];}).join('').toUpperCase();
   var isE=expN===c.n,cur=gi(c.n);
   var idx=_cosIdx[c.n];
+  var _cname=c.n;
   var tl=steps.map(function(s,i){
     var g=i+off,cls='tl-step';
     if(cur===7&&g===7)cls+=' rej cur';
     else if(g<cur)cls+=' done';
     else if(g===cur)cls+=' cur';
     var dot=g<cur?'&#10003;':'';
-    var dt=gd(c.n,g);
+    var dt=gd(_cname,g);
     var dateHtml=dt?'<div class="tl-date">'+dt+'</div>':'';
     return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div>'+dateHtml+'</div>';
   }).join('');
