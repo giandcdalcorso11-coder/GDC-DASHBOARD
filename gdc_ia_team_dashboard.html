@@ -166,6 +166,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .tl-date{font-family:var(--mo);font-size:8px;color:var(--t3);margin-top:2px;text-align:center;opacity:.7;}
 .tl-step.done .tl-date{color:var(--ac);opacity:.6;}
 .tl-step.cur .tl-date{color:var(--ac);opacity:.8;}
+.prow-note-preview{font-family:var(--mo);font-size:9px;color:var(--am);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px;opacity:.85;}
 .tl-step-note-wrap{margin-top:3px;text-align:center;min-height:14px;}
 .tl-step-note-btn{font-family:var(--mo);font-size:8px;color:var(--t3);cursor:pointer;opacity:.5;border:none;background:none;padding:0;}
 .tl-step-note-btn:hover{opacity:1;color:var(--ac);}
@@ -1070,9 +1071,8 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     var dt=gd(_cname,g);
     var sn=gsn(_cname,g);
     var dateHtml=dt?'<div class="tl-date">'+dt+'</div>':'';
-    var noteHtml='<div class="tl-step-note-wrap" onclick="event.stopPropagation()">'+
-      (sn?'<div class="tl-step-note-text">'+sn.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</div>':'<span class="tl-step-note-btn" onclick="openStepNote(''+_cname+'','+g+',event)">+ nota</span>')+
-      '</div>';
+    var _snSafe=sn?sn.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'';
+    var noteHtml='<div class="tl-step-note-wrap" onclick="event.stopPropagation()">'+(sn?'<div class="tl-step-note-text" onclick="openStepNote(&#39;'+_cname+'&#39;,'+g+',event)">'+_snSafe+'</div>':'<span class="tl-step-note-btn" onclick="openStepNote(&#39;'+_cname+'&#39;,'+g+',event)">+ nota</span>')+'</div>';
     return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div>'+dateHtml+noteHtml+'</div>';
   }).join('');
   var chev='<div class="pchev'+(isE?' open':'')+'">&#9662;</div>';
@@ -1088,7 +1088,7 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     '<div class="pd-f"><div class="pd-k">Tag</div><div class="pd-v">'+c.tag+'</div></div></div></div>'+
     '<div class="pd-note">'+c.nt+'</div>'+
     '<div style="margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="pd-k">NOTA GENERALE</div></div>'+
-    '<textarea id="note-'+idx+'" class="pd-note-input" placeholder="Note generali sull'azienda..." style="width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:5px;color:var(--t);font-size:12px;padding:8px 10px;resize:vertical;min-height:60px;font-family:var(--sa);outline:none;line-height:1.5;" onblur="saveNote(COS['+idx+'].n,this.value)">'+gn(c.n).replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</textarea></div>'+
+    '<textarea id="note-'+idx+'" class="pd-note-input" placeholder="Note generali sull&apos;azienda..." style="width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:5px;color:var(--t);font-size:12px;padding:8px 10px;resize:vertical;min-height:60px;font-family:var(--sa);outline:none;line-height:1.5;" onblur="saveNote(COS['+idx+'].n,this.value)">'+gn(c.n).replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</textarea></div>'+
     '<div class="pd-acts"><button class="pact pri">A5 Scheda</button><button class="pact">A6 Media Kit</button><button class="pact">A7 Compliance</button></div>'+
     '</div>';
   var tl_section='<div class="pipe-tl"><div class="tl-steps">'+tl+'</div>'+
@@ -1099,9 +1099,16 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     '</div></div></div>';
   var sc_badge='<span class="sc s'+c.sc+'">SCORE '+c.sc+'</span>';
   var tag_badge=c.tag==='PRIORITÀ'?'<span class="ptag"><span class="pstar">&#9733;</span> PRIORITÀ</span>':'<span class="ptag">'+c.tag+'</span>';
+  var notePreview='';
+  var _gn=gn(c.n);
+  if(_gn){
+    var _trunc=_gn.length>50?_gn.substring(0,50)+'...':_gn;
+    var _safe=_trunc.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    notePreview='<div class="prow-note-preview">&#128221; '+_safe+'</div>';
+  }
   var hdr='<div class="prow-hdr" onclick="cardToggle(this,this.closest(\'.prow\').dataset.fn)">'+
     '<div class="prow-av" style="background:'+col.bg+';color:'+col.c+';">'+ini+'</div>'+
-    '<div class="prow-info"><div class="prow-name">'+c.n+'</div><div class="prow-sec">'+c.s+' - Mod.'+c.o+'</div></div>'+
+    '<div class="prow-info"><div class="prow-name">'+c.n+'</div><div class="prow-sec">'+c.s+' - Mod.'+c.o+'</div>'+notePreview+'</div>'+
     '<div class="prow-right">'+sc_badge+tag_badge+chev+'</div></div>';
   return '<div class="prow'+(isE?' exp':'')+'" data-ci="'+idx+'" data-fn="'+togFn+'">'+hdr+tl_section+det+'</div>';
 }
