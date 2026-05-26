@@ -166,6 +166,11 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .tl-date{font-family:var(--mo);font-size:8px;color:var(--t3);margin-top:2px;text-align:center;opacity:.7;}
 .tl-step.done .tl-date{color:var(--ac);opacity:.6;}
 .tl-step.cur .tl-date{color:var(--ac);opacity:.8;}
+.tl-step-note-wrap{margin-top:3px;text-align:center;min-height:14px;}
+.tl-step-note-btn{font-family:var(--mo);font-size:8px;color:var(--t3);cursor:pointer;opacity:.5;border:none;background:none;padding:0;}
+.tl-step-note-btn:hover{opacity:1;color:var(--ac);}
+.tl-step-note-text{font-family:var(--mo);font-size:8px;color:var(--t2);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;text-align:center;}
+.tl-step-note-text:hover{color:var(--ac);}
 .tl-step.rej .tl-lbl{color:var(--co);}
 .tl-status-row{display:flex;align-items:center;justify-content:space-between;}
 .tl-cur-lbl{font-family:var(--mo);font-size:10px;color:var(--t2);}
@@ -589,7 +594,7 @@ function flatFilesForRecent(nodes, label, out, colors) {
 }
 
 // ── PIPELINE STATES (Supabase) ──
-let _pd = {}; let _pnote = {}; let _pdates = {};
+let _pd = {}; let _pnote = {}; let _pdates = {}; let _psnotes = {};
 
 function setSyncStatus(state) {
   const el = document.getElementById('sync-status');
@@ -602,16 +607,17 @@ function setSyncStatus(state) {
 
 async function loadPipelineStates() {
   try {
-    const res = await fetch(SB_URL + '/rest/v1/pipeline_states?select=company_name,step_index,note,step_dates', {
+    const res = await fetch(SB_URL + '/rest/v1/pipeline_states?select=company_name,step_index,note,step_dates,step_notes', {
       headers: { ...sbHeaders(true), 'Prefer': 'return=representation' }
     });
     const data = await res.json();
-    _pd = {}; _pnote = {}; _pdates = {};
+    _pd = {}; _pnote = {}; _pdates = {}; _psnotes = {};
     if (Array.isArray(data)) {
       data.forEach(row => {
         _pd[row.company_name] = row.step_index;
         _pnote[row.company_name] = row.note || '';
         _pdates[row.company_name] = row.step_dates || {};
+        _psnotes[row.company_name] = row.step_notes || {};
       });
     }
     setSyncStatus('ok');
@@ -621,7 +627,7 @@ async function loadPipelineStates() {
 async function saveStep(name, idx) {
   _pd[name] = idx;
   if(!_pdates[name]) _pdates[name] = {};
-  if(!_pdates[name][idx]) _pdates[name][idx] = todayIT();
+  _pdates[name][idx] = todayIT();
   setSyncStatus('sync');
   try {
     // Try PATCH first (update existing)
@@ -630,7 +636,7 @@ async function saveStep(name, idx) {
       {
         method: 'PATCH',
         headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ step_index: idx, step_dates: _pdates[name], updated_at: new Date().toISOString() })
+        body: JSON.stringify({ step_index: idx, step_dates: _pdates[name], step_notes: _psnotes[name]||{}, updated_at: new Date().toISOString() })
       }
     );
     // If no rows updated (new company), INSERT
@@ -657,12 +663,68 @@ async function saveNote(name, note) {
     });
   } catch(e) { console.warn('saveNote error', e); }
 }
+async function saveStepNote(name, stepIdx, note) {
+  if(!_psnotes[name]) _psnotes[name] = {};
+  _psnotes[name][stepIdx] = note;
+  try {
+    await fetch(SB_URL + '/rest/v1/pipeline_states?user_id=eq.' + _userId + '&company_name=eq.' + encodeURIComponent(name), {
+      method: 'PATCH',
+      headers: { ...sbHeaders(true), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ step_notes: _psnotes[name], updated_at: new Date().toISOString() })
+    });
+  } catch(e) { console.warn('saveStepNote error', e); }
+}
 function gn(name) { return (_pnote && _pnote[name]) ? _pnote[name] : ""; }
 function gd(name, stepIdx) { return (_pdates && _pdates[name] && _pdates[name][stepIdx]) ? _pdates[name][stepIdx] : ""; }
+function gsn(name, stepIdx) { return (_psnotes && _psnotes[name] && _psnotes[name][stepIdx]) ? _psnotes[name][stepIdx] : ""; }
 function todayIT() { return new Date().toLocaleDateString("it-IT"); }
 function gn(name) { return _pnote[name] || ''; }
 function gd(name, stepIdx) { return (_pdates[name] && _pdates[name][stepIdx]) ? _pdates[name][stepIdx] : ''; }
 function todayIT() { return new Date().toLocaleDateString('it-IT'); }
+
+// ── STEP NOTE POPUP ──
+function openStepNote(name, stepIdx, e) {
+  if(e) e.stopPropagation();
+  var existing = document.getElementById('step-note-popup');
+  if(existing) existing.remove();
+  var cur = gsn(name, stepIdx);
+  var popup = document.createElement('div');
+  popup.id = 'step-note-popup';
+  popup.style.cssText = 'position:fixed;z-index:9999;background:var(--bg2);border:1px solid var(--b2);border-radius:8px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.5);width:280px;';
+  var rect = e ? e.target.getBoundingClientRect() : {left:100,top:100};
+  popup.style.left = Math.min(rect.left, window.innerWidth-300)+'px';
+  popup.style.top = (rect.top+20)+'px';
+  var stepName = '';
+  for(var i=0;i<8;i++){if(ALL[i]&&(i===stepIdx||i-2===stepIdx-2)){stepName=ALL[stepIdx]?ALL[stepIdx].k:'';break;}}
+  popup.innerHTML = '<div style="font-family:var(--mo);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Nota · '+name+'</div>'+
+    '<textarea id="snp-ta" style="width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:5px;color:var(--t);font-size:12px;padding:8px;resize:vertical;min-height:80px;font-family:var(--sa);outline:none;" placeholder="Aggiungi una nota per questo step...">'+cur.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</textarea>';
+  var btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:6px;margin-top:8px;';
+  var saveBtn = document.createElement('button');
+  saveBtn.className = 'tl-btn pri';
+  saveBtn.style.cssText = 'flex:1;padding:6px;font-size:11px;cursor:pointer;';
+  saveBtn.textContent = 'Salva';
+  saveBtn.onclick = function() {
+    var val = document.getElementById('snp-ta').value.trim();
+    saveStepNote(name, stepIdx, val);
+    popup.remove();
+    rp5(); rp6();
+  };
+  var cancelBtn = document.createElement('button');
+  cancelBtn.className = 'tl-btn';
+  cancelBtn.style.cssText = 'flex:1;padding:6px;font-size:11px;cursor:pointer;';
+  cancelBtn.textContent = 'Annulla';
+  cancelBtn.onclick = function() { popup.remove(); };
+  btns.appendChild(saveBtn); btns.appendChild(cancelBtn);
+  popup.appendChild(btns);
+  document.body.appendChild(popup);
+  document.getElementById('snp-ta').focus();
+  setTimeout(function(){
+    document.addEventListener('click', function h(ev){
+      if(!popup.contains(ev.target)){popup.remove();document.removeEventListener('click',h);}
+    });
+  }, 100);
+}
 
 // ── NAVIGATION ──
 const PAGES = ['home','a1','a2','a3','a4','a5','a6','a7'];
@@ -977,12 +1039,18 @@ function cardAdv(btn,delta){
   var cur=gi(name);
   var nx=Math.max(minI,Math.min(maxI,cur+delta));
   _pd[name]=nx;
+  // Record date BEFORE re-rendering so it shows immediately
+  if(!_pdates[name]) _pdates[name]={};
+  _pdates[name][nx]=todayIT();
   rp5();rp6();updateHomeStats();
   saveStep(name,nx);
 }
 function cardClickS(dot,gIdx){
   var name=getRowName(dot);
   _pd[name]=gIdx;
+  // Record date BEFORE re-rendering so it shows immediately
+  if(!_pdates[name]) _pdates[name]={};
+  _pdates[name][gIdx]=todayIT();
   rp5();rp6();updateHomeStats();
   saveStep(name,gIdx);
 }
@@ -1000,8 +1068,12 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     else if(g===cur)cls+=' cur';
     var dot=g<cur?'&#10003;':'';
     var dt=gd(_cname,g);
+    var sn=gsn(_cname,g);
     var dateHtml=dt?'<div class="tl-date">'+dt+'</div>':'';
-    return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div>'+dateHtml+'</div>';
+    var noteHtml='<div class="tl-step-note-wrap" onclick="event.stopPropagation()">'+
+      (sn?'<div class="tl-step-note-text">'+sn.replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</div>':'<span class="tl-step-note-btn" onclick="openStepNote(''+_cname+'','+g+',event)">+ nota</span>')+
+      '</div>';
+    return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div>'+dateHtml+noteHtml+'</div>';
   }).join('');
   var chev='<div class="pchev'+(isE?' open':'')+'">&#9662;</div>';
   var det='<div class="prow-det'+(isE?' open':'')+'">'+
@@ -1015,8 +1087,8 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     '<div><div class="pd-f"><div class="pd-k">Score</div><div class="pd-v">'+c.sc+'/9</div></div>'+
     '<div class="pd-f"><div class="pd-k">Tag</div><div class="pd-v">'+c.tag+'</div></div></div></div>'+
     '<div class="pd-note">'+c.nt+'</div>'+
-    '<div style="margin-bottom:8px"><div class="pd-k" style="margin-bottom:4px">NOTE</div>'+
-    '<textarea id="note-'+idx+'" class="pd-note-input" placeholder="Aggiungi note sullo stato..." style="width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:5px;color:var(--t);font-size:11px;padding:8px;resize:vertical;min-height:60px;font-family:var(--sa);outline:none;" onblur="saveNote(COS['+idx+'].n,this.value)">'+gn(c.n)+'</textarea></div>'+
+    '<div style="margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px"><div class="pd-k">NOTA GENERALE</div></div>'+
+    '<textarea id="note-'+idx+'" class="pd-note-input" placeholder="Note generali sull'azienda..." style="width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:5px;color:var(--t);font-size:12px;padding:8px 10px;resize:vertical;min-height:60px;font-family:var(--sa);outline:none;line-height:1.5;" onblur="saveNote(COS['+idx+'].n,this.value)">'+gn(c.n).replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</textarea></div>'+
     '<div class="pd-acts"><button class="pact pri">A5 Scheda</button><button class="pact">A6 Media Kit</button><button class="pact">A7 Compliance</button></div>'+
     '</div>';
   var tl_section='<div class="pipe-tl"><div class="tl-steps">'+tl+'</div>'+
