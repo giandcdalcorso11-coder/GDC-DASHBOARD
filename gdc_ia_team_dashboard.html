@@ -163,6 +163,9 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .tl-step:hover .tl-dot{border-color:var(--ac);transform:scale(1.15);}
 .tl-lbl{font-family:var(--mo);font-size:8px;color:var(--t3);margin-top:4px;text-align:center;line-height:1.2;max-width:62px;}
 .tl-step.done .tl-lbl,.tl-step.cur .tl-lbl{color:var(--ac);}
+.tl-date{font-family:var(--mo);font-size:8px;color:var(--t3);margin-top:2px;text-align:center;opacity:.7;}
+.tl-step.done .tl-date{color:var(--ac);opacity:.6;}
+.tl-step.cur .tl-date{color:var(--ac);opacity:.8;}
 .tl-step.rej .tl-lbl{color:var(--co);}
 .tl-status-row{display:flex;align-items:center;justify-content:space-between;}
 .tl-cur-lbl{font-family:var(--mo);font-size:10px;color:var(--t2);}
@@ -973,7 +976,9 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     else if(g<cur)cls+=' done';
     else if(g===cur)cls+=' cur';
     var dot=g<cur?'&#10003;':'';
-    return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div></div>';
+    var dt=gd(c.n,g);
+    var dateHtml=dt?'<div class="tl-date">'+dt+'</div>':'';
+    return '<div class="'+cls+'" onclick="cardClickS(this,'+g+')" title="'+s.k+'"><div class="tl-dot">'+dot+'</div><div class="tl-lbl">'+s.l+'</div>'+dateHtml+'</div>';
   }).join('');
   var chev='<div class="pchev'+(isE?' open':'')+'">&#9662;</div>';
   var det='<div class="prow-det'+(isE?' open':'')+'">'+
@@ -987,6 +992,8 @@ function card(c,expN,togFn,steps,off,minI,maxI){
     '<div><div class="pd-f"><div class="pd-k">Score</div><div class="pd-v">'+c.sc+'/9</div></div>'+
     '<div class="pd-f"><div class="pd-k">Tag</div><div class="pd-v">'+c.tag+'</div></div></div></div>'+
     '<div class="pd-note">'+c.nt+'</div>'+
+    '<div style="margin-bottom:8px"><div class="pd-k" style="margin-bottom:4px">NOTE</div>'+
+    '<textarea id="note-'+idx+'" class="pd-note-input" placeholder="Aggiungi note sullo stato..." style="width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:5px;color:var(--t);font-size:11px;padding:8px;resize:vertical;min-height:60px;font-family:var(--sa);outline:none;" onblur="saveNote(COS['+idx+'].n,this.value)">'+gn(c.n)+'</textarea></div>'+
     '<div class="pd-acts"><button class="pact pri">A5 Scheda</button><button class="pact">A6 Media Kit</button><button class="pact">A7 Compliance</button></div>'+
     '</div>';
   var tl_section='<div class="pipe-tl"><div class="tl-steps">'+tl+'</div>'+
