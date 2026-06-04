@@ -114,6 +114,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 .ic-xlsx{background:rgba(0,212,170,.1);color:var(--tl);border-color:rgba(0,212,170,.2);}
 .ic-pdf{background:rgba(255,124,92,.1);color:var(--co);border-color:rgba(255,124,92,.2);}
 .ic-docx{background:rgba(74,158,255,.1);color:var(--bl);border-color:rgba(74,158,255,.2);}
+.ic-pptx{background:rgba(255,107,53,.1);color:#ff6b35;border-color:rgba(255,107,53,.2);}
 .tree-link{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:3px;background:rgba(74,158,255,.12);border:1px solid rgba(74,158,255,.25);color:var(--bl);text-decoration:none;flex-shrink:0;font-size:12px;line-height:1;}
 .tree-name{flex:1;min-width:0;font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .tree-name.fn{color:var(--t2);font-weight:500;}
@@ -494,6 +495,26 @@ async function openSection(section) {
   }
 }
 
+// ── TOKEN REFRESH ──
+async function refreshToken() {
+  try {
+    // Try to refresh using stored session
+    const t = sessionStorage.getItem('gdc_token');
+    if(!t) return false;
+    const res = await fetch(SB_URL + '/auth/v1/user', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + t }
+    });
+    if(res.ok) return true;
+    // Token expired — need re-login
+    _token = null; _userId = null;
+    sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+    document.getElementById('app-screen').style.display = 'none';
+    document.getElementById('hub-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    return false;
+  } catch(e) { return false; }
+}
+
 // Auto-login on page load if session exists
 (async function() {
   try {
@@ -522,7 +543,13 @@ async function openSection(section) {
 
 // ── DRIVE SYNC ──
 async function syncDrive() {
-  if(!_token){ alert('Effettua il login prima di sincronizzare.'); return; }
+  if(!_token){ 
+    alert('Sessione scaduta. Effettua di nuovo il login.');
+    document.getElementById('app-screen').style.display='none';
+    document.getElementById('hub-screen').style.display='none';
+    document.getElementById('login-screen').style.display='flex';
+    return; 
+  }
   var btn = document.getElementById('sync-drive-btn');
   if(btn){ btn.disabled=true; btn.textContent='...'; }
   setSyncStatus('sync');
@@ -569,11 +596,19 @@ async function syncDrive() {
     }
     // Save to Supabase so cache persists across devices
     try {
-      await fetch(SB_URL + '/rest/v1/drive_cache', {
-        method: 'POST',
-        headers: { ...sbHeaders(true), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({ user_id: _userId, data: data, updated_at: new Date().toISOString() })
+      // Verify token is still valid before saving
+      const tokenCheck = await fetch(SB_URL + '/auth/v1/user', {
+        headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + _token }
       });
+      if(tokenCheck.ok) {
+        await fetch(SB_URL + '/rest/v1/drive_cache', {
+          method: 'POST',
+          headers: { ...sbHeaders(true), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ user_id: _userId, data: data, updated_at: new Date().toISOString() })
+        });
+      } else {
+        console.warn('Token expired — cache not saved to Supabase');
+      }
     } catch(e){ console.warn('Cache save failed:', e); }
     setSyncStatus('ok');
     if(btn){ btn.disabled=false; btn.textContent='✓ Sincronizzato'; setTimeout(function(){btn.textContent='↻ Sync Drive';},2000); }
@@ -888,7 +923,7 @@ const TREES = {
   a6:[{t:'folder',n:'Aziende',u:'a6az',c:[{t:'folder',n:'Airalo',u:'a6air',c:[]},{t:'folder',n:'Make a shape',u:'a6mas',c:[]},{t:'folder',n:'Saily',u:'a6sai',c:[]},{t:'folder',n:'Flightly',u:'a6fly',c:[]},{t:'folder',n:'Pasquarelli auto',u:'a6pas',c:[]},{t:'folder',n:'Barbuscia',u:'a6bar',c:[]},{t:'folder',n:'TreeD filament',u:'a6tre',c:[]},{t:'folder',n:'action',u:'a6act',c:[]},{t:'folder',n:'parkside',u:'a6par',c:[]},{t:'folder',n:'sport lab milano',u:'a6spl',c:[]},{t:'folder',n:'overo glasses',u:'a6og',c:[{t:'docx',n:'mediakit_OVEROGLASSES.pptx',d:'06/05/2026',u:'a6og1'},{t:'pdf',n:'Brief - Prescription Goggle Inserts.pdf',d:'06/05/2026',u:'a6og2'},{t:'pdf',n:'Brief - FoldGo Glasses.pdf',d:'06/05/2026',u:'a6og3'}]},{t:'folder',n:'Ray neo',u:'a6rn',c:[{t:'docx',n:'RayNeo Mail GDC.docx',d:'03/05/2026',u:'a6rn1'},{t:'pdf',n:'mediakit RAYNEO2.pdf',d:'02/05/2026',u:'a6rn2'},{t:'pdf',n:'mediakit RAYNEO.pdf',d:'02/05/2026',u:'a6rn3'}]},{t:'folder',n:'Go pro',u:'a6gp',c:[{t:'pdf',n:'mediakit GoPro.pdf',d:'02/05/2026',u:'a6gp1'}]},{t:'folder',n:'Garmin',u:'a6ga',c:[{t:'pdf',n:'mediakit GARMIN.pdf',d:'01/05/2026',u:'a6ga1'}]},{t:'folder',n:'Filoalfa',u:'a6fi',c:[{t:'docx',n:'Mail FILOALFA Iniziale.docx',d:'30/04/2026',u:'a6fi1'},{t:'pdf',n:'mediakit_FILOALFA.pdf',d:'04/05/2026',u:'a6fi2'}]},{t:'folder',n:'Eumakers',u:'a6eu',c:[{t:'docx',n:'Prima Mail EUMAKERS.docx',d:'30/04/2026',u:'a6eu1'},{t:'pdf',n:'mediakit EUMAKERS v4.pdf',d:'30/04/2026',u:'a6eu2'},{t:'pdf',n:'mediakit_EUMAKERS.pdf',d:'04/05/2026',u:'a6eu3'}]}]},{t:'folder',n:'00 - Documenti',u:'a6dd',c:[{t:'docx',n:'Agente 6.1 Prompt.docx',d:'30/04/2026',u:'a6p1'},{t:'docx',n:'Agente 6.2 Prompt.docx',d:'30/04/2026',u:'a6p2'}]}]
 };
 
-const IC = {folder:'ic-folder',xlsx:'ic-xlsx',pdf:'ic-pdf',docx:'ic-docx'};
+const IC = {folder:'ic-folder',xlsx:'ic-xlsx',pdf:'ic-pdf',docx:'ic-docx',pptx:'ic-pptx'};
 
 function buildTreeFromBridge(nodes, container, depth) {
   depth = depth || 0;
@@ -903,7 +938,7 @@ function buildTreeFromBridge(nodes, container, depth) {
     tog.textContent = '▶'; row.appendChild(tog);
     var ic = document.createElement('span');
     ic.className = 'tree-icon ' + (IC[node.type] || 'ic-docx');
-    ic.textContent = node.type === 'folder' ? 'DIR' : (node.type||'DOC').toUpperCase(); row.appendChild(ic);
+    ic.textContent = node.type === 'folder' ? 'DIR' : (node.type||'DOC').toUpperCase().replace('PPTX','PPT'); row.appendChild(ic);
     if (node.url) {
       var lnk = document.createElement('a');
       lnk.className = 'tree-link'; lnk.href = node.url; lnk.target = '_blank'; lnk.rel = 'noopener noreferrer';
