@@ -426,7 +426,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;mi
 // ── SUPABASE CONFIG ──
 const SB_URL = 'https://pnzabwfsgkvejnrtrjcp.supabase.co';
 const SB_KEY = 'sb_publishable_DCzX82HTZ1avt-NJxGAz4Q_6ZlxMudV';
-const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycbyz1RjdUw4Szxt9BdHb8YAhbKNcHdQDRXaWRGHhVG0dimQ06S0Y9kbQWXSr4Cag9lN1/exec';
+const BRIDGE_URL = 'https://script.google.com/macros/s/AKfycby_pHezRb-OcseNmW_QeR99UIbetV_bDSkooLa7lrm0kr0Glbo6jYOvfL3YB5WV28blGQ/exec';
 
 let _token = null;
 let _userId = null;
@@ -558,19 +558,22 @@ async function syncDrive() {
   if(btn){ btn.disabled=true; btn.textContent='...'; }
   setSyncStatus('sync');
   try {
-    // Use script tag injection for true JSONP (bypasses CORS)
     var data = await new Promise(function(resolve, reject) {
-      var cbName = '_gcb_' + Date.now();
-      window[cbName] = function(d) { resolve(d); cleanup(); };
-      function cleanup() {
-        delete window[cbName];
-        if(script.parentNode) script.parentNode.removeChild(script);
+      var id = 'gcb' + Date.now();
+      window[id] = function(d){ resolve(d); cleanup(); };
+      function cleanup(){
+        delete window[id];
+        var el=document.getElementById(id);
+        if(el) el.parentNode.removeChild(el);
       }
-      var script = document.createElement('script');
-      script.src = BRIDGE_URL + '?callback=' + cbName + '&t=' + Date.now();
-      script.onerror = function() { reject(new Error('Script load failed')); cleanup(); };
-      setTimeout(function(){ reject(new Error('Timeout')); cleanup(); }, 30000);
-      document.head.appendChild(script);
+      var s=document.createElement('script');
+      s.id=id;
+      s.type='text/javascript';
+      s.src=BRIDGE_URL+'?callback='+id+'&t='+Date.now();
+      s.onload=function(){ setTimeout(function(){ if(window[id]){ reject(new Error('No callback')); cleanup(); }}, 5000); };
+      s.onerror=function(){ reject(new Error('Load error')); cleanup(); };
+      setTimeout(function(){ if(window[id]){ reject(new Error('Timeout')); cleanup(); }}, 35000);
+      document.body.appendChild(s);
     });
     // Remap bridge fields (type/name/url/date/children) to dashboard format (t/n/u/d/c)
     function remapTree(nodes) {
