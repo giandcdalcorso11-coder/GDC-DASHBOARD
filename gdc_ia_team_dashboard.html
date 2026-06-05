@@ -475,6 +475,10 @@ function doLogout() {
   document.getElementById('hub-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-pwd').value = '';
+  // Reset login button
+  var btn = document.getElementById('login-btn');
+  if(btn){ btn.disabled = false; btn.textContent = 'Accedi'; }
+  document.getElementById('login-err').textContent = '';
 }
 
 function showHub() {
