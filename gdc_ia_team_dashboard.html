@@ -558,11 +558,20 @@ async function syncDrive() {
   if(btn){ btn.disabled=true; btn.textContent='...'; }
   setSyncStatus('sync');
   try {
-    var res = await fetch(BRIDGE_URL + '?callback=_gcb&t=' + Date.now());
-    var txt = await res.text();
-    // Parse JSONP response
-    var json = txt.replace(/^_gcb\(/, '').replace(/\)$/, '');
-    var data = JSON.parse(json);
+    // Use script tag injection for true JSONP (bypasses CORS)
+    var data = await new Promise(function(resolve, reject) {
+      var cbName = '_gcb_' + Date.now();
+      window[cbName] = function(d) { resolve(d); cleanup(); };
+      function cleanup() {
+        delete window[cbName];
+        if(script.parentNode) script.parentNode.removeChild(script);
+      }
+      var script = document.createElement('script');
+      script.src = BRIDGE_URL + '?callback=' + cbName + '&t=' + Date.now();
+      script.onerror = function() { reject(new Error('Script load failed')); cleanup(); };
+      setTimeout(function(){ reject(new Error('Timeout')); cleanup(); }, 30000);
+      document.head.appendChild(script);
+    });
     // Remap bridge fields (type/name/url/date/children) to dashboard format (t/n/u/d/c)
     function remapTree(nodes) {
       if(!nodes) return [];
