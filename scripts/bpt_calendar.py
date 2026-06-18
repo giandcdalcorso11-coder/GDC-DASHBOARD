@@ -91,7 +91,8 @@ def scrape_bpt_tournaments(page) -> list[dict]:
     Restituisce lista di dict: {nome, location, date_start, date_end, url}
     """
     print(f"  → Carico pagina BPT: {BPT_URL}")
-    page.goto(BPT_URL, wait_until="networkidle", timeout=60000)
+    page.goto(BPT_URL, wait_until="domcontentloaded", timeout=30000)
+    page.wait_for_timeout(5000)  # attesa rendering JS tornei
 
     # Aspetta che i tornei siano caricati (elemento con le card eventi)
     try:
@@ -171,7 +172,7 @@ def scrape_tournament_details(page, tournament: dict) -> dict:
     print(f"    Analizzo: {url}")
 
     try:
-        page.goto(url, wait_until="networkidle", timeout=30000)
+        page.goto(url, wait_until="domcontentloaded", timeout=20000)
     except PlaywrightTimeout:
         print(f"      Timeout su {url}, skip")
         return tournament
