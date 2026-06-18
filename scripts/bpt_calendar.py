@@ -36,7 +36,7 @@ from supabase import create_client
 
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 
-DRIVE_FOLDER_A3 = os.environ["DRIVE_FOLDER_A3"]
+DRIVE_FOLDER_A3 = os.environ.get("DRIVE_FOLDER_A3", "")  # opzionale
 SUPA_URL        = os.environ["SUPABASE_URL"]
 SUPA_KEY        = os.environ["SUPABASE_KEY"]
 
@@ -464,28 +464,49 @@ def get_drive_service():
 
 
 def drive_save_txt(service, content: str, filename: str, folder_id: str):
-    """Salva o aggiorna un file TXT su Drive."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt",
-                                     delete=False, encoding="utf-8") as f:
-        f.write(content)
-        tmp_path = f.name
-
-    media = MediaFileUpload(tmp_path, mimetype="text/plain")
+    """
+    Salva il testo BPT su Drive come Google Doc nativo.
+    Usa mimeType nativo per evitare storageQuotaExceeded dei service account.
+    """
+    import io
+    from googleapiclient.http import MediaIoBaseUpload
 
     # Cerca file esistente
     query = f"name='{filename}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, fields="files(id)", supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
-    files = results.get("files", [])
+    results = service.files().list(
+        q=query, fields="files(id)",
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True
+    ).execute()
+    existing = results.get("files", [])
 
-    if files:
-        service.files().update(fileId=files[0]["id"], media_body=media, supportsAllDrives=True).execute()
+    # Carica come testo plain — il contenuto va nel body
+    media = MediaIoBaseUpload(
+        io.BytesIO(content.encode("utf-8")),
+        mimetype="text/plain",
+        resumable=False
+    )
+
+    if existing:
+        service.files().update(
+            fileId=existing[0]["id"],
+            media_body=media,
+            supportsAllDrives=True
+        ).execute()
         print(f"    File aggiornato: {filename}")
     else:
-        meta = {"name": filename, "parents": [folder_id]}
-        service.files().create(body=meta, media_body=media, fields="id", supportsAllDrives=True).execute()
+        meta = {
+            "name": filename,
+            "parents": [folder_id],
+            "mimeType": "application/vnd.google-apps.document"
+        }
+        service.files().create(
+            body=meta,
+            media_body=media,
+            fields="id",
+            supportsAllDrives=True
+        ).execute()
         print(f"    File creato: {filename}")
-
-    os.unlink(tmp_path)
 
 
 # ─── SUPABASE ────────────────────────────────────────────────────────────────────
@@ -561,13 +582,10 @@ def main():
         print(f"\n  Calendario generato — {len(tornei_mese)} torneo/i nel mese")
         print("  " + "\n  ".join(testo.split("\n")[:8]))  # preview prime righe
 
-        # 4. Salva su Drive
-        drive_service = get_drive_service()
-        filename      = f"bpt_{MESE_IT_LOWER}_{ANNO}.txt"
-        drive_save_txt(drive_service, testo, filename, DRIVE_FOLDER_A3)
-
-        # 5. Aggiorna Supabase
+        # 4. Salva su Supabase (testo leggibile dalla webapp)
         supabase_update_bpt(testo, len(tornei_mese))
+        # Nota: il testo è disponibile nella webapp tramite Supabase
+        # Non serve Drive per questo file — è testo breve
 
     print(f"\n✅ BPT Calendar completato — {MESE_LABEL}")
     print(f"   Tornei trovati: {len(tornei_mese)}")
