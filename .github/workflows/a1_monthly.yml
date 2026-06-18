@@ -1,16 +1,12 @@
 name: A1 Monthly — Instagram Analytics + BPT Calendar
 
 on:
-  # Ogni 1° del mese alle 08:00 ora italiana (06:00 UTC)
   schedule:
     - cron: '0 6 1 * *'
-
-  # Esecuzione manuale per test
   workflow_dispatch:
 
 jobs:
 
-  # ── JOB 1: Script A1 Instagram Analytics ──────────────────────────────────────
   run-a1-monthly:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -46,7 +42,6 @@ jobs:
         if: failure()
         run: echo "❌ A1 Monthly FALLITO — controlla i log"
 
-  # ── JOB 2: Script BPT Calendar (parallelo ad A1) ──────────────────────────────
   run-bpt-calendar:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -65,8 +60,29 @@ jobs:
       - name: Installa dipendenze Python
         run: pip install -r scripts/requirements.txt
 
-      - name: Installa Playwright + Chromium
-        run: playwright install chromium --with-deps
+      - name: Installa dipendenze sistema per Playwright (Ubuntu 24)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2t64 \
+            libatk-bridge2.0-0 \
+            libatk1.0-0 \
+            libcups2 \
+            libdbus-1-3 \
+            libdrm2 \
+            libgbm1 \
+            libgtk-3-0 \
+            libnspr4 \
+            libnss3 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxkbcommon0 \
+            libxrandr2 \
+            xvfb
+
+      - name: Installa Playwright Chromium
+        run: playwright install chromium
 
       - name: Esegui BPT Calendar
         env:
