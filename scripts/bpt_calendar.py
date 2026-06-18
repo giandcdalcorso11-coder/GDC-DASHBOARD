@@ -107,9 +107,17 @@ def scrape_bpt_tournaments(page) -> list[dict]:
         () => {
             const anchors = Array.from(document.querySelectorAll('a[href]'));
             const tournamentLinks = anchors
-                .filter(a => a.href.includes('/beach-pro-tour/') &&
-                             a.href.includes('/events/') &&
-                             !a.href.includes('#') && a.href.split('/').filter(Boolean).length > 6)
+                .filter(a => {
+                    const url = a.href;
+                    // Deve contenere /events/ e finire con uno slug torneo (non #anchor)
+                    return url.includes('/events/') &&
+                           !url.endsWith('/events/') &&
+                           !url.includes('#') &&
+                           !url.includes('news') &&
+                           !url.includes('article') &&
+                           url.split('/events/')[1] &&
+                           url.split('/events/')[1].length > 3;
+                })
                 .map(a => ({
                     href: a.href,
                     text: a.textContent.trim()
@@ -466,15 +474,15 @@ def drive_save_txt(service, content: str, filename: str, folder_id: str):
 
     # Cerca file esistente
     query = f"name='{filename}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, fields="files(id)").execute()
+    results = service.files().list(q=query, fields="files(id)", supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
     files = results.get("files", [])
 
     if files:
-        service.files().update(fileId=files[0]["id"], media_body=media).execute()
+        service.files().update(fileId=files[0]["id"], media_body=media, supportsAllDrives=True).execute()
         print(f"    File aggiornato: {filename}")
     else:
         meta = {"name": filename, "parents": [folder_id]}
-        service.files().create(body=meta, media_body=media, fields="id").execute()
+        service.files().create(body=meta, media_body=media, fields="id", supportsAllDrives=True).execute()
         print(f"    File creato: {filename}")
 
     os.unlink(tmp_path)
