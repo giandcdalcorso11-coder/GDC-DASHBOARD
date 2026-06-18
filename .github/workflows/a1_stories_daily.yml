@@ -1,0 +1,42 @@
+name: A1 Stories Daily — Archivio Stories
+
+on:
+  # Ogni giorno alle 23:50 ora italiana (22:50 UTC in estate, 22:50 in inverno)
+  # Usiamo 22:50 UTC — cattura stories pubblicate fino alle 22:49
+  schedule:
+    - cron: '50 22 * * *'
+
+  # Esecuzione manuale dalla tab Actions di GitHub (per test)
+  workflow_dispatch:
+
+jobs:
+  run-stories-daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Installa dipendenze
+        run: pip install -r scripts/requirements.txt
+
+      - name: Esegui Stories Daily
+        env:
+          IG_ACCESS_TOKEN:    ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID:         ${{ secrets.IG_USER_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          DRIVE_FOLDER_A1:    ${{ secrets.DRIVE_FOLDER_A1 }}
+        run: python scripts/a1_stories_daily.py
+
+      - name: Notifica fallimento
+        if: failure()
+        run: |
+          echo "❌ Stories Daily FALLITO — controlla i log sopra"
