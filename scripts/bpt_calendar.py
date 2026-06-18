@@ -192,6 +192,12 @@ def scrape_tournament_details(page, tournament: dict) -> dict:
     url = tournament["url"]
     print(f"    Analizzo: {url}")
 
+    # Assicura URL assoluto
+    if url.startswith("/"):
+        url = "https://en.volleyballworld.com" + url
+    elif not url.startswith("http"):
+        url = "https://en.volleyballworld.com/" + url
+
     try:
         page.goto(url, wait_until="domcontentloaded", timeout=20000)
     except PlaywrightTimeout:
