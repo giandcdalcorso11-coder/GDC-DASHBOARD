@@ -168,18 +168,47 @@ def scrape_bpt_tournaments(page) -> list[dict]:
     return tournaments
 
 
-def parse_api_date(date_str: str):
-    """Converte stringa data API in oggetto date."""
+def parse_api_date(date_str) -> date:
+    """Converte stringa data API in oggetto date. Gestisce stringhe e timestamp."""
     if not date_str:
         return None
     from datetime import datetime
-    # Prova vari formati
-    for fmt in ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ",
-                "%d/%m/%Y", "%m/%d/%Y", "%Y%m%d"]:
+
+    # Se è già un oggetto date
+    if isinstance(date_str, date):
+        return date_str
+
+    # Converti in stringa se necessario
+    date_str = str(date_str).strip()
+
+    # Prova vari formati — dal più comune al meno comune
+    formats = [
+        "%Y-%m-%d",           # 2026-07-01
+        "%Y-%m-%dT%H:%M:%S",  # 2026-07-01T00:00:00
+        "%Y-%m-%dT%H:%M:%SZ", # 2026-07-01T00:00:00Z
+        "%Y-%m-%dT%H:%M:%S.%f", # con millisecondi
+        "%d/%m/%Y",
+        "%m/%d/%Y",
+        "%Y%m%d",
+        "%d-%m-%Y",
+        "%B %d, %Y",          # July 1, 2026
+        "%d %B %Y",           # 1 July 2026
+    ]
+
+    # Prima prova i primi 10 caratteri (data senza ora)
+    for fmt in formats:
         try:
-            return datetime.strptime(date_str[:10], fmt[:len(date_str[:10])]).date()
+            # Prova stringa completa
+            return datetime.strptime(date_str, fmt).date()
         except ValueError:
-            continue
+            pass
+        try:
+            # Prova solo i primi 10 caratteri
+            return datetime.strptime(date_str[:10], "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    print(f"      ATTENZIONE: formato data non riconosciuto: '{date_str}'")
     return None
 
 
