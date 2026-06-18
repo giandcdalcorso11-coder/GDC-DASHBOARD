@@ -194,33 +194,39 @@ def scrape_tournament_details(page, tournament: dict) -> dict:
     print(f"    Analizzo: {url}")
 
     # Assicura URL assoluto
-    if url.startswith("/"):
-        url = "https://en.volleyballworld.com" + url
-    elif not url.startswith("http"):
-        url = "https://en.volleyballworld.com/" + url
+    base_url = url
+    if base_url.startswith("/"):
+        base_url = "https://en.volleyballworld.com" + base_url
+    elif not base_url.startswith("http"):
+        base_url = "https://en.volleyballworld.com/" + base_url
 
-    try:
-        page.goto(url, wait_until="domcontentloaded", timeout=20000)
-    except PlaywrightTimeout:
-        print(f"      Timeout su {url}, skip")
-        return tournament
+    # Vai direttamente alla pagina squadre maschili (dove appare "Cottafava/Dal Corso")
+    teams_url = base_url.rstrip("/") + "/teams/men/by-country/"
 
-    # Aspetta che la lista squadre sia caricata (rendering JS)
-    try:
-        page.wait_for_selector("table, [class*='team'], [class*='player'], [class*='athlete']",
-                               timeout=8000)
-    except Exception:
-        pass
-    page.wait_for_timeout(2000)  # attesa extra per rendering completo
+    for check_url in [teams_url, base_url]:
+        try:
+            page.goto(check_url, wait_until="domcontentloaded", timeout=20000)
+        except PlaywrightTimeout:
+            print(f"      Timeout su {check_url}, skip")
+            continue
 
-    # Leggi tutto il testo della pagina
-    full_text = page.inner_text("body").lower()
+        # Aspetta rendering JS lista squadre
+        try:
+            page.wait_for_selector("table, [class*='team'], [class*='player']", timeout=8000)
+        except Exception:
+            pass
+        page.wait_for_timeout(2000)
 
-    # Controlla presenza giocatore con tutti i termini possibili
-    tournament["gianluca_presente"] = any(term in full_text for term in PLAYER_SEARCH_TERMS)
-    if tournament["gianluca_presente"]:
-        matched = [t for t in PLAYER_SEARCH_TERMS if t in full_text]
-        print(f"      ✅ Trovato: {matched}")
+        full_text = page.inner_text("body").lower()
+        found = any(term in full_text for term in PLAYER_SEARCH_TERMS)
+
+        if found:
+            matched = [t for t in PLAYER_SEARCH_TERMS if t in full_text]
+            print(f"      ✅ Trovato {matched} su {check_url}")
+            tournament["gianluca_presente"] = True
+            break
+    else:
+        tournament["gianluca_presente"] = False
 
     # Estrai date — formato tipico: "15 - 20 Jul 2026" o "Jul 15-20, 2026"
     tournament["date_start"], tournament["date_end"] = extract_dates_from_page(page, full_text)
