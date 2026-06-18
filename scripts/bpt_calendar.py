@@ -109,7 +109,7 @@ def scrape_bpt_tournaments(page) -> list[dict]:
             const tournamentLinks = anchors
                 .filter(a => a.href.includes('/beach-pro-tour/') &&
                              a.href.includes('/events/') &&
-                             !a.href.includes('#'))
+                             !a.href.includes('#') && a.href.split('/').filter(Boolean).length > 6)
                 .map(a => ({
                     href: a.href,
                     text: a.textContent.trim()
@@ -314,7 +314,7 @@ def calcola_periodi(torneo: dict) -> dict:
 
 def format_date_it(d: date) -> str:
     giorni = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"]
-    return f"{giorni[d.weekday()]} {d.day} {MESI_IT[:3].lower()}"
+    return f"{giorni[d.weekday()]} {d.day} {MESE_IT[:3].lower()}"
 
 
 def genera_testo_calendario(tornei_mese: list[dict]) -> str:
@@ -349,8 +349,8 @@ def genera_testo_calendario(tornei_mese: list[dict]) -> str:
         lines.append(f"🏐 TORNEO: {p['nome']}")
         lines.append(f"   Luogo: {p['location']}")
         lines.append(f"   Trasferta: {tipo_trasferta}")
-        lines.append(f"   Partenza:  {format_date_it(p['partenza'])} ({p['partenza'].day} {MESI_IT[:3]})")
-        lines.append(f"   Torneo:    {p['date_start'].day}–{p['date_end'].day} {MESI_IT[:3]} {ANNO}")
+        lines.append(f"   Partenza:  {format_date_it(p['partenza'])} ({p['partenza'].day} {MESE_IT[:3]})")
+        lines.append(f"   Torneo:    {p['date_start'].day}–{p['date_end'].day} {MESE_IT[:3]} {ANNO}")
         lines.append(f"   Rientro:   {format_date_it(p['rientro'])}")
         lines.append(f"   Riposo:    {format_date_it(p['rientro'] + timedelta(days=1))}–{format_date_it(p['riposo_end'])}")
 
@@ -433,7 +433,7 @@ def _aggiungi_weekend(lines, primo, ultimo, tornei):
                 sabati_occupati.append(d.day)
         d += timedelta(days=1)
 
-    mese_abbr = MESI_IT[:3].lower()
+    mese_abbr = MESE_IT[:3].lower()
     if domeniche_libere:
         giorni_str = ", ".join(str(g) for g in domeniche_libere)
         lines.append(f"   Domeniche libere: {giorni_str} {mese_abbr}")
