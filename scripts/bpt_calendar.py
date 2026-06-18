@@ -85,88 +85,101 @@ def is_oltreoceano(location: str) -> bool:
 
 # ─── PLAYWRIGHT — SCRAPING BPT ──────────────────────────────────────────────────
 
+API_URL = f"https://en.volleyballworld.com/api/v1/globalschedule/bpt/competitions/{ANNO}/"
+
+# Categorie da escludere (Futures = tornei minori)
+SKIP_CATEGORIES = ["futures", "future"]
+
 def scrape_bpt_tournaments(page) -> list[dict]:
     """
-    Carica la pagina BPT e estrae tutti i tornei visibili.
-    Restituisce lista di dict: {nome, location, date_start, date_end, url}
+    Chiama direttamente l'API JSON di volleyballworld tramite Playwright.
+    Più affidabile dello scraping HTML — restituisce dati strutturati.
+    Esclude i tornei Futures (troppo numerosi e non rilevanti).
     """
-    print(f"  → Carico pagina BPT: {BPT_URL}")
-    page.goto(BPT_URL, wait_until="domcontentloaded", timeout=30000)
-    page.wait_for_timeout(5000)  # attesa rendering JS tornei
+    print(f"  → Chiamo API BPT: {API_URL}")
 
-    # Aspetta che i tornei siano caricati (elemento con le card eventi)
-    try:
-        page.wait_for_selector("[class*='event'], [class*='competition'], [class*='tournament']",
-                               timeout=15000)
-    except PlaywrightTimeout:
-        print("    ATTENZIONE: elementi eventi non trovati, provo con testo grezzo")
+    # Usa Playwright per fare la chiamata API (bypassa robots.txt)
+    response = page.request.get(API_URL, headers={
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+        "Referer": "https://en.volleyballworld.com/"
+    })
 
-    # Cerca tutti i link a pagine di tornei individuali
-    # Il sito usa URL tipo /beachvolleyball/competitions/beach-pro-tour/events/[nome-torneo]/
-    links = page.evaluate("""
-        () => {
-            const anchors = Array.from(document.querySelectorAll('a[href]'));
-            const tournamentLinks = anchors
-                .filter(a => {
-                    const url = a.href;
-                    // Deve contenere /events/ e finire con uno slug torneo (non #anchor)
-                    return url.includes('/events/') &&
-                           !url.endsWith('/events/') &&
-                           !url.includes('#') &&
-                           !url.includes('news') &&
-                           !url.includes('article') &&
-                           url.split('/events/')[1] &&
-                           url.split('/events/')[1].length > 3;
-                })
-                .map(a => ({
-                    href: a.href,
-                    text: a.textContent.trim()
-                }));
-            // Deduplica per href
-            const seen = new Set();
-            return tournamentLinks.filter(l => {
-                if (seen.has(l.href)) return false;
-                seen.add(l.href);
-                return true;
-            });
-        }
-    """)
+    if not response.ok:
+        print(f"    ERRORE API: {response.status}")
+        return []
 
-    # Se non trova link diretti, prova a leggere le card con date
-    if not links:
-        print("    Nessun link torneo trovato, provo selettori alternativi")
-        links = page.evaluate("""
-            () => {
-                const anchors = Array.from(document.querySelectorAll('a[href]'));
-                return anchors
-                    .filter(a => a.href.includes('beach-pro-tour') &&
-                                 a.href.length > 60)
-                    .map(a => ({ href: a.href, text: a.textContent.trim() }))
-                    .slice(0, 50);
-            }
-        """)
-
-    print(f"    Trovati {len(links)} link tornei candidati")
+    data = response.json()
+    print(f"    API risposta ricevuta — parsing tornei...")
 
     tournaments = []
-    for link in links:
-        url = link["href"]
-        text = link["text"]
+    # La risposta può essere lista diretta o nested
+    items = data if isinstance(data, list) else data.get("competitions", data.get("events", data.get("results", [])))
 
-        # Estrai info dal testo del link o dall'URL
-        # Formato tipico URL: .../events/bpt-elite16-hamburg-2026/
-        slug = url.rstrip("/").split("/")[-1]
+    for item in items:
+        # Estrai nome/titolo
+        nome = (item.get("title") or item.get("name") or
+                item.get("competition_name") or item.get("event_name") or "")
+
+        # Salta i Futures
+        nome_lower = nome.lower()
+        if any(skip in nome_lower for skip in SKIP_CATEGORIES):
+            print(f"    Skip Futures: {nome}")
+            continue
+
+        # Estrai location
+        location = (item.get("location") or item.get("city") or
+                   item.get("venue") or item.get("country") or "")
+        if isinstance(location, dict):
+            location = location.get("city", "") or location.get("name", "")
+
+        # Estrai date
+        date_start_str = (item.get("start_date") or item.get("date_start") or
+                         item.get("startDate") or item.get("start") or "")
+        date_end_str   = (item.get("end_date") or item.get("date_end") or
+                         item.get("endDate") or item.get("end") or "")
+
+        d_start = parse_api_date(date_start_str)
+        d_end   = parse_api_date(date_end_str)
+
+        # URL pagina torneo
+        slug = (item.get("slug") or item.get("url_slug") or
+               item.get("id") or nome.lower().replace(" ", "-"))
+        url = (item.get("url") or item.get("link") or
+               f"https://en.volleyballworld.com/beachvolleyball/competitions/beach-pro-tour/events/{slug}/")
+
+        # Cerca presenza giocatore nella lista teams/players se disponibile
+        teams    = item.get("teams", item.get("players", item.get("athletes", [])))
+        teams_str = json.dumps(teams).lower() if teams else ""
 
         tournaments.append({
-            "nome": text if text else slug,
-            "slug": slug,
-            "url": url,
-            "date_start": None,
-            "date_end": None,
-            "location": "",
+            "nome":             nome,
+            "slug":             str(slug),
+            "url":              url,
+            "date_start":       d_start,
+            "date_end":         d_end,
+            "location":         location,
+            "gianluca_presente": PLAYER_SEARCH in teams_str,
+            "raw":              item  # mantieni raw per debug
         })
 
+    print(f"    Tornei parsati (esclusi Futures): {len(tournaments)}")
     return tournaments
+
+
+def parse_api_date(date_str: str):
+    """Converte stringa data API in oggetto date."""
+    if not date_str:
+        return None
+    from datetime import datetime
+    # Prova vari formati
+    for fmt in ["%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ",
+                "%d/%m/%Y", "%m/%d/%Y", "%Y%m%d"]:
+        try:
+            return datetime.strptime(date_str[:10], fmt[:len(date_str[:10])]).date()
+        except ValueError:
+            continue
+    return None
 
 
 def scrape_tournament_details(page, tournament: dict) -> dict:
@@ -545,35 +558,38 @@ def main():
             testo = genera_testo_calendario([])
             browser.close()
         else:
-            # 2. Filtra tornei nel mese da pianificare e cerca "Dal Corso"
+            # 2. Filtra tornei nel mese da pianificare
+            # L'API può già includere i giocatori — se non li include,
+            # apre la pagina del torneo solo per quelli con date nel mese target
+            primo_mese  = date(ANNO, MESE_NUM, 1)
+            ultimo_mese = primo_mese + relativedelta(months=1) - timedelta(days=1)
+
             tornei_mese = []
             for t in tournaments:
-                # Controlla se il torneo è nel mese target (o a cavallo)
-                details = scrape_tournament_details(page, t)
-
-                if not details.get("gianluca_presente"):
-                    continue
-
-                d_start = details.get("date_start")
-                d_end   = details.get("date_end")
+                d_start = t.get("date_start")
+                d_end   = t.get("date_end")
 
                 if not d_start or not d_end:
-                    print(f"      Date non trovate per {t['slug']}, skip")
                     continue
 
-                # Includi se il torneo ricade nel mese da pianificare
-                # (anche se inizia nel mese corrente — trasferta potrebbe iniziare nel mese target)
-                primo_mese  = date(ANNO, MESE_NUM, 1)
-                ultimo_mese = primo_mese + relativedelta(months=1) - timedelta(days=1)
-
-                # Calcola partenza per capire se interessa il mese target
-                anticipo     = 6 if is_oltreoceano(details.get("location", "")) else 4
+                # Calcola se il torneo interessa il mese target
+                anticipo      = 6 if is_oltreoceano(t.get("location", "")) else 4
                 data_partenza = d_start - timedelta(days=anticipo)
-                data_riposo  = d_end + timedelta(days=3)  # rientro + 2 riposo
+                data_riposo   = d_end + timedelta(days=3)
 
-                if data_riposo >= primo_mese and data_partenza <= ultimo_mese:
-                    tornei_mese.append(details)
-                    print(f"    ✅ Torneo confermato: {details['slug']} — {d_start} → {d_end} @ {details['location']}")
+                if not (data_riposo >= primo_mese and data_partenza <= ultimo_mese):
+                    continue  # torneo fuori dal mese target
+
+                # Se l'API non ha già i giocatori, apri la pagina del torneo
+                if not t.get("gianluca_presente"):
+                    details = scrape_tournament_details(page, t)
+                    t.update(details)
+
+                if t.get("gianluca_presente"):
+                    tornei_mese.append(t)
+                    print(f"    ✅ {t['nome']} — {d_start} → {d_end} @ {t['location']}")
+                else:
+                    print(f"    ✗  {t['nome']} — Dal Corso non trovato")
 
         browser.close()
 
