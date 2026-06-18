@@ -53,7 +53,8 @@ SUPA_KEY     = os.environ["SUPABASE_KEY"]
 VAPID_PRIV   = os.environ["VAPID_PRIVATE_KEY"]
 VAPID_EMAIL  = os.environ["VAPID_EMAIL"]
 
-EXCEL_FILENAME = "Instagram_Analytics_GDC.xlsx"
+EXCEL_FILENAME       = "Instagram_Analytics_GDC"        # nome senza estensione — file nativo Google
+EXCEL_FILENAME_LOCAL = "Instagram_Analytics_GDC.xlsx"    # nome locale temporaneo con estensione
 
 # Mese precedente (quello da analizzare)
 today        = date.today()
@@ -172,11 +173,28 @@ def get_drive_service():
 
 
 def drive_find_file(service, name, folder_id):
-    """Trova un file per nome in una cartella Drive. Ritorna ID o None."""
+    """
+    Trova un file per nome in una cartella Drive. Ritorna ID o None.
+    Cerca sia il nome esatto che la versione con estensione rimossa
+    (per trovare file nativi Google precedentemente caricati come Office).
+    """
+    # Cerca il nome esatto (file nativo Google o JSON)
     query = f"name='{name}' and '{folder_id}' in parents and trashed=false"
     results = service.files().list(q=query, fields="files(id, name)").execute()
     files = results.get("files", [])
-    return files[0]["id"] if files else None
+    if files:
+        return files[0]["id"]
+
+    # Cerca senza estensione (es. "Instagram_Analytics_GDC" se cercavamo "Instagram_Analytics_GDC.xlsx")
+    name_no_ext = name.rsplit(".", 1)[0] if "." in name else None
+    if name_no_ext and name_no_ext != name:
+        query2 = f"name='{name_no_ext}' and '{folder_id}' in parents and trashed=false"
+        results2 = service.files().list(q=query2, fields="files(id, name)").execute()
+        files2 = results2.get("files", [])
+        if files2:
+            return files2[0]["id"]
+
+    return None
 
 
 def drive_download_excel(service, file_id, dest_path):
@@ -221,17 +239,28 @@ def drive_download_stories_json(service, folder_id):
 
 
 def drive_upload_excel(service, local_path, folder_id, existing_id=None):
-    """Carica (o aggiorna) il file Excel su Drive."""
-    media = MediaFileUpload(local_path, mimetype=(
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    ))
+    """
+    Carica (o aggiorna) il file Excel su Drive convertendolo in Foglio Google nativo.
+    La conversione avviene passando mimeType nativo nel file_metadata.
+    I file nativi Google sono leggibili direttamente dagli agenti successivi via Drive API.
+    """
+    media = MediaFileUpload(
+        local_path,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
     if existing_id:
+        # Aggiorna file esistente — Drive mantiene il formato nativo
         service.files().update(fileId=existing_id, media_body=media).execute()
-        print(f"    Excel aggiornato su Drive (ID: {existing_id})")
+        print(f"    Foglio Google aggiornato su Drive (ID: {existing_id})")
     else:
-        meta = {"name": EXCEL_FILENAME, "parents": [folder_id]}
+        # Crea nuovo file con conversione automatica in Foglio Google nativo
+        meta = {
+            "name": EXCEL_FILENAME,          # senza estensione
+            "parents": [folder_id],
+            "mimeType": "application/vnd.google-apps.spreadsheet"  # forza conversione
+        }
         f = service.files().create(body=meta, media_body=media, fields="id").execute()
-        print(f"    Excel creato su Drive (ID: {f['id']})")
+        print(f"    Foglio Google creato su Drive (ID: {f['id']})")
 
 
 # ─── 3. EXCEL — STRUTTURA E COMPILAZIONE ────────────────────────────────────────
@@ -619,9 +648,9 @@ def main():
 
     # 4. Scarica Excel esistente (o parti da zero)
     with tempfile.TemporaryDirectory() as tmpdir:
-        local_excel = os.path.join(tmpdir, EXCEL_FILENAME)
+        local_excel = os.path.join(tmpdir, EXCEL_FILENAME_LOCAL)
 
-        existing_id = drive_find_file(drive_service, EXCEL_FILENAME, DRIVE_FOLDER)
+        existing_id = drive_find_file(drive_service, EXCEL_FILENAME_LOCAL, DRIVE_FOLDER)
         if existing_id:
             drive_download_excel(drive_service, existing_id, local_excel)
 
@@ -636,7 +665,6 @@ def main():
         # 6. Salva e carica su Drive
         wb.save(local_excel)
         drive_upload_excel(drive_service, local_excel, DRIVE_FOLDER, existing_id)
-
     # 7. Aggiorna Supabase → done
     supabase_update_state("a1", "done", {
         "mese": MESE_LABEL,
