@@ -52,7 +52,7 @@ MESE_LABEL      = f"{MESE_IT} {ANNO}"
 MESE_IT_LOWER   = MESE_IT.lower()
 
 BPT_URL         = f"https://en.volleyballworld.com/beachvolleyball/competitions/beach-pro-tour/{ANNO}/"
-PLAYER_SEARCH   = "dal corso"   # cerca case-insensitive
+PLAYER_SEARCH_TERMS = ["dal corso", "cottafava", "cottafava/dal corso"]  # tutti i modi in cui può apparire
 
 print(f"▶ BPT Calendar — mese da pianificare: {MESE_LABEL}")
 
@@ -151,6 +151,7 @@ def scrape_bpt_tournaments(page) -> list[dict]:
         # Cerca presenza giocatore nella lista teams/players se disponibile
         teams    = item.get("teams", item.get("players", item.get("athletes", [])))
         teams_str = json.dumps(teams).lower() if teams else ""
+        found_in_api = any(term in teams_str for term in PLAYER_SEARCH_TERMS)
 
         tournaments.append({
             "nome":             nome,
@@ -159,7 +160,7 @@ def scrape_bpt_tournaments(page) -> list[dict]:
             "date_start":       d_start,
             "date_end":         d_end,
             "location":         location,
-            "gianluca_presente": PLAYER_SEARCH in teams_str,
+            "gianluca_presente": found_in_api,
             "raw":              item  # mantieni raw per debug
         })
 
@@ -204,11 +205,22 @@ def scrape_tournament_details(page, tournament: dict) -> dict:
         print(f"      Timeout su {url}, skip")
         return tournament
 
+    # Aspetta che la lista squadre sia caricata (rendering JS)
+    try:
+        page.wait_for_selector("table, [class*='team'], [class*='player'], [class*='athlete']",
+                               timeout=8000)
+    except Exception:
+        pass
+    page.wait_for_timeout(2000)  # attesa extra per rendering completo
+
     # Leggi tutto il testo della pagina
     full_text = page.inner_text("body").lower()
 
-    # Controlla presenza "Dal Corso"
-    tournament["gianluca_presente"] = PLAYER_SEARCH in full_text
+    # Controlla presenza giocatore con tutti i termini possibili
+    tournament["gianluca_presente"] = any(term in full_text for term in PLAYER_SEARCH_TERMS)
+    if tournament["gianluca_presente"]:
+        matched = [t for t in PLAYER_SEARCH_TERMS if t in full_text]
+        print(f"      ✅ Trovato: {matched}")
 
     # Estrai date — formato tipico: "15 - 20 Jul 2026" o "Jul 15-20, 2026"
     tournament["date_start"], tournament["date_end"] = extract_dates_from_page(page, full_text)
