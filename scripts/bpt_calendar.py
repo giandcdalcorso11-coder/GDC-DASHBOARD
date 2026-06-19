@@ -90,6 +90,34 @@ API_URL = f"https://en.volleyballworld.com/api/v1/globalschedule/bpt/competition
 # Categorie da escludere (Futures = tornei minori)
 SKIP_CATEGORIES = ["futures", "future"]
 
+
+def parse_slug(slug: str) -> tuple:
+    """
+    Estrae città e categoria da uno slug BPT.
+    Es: 'elite16-gstaad-sui-2026' → ('Gstaad', 'Elite16')
+    """
+    s = slug.lower()
+    # Rimuovi anno finale
+    s = re.sub(r'-\d{4}$', '', s)
+
+    # Identifica e rimuovi categoria
+    categoria = ""
+    for cat, label in [("elite16", "Elite16"), ("elite8", "Elite8"), ("elite", "Elite"),
+                       ("challenger", "Challenger"), ("major", "Major"), ("challenge", "Challenge")]:
+        if cat in s:
+            categoria = label
+            s = s.replace(cat, "").strip("-")
+            break
+
+    # Rimuovi prefisso bpt
+    s = re.sub(r'^bpt-?', '', s).strip("-")
+    # Rimuovi codice nazione finale (2-3 lettere)
+    s = re.sub(r'-[a-z]{2,3}$', '', s).strip("-")
+
+    citta = s.replace("-", " ").title().strip()
+    return citta, categoria
+
+
 def scrape_bpt_tournaments(page) -> list[dict]:
     """
     Chiama direttamente l'API JSON di volleyballworld tramite Playwright.
@@ -117,21 +145,32 @@ def scrape_bpt_tournaments(page) -> list[dict]:
     items = data if isinstance(data, list) else data.get("competitions", data.get("events", data.get("results", [])))
 
     for item in items:
-        # Estrai nome/titolo
-        nome = (item.get("title") or item.get("name") or
-                item.get("competition_name") or item.get("event_name") or "")
+        # Estrai slug — serve per nome e location come fallback
+        slug_raw = (item.get("slug") or item.get("url_slug") or
+                    item.get("id") or "")
+        slug_str = str(slug_raw).lower()
 
-        # Salta i Futures
-        nome_lower = nome.lower()
-        if any(skip in nome_lower for skip in SKIP_CATEGORIES):
-            print(f"    Skip Futures: {nome}")
+        # Salta i Futures (controlla sia slug che nome)
+        nome_api = (item.get("title") or item.get("name") or
+                    item.get("competition_name") or item.get("event_name") or "")
+        if any(skip in slug_str for skip in SKIP_CATEGORIES) or            any(skip in nome_api.lower() for skip in SKIP_CATEGORIES):
+            print(f"    Skip Futures: {slug_str or nome_api}")
             continue
 
-        # Estrai location
+        # Ricava città e categoria dallo slug (sempre affidabile)
+        citta_slug, categoria_slug = parse_slug(slug_str) if slug_str else ("", "")
+        nome_da_slug = f"{citta_slug} {categoria_slug}".strip() if categoria_slug else citta_slug
+
+        # Nome: preferisci API ma fallback su slug
+        nome = nome_api or nome_da_slug
+
+        # Location: preferisci API ma fallback su città dallo slug
         location = (item.get("location") or item.get("city") or
                    item.get("venue") or item.get("country") or "")
         if isinstance(location, dict):
             location = location.get("city", "") or location.get("name", "")
+        if not location:
+            location = citta_slug  # fallback affidabile dallo slug
 
         # Estrai date
         date_start_str = (item.get("start_date") or item.get("date_start") or
@@ -143,15 +182,9 @@ def scrape_bpt_tournaments(page) -> list[dict]:
         d_end   = parse_api_date(date_end_str)
 
         # URL pagina torneo
-        slug = (item.get("slug") or item.get("url_slug") or
-               item.get("id") or nome.lower().replace(" ", "-"))
+        slug = slug_raw  # già estratto sopra
         url = (item.get("url") or item.get("link") or
                f"https://en.volleyballworld.com/beachvolleyball/competitions/beach-pro-tour/events/{slug}/")
-
-        # Migliora nome: se vuoto o generico, ricavalo dallo slug
-        if not nome and slug:
-            nome = re.sub(r'[-_]', ' ', str(slug)).title()
-            nome = re.sub(r'\b\d{4}\b', '', nome).strip()
 
         # Cerca presenza giocatore nella lista teams/players se disponibile
         teams    = item.get("teams", item.get("players", item.get("athletes", [])))
