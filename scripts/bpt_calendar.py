@@ -365,8 +365,15 @@ def calcola_periodi(torneo: dict) -> dict:
     - rientro (giorno dopo fine)
     - riposo (2 giorni dopo rientro)
     """
+    # Assicura che le date siano oggetti date (potrebbero essere stringhe dall'API)
     d_start = torneo["date_start"]
     d_end   = torneo["date_end"]
+    if isinstance(d_start, str):
+        d_start = parse_api_date(d_start)
+    if isinstance(d_end, str):
+        d_end = parse_api_date(d_end)
+    if not d_start or not d_end:
+        raise ValueError(f"Date mancanti per torneo: {torneo.get('nome', '?')}")
     loc     = torneo["location"]
 
     anticipo   = 6 if is_oltreoceano(loc) else 4
