@@ -148,6 +148,11 @@ def scrape_bpt_tournaments(page) -> list[dict]:
         url = (item.get("url") or item.get("link") or
                f"https://en.volleyballworld.com/beachvolleyball/competitions/beach-pro-tour/events/{slug}/")
 
+        # Migliora nome: se vuoto o generico, ricavalo dallo slug
+        if not nome and slug:
+            nome = re.sub(r'[-_]', ' ', str(slug)).title()
+            nome = re.sub(r'\b\d{4}\b', '', nome).strip()
+
         # Cerca presenza giocatore nella lista teams/players se disponibile
         teams    = item.get("teams", item.get("players", item.get("athletes", [])))
         teams_str = json.dumps(teams).lower() if teams else ""
@@ -169,7 +174,7 @@ def scrape_bpt_tournaments(page) -> list[dict]:
 
 
 def parse_api_date(date_str) -> date:
-    """Converte stringa data API in oggetto date. Gestisce stringhe e timestamp."""
+    """Converte stringa data API in oggetto date. Gestisce stringhe e timestamp Unix."""
     if not date_str:
         return None
     from datetime import datetime
@@ -178,8 +183,25 @@ def parse_api_date(date_str) -> date:
     if isinstance(date_str, date):
         return date_str
 
+    # Timestamp Unix (int o float) — es. 1782864000
+    if isinstance(date_str, (int, float)):
+        try:
+            from datetime import timezone as _tz
+            return datetime.fromtimestamp(date_str, tz=_tz.utc).date()
+        except (ValueError, OSError, OverflowError):
+            print(f"      ATTENZIONE: timestamp Unix non valido: {date_str}")
+            return None
+
     # Converti in stringa se necessario
     date_str = str(date_str).strip()
+
+    # Gestisci anche stringa numerica pura (timestamp come stringa)
+    if date_str.isdigit() and len(date_str) >= 10:
+        try:
+            from datetime import timezone as _tz
+            return datetime.fromtimestamp(int(date_str), tz=_tz.utc).date()
+        except (ValueError, OSError, OverflowError):
+            pass
 
     # Prova vari formati — dal più comune al meno comune
     formats = [
@@ -346,9 +368,12 @@ def extract_location_from_page(page, full_text: str, slug: str) -> str:
             return text
 
     # Estrai dalla slug URL: "bpt-elite16-hamburg-2026" → "Hamburg"
-    # Rimuovi prefissi noti e anno
-    slug_clean = re.sub(r'bpt[-_]?|elite[-_]?\d*|challenger[-_]?|futures[-_]?|\d{4}', '', slug, flags=re.IGNORECASE)
-    slug_clean = slug_clean.strip("-_").replace("-", " ").replace("_", " ").title()
+    # Rimuovi prefissi noti, categorie e anno
+    slug_clean = re.sub(
+        r'bpt[-_]?|elite[-_]?\d*|elite\d*|challenger[-_]?|futures[-_]?|\d{4}[-_]?|[-_]\d{4}',
+        '', slug, flags=re.IGNORECASE
+    )
+    slug_clean = slug_clean.strip("-_ ").replace("-", " ").replace("_", " ").title()
     if slug_clean:
         return slug_clean
 
@@ -396,8 +421,11 @@ def calcola_periodi(torneo: dict) -> dict:
 # ─── GENERAZIONE TESTO PER A3 ────────────────────────────────────────────────────
 
 def format_date_it(d: date) -> str:
-    giorni = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"]
-    return f"{giorni[d.weekday()]} {d.day} {MESE_IT[:3].lower()}"
+    """Formatta data in italiano: 'lun 27 giu'. Usa il mese reale della data."""
+    giorni    = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"]
+    mesi_abbr = ["", "gen", "feb", "mar", "apr", "mag", "giu",
+                 "lug", "ago", "set", "ott", "nov", "dic"]
+    return f"{giorni[d.weekday()]} {d.day} {mesi_abbr[d.month]}"
 
 
 def genera_testo_calendario(tornei_mese: list[dict]) -> str:
@@ -432,8 +460,9 @@ def genera_testo_calendario(tornei_mese: list[dict]) -> str:
         lines.append(f"🏐 TORNEO: {p['nome']}")
         lines.append(f"   Luogo: {p['location']}")
         lines.append(f"   Trasferta: {tipo_trasferta}")
-        lines.append(f"   Partenza:  {format_date_it(p['partenza'])} ({p['partenza'].day} {MESE_IT[:3]})")
-        lines.append(f"   Torneo:    {p['date_start'].day}–{p['date_end'].day} {MESE_IT[:3]} {ANNO}")
+        lines.append(f"   Partenza:  {format_date_it(p['partenza'])}")
+        mesi_abbr_t = ["","Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"]
+        lines.append(f"   Torneo:    {p['date_start'].day}–{p['date_end'].day} {mesi_abbr_t[p['date_start'].month]} {p['date_start'].year}")
         lines.append(f"   Rientro:   {format_date_it(p['rientro'])}")
         lines.append(f"   Riposo:    {format_date_it(p['rientro'] + timedelta(days=1))}–{format_date_it(p['riposo_end'])}")
 
