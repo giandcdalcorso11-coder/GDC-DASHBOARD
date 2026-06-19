@@ -281,11 +281,23 @@ def scrape_tournament_details(page, tournament: dict) -> dict:
     else:
         tournament["gianluca_presente"] = False
 
-    # Estrai date — formato tipico: "15 - 20 Jul 2026" o "Jul 15-20, 2026"
-    tournament["date_start"], tournament["date_end"] = extract_dates_from_page(page, full_text)
+    # Estrai date dalla pagina — ma SOLO se non le abbiamo già dall'API
+    # Le date API sono affidabili; lo scraping HTML è fallback
+    if not tournament.get("date_start") or not tournament.get("date_end"):
+        d_s, d_e = extract_dates_from_page(page, full_text)
+        if d_s:
+            tournament["date_start"] = d_s
+        if d_e:
+            tournament["date_end"] = d_e
 
-    # Estrai location
-    tournament["location"] = extract_location_from_page(page, full_text, tournament["slug"])
+    # Estrai location — priorità: API → scraping pagina → slug
+    if not tournament.get("location"):
+        tournament["location"] = extract_location_from_page(page, full_text, tournament["slug"])
+    else:
+        # Prova a migliorare location se è ancora vuota o troppo generica
+        loc = tournament.get("location", "")
+        if not loc or loc == "Location TBD":
+            tournament["location"] = extract_location_from_page(page, full_text, tournament["slug"])
 
     return tournament
 
@@ -674,7 +686,11 @@ def main():
                 # Se l'API non ha già i giocatori, apri la pagina del torneo
                 if not t.get("gianluca_presente"):
                     details = scrape_tournament_details(page, t)
-                    t.update(details)
+                    # Merge selettivo: aggiorna solo campi non-None e non già presenti
+                    # (evita di sovrascrivere date valide dall'API con None da scraping)
+                    for k, v in details.items():
+                        if v is not None or k not in t:
+                            t[k] = v
 
                 if t.get("gianluca_presente"):
                     tornei_mese.append(t)
