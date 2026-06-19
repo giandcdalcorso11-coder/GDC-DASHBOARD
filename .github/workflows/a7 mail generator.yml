@@ -1,0 +1,52 @@
+name: A7 — Mail Generator (Bozze Gmail)
+
+on:
+  # Polling ogni 15 minuti — rileva nuovi file TXT in Drive automaticamente
+  schedule:
+    - cron: '*/15 * * * *'
+
+  # Trigger manuale dalla webapp (pulsante "Genera bozza" nella company page)
+  workflow_dispatch:
+    inputs:
+      azienda:
+        description: 'Nome azienda (opzionale — se vuoto elabora tutti i pending)'
+        required: false
+        default: ''
+
+jobs:
+
+  run-a7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Installa dipendenze
+        run: pip install -r scripts/requirements.txt
+
+      - name: Esegui A7 Mail Generator
+        env:
+          GOOGLE_CREDENTIALS:   ${{ secrets.GOOGLE_CREDENTIALS }}
+          DRIVE_FOLDER_A6:      ${{ secrets.DRIVE_FOLDER_A6 }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:         ${{ secrets.SUPABASE_KEY }}
+          GMAIL_DELEGATED_USER: ${{ secrets.GMAIL_DELEGATED_USER }}
+          PUSH_SUBSCRIPTION:    ${{ secrets.PUSH_SUBSCRIPTION }}
+          VAPID_PRIVATE_KEY:    ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:          ${{ secrets.VAPID_EMAIL }}
+          # Input manuale dalla webapp (vuoto se non specificato)
+          A7_FILTER_AZIENDA:    ${{ github.event.inputs.azienda }}
+        run: python scripts/a7_mail_generator.py
+
+      - name: Notifica fallimento A7
+        if: failure()
+        run: echo "❌ A7 Mail Generator FALLITO — controlla i log"
