@@ -234,9 +234,11 @@ def scrape_tournament_details(page, tournament: dict) -> dict:
 
     for check_url in [teams_url, base_url]:
         try:
-            page.goto(check_url, wait_until="domcontentloaded", timeout=20000)
+            page.goto(check_url, wait_until="domcontentloaded", timeout=45000)
+            page.wait_for_timeout(3000)  # pausa anti-rate-limit
         except PlaywrightTimeout:
             print(f"      Timeout su {check_url}, skip")
+            page.wait_for_timeout(5000)  # pausa extra dopo timeout
             continue
 
         # Aspetta rendering JS lista squadre
@@ -643,6 +645,9 @@ def main():
                     print(f"    ✅ {t['nome']} — {d_start} → {d_end} @ {t['location']}")
                 else:
                     print(f"    ✗  {t['nome']} — Dal Corso non trovato")
+
+                # Pausa anti-rate-limit tra un torneo e l'altro
+                page.wait_for_timeout(4000)
 
         browser.close()
 
