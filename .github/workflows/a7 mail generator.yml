@@ -3,7 +3,7 @@ name: A7 — Mail Generator (Bozze Gmail)
 on:
   # Polling ogni 15 minuti — rileva nuovi file TXT in Drive automaticamente
   schedule:
-    - cron: '*/15 * * * *'
+    //- cron: '*/15 * * * *'
 
   # Trigger manuale dalla webapp (pulsante "Genera bozza" nella company page)
   workflow_dispatch:
