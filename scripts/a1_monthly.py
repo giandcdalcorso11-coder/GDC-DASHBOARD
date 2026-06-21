@@ -83,11 +83,43 @@ print(f"  Periodo: {PRIMO_GIORNO} → {ULTIMO_GIORNO}")
 
 def ig_get(endpoint, params={}):
     """Chiamata GET all'API Instagram Graph."""
-    base = f"https://graph.instagram.com/v21.0/{endpoint}"
+    base = f"https://graph.facebook.com/v21.0/{endpoint}"
     params["access_token"] = IG_TOKEN
     r = requests.get(base, params=params)
     r.raise_for_status()
     return r.json()
+
+
+def fetch_post_insights(media_id, media_type):
+    """
+    Recupera metriche avanzate per un singolo post/reel via /insights.
+    Le metriche disponibili variano per tipo di media.
+    """
+    # Metriche per IMAGE/CAROUSEL_ALBUM
+    if media_type in ("IMAGE", "CAROUSEL_ALBUM"):
+        metric = "impressions,reach,saved,shares,likes,comments,follows"
+    # Metriche per VIDEO/REELS
+    elif media_type in ("VIDEO", "REELS"):
+        metric = "impressions,reach,saved,shares,likes,comments,follows,plays"
+    else:
+        metric = "impressions,reach,saved,shares,likes,comments,follows"
+
+    try:
+        ins = ig_get(f"{media_id}/insights", {
+            "metric": metric,
+            "period": "lifetime"
+        })
+        return {m["name"]: m["values"][0]["value"] for m in ins.get("data", [])}
+    except Exception as e:
+        # Prova con metriche minime se quelle avanzate falliscono
+        try:
+            ins = ig_get(f"{media_id}/insights", {
+                "metric": "impressions,reach,saved,shares",
+                "period": "lifetime"
+            })
+            return {m["name"]: m["values"][0]["value"] for m in ins.get("data", [])}
+        except Exception:
+            return {}
 
 
 def fetch_posts():
@@ -96,11 +128,8 @@ def fetch_posts():
     Paginazione automatica finché non usciamo dal periodo.
     """
     print("  → Fetch post/reel...")
-    fields = (
-        "id,timestamp,media_type,caption,permalink,"
-        "like_count,comments_count,reach,impressions,"
-        "saved,shares,follows,username"
-    )
+    # Solo campi base nel media endpoint — le metriche si prendono da /insights
+    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,username"
     posts = []
     url = f"{IG_USER_ID}/media"
     params = {"fields": fields, "limit": 100}
@@ -116,20 +145,11 @@ def fetch_posts():
             if item_date > ULTIMO_GIORNO:
                 continue  # ancora nel mese corrente, salta
             if item_date < PRIMO_GIORNO:
-                # Siamo usciti dal mese target — stoppa paginazione
                 print(f"    Trovati {len(posts)} post nel periodo")
                 return posts
 
             # Recupera metriche avanzate per ogni media
-            try:
-                ins = ig_get(f"{item['id']}/insights", {
-                    "metric": "reach,impressions,saved,shares,follows",
-                    "period": "lifetime"
-                })
-                metrics = {m["name"]: m["values"][0]["value"] for m in ins.get("data", [])}
-            except Exception:
-                metrics = {}
-
+            metrics = fetch_post_insights(item["id"], item.get("media_type", "IMAGE"))
             item.update(metrics)
             posts.append(item)
 
@@ -137,7 +157,6 @@ def fetch_posts():
         next_url = data.get("paging", {}).get("next")
         if not next_url:
             break
-        # Estrai solo il path per il prossimo giro
         import urllib.parse as urlparse
         parsed = urlparse.urlparse(next_url)
         params = dict(urlparse.parse_qsl(parsed.query))
