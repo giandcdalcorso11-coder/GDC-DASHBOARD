@@ -193,34 +193,43 @@ def get_drive_service():
 
 def drive_find_file(service, name, folder_id):
     """
-    Trova un file per nome in una cartella Drive. Ritorna ID o None.
-    Cerca sia il nome esatto che la versione con estensione rimossa
-    (per trovare file nativi Google precedentemente caricati come Office).
+    Trova un file per nome in una cartella Drive.
+    Ritorna (id, mimeType) o (None, None).
     """
-    # Cerca il nome esatto (file nativo Google o JSON)
     query = f"name='{name}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, fields="files(id, name)").execute()
+    results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
     files = results.get("files", [])
     if files:
-        return files[0]["id"]
+        return files[0]["id"], files[0]["mimeType"]
 
-    # Cerca senza estensione (es. "Instagram_Analytics_GDC" se cercavamo "Instagram_Analytics_GDC.xlsx")
     name_no_ext = name.rsplit(".", 1)[0] if "." in name else None
     if name_no_ext and name_no_ext != name:
         query2 = f"name='{name_no_ext}' and '{folder_id}' in parents and trashed=false"
-        results2 = service.files().list(q=query2, fields="files(id, name)").execute()
+        results2 = service.files().list(q=query2, fields="files(id, name, mimeType)").execute()
         files2 = results2.get("files", [])
         if files2:
-            return files2[0]["id"]
+            return files2[0]["id"], files2[0]["mimeType"]
 
-    return None
+    return None, None
 
 
-def drive_download_excel(service, file_id, dest_path):
-    """Scarica il file Excel dal Drive."""
+def drive_download_excel(service, file_id, mime_type, dest_path):
+    """
+    Scarica il file Excel dal Drive.
+    Se e un Foglio Google nativo, usa Export in formato xlsx.
+    """
     from googleapiclient.http import MediaIoBaseDownload
     import io
-    request = service.files().get_media(fileId=file_id)
+
+    GOOGLE_SHEETS_MIME = "application/vnd.google-apps.spreadsheet"
+    XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    if mime_type == GOOGLE_SHEETS_MIME:
+        request = service.files().export_media(fileId=file_id, mimeType=XLSX_MIME)
+        print(f"    Export Foglio Google → xlsx")
+    else:
+        request = service.files().get_media(fileId=file_id)
+
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
     done = False
@@ -238,7 +247,7 @@ def drive_download_stories_json(service, folder_id):
     Restituisce lista di stories aggregate.
     """
     filename = f"stories_{MESE_IT.lower()}_{ANNO}.json"
-    file_id = drive_find_file(service, filename, folder_id)
+    file_id, _ = drive_find_file(service, filename, folder_id)
     if not file_id:
         print(f"    Nessun file stories trovato: {filename}")
         return []
@@ -669,9 +678,9 @@ def main():
     with tempfile.TemporaryDirectory() as tmpdir:
         local_excel = os.path.join(tmpdir, EXCEL_FILENAME_LOCAL)
 
-        existing_id = drive_find_file(drive_service, EXCEL_FILENAME_LOCAL, DRIVE_FOLDER)
+        existing_id, existing_mime = drive_find_file(drive_service, EXCEL_FILENAME_LOCAL, DRIVE_FOLDER)
         if existing_id:
-            drive_download_excel(drive_service, existing_id, local_excel)
+            drive_download_excel(drive_service, existing_id, existing_mime, local_excel)
 
         wb = get_or_create_workbook(local_excel)
 
