@@ -53,10 +53,10 @@ PROCESSED_FOLDER_NAME = 'processed'
 
 # ── DRIVE CLIENT (service account) ──────────────────────────────────
 def get_drive_service():
-    import tempfile
+    import base64
     from google.oauth2 import service_account
 
-    creds_info = json.loads(GOOGLE_CREDENTIALS)
+    creds_info = json.loads(base64.b64decode(GOOGLE_CREDENTIALS))
     creds = service_account.Credentials.from_service_account_info(
         creds_info,
         scopes=['https://www.googleapis.com/auth/drive']
