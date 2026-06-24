@@ -1,10 +1,8 @@
 name: A7 — Gmail Drafter
 
 on:
-  schedule:
-    # Ogni 15 minuti — attiva SOLO dopo aver completato Gmail OAuth setup
-    # Per ora commentato: rimuovi il '#' dopo aver aggiunto i secrets Gmail
-    # - cron: '*/15 * * * *'
+  # schedule:
+  #   - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       note:
