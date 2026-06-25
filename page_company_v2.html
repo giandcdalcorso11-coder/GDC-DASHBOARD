@@ -514,40 +514,7 @@ body{
       <span style="font-size:.68rem;color:var(--athlete);font-weight:600;cursor:pointer;">↻ Sync</span>
     </div>
     <div class="sec-body">
-      <div class="doc-list">
-        <a class="doc-item" href="#" target="_blank">
-          <div class="doc-icon docx">DOCX</div>
-          <div class="doc-info">
-            <div class="doc-name">Scheda_Mizuno_Agente52.docx</div>
-            <div class="doc-date">Generato il 3 giu 2026</div>
-          </div>
-          <span class="doc-arrow">→</span>
-        </a>
-        <a class="doc-item" href="#" target="_blank">
-          <div class="doc-icon pptx">PPTX</div>
-          <div class="doc-info">
-            <div class="doc-name">mediakit_Mizuno.pptx</div>
-            <div class="doc-date">Generato il 3 giu 2026</div>
-          </div>
-          <span class="doc-arrow">→</span>
-        </a>
-        <a class="doc-item" href="#" target="_blank">
-          <div class="doc-icon pdf">PDF</div>
-          <div class="doc-info">
-            <div class="doc-name">mediakit_Mizuno.pdf</div>
-            <div class="doc-date">Approvato il 4 giu 2026</div>
-          </div>
-          <span class="doc-arrow">→</span>
-        </a>
-        <a class="doc-item" href="#" target="_blank">
-          <div class="doc-icon txt">TXT</div>
-          <div class="doc-info">
-            <div class="doc-name">mail_Mizuno_2026-06-05.txt</div>
-            <div class="doc-date">Creato il 5 giu 2026</div>
-          </div>
-          <span class="doc-arrow">→</span>
-        </a>
-      </div>
+      <div class="doc-list" id="docList"><div style="font-size:.72rem;color:var(--grigio);padding:8px 0;">Caricamento documenti...</div></div>
     </div>
   </div>
 
@@ -558,16 +525,7 @@ body{
       <span style="font-size:.68rem;color:var(--grigio);">Salvataggio automatico</span>
     </div>
     <div class="sec-body">
-      <div class="note-list" id="noteList">
-        <div class="note-item">
-          <div class="note-date">5 GIU 2026 · 14:32</div>
-          <div class="note-text">Hanno risposto in meno di 24h — molto interessati al formato reel. Chiedono disponibilità per una call la prossima settimana.</div>
-        </div>
-        <div class="note-item">
-          <div class="note-date">3 GIU 2026 · 09:15</div>
-          <div class="note-text">Media kit inviato. Contatto principale: Marco Ricci (marketing manager). Ha già visto il profilo, conosce il BPT.</div>
-        </div>
-      </div>
+      <div class="note-list" id="noteList"></div>
       <textarea class="note-new" id="newNote" placeholder="Aggiungi una nota…"></textarea>
       <button class="note-save" onclick="saveNote()">Salva nota</button>
     </div>
@@ -616,6 +574,7 @@ async function loadCompany() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!data.length) { showError('Azienda non trovata (id=' + id + ')'); return; }
+    currentCompanyId = data[0].id;
     company.name = data[0].nome || '';
     company.a7_status = data[0].a7_status || null;
     populatePage(data[0]);
@@ -689,6 +648,58 @@ function populatePage(co) {
 
   // Titolo pagina
   document.title = 'GDC — ' + (co.nome || 'Azienda');
+
+  // Documenti Drive — generati dal nome azienda
+  const nomeSafe = (co.nome || 'Azienda').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  const driveHref = co.drive_folder || '#';
+  const docList = document.getElementById('docList');
+  if (docList) {
+    const docs = [
+      { type:'docx', label:'DOCX', name:'Scheda_' + nomeSafe + '_A5.2.docx',   desc:'Scheda azienda' },
+      { type:'pptx', label:'PPTX', name:'mediakit_' + nomeSafe + '.pptx',       desc:'Media kit' },
+      { type:'pdf',  label:'PDF',  name:'mediakit_' + nomeSafe + '.pdf',         desc:'Media kit PDF' },
+      { type:'txt',  label:'TXT',  name:'mail_' + nomeSafe + '_*.txt',           desc:'Testo mail A6.2' },
+    ];
+    // Mostra solo doc rilevanti allo step
+    const step = co.step_attuale || 1;
+    const visible = docs.filter((_,i) => (i+1)*2 <= step + 3);
+    if (visible.length === 0) {
+      docList.innerHTML = '<div style="font-size:.72rem;color:var(--grigio);padding:8px 0;">Nessun documento ancora generato.</div>';
+    } else {
+      docList.innerHTML = visible.map(d =>
+        `<a class="doc-item" href="${driveHref}" target="_blank">
+          <div class="doc-icon ${d.type}">${d.label}</div>
+          <div class="doc-info">
+            <div class="doc-name">${d.name}</div>
+            <div class="doc-date">${d.desc}</div>
+          </div>
+          <span class="doc-arrow">→</span>
+        </a>`
+      ).join('');
+    }
+  }
+
+  // Note da Supabase
+  const noteList = document.getElementById('noteList');
+  if (noteList && co.note) {
+    noteList.innerHTML = '';
+    const lines = co.note.split('\n---\n');
+    lines.forEach(line => {
+      if (!line.trim()) return;
+      // Formato: [DD/MM/YYYY, HH:MM] testo
+      const match = line.match(/^\[([^\]]+)\]\s*(.*)/s);
+      const el = document.createElement('div');
+      el.className = 'note-item';
+      if (match) {
+        el.innerHTML = `<div class="note-date">${match[1]}</div><div class="note-text">${match[2].trim()}</div>`;
+      } else {
+        el.innerHTML = `<div class="note-text">${line.trim()}</div>`;
+      }
+      noteList.appendChild(el);
+    });
+  } else if (noteList) {
+    noteList.innerHTML = '<div style="font-size:.72rem;color:var(--grigio);padding:4px 0;">Nessuna nota.</div>';
+  }
 }
 
 function updateConnectors(step) {
@@ -704,15 +715,42 @@ function flagEmoji(lingua) {
   return map[lingua] || '🌐';
 }
 
-/* ── Pipeline step click ── */
-let currentStep = 8;
+/* ── ID azienda corrente ── */
+let currentCompanyId = null;
+let currentStep = 1;
+
+/* ── UPDATE STEP SU SUPABASE ── */
+async function updateStep(n) {
+  if (!currentCompanyId) return;
+  const stepFields = {};
+  for (let i = 1; i <= 13; i++) stepFields['step_' + i] = (i <= n);
+  const body = { step_attuale: n, updated_at: new Date().toISOString(), ...stepFields };
+  if (n >= 7) body.data_mail_inviata = body.data_mail_inviata || new Date().toISOString().split('T')[0];
+  try {
+    await fetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+                 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+  } catch(e) { console.error('updateStep error:', e); }
+}
+
+/* ── VISUAL step update ── */
 function setStep(n){
-  /* visual only per prototipo */
   document.querySelectorAll('.pip-dot').forEach((el, i) => {
-    const step = i + 1;
-    el.className = 'pip-dot ' + (step < n ? 'done' : step === n ? 'active' : step === 13 ? 'pending' : 'pending');
+    const s = i + 1;
+    el.className = 'pip-dot' + (s < n ? ' done' : s === n ? ' active' : '') + (s === 13 ? ' refused' : '');
   });
+  updateConnectors(n);
   currentStep = n;
+  // Aggiorna label step nel hero
+  const stepNum = document.querySelector('.step-num');
+  const stepLabel = document.querySelector('.step-label');
+  const stepSub = document.querySelector('.step-sub');
+  if (stepNum) stepNum.textContent = n === 13 ? '✕' : n;
+  if (stepLabel) stepLabel.textContent = STEP_NAMES[n] || '—';
+  if (stepSub) stepSub.textContent = n === 13 ? 'Chiusa' : 'Step ' + n + ' di 12';
 }
 
 /* ── Popup nota rapida ── */
@@ -724,40 +762,65 @@ function openPopupThen(action){
 }
 function closePopup(save){
   const note = document.getElementById('popupNote').value.trim();
-  if(save && note) addNote(note);
   document.getElementById('popup').classList.remove('open');
-  if(_pendingAction) execAction(_pendingAction);
+  if(_pendingAction) execAction(_pendingAction, save ? note : null);
   _pendingAction = null;
 }
 document.getElementById('popup').addEventListener('click', function(e){
   if(e.target === this) closePopup(false);
 });
 
-function execAction(action){
+function execAction(action, note){
   if(action === 'openA62'){
     window.open('https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0','_blank');
-  } else if(action === 'step9')  { setStep(9); }
-  else if(action === 'step10') { setStep(10); }
+  } else if(action === 'step9')  { setStep(9);  updateStep(9);  if(note) saveNoteText(note); }
+  else if(action === 'step10') { setStep(10); updateStep(10); if(note) saveNoteText(note); }
   else if(action === 'step13') {
-    setStep(13);
+    setStep(13); updateStep(13);
     document.querySelectorAll('.pip-dot')[12].className = 'pip-dot refused';
+    if(note) saveNoteText(note);
   }
 }
 
 /* ── Note ── */
-function addNote(text){
-  const now = new Date();
+function renderNote(text, isoDate){
+  const now = isoDate ? new Date(isoDate) : new Date();
   const date = now.toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}).toUpperCase()
              + ' · ' + now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
   const el = document.createElement('div');
   el.className = 'note-item';
   el.innerHTML = `<div class="note-date">${date}</div><div class="note-text">${text}</div>`;
-  document.getElementById('noteList').prepend(el);
+  return el;
+}
+async function saveNoteText(text){
+  if (!text || !currentCompanyId) return;
+  // Leggo la nota esistente, aggiungo in cima
+  const ts = new Date().toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const newLine = '[' + ts + '] ' + text;
+  // Fetch nota attuale
+  let current = '';
+  try {
+    const r = await fetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId + '&select=note',
+      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } });
+    const d = await r.json();
+    current = (d[0] && d[0].note) ? d[0].note : '';
+  } catch(e){}
+  const merged = newLine + (current ? '\n---\n' + current : '');
+  try {
+    await fetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+                 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ note: merged, updated_at: new Date().toISOString() })
+    });
+  } catch(e){ console.error('saveNote error:', e); }
+  // Mostra subito nella UI
+  document.getElementById('noteList').prepend(renderNote(text));
 }
 function saveNote(){
   const text = document.getElementById('newNote').value.trim();
   if(!text) return;
-  addNote(text);
+  saveNoteText(text);
   document.getElementById('newNote').value = '';
 }
 
