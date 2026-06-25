@@ -100,6 +100,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .lg-done{background:rgba(74,124,89,.12);border-color:rgba(74,124,89,.25);color:var(--maker);}
 .lg-done:hover:not(.lg-disabled){background:rgba(74,124,89,.18);}
 .lg-disabled{opacity:.45;cursor:not-allowed;background:rgba(200,200,200,.15);border-color:rgba(200,200,200,.25);color:var(--grigio);box-shadow:none;}
+.lg-stato{background:rgba(196,168,101,.12);border-color:rgba(196,168,101,.3);color:var(--sabbia-dk);}
+.lg-stato:hover:not(.lg-disabled){background:rgba(196,168,101,.2);}
+.stato-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 10px 10px;border-top:1px solid var(--border);margin-top:2px;padding-top:7px;}
+.stato-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px 5px;border-radius:10px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.48rem;font-weight:700;text-align:center;line-height:1.2;border:1.5px solid transparent;background:rgba(255,255,255,.4);color:var(--grigio);transition:all .15s;}
+.stato-pill:hover{background:rgba(255,255,255,.7);color:var(--nero);}
+.stato-pill.sp-active{border-color:currentColor;background:rgba(255,255,255,.75);box-shadow:0 1px 4px rgba(28,28,28,.1);}
+.stato-pill .sp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sp-queued{color:var(--life);}.sp-working{color:var(--sabbia-dk);}.sp-done{color:var(--maker);}.sp-rest{color:#888;}.sp-sleep{color:#AAB4C8;}
 .fmt-badge{font-size:.52rem;font-weight:800;letter-spacing:.04em;padding:1px 4px;border-radius:4px;text-transform:uppercase;}
 .fmt-xlsx{background:#1D6F42;color:#fff;}.fmt-pdf{background:#FF3B30;color:#fff;}.fmt-gsheet{background:#0F9D58;color:#fff;}.fmt-gslide{background:#F4B400;color:#000;}.fmt-gdoc{background:#4285F4;color:#fff;}
 .msg-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;}
@@ -280,7 +288,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions" target="_blank"><svg><use href="#ic-check"/></svg><span>Avvia Run Manuale</span></a>
       <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank"><span class="fmt-badge fmt-gsheet">Fogli</span><span>&#x2192; Analytics GDC</span></a>
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
-    </div></div>
+    </div>
+    <div class="stato-row" id="stato-row-a1"></div>
+    </div>
   </div></div>
   <!-- A2 -->
   <div class="acard" id="card-a2"><div class="acard-body">
@@ -300,7 +310,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a2">A2 &#x2014; Analyst</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Analizza i dati Instagram e genera il report mensile.</div>
       <div id="chip-a2"></div>
-    </div><div class="actions" id="actions-a2"></div></div>
+    </div>
+    <div class="actions" id="actions-a2"></div>
+    <div class="stato-row" id="stato-row-a2"></div>
+    </div>
   </div></div>
   <!-- A3 -->
   <div class="acard" id="card-a3"><div class="acard-body">
@@ -327,7 +340,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a3">A3 &#x2014; Planner</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Genera il piano editoriale mensile su report A2 e calendario BPT.</div>
       <div id="chip-a3"></div>
-    </div><div class="actions" id="actions-a3"></div></div>
+    </div>
+    <div class="actions" id="actions-a3"></div>
+    <div class="stato-row" id="stato-row-a3"></div>
+    </div>
   </div></div>
   <!-- A4 -->
   <div class="acard" id="card-a4"><div class="acard-body">
@@ -349,7 +365,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a4">A4 &#x2014; Brief &amp; Script</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Scrive brief e script post del mese in formato PDF.</div>
       <div id="chip-a4"></div>
-    </div><div class="actions" id="actions-a4"></div></div>
+    </div>
+    <div class="actions" id="actions-a4"></div>
+    <div class="stato-row" id="stato-row-a4"></div>
+    </div>
   </div></div>
   <!-- A5 -->
   <div class="acard" id="card-a5"><div class="acard-body">
@@ -375,7 +394,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <button class="lg-btn" onclick="openMsg('A5','Messaggio A5',MSGS.A5)"><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
       <a class="lg-btn" href="https://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr" target="_blank"><span class="fmt-badge fmt-xlsx">XLSX</span><span>&#x2192; Pipeline</span></a>
       <a class="lg-btn" href="https://claude.ai" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5 in Claude</span></a>
-    </div></div>
+    </div>
+    <div class="stato-row" id="stato-row-a5"></div>
+    </div>
   </div></div>
   <!-- A6 -->
   <div class="acard" id="card-a6"><div class="acard-body">
@@ -401,7 +422,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <button class="lg-btn" onclick="openMsg('A6','Messaggio A6',MSGS.A6)"><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
       <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank"><span class="fmt-badge fmt-gslide">Slide</span><span>&#x2192; Drive A6</span></a>
       <a class="lg-btn" href="https://claude.ai" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6 in Claude</span></a>
-    </div></div>
+    </div>
+    <div class="stato-row" id="stato-row-a6"></div>
+    </div>
   </div></div>
   <!-- A7 -->
   <div class="acard" id="card-a7"><div class="acard-body">
@@ -425,7 +448,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
       <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank"><svg><use href="#ic-mail"/></svg><span>&#x2192; Gmail Bozze</span></a>
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
-    </div></div>
+    </div>
+    <div class="stato-row" id="stato-row-a7"></div>
+    </div>
   </div></div>
 </div>
 <div class="legend">
@@ -512,6 +537,61 @@ function setLogoState(id,st){
   if(id==='a6'&&st==='active') startA6Anim();
   if(id==='a7'&&st==='active') startA7Anim();
 }
+const STATO_CYCLE={sleep:'queued',queued:'working',working:'done',done:'riposo',riposo:'queued',rest:'queued'};
+const STATO_LABELS={queued:'In coda',working:'In corso',done:'Completato',riposo:'Riposo',sleep:'Inattivo'};
+const STATO_PILLS=[
+  {key:'queued',  supaKey:'queued',  label:'In coda',   cls:'sp-queued'},
+  {key:'working', supaKey:'working', label:'In corso',  cls:'sp-working'},
+  {key:'done',    supaKey:'done',    label:'Fatto',     cls:'sp-done'},
+  {key:'riposo',  supaKey:'riposo',  label:'Riposo',    cls:'sp-rest'},
+  {key:'sleep',   supaKey:'sleep',   label:'Inattivo',  cls:'sp-sleep'},
+];
+
+function renderStatoRow(id, supaStato){
+  const row=document.getElementById('stato-row-'+id.toLowerCase());
+  if(!row) return;
+  // supaStato è il valore raw da Supabase (queued/working/done/riposo/sleep)
+  const cur=supaStato||'sleep';
+  row.innerHTML=STATO_PILLS.map(p=>{
+    const isActive=(p.supaKey===cur)||(p.supaKey==='sleep'&&(cur==='sleep'||cur===''||!cur));
+    return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
+  }).join('');
+}
+
+async function setStatoRaw(agentId, newStato){
+  const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
+  try{
+    await Promise.all(ids.map(aid=>
+      fetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
+        method:'PATCH',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({stato:newStato,updated_at:new Date().toISOString()})
+      })
+    ));
+    await loadStates();
+  }catch(e){console.error('setStatoRaw error:',e);}
+}
+
+function renderActionsSimple(id,st){
+  // per A5/A6 i bottoni sono hardcodati nell'HTML, non serve riscriverli
+  // aggiorna solo la stato-row
+}
+
+async function setStato(agentId,currentSt){
+  const nextSupabase=STATO_CYCLE[currentSt]||'queued';
+  const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
+  try{
+    await Promise.all(ids.map(aid=>
+      fetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
+        method:'PATCH',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({stato:nextSupabase,updated_at:new Date().toISOString()})
+      })
+    ));
+    await loadStates();
+  }catch(e){console.error('setStato error:',e);}
+}
+
 function renderActions(id,st){
   const acts=document.getElementById('actions-'+id.toLowerCase());if(!acts)return;
   const isQ=(st==='queued'),isA=(st==='active'),isD=(st==='done');
@@ -533,20 +613,31 @@ async function loadStates(){
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
     ['a1','a2','a3','a4','a7'].forEach(id=>{
-      const st=mapState(byId[id]);
+      const row=byId[id];
+      const st=mapState(row);
       setLogoState(id,st);
       if(['a2','a3','a4'].includes(id)) renderActions(id.toUpperCase(),st);
+      renderStatoRow(id.toUpperCase(), row?row.stato:'sleep');
     });
-    setLogoState('a5',worstState([byId['a5_1'],byId['a5_2']]));
-    setLogoState('a6',worstState([byId['a6_1'],byId['a6_2']]));
+    const st5=worstState([byId['a5_1'],byId['a5_2']]);
+    const st6=worstState([byId['a6_1'],byId['a6_2']]);
+    setLogoState('a5',st5);
+    setLogoState('a6',st6);
+    renderActionsSimple('A5',st5);
+    renderActionsSimple('A6',st6);
+    // stato-row A5/A6 usa il valore del sub-agente principale
+    const raw5=(byId['a5_1']||byId['a5_2']);
+    const raw6=(byId['a6_1']||byId['a6_2']);
+    renderStatoRow('A5', raw5?raw5.stato:'sleep');
+    renderStatoRow('A6', raw6?raw6.stato:'sleep');
     document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
     document.getElementById('sysLabel').style.color='var(--maker)';
     document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
     console.error('Supabase:',e);
-    // Fallback silenzioso: tutti sleep, pulsanti A2/A3/A4 renderizzati
     ['a1','a2','a3','a4','a5','a6','a7'].forEach(id=>{setLogoState(id,'sleep');});
     ['A2','A3','A4'].forEach(id=>renderActions(id,'sleep'));
+    ['A1','A2','A3','A4','A5','A6','A7'].forEach(id=>renderStatoRow(id,'sleep'));
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
     document.getElementById('sysLabel').style.color='var(--grigio)';
     document.getElementById('sysMeta').textContent='';
