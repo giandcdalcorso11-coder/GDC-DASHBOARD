@@ -484,11 +484,16 @@ const FILE_FMT={A2:'gslide',A3:'gslide',A4:'pdf'};
 const FILE_FMT_LBL={A2:'Slide',A3:'Slide',A4:'PDF'};
 const MSGS={
   A2:"Ciao A2. E' il momento del report mensile.\n\nFile dati:\n"+DRIVE.A1+"\n\nGoogle Sheet:\n"+SHEET_A1+"\n\nMese: "+Mm1+" "+Am1+"\n\nSalva in:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1,
-  A3:"Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\nCALENDARIO: [inserisci]\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0,
+  A3:"Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\nCALENDARIO: [caricamento...]\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0,
   A4:"Ciao A4. Script mensili.\n\nPiano "+M0+":\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0+"\n\nMese: "+M0+" "+A0+"\n\nSalva in:\n"+DRIVE.A4+"\n-> brief_"+M0+"_"+A0+".pdf",
   A5:"Ciao A5. Aggiorna la pipeline sponsorizzazioni.\n\nFile in Drive:\nhttps://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr\n-> Pipeline_Sponsorizzazioni.xlsx",
   A6:"Ciao A6. Continua con le relazioni commerciali.\n\nVerifica i follow-up in scadenza e aggiorna le aziende in pipeline.",
 };
+
+function buildMsgA3(calBpt){
+  const cal=calBpt||'[calendario BPT non disponibile — esegui bpt_calendar.py]';
+  MSGS.A3="Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nCALENDARIO IMPEGNI:\n"+cal+"\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0;
+}
 
 const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
@@ -608,10 +613,13 @@ function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]
 
 async function loadStates(){
   try{
-    const res=await fetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    const res=await fetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
+    // Costruisce MSGS.A3 con calendario BPT reale
+    const bptRow=byId['bpt_calendar'];
+    buildMsgA3(bptRow?bptRow.calendario_bpt:null);
     ['a1','a2','a3','a4','a7'].forEach(id=>{
       const row=byId[id];
       const st=mapState(row);
