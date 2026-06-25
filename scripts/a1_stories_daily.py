@@ -50,7 +50,7 @@ print(f"▶ A1 Stories Daily — {today.strftime('%d/%m/%Y')} — {FILENAME}")
 # ─── INSTAGRAM API ──────────────────────────────────────────────────────────────
 
 def ig_get(endpoint, params={}):
-    base = f"https://graph.instagram.com/v21.0/{endpoint}"
+    base = f"https://graph.facebook.com/v21.0/{endpoint}"
     params["access_token"] = IG_TOKEN
     r = requests.get(base, params=params)
     r.raise_for_status()
@@ -63,10 +63,8 @@ def fetch_active_stories():
     Le stories sono disponibili solo nelle ~24h dopo la pubblicazione.
     """
     print("  → Fetch stories attive...")
-    fields = (
-        "id,timestamp,permalink,media_type,"
-        "impressions,reach,replies,shares,likes"
-    )
+    # shares e likes non sono campi validi per le stories (solo feed post)
+    fields = "id,timestamp,permalink,media_type"
     try:
         data = ig_get(f"{IG_USER_ID}/stories", {"fields": fields, "limit": 100})
         stories = data.get("data", [])
@@ -76,12 +74,13 @@ def fetch_active_stories():
             return []
         raise
 
-    # Per ogni story, recupera metriche avanzate via insights
+    # Per ogni story, recupera metriche via insights
+    # Metriche valide per stories: NO shares/likes (solo feed post)
     enriched = []
     for s in stories:
         try:
             ins = ig_get(f"{s['id']}/insights", {
-                "metric": "impressions,reach,replies,shares,navigation,taps_forward,taps_back,exits,profile_visits,follows"
+                "metric": "impressions,reach,replies,taps_forward,taps_back,exits,navigation,profile_visits,follows"
             })
             metrics = {}
             for m in ins.get("data", []):
