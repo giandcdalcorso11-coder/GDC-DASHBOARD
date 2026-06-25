@@ -691,6 +691,14 @@ function populatePage(co) {
   document.title = 'GDC — ' + (co.nome || 'Azienda');
 }
 
+function updateConnectors(step) {
+  const connectors = document.querySelectorAll('.pipe-connector');
+  connectors.forEach((el, i) => {
+    // connector i sits between dot i+1 and dot i+2
+    el.classList.toggle('done', (i + 1) < step);
+  });
+}
+
 function flagEmoji(lingua) {
   const map = { IT:'🇮🇹', EN:'🇬🇧', DE:'🇩🇪', FR:'🇫🇷', ES:'🇪🇸' };
   return map[lingua] || '🌐';
