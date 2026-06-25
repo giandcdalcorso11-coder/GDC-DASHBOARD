@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Agente 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
+  --athlete:#2B5F9E; --athlete-bg:#D9E6F3;
+  --life:#C2193A; --life-bg:#F5E0E6; --life-mid:#E9415A;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Jost',sans-serif;
+  background:var(--carta);
+  color:var(--nero);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  padding-bottom:60px;
+}
+@media(prefers-color-scheme:dark){
+  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+  .system-bar,.date-chip{ background:#2E2E2E; border-color:var(--border); }
+  .hero-card,.section-card,.note-box{ background:var(--bianco); border-color:var(--border); }
+  .back-btn{ background:#2E2E2E; border-color:var(--border); }
+  .tab-btn{ background:#2E2E2E; }
+  .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
+  .io-block{ background:#1A1A1A; }
+  .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }
+  .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }
+  .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }
+  .lg-maker{ background:rgba(74,124,89,.18); border-color:rgba(74,124,89,.35); color:#5D9C71; }
+  .lg-cta{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
+  .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }
+  .cal-popup,.msg-popup{ background:#242424; border-color:var(--border); }
+  .cal-day.has-event{ background:#2E2E2E; }
+  .cal-day.has-event:hover{ background:#3A3A3A; }
+  .cal-events-panel,.cal-event-item{ border-color:var(--border); }
+  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
+  #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee { fill:#F0EBE1; }
+}
+
+/* ══ HEADER ══ */
+.header{ width:100%; max-width:540px; padding:20px 16px 12px; display:flex; flex-direction:column; gap:10px; }
+.header-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.gdc-logo-wrap{ display:flex; align-items:center; }
+#hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
+#hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee { opacity:0; transition:opacity .22s ease; }
+.date-chip{ display:flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px; font-size:.75rem; font-weight:700; cursor:pointer; transition:border-color .2s; user-select:none; }
+.date-chip:hover{ border-color:var(--nero); }
+.date-chip-dot{ width:7px; height:7px; border-radius:50%; background:var(--maker); flex-shrink:0; }
+.system-bar{ display:flex; align-items:center; gap:8px; background:var(--bianco); border:1.5px solid var(--border); border-radius:10px; padding:9px 13px; }
+.sys-dot-wrap{ position:relative; width:10px; height:10px; flex-shrink:0; }
+.sys-dot{ width:10px; height:10px; border-radius:50%; background:var(--maker); }
+.sys-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--maker); animation:sysPulse 2s ease-out infinite; }
+@keyframes sysPulse{ 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(2)} }
+.sys-label{ font-weight:700; font-size:.82rem; color:var(--maker); flex:1; }
+.sys-meta{ font-size:.7rem; color:var(--grigio); }
+
+/* ══ CALENDAR ══ */
+.cal-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.4); z-index:200; display:none; align-items:flex-start; justify-content:center; padding-top:70px; }
+.cal-overlay.open{ display:flex; }
+.cal-popup{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; width:calc(100% - 32px); max-width:380px; box-shadow:0 8px 32px rgba(28,28,28,.18); overflow:hidden; }
+.cal-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+.cal-nav{ display:flex; align-items:center; gap:10px; }
+.cal-nav-btn{ background:none; border:1.5px solid var(--border); border-radius:6px; padding:3px 8px; cursor:pointer; font-size:.8rem; color:var(--grigio); }
+.cal-nav-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.cal-month-label{ font-weight:700; font-size:.85rem; min-width:110px; text-align:center; }
+.cal-close{ background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--grigio); padding:2px 6px; border-radius:6px; }
+.cal-close:hover{ background:var(--border); }
+.cal-grid{ padding:10px 12px 14px; }
+.cal-dow{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+.cal-dow span{ text-align:center; font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--grigio); padding:4px 0; }
+.cal-days{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.cal-day{ aspect-ratio:1; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:4px 2px 2px; font-size:.72rem; font-weight:600; cursor:default; position:relative; }
+.cal-day.has-event{ background:var(--carta); cursor:pointer; }
+.cal-day.has-event:hover{ background:var(--border); }
+.cal-day.today{ background:var(--nero); color:#fff; }
+.cal-day .day-num{ font-size:.7rem; font-weight:700; line-height:1; }
+.cal-day .event-dots{ display:flex; gap:2px; margin-top:2px; flex-wrap:wrap; justify-content:center; }
+.event-dot{ width:5px; height:5px; border-radius:50%; }
+.cal-events-panel{ border-top:1px solid var(--border); padding:10px 14px; min-height:48px; }
+.cal-event-item{ display:flex; align-items:flex-start; gap:7px; padding:5px 0; border-bottom:1px solid var(--border); }
+.cal-event-item:last-child{ border-bottom:none; }
+.cal-event-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+.cal-event-text{ font-weight:600; color:var(--nero); font-size:.74rem; }
+.cal-event-agent{ font-size:.64rem; color:var(--grigio); }
+
+/* ══ MSG POPUP ══ */
+.msg-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:300; display:none; align-items:flex-end; justify-content:center; }
+.msg-overlay.open{ display:flex; }
+.msg-popup{ background:var(--bianco); border:1.5px solid var(--border); border-radius:20px 20px 0 0; width:100%; max-width:540px; padding:20px 16px 32px; box-shadow:0 -4px 32px rgba(28,28,28,.16); }
+.msg-popup-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.msg-popup-title{ font-size:.75rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--maker); }
+.msg-popup-close{ background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--grigio); padding:2px 6px; border-radius:6px; }
+.msg-popup-close:hover{ background:var(--border); }
+.msg-note{ font-size:.65rem; color:var(--sabbia-dk); background:var(--sabbia-bg); border-radius:8px; padding:8px 10px; margin-bottom:10px; line-height:1.5; }
+.msg-textarea{ width:100%; background:var(--carta); border:1.5px solid var(--border); border-radius:12px; font-family:'Jost',sans-serif; font-size:.72rem; color:var(--nero); padding:12px 13px; resize:none; outline:none; min-height:220px; line-height:1.6; }
+.msg-actions{ display:flex; gap:8px; margin-top:10px; }
+.msg-copy-btn{ flex:1; background:var(--nero); color:var(--carta); border:none; border-radius:12px; padding:13px; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .15s; }
+.msg-copy-btn:hover{ background:#333; }
+.msg-open-btn{ background:rgba(74,124,89,.12); color:var(--maker); border:1.5px solid rgba(74,124,89,.25); border-radius:12px; padding:13px 16px; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700; cursor:pointer; text-decoration:none; display:flex; align-items:center; }
+
+/* ══ PAGE LAYOUT ══ */
+.page-content{ width:100%; max-width:540px; padding:0 16px; }
+.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:12px; }
+.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+
+/* ══ HERO ══ */
+.hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; }
+.hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
+.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; background:var(--maker-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.hero-text{ flex:1; min-width:0; }
+.agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
+.agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
+.agent-desc-big{ font-size:.71rem; color:var(--grigio); line-height:1.4; }
+.hero-meta{ display:flex; align-items:center; gap:7px; padding:0 16px 14px; flex-wrap:wrap; }
+.status-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:4px 10px; font-size:.67rem; font-weight:700; }
+.badge-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.badge-done{ color:var(--maker); border-color:var(--maker-bg); }
+.badge-done .badge-dot{ background:var(--maker); }
+.type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:4px 9px; }
+.last-run-lbl{ font-size:.65rem; color:var(--grigio); }
+
+/* ══ TABS ══ */
+.tabs-row{ display:flex; gap:5px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none; }
+.tabs-row::-webkit-scrollbar{ display:none; }
+.tab-btn{ flex:1; min-width:0; padding:7px 4px; border-radius:10px; background:var(--bianco); border:1.5px solid var(--border); font-family:'Jost',sans-serif; font-size:.68rem; font-weight:700; color:var(--grigio); cursor:pointer; transition:all .15s; white-space:nowrap; }
+.tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
+.tab-btn:hover:not(.active){ border-color:var(--nero); color:var(--nero); }
+.panel{ display:none; }
+.panel.active{ display:block; }
+
+/* ══ SECTION CARD ══ */
+.section-card{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
+.sc-head{ padding:11px 14px 9px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.sc-label{ font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--grigio); flex:1; }
+.sc-link{ font-size:.62rem; font-weight:700; color:var(--athlete); text-decoration:none; }
+.sc-link:hover{ text-decoration:underline; }
+.sc-body{ padding:12px 14px; }
+
+/* ══ LIQUID GLASS BUTTONS ══ */
+.action-row{ display:flex; flex-direction:column; gap:8px; }
+.lg-btn{ position:relative; display:flex; align-items:center; gap:10px; padding:13px 16px; border-radius:14px; cursor:pointer; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:700; text-align:left; line-height:1.2; text-decoration:none; border:1px solid rgba(255,255,255,.7); overflow:hidden; background:rgba(255,255,255,0.55); backdrop-filter:blur(12px) saturate(1.4); -webkit-backdrop-filter:blur(12px) saturate(1.4); box-shadow:0 1px 3px rgba(28,28,28,.08),inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(28,28,28,.06); color:var(--nero); transition:transform .12s,box-shadow .15s,background .15s; width:100%; }
+.lg-btn::before{ content:''; position:absolute; inset:0; border-radius:inherit; background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.1) 50%,transparent 100%); pointer-events:none; }
+.lg-btn:hover:not(.lg-disabled){ transform:translateY(-1px) scale(1.01); box-shadow:0 4px 12px rgba(28,28,28,.12),inset 0 1px 0 rgba(255,255,255,.9); background:rgba(255,255,255,.72); }
+.lg-btn:active:not(.lg-disabled){ transform:scale(.98); }
+.lg-maker{ background:rgba(74,124,89,.12); border-color:rgba(74,124,89,.25); color:var(--maker); box-shadow:0 1px 3px rgba(74,124,89,.1),inset 0 1px 0 rgba(255,255,255,.7); }
+.lg-maker:hover:not(.lg-disabled){ background:rgba(74,124,89,.18); box-shadow:0 4px 12px rgba(74,124,89,.15),inset 0 1px 0 rgba(255,255,255,.8); }
+.lg-cta{ background:var(--nero); color:var(--carta); border-color:var(--nero); box-shadow:0 2px 8px rgba(28,28,28,.2); }
+.lg-cta:hover:not(.lg-disabled){ background:#333; box-shadow:0 4px 14px rgba(28,28,28,.28); transform:translateY(-1px); }
+.lg-cta::before{ display:none; }
+.lg-disabled{ opacity:.45; cursor:not-allowed; background:rgba(200,200,200,.15); border-color:rgba(200,200,200,.25); color:var(--grigio); box-shadow:none; }
+.btn-icon{ font-size:1.1rem; flex-shrink:0; width:22px; text-align:center; }
+.btn-text{ flex:1; }
+.btn-title{ font-size:.8rem; font-weight:700; }
+.btn-sub{ font-size:.62rem; font-weight:500; opacity:.65; margin-top:1px; }
+.btn-arr{ font-size:.85rem; opacity:.35; flex-shrink:0; }
+
+/* ══ DOCUMENTI ══ */
+.file-item{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); text-decoration:none; color:var(--nero); transition:opacity .15s; }
+.file-item:last-child{ border-bottom:none; }
+.file-item:hover{ opacity:.7; }
+.file-icon{ flex-shrink:0; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
+.fi-sheet{ background:#e8f4e8; }
+.fi-slide{ background:#fff3e0; }
+.file-info{ flex:1; min-width:0; }
+.file-name{ font-size:.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.file-sub{ font-size:.62rem; color:var(--grigio); margin-top:1px; }
+.file-arr{ font-size:.85rem; color:var(--grigio); flex-shrink:0; }
+.file-item.dim{ opacity:.38; }
+.file-item.dim:hover{ opacity:.55; }
+
+/* ══ LAVORO ══ */
+.io-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.io-block{ background:var(--carta); border-radius:10px; padding:10px 12px; }
+.io-title{ font-size:.58rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:7px; }
+.io-title.in{ color:var(--athlete); }
+.io-title.out{ color:var(--maker); }
+.io-item{ display:flex; align-items:flex-start; gap:6px; margin-bottom:4px; font-size:.68rem; color:var(--nero); line-height:1.3; }
+.io-item:last-child{ margin-bottom:0; }
+.io-dot{ flex-shrink:0; width:5px; height:5px; border-radius:50%; margin-top:4px; }
+.io-dot.in{ background:var(--athlete); }
+.io-dot.out{ background:var(--maker); }
+.work-step{ display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.work-step:last-child{ border-bottom:none; }
+.work-num{ flex-shrink:0; width:20px; height:20px; border-radius:50%; background:var(--nero); color:var(--carta); font-size:.6rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+.work-desc{ font-size:.72rem; line-height:1.4; color:var(--nero); }
+.work-sub{ font-size:.63rem; color:var(--grigio); margin-top:1px; }
+
+/* ══ RUN ══ */
+.run-row{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+.run-row:last-child{ border-bottom:none; }
+.run-icon{ font-size:.9rem; flex-shrink:0; margin-top:1px; }
+.run-info{ flex:1; min-width:0; }
+.run-title{ font-size:.73rem; font-weight:700; }
+.run-meta{ font-size:.63rem; color:var(--grigio); margin-top:1px; }
+.run-badge{ border-radius:999px; font-size:.6rem; font-weight:700; padding:2px 8px; flex-shrink:0; }
+.rb-ok{ background:var(--maker-bg); color:var(--maker); }
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; text-align:center; }
+.stat-num{ font-size:1.35rem; font-weight:800; }
+.stat-lbl{ font-size:.6rem; color:var(--grigio); font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+
+/* ══ CONFIG ══ */
+.config-row{ display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:.7rem; }
+.config-row:last-child{ border-bottom:none; }
+.config-key{ color:var(--grigio); flex-shrink:0; min-width:100px; }
+.config-val{ font-weight:600; font-size:.68rem; word-break:break-all; }
+.cfg-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.cfg-ok{ background:var(--maker); }
+.cfg-warn{ background:var(--sabbia); }
+.flow-row{ display:flex; align-items:center; gap:6px; font-size:.68rem; font-weight:700; margin-top:10px; }
+.flow-dash{ flex:1; border-top:2px dashed var(--border); height:0; }
+.flow-active{ background:var(--nero); color:var(--carta); border-radius:999px; padding:2px 9px; }
+.flow-side{ color:var(--grigio); }
+</style>
+</head>
+<body>
+
+<!-- ══ CALENDAR OVERLAY ══ -->
+<div class="cal-overlay" id="calOverlay" onclick="closeCalIfBg(event)">
+  <div class="cal-popup">
+    <div class="cal-head">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calNav(-1)">&#8249;</button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button class="cal-nav-btn" onclick="calNav(+1)">&#8250;</button>
+      </div>
+      <button class="cal-close" onclick="closeCal()">&#10005;</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+      <div class="cal-days" id="calDays"></div>
+    </div>
+    <div class="cal-events-panel" id="calEventsPanel">
+      <span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MSG POPUP ══ -->
+<div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
+  <div class="msg-popup">
+    <div class="msg-popup-head">
+      <span class="msg-popup-title">&#128203; Messaggio A3 — Planner</span>
+      <button class="msg-popup-close" onclick="closeMsg()">&#10005;</button>
+    </div>
+    <div class="msg-note">&#9888;&#65039; Aggiungi manualmente il blocco <strong>CALENDARIO IMPEGNI</strong> dopo aver incollato il messaggio — script BPT in sviluppo.</div>
+    <textarea class="msg-textarea" id="msgText" readonly></textarea>
+    <div class="msg-actions">
+      <button class="msg-copy-btn" id="copyBtn" onclick="copyMsg()">Copia messaggio</button>
+      <a class="msg-open-btn" href="https://claude.ai/project/019dc48d-98e7-7375-ba30-d1c514ecc02f" target="_blank">&#128279; Apri A3</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="header-top">
+    <div class="gdc-logo-wrap">
+      <svg id="hub-master-svg" viewBox="20 205 555 280" xmlns="http://www.w3.org/2000/svg" style="height:34px;width:auto;overflow:visible;" font-family="Jost,sans-serif">
+        <g class="logo-G" fill="var(--nero)">
+          <path d="M141.92,331.53h45.01v44.28c-3.67,1.02-7.34,2.03-11.54,2.61c-4.76,0.65-10.2,0.74-15.19,0.72c-4.8-0.01-9.18-0.12-14.1-0.79c-5.48-0.75-11.64-2.21-17-4.34c-5.04-2-9.37-4.59-13.45-7.74c-4.06-3.13-7.87-6.81-10.92-10.85c-2.96-3.92-5.21-8.18-6.94-12.73c-1.77-4.65-3-9.62-3.69-14.68c-0.69-5.09-0.84-10.28-0.65-15.26c0.19-4.84,0.69-9.49,1.88-14.25c1.22-4.87,3.15-9.86,5.35-14.03c1.96-3.72,4.13-6.78,6.73-9.84c2.72-3.2,5.9-6.38,9.48-8.97c3.57-2.59,7.54-4.58,11.43-6.22c3.75-1.58,7.44-2.84,11.5-3.84c4.47-1.1,9.4-1.89,14.47-2.32c5.28-0.44,10.71-0.48,15.91-0.29c4.95,0.18,9.69,0.57,14.39,1.01c4.62,0.43,9.2,0.91,13.82,1.66c4.65,0.75,9.33,1.78,13.89,2.75c4.4,0.94,8.69,1.82,12.97,2.7v-35.44c-2.26-0.71-4.52-1.41-7.71-2.18c-4.85-1.17-11.84-2.47-18.19-3.4c-6.15-0.9-11.68-1.45-17.27-1.82c-5.46-0.36-10.98-0.55-16.54-0.61c-5.59-0.06-11.22,0.01-16.67,0.31c-5.3,0.29-10.42,0.79-15.69,1.64c-5.45,0.88-11.08,2.12-16.48,3.59c-5.13,1.39-10.07,2.98-14.41,4.81c-4.05,1.7-7.59,3.59-11.74,6.02c-4.78,2.8-10.37,6.31-14.66,9.67c-3.62,2.83-6.32,5.56-9.06,8.58c-2.89,3.17-5.83,6.65-8.58,10.83c-3.08,4.68-5.92,10.23-8.09,15.33c-1.93,4.53-3.32,8.71-4.44,12.96c-1.04,3.95-1.85,7.96-2.31,11.62c-0.41,3.3-0.53,6.32-0.61,9.61c-0.08,3.42-0.1,7.13,0.06,10.4c0.14,2.93,0.43,5.51,0.79,8.33c0.39,3.05,0.86,6.4,1.58,9.67c0.74,3.33,1.74,6.6,2.86,9.73c1.08,3.03,2.28,5.93,3.59,8.76c1.28,2.76,2.68,5.46,4.26,7.97c1.56,2.48,3.3,4.79,5.11,7.18c1.87,2.47,3.82,5.02,5.9,7.3c2,2.19,4.11,4.13,6.26,6.02c2.17,1.9,4.39,3.76,6.87,5.53c2.81,2.01,5.96,3.93,9.67,5.9c4.37,2.32,9.52,4.7,14.29,6.51c4.48,1.7,8.64,2.89,13.26,3.95c4.87,1.12,10.25,2.11,15.14,2.74c4.47,0.57,8.53,0.84,12.77,1.09c4.34,0.26,8.88,0.49,13.38,0.49c4.58,0,9.14-0.24,13.87-0.49c4.91-0.25,10.01-0.51,14.9-0.97c4.59-0.44,8.99-1.06,13.08-1.64c3.79-0.54,7.31-1.04,11.19-1.77c3.74-0.7,7.82-1.62,10.34-2.13c1.42-0.29,2.34-0.45,3.27-0.6V297.35h-83.33V331.53z"/>
+        </g>
+        <g class="logo-D" fill="var(--nero)">
+          <path d="M371.13,314.9c-0.07-4.76-0.29-9.13-0.87-13.53c-0.57-4.33-1.48-8.7-2.68-12.87c-1.24-4.31-2.78-8.41-5.39-12.92c-3.19-5.5-7.98-11.6-13.4-16.06c-5.09-4.18-10.74-6.92-16.06-9c-4.73-1.85-9.2-3.17-13.91-4.19c-4.99-1.08-10.24-1.83-16.16-2.15c-6.36-0.34-13.49-0.2-18.82,0.2c-3.83,0.29-6.74,0.72-9.64,1.14v144.51c1.58,0.49,3.01,0.64,5.18,0.81c3.71,0.3,9.58,0.68,15.28,0.76c6.12,0.09,12.03-0.15,17.58-0.94c5.22-0.74,10.1-1.95,15.14-3.7c5.25-1.83,10.67-4.24,15.31-7.23c4.36-2.81,8.05-6.12,11.35-9.72c3.2-3.49,6.05-7.24,8.34-11.27c2.28-3.99,4.01-8.25,5.33-12.73c1.38-4.68,2.31-9.6,2.84-14.79C371.1,325.84,371.21,320.13,371.13,314.9z"/>
+        </g>
+        <g class="logo-C" fill="var(--nero)">
+          <path d="M529.09,373.73c-3.89,1.18-9.52,2.99-14.35,4.08c-4.34,0.97-8.04,1.37-11.86,1.77c-3.72,0.39-7.55,0.78-11.31,1.04c-3.68,0.25-7.3,0.36-10.89,0.37c-3.55,0-7.08-0.1-10.64-0.42c-3.57-0.32-7.18-0.86-10.58-1.58c-3.24-0.69-6.28-1.55-9.31-2.74c-3.02-1.19-6.02-2.7-8.76-4.14c-2.53-1.33-4.84-2.59-7.06-4.26c-2.29-1.71-4.48-3.85-6.51-5.84c-1.96-1.92-3.76-3.72-5.35-6.14c-1.63-2.49-3.04-5.65-4.01-7.6c-0.34,2.13-1.02,4.71-2.13,7.6c-1.4,3.66-3.47,7.82-5.35,11.44c-1.73,3.32-3.31,6.19-5.35,9.19c-2.11,3.08-4.71,6.3-7.06,8.82c-1.92,2.07-3.67,3.68-5.53,5.23c2.87,2.55,6.8,5.18,10.28,7.42c3.27,2.11,6.14,3.88,9.67,5.59c4.12,2,9.12,3.93,14.17,5.54c5.12,1.63,10.29,2.93,15.08,3.95c4.42,0.94,8.53,1.63,13.08,2.13c5.32,0.58,11.24,0.89,18.13,0.97c8.07,0.09,17.46-0.13,24.88-0.73c5.64-0.46,10.14-1.14,14.29-1.89c3.79-0.68,7.29-1.42,11.74-2.56c5.04-1.29,11.3-3.09,14.9-4.08L529.09,373.73z"/>
+          <path d="M419.61,283.58c-0.3-1.87-0.67-3.3-1.45-5.42c-1.16-3.18-3.24-7.91-5.21-11.5c-1.75-3.2-3.4-5.49-5.61-8.28c-2.41-3.05-5.47-6.69-7.7-9.19c-1.64-1.83-2.83-3.05-4.63-4.54c3.01-2.17,6.02-4.35,9.1-6.44c3.23-2.2,6.54-4.31,10.54-6.34c4.64-2.36,10.19-4.61,15.34-6.34c4.78-1.61,9.21-2.77,13.81-3.78c4.59-1.01,9.34-1.89,14.01-2.56c5.07-0.73,10.04-1.21,16.67-1.33c8.51-0.15,19.76,0.32,27.52,0.92c5.33,0.42,9.01,0.9,12.89,1.64c3.57,0.68,7.32,1.58,10.74,2.45c3.11,0.8,5.95,1.57,8.8,2.35l-8.84,33.77c-3.24-0.98-6.16-1.89-9.43-2.65c-3.58-0.84-7.57-1.52-11.57-2.11c-4.08-0.6-8.17-1.11-12.21-1.38c-3.91-0.26-7.77-0.28-11.49-0.23c-3.58,0.05-7.02,0.18-10.63,0.51c-3.73,0.34-7.65,0.9-11.21,1.74c-3.31,0.78-6.32,1.8-9.33,2.97c-3,1.16-5.99,2.45-8.82,4.05c-2.79,1.57-5.44,3.45-7.74,5.35c-2.12,1.75-3.95,3.54-5.74,5.52c-1.77,1.96-3.5,4.11-4.89,6.05C421.35,280.45,420.41,281.96,419.61,283.58z"/>
+        </g>
+        <g class="logo-STUFF" fill="var(--nero)">
+          <path d="M209.13,450.89c0.55,0.47,1.1,0.94,1.57,1.52c0.51,0.63,0.94,1.38,1.14,2.25c0.23,0.98,0.19,2.11,0.07,3.18c-0.11,1.07-0.3,2.08-0.82,3.04c-0.59,1.07-1.61,2.07-2.72,2.86c-1.15,0.83-2.4,1.43-3.86,1.86c-1.54,0.45-3.31,0.69-4.65,0.86c-1.05,0.13-1.83,0.22-2.93,0.18c-1.5-0.05-3.62-0.33-5.4-0.68c-1.5-0.3-2.75-0.65-3.75-0.97c-0.72-0.23-1.31-0.44-1.89-0.64v-7.15c1.05,0.55,2.1,1.1,3.15,1.57c1.02,0.46,2.03,0.84,3.15,1.14c1.21,0.33,2.55,0.57,3.93,0.68c1.38,0.11,2.8,0.08,3.93-0.25c0.92-0.27,1.64-0.73,2.18-1.39c0.49-0.6,0.84-1.37,0.71-2c-0.12-0.6-0.67-1.09-1.22-1.5c-0.59-0.44-1.17-0.8-1.93-1.11c-1.01-0.41-2.33-0.75-3.75-1.11c-1.48-0.37-3.08-0.77-4.08-1.22c-0.73-0.33-1.14-0.68-1.97-1.13c-0.74-0.52-1.48-1.05-2.18-1.66c-0.71-0.62-1.37-1.33-1.75-2.18c-0.38-0.86-0.47-1.85-0.39-2.82c0.07-0.97,0.31-1.92,0.68-2.79c0.36-0.84,0.85-1.6,1.43-2.25c0.6-0.67,1.3-1.22,2.22-1.72c1.14-0.61,2.61-1.12,4.04-1.47c1.47-0.36,2.89-0.54,4.5-0.64c1.76-0.11,3.74-0.11,5.4,0.07c1.35,0.15,2.47,0.42,3.5,0.75c0.9,0.29,1.72,0.61,2.55,0.94v6.43c-0.58-0.35-1.17-0.7-1.8-1.08c-0.81-0.49-1.69-1.02-3.18-1.32c-2.21-0.45-5.76-0.4-7.51,0.04c-0.88,0.22-1.3,0.53-1.68,0.89c-0.31,0.3-0.59,0.64-0.71,1.11c-0.15,0.56-0.08,1.31,0.21,1.82c0.28,0.5,0.78,0.79,1.39,1.04c0.82,0.33,1.85,0.61,2.93,0.93c1.25,0.38,2.57,0.82,3.93,1.25c1.34,0.42,2.72,0.84,3.72,1.36C208.06,449.98,208.6,450.44,209.13,450.89z"/>
+          <polygon points="385.74,441.89 385.74,448.25 398.82,448.25 398.82,454.04 385.38,454.04 385.38,466.4 376.37,466.4 376.37,435.87 400.25,435.87 400.25,441.89"/>
+          <polygon points="239.23,442.01 239.23,465.99 243.88,465.99 248.53,465.99 248.53,442.01 258.74,442.01 258.74,435.87 243.88,435.87 229.02,435.87 229.02,442.01"/>
+          <polygon points="341.04,466.4 341.04,454.04 354.48,454.04 354.48,448.25 341.4,448.25 341.4,441.89 355.91,441.89 355.91,435.87 332.03,435.87 332.03,466.4"/>
+          <path d="M294.14,466.4c-0.43,0-0.87-0.01-1.49-0.04c-0.99-0.04-2.45-0.14-3.79-0.32c-1.34-0.18-2.55-0.45-3.72-0.93c-1.12-0.46-2.2-1.1-3.07-1.79c-0.77-0.6-1.37-1.23-1.97-1.93c-0.62-0.73-1.24-1.53-1.64-2.47c-0.41-0.95-0.59-2.03-0.73-2.92v-20.14h9.38v19.36c0.06,0.72,0.14,1.43,0.36,2.06c0.21,0.6,0.55,1.13,1,1.57c0.46,0.46,1.03,0.82,1.64,1.07c0.62,0.25,1.28,0.38,1.97,0.43c0.69,0.05,1.42,0.01,2.06,0.04c0.64-0.02,1.37,0.01,2.06-0.04c0.69-0.05,1.35-0.18,1.97-0.43c0.61-0.25,1.18-0.62,1.64-1.07c0.45-0.45,0.79-0.98,1-1.57c0.22-0.63,0.31-1.34,0.36-2.06v-19.36h9.38v20.14c-0.14,0.89-0.33,1.97-0.73,2.92c-0.4,0.94-1.02,1.74-1.64,2.47c-0.6,0.7-1.2,1.33-1.97,1.93c-0.87,0.68-1.95,1.33-3.07,1.79c-1.17,0.48-2.38,0.75-3.72,0.93c-1.33,0.18-2.8,0.28-3.79,0.32C295.01,466.4,294.58,466.4,294.14,466.4z"/>
+        </g>
+        <g class="logo-linee" fill="var(--nero)">
+          <rect x="34.04" y="446.1" width="116.55" height="7.14"/>
+          <rect x="436.27" y="446.1" width="116.18" height="7.14"/>
+        </g>
+      </svg>
+    </div>
+    <div class="date-chip" onclick="openCal()">
+      <span class="date-chip-dot"></span>
+      <span id="dateChipText"></span>
+    </div>
+  </div>
+  <div class="system-bar">
+    <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
+    <div class="sys-label">Tutti i sistemi attivi</div>
+    <div class="sys-meta">Notifiche push attive</div>
+  </div>
+</div>
+
+<!-- ══ PAGE CONTENT ══ -->
+<div class="page-content">
+
+  <a class="back-btn" href="page_home_v25.html">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <path d="M8 2.5L4.5 6.5L8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Home
+  </a>
+
+  <!-- HERO -->
+  <div class="hero-card">
+    <div class="hero-inner">
+      <div class="logo-box-hero">
+        <!-- A3 grid 8 riquadri — colori done hardcoded -->
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible">
+          <g stroke-width="5">
+            <rect x="10"    y="10"    width="26" height="26" rx="6" fill="#5D9C71"/>
+            <rect x="47"    y="10"    width="26" height="26" rx="6" fill="#497B58"/>
+            <rect x="11.25" y="48.25" width="23.5" height="23.5" rx="5.25" fill="none" stroke="#5D9C71"/>
+            <rect x="47"    y="47"    width="26" height="26" rx="6" fill="#5D9C71"/>
+            <rect x="84"    y="47"    width="26" height="26" rx="6" fill="#497B58"/>
+            <rect x="10"    y="84"    width="26" height="26" rx="6" fill="#497B58"/>
+            <rect x="48.25" y="85.25" width="23.5" height="23.5" rx="5.25" fill="none" stroke="#5D9C71"/>
+            <rect x="84"    y="84"    width="26" height="26" rx="6" fill="#497B58"/>
+          </g>
+          <path d="M17 97 H30 M26 92 L31 97 L26 102" fill="none" stroke="#C7DFCF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="97" y="33" font-family="Jost,sans-serif" font-weight="800" font-size="31" text-anchor="middle" fill="#497B58" letter-spacing="-1.5">A3</text>
+        </svg>
+      </div>
+      <div class="hero-text">
+        <div class="agent-id-lbl">Agente 3</div>
+        <div class="agent-name-big">Planner</div>
+        <div class="agent-desc-big">Pianifica il calendario editoriale del mese corrente, integrando analisi metriche, impegni agonistici e piano precedente.</div>
+      </div>
+    </div>
+    <div class="hero-meta">
+      <span class="status-badge badge-done"><span class="badge-dot"></span>Completato</span>
+      <span class="type-tag">&#9729;&#65039; Claude.ai</span>
+      <span class="last-run-lbl" id="lastRunLbl"></span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-row">
+    <button class="tab-btn active" onclick="switchTab('azioni',this)">Azioni</button>
+    <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
+    <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
+    <button class="tab-btn" onclick="switchTab('run',this)">Run</button>
+    <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
+  </div>
+
+  <!-- TAB: AZIONI -->
+  <div id="panel-azioni" class="panel active">
+    <div class="action-row">
+
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
+        <span class="btn-icon">&#128202;</span>
+        <div class="btn-text">
+          <div class="btn-title">Cartella Drive A2 — Report</div>
+          <div class="btn-sub" id="reportSubLbl">Recupera report Mm1 e Mm2</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </a>
+
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
+        <span class="btn-icon">&#128193;</span>
+        <div class="btn-text">
+          <div class="btn-title">Cartella Drive A3</div>
+          <div class="btn-sub" id="driveLbl">Piani editoriali — output</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </a>
+
+      <a class="lg-btn lg-cta" href="https://claude.ai/project/019dc48d-98e7-7375-ba30-d1c514ecc02f" target="_blank">
+        <span class="btn-icon">&#9889;</span>
+        <div class="btn-text">
+          <div class="btn-title">Apri progetto Claude A3</div>
+          <div class="btn-sub">Planner — claude.ai/project/...</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </a>
+
+      <button class="lg-btn lg-maker" onclick="openMsg()">
+        <span class="btn-icon">&#128203;</span>
+        <div class="btn-text">
+          <div class="btn-title">Copia messaggio precompilato</div>
+          <div class="btn-sub" id="msgSubLbl">Launcher A3 — piano mese corrente</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- TAB: DOCUMENTI -->
+  <div id="panel-file" class="panel">
+    <div class="section-card">
+      <div class="sc-head">
+        <span class="sc-label">&#128196; Output — Cartella Drive A3</span>
+        <a class="sc-link" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">Apri &#8599;</a>
+      </div>
+      <div class="sc-body">
+        <a class="file-item" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
+          <div class="file-icon fi-slide">&#128203;</div>
+          <div class="file-info">
+            <div class="file-name" id="pianoNomeLbl">piano_[mese]_[anno]</div>
+            <div class="file-sub">Google Slides — output A3 (M0)</div>
+          </div>
+          <span class="file-arr">&#8599;</span>
+        </a>
+        <a class="file-item dim" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
+          <div class="file-icon fi-slide" style="opacity:.5;">&#128203;</div>
+          <div class="file-info">
+            <div class="file-name" id="pianoNomePrecLbl">piano_[mese-1]_[anno]</div>
+            <div class="file-sub">Piano mese precedente — Mm1 (input)</div>
+          </div>
+          <span class="file-arr">&#8599;</span>
+        </a>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head">
+        <span class="sc-label">&#128202; Input — Report A2 (Mm1 + Mm2)</span>
+        <a class="sc-link" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">Apri &#8599;</a>
+      </div>
+      <div class="sc-body">
+        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
+          <div class="file-icon fi-slide">&#128202;</div>
+          <div class="file-info">
+            <div class="file-name" id="repMm1Lbl">report_GDC_[mese-1]_[anno]</div>
+            <div class="file-sub">Report mese precedente — Mm1</div>
+          </div>
+          <span class="file-arr">&#8599;</span>
+        </a>
+        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
+          <div class="file-icon fi-slide">&#128202;</div>
+          <div class="file-info">
+            <div class="file-name" id="repMm2Lbl">report_GDC_[mese-2]_[anno]</div>
+            <div class="file-sub">Report due mesi fa — Mm2</div>
+          </div>
+          <span class="file-arr">&#8599;</span>
+        </a>
+        <a class="file-item" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
+          <div class="file-icon fi-sheet">&#128202;</div>
+          <div class="file-info">
+            <div class="file-name">Instagram_Analytics_GDC</div>
+            <div class="file-sub">Google Sheet — dati A1</div>
+          </div>
+          <span class="file-arr">&#8599;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: LAVORO -->
+  <div id="panel-lavoro" class="panel">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#8680; Input / Output</span></div>
+      <div class="sc-body">
+        <div class="io-grid">
+          <div class="io-block">
+            <div class="io-title in">&#9660; Input</div>
+            <div class="io-item"><span class="io-dot in"></span>Sheet A1 (metriche IG)</div>
+            <div class="io-item"><span class="io-dot in"></span>Report A2 Mm1 + Mm2</div>
+            <div class="io-item"><span class="io-dot in"></span>Piano A3 <span id="ioMm1Lbl">Mm1</span></div>
+            <div class="io-item"><span class="io-dot in"></span>Calendario impegni M0</div>
+          </div>
+          <div class="io-block">
+            <div class="io-title out">&#9650; Output</div>
+            <div class="io-item"><span class="io-dot out"></span>piano_<span id="ioM0Lbl">M0</span>.pptx</div>
+            <div class="io-item"><span class="io-dot out"></span>→ Google Slides (Drive A3)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128218; Procedura manuale</span></div>
+      <div class="sc-body">
+        <div class="work-step">
+          <div class="work-num">1</div>
+          <div><div class="work-desc">Verifica che A2 abbia completato il report Mm1</div><div class="work-sub">Controlla stato home — A2 deve essere "completato"</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">2</div>
+          <div><div class="work-desc">Apri il progetto Claude A3</div><div class="work-sub">Tasto "Apri progetto Claude A3" qui sopra</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">3</div>
+          <div><div class="work-desc">Copia e incolla il messaggio precompilato</div><div class="work-sub">Tasto "Copia messaggio" — include tutti i link Drive con date automatiche</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">4</div>
+          <div><div class="work-desc">Aggiungi il calendario impegni manualmente</div><div class="work-sub">Tornei BPT, allenamenti, eventi — script automatico in sviluppo</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">5</div>
+          <div><div class="work-desc">A3 genera il piano editoriale .pptx</div><div class="work-sub">L'agente produce il file e lo offre in download</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">6</div>
+          <div><div class="work-desc">Scarica e carica su Drive A3</div><div class="work-sub">Drag &amp; drop nella cartella — conversione automatica in Slides</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: RUN -->
+  <div id="panel-run" class="panel">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128200; Statistiche</span></div>
+      <div class="sc-body">
+        <div class="stat-grid">
+          <div><div class="stat-num" style="color:var(--maker);">6</div><div class="stat-lbl">Piani generati</div></div>
+          <div><div class="stat-num">100%</div><div class="stat-lbl">Successo</div></div>
+          <div><div class="stat-num">~12</div><div class="stat-lbl">Min. medio</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128337; Storico run</span></div>
+      <div class="sc-body">
+        <div class="run-row">
+          <span class="run-icon">&#9989;</span>
+          <div class="run-info">
+            <div class="run-title" id="run1Lbl">Piano — [mese] [anno]</div>
+            <div class="run-meta">Run manuale · Claude.ai</div>
+          </div>
+          <span class="run-badge rb-ok">OK</span>
+        </div>
+        <div class="run-row">
+          <span class="run-icon">&#9989;</span>
+          <div class="run-info">
+            <div class="run-title" id="run2Lbl">Piano — [mese-1] [anno]</div>
+            <div class="run-meta">Run manuale · Claude.ai</div>
+          </div>
+          <span class="run-badge rb-ok">OK</span>
+        </div>
+        <div class="run-row">
+          <span class="run-icon">&#9989;</span>
+          <div class="run-info">
+            <div class="run-title">Piano — marzo 2026</div>
+            <div class="run-meta">Run manuale · Claude.ai</div>
+          </div>
+          <span class="run-badge rb-ok">OK</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CONFIG -->
+  <div id="panel-config" class="panel">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#9881; Configurazione agente</span></div>
+      <div class="sc-body">
+        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai + launcher webapp</span></div>
+        <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">Mensile — manuale (primi giorni del mese)</span></div>
+        <div class="config-row"><span class="config-key">Mese riferimento</span><span class="config-val" id="configMeseLbl">M0 — mese corrente</span></div>
+        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK</span></div>
+        <div class="config-row"><span class="config-key">Sheet input</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30</span></div>
+        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019dc48d-98e7-7375-ba30-d1c514ecc02f</span></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
+      <div class="sc-body">
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">A2 completato (report Mm1 su Drive)</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">Verificare</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm2 disponibile su Drive</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Piano A3 Mm1 disponibile su Drive</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Script BPT calendar (calendario auto)</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">In sviluppo</span></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#9889; Posizione nel flusso A1&#8594;A4</span></div>
+      <div class="sc-body">
+        <div style="font-size:.72rem;line-height:1.5;">A3 riceve i report A2 (Mm1+Mm2) e il piano precedente, e costruisce il piano editoriale del mese corrente (M0).<br><span style="color:var(--grigio);">Output: piano_[M0].pptx → Google Slides</span></div>
+        <div class="flow-row">
+          <span class="flow-side">A1</span>
+          <span class="flow-dash"></span>
+          <span class="flow-side">A2</span>
+          <span class="flow-dash"></span>
+          <span class="flow-active">A3</span>
+          <span class="flow-dash"></span>
+          <span class="flow-side">A4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const MESI_S=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const now=new Date();
+const DD=String(now.getDate()).padStart(2,'0');
+const MM=String(now.getMonth()+1).padStart(2,'0');
+const YY=now.getFullYear();
+const M0=MESI[now.getMonth()];
+const A0=YY;
+
+const mm1d=new Date(now.getFullYear(),now.getMonth()-1,1);
+const Mm1=MESI[mm1d.getMonth()]; const Am1=mm1d.getFullYear();
+const mm2d=new Date(now.getFullYear(),now.getMonth()-2,1);
+const Mm2=MESI[mm2d.getMonth()]; const Am2=mm2d.getFullYear();
+
+// Aggiorna UI
+document.getElementById('dateChipText').textContent=`${DD}/${MM}/${YY}`;
+document.getElementById('lastRunLbl').textContent=`Ultima run: ${M0} ${A0}`;
+document.getElementById('driveLbl').textContent=`piano_${M0}_${A0} — output`;
+document.getElementById('pianoNomeLbl').textContent=`piano_${M0}_${A0}`;
+document.getElementById('pianoNomePrecLbl').textContent=`piano_${Mm1}_${Am1}`;
+document.getElementById('repMm1Lbl').textContent=`report_GDC_${Mm1}_${Am1}`;
+document.getElementById('repMm2Lbl').textContent=`report_GDC_${Mm2}_${Am2}`;
+document.getElementById('reportSubLbl').textContent=`report Mm1: ${Mm1} · Mm2: ${Mm2}`;
+document.getElementById('ioMm1Lbl').textContent=`${Mm1} ${Am1}`;
+document.getElementById('ioM0Lbl').textContent=`${M0}_${A0}`;
+document.getElementById('configMeseLbl').textContent=`M0 — ${M0} ${A0}`;
+document.getElementById('run1Lbl').textContent=`Piano — ${M0} ${A0}`;
+document.getElementById('run2Lbl').textContent=`Piano — ${Mm1} ${Am1}`;
+document.getElementById('msgSubLbl').textContent=`Launcher A3 — ${M0} ${A0}`;
+
+// Testo messaggio precompilato
+const MSG=`Ciao A3. È il momento del piano editoriale mensile.
+
+Trovi i file necessari nelle seguenti cartelle Drive:
+
+GDC Analytics xlsx (A1):
+https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM
+→ file: Instagram_Analytics_GDC.xlsx
+
+Report A2 (ultimi 2 mesi):
+https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC
+→ file: report_GDC_${Mm1}_${Am1}.pptx
+→ file: report_GDC_${Mm2}_${Am2}.pptx
+
+Piano A3 mese precedente:
+https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK
+→ file: piano_${Mm1}_${Am1}.pptx
+
+Mese da pianificare: ${M0} ${A0}
+
+CALENDARIO IMPEGNI ${M0} ${A0}:
+[aggiungi qui i tuoi impegni — es. tornei BPT, allenamenti, eventi]
+
+Genera il piano editoriale e offrilo in download via present_files.
+→ nome file: piano_${M0}_${A0}.pptx
+
+(Dopo il download, carica tu il file nella cartella Drive A3:
+https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK )`;
+
+document.getElementById('msgText').value=MSG;
+
+function switchTab(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+/* ── MSG POPUP ── */
+function openMsg(){ document.getElementById('msgOverlay').classList.add('open'); }
+function closeMsg(){ document.getElementById('msgOverlay').classList.remove('open'); }
+function closeMsgIfBg(e){ if(e.target===document.getElementById('msgOverlay')) closeMsg(); }
+function copyMsg(){
+  navigator.clipboard.writeText(document.getElementById('msgText').value).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✓ Copiato!';
+    setTimeout(()=>{ btn.textContent='Copia messaggio'; },2000);
+  }).catch(()=>{ document.getElementById('msgText').select(); document.execCommand('copy'); });
+}
+
+/* ══ GDC LOGO MASTER ANIM ══ */
+(function(){
+  const svg=document.getElementById('hub-master-svg'); if(!svg) return;
+  const G=svg.querySelector('.logo-G'),D=svg.querySelector('.logo-D');
+  const C=svg.querySelector('.logo-C'),STUFF=svg.querySelector('.logo-STUFF');
+  const linee=svg.querySelector('.logo-linee');
+  [G,D,C,STUFF,linee].forEach(el=>{ el.style.opacity='0'; el.style.transition='opacity .22s ease'; });
+  setTimeout(()=>G.style.opacity='1',200);
+  setTimeout(()=>D.style.opacity='1',460);
+  setTimeout(()=>C.style.opacity='1',720);
+  setTimeout(()=>STUFF.style.opacity='1',980);
+  setTimeout(()=>linee.style.opacity='1',1240);
+})();
+
+/* ══ CALENDAR ══ */
+const CAL_EVENTS={
+  [`${YY}-${MM}-01`]:[{label:`A1 — Sync dati Instagram: ${M0} ${A0}`,agent:'A1',color:'#4A7C59'}],
+  [`${YY}-${MM}-03`]:[{label:`A2 — Report ${Mm1} ${Am1} generato`,agent:'A2',color:'#4A7C59'}],
+  [`${YY}-${MM}-05`]:[{label:`A3 — Piano ${M0} ${A0} generato`,agent:'A3',color:'#4A7C59'}],
+};
+let calY=parseInt(YY),calM=parseInt(MM)-1,selDay=null;
+function openCal(){ calY=parseInt(YY); calM=parseInt(MM)-1; document.getElementById('calOverlay').classList.add('open'); renderCal(); }
+function closeCal(){ document.getElementById('calOverlay').classList.remove('open'); }
+function closeCalIfBg(e){ if(e.target===document.getElementById('calOverlay')) closeCal(); }
+function calNav(d){ calM+=d; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} renderCal(); }
+function renderCal(){
+  document.getElementById('calMonthLabel').textContent=MESI_S[calM]+' '+calY;
+  const grid=document.getElementById('calDays'); grid.innerHTML='';
+  const fd=(new Date(calY,calM,1).getDay()+6)%7;
+  const dim=new Date(calY,calM+1,0).getDate();
+  for(let i=0;i<fd;i++){ const el=document.createElement('div'); el.className='cal-day'; grid.appendChild(el); }
+  for(let d=1;d<=dim;d++){
+    const ds=String(d).padStart(2,'0'),ms=String(calM+1).padStart(2,'0');
+    const key=`${calY}-${ms}-${ds}`;
+    const evs=CAL_EVENTS[key]||[];
+    const el=document.createElement('div');
+    el.className='cal-day'+(key===`${YY}-${MM}-${DD}`?' today':'')+(evs.length?' has-event':'');
+    el.innerHTML=`<span class="day-num">${d}</span>`;
+    if(evs.length){
+      const dots=document.createElement('div'); dots.className='event-dots';
+      evs.forEach(ev=>{ const dot=document.createElement('div'); dot.className='event-dot'; dot.style.background=ev.color; dots.appendChild(dot); });
+      el.appendChild(dots);
+      el.onclick=()=>showEvs(key,evs);
+    }
+    grid.appendChild(el);
+  }
+  if(selDay&&CAL_EVENTS[selDay]) showEvs(selDay,CAL_EVENTS[selDay]);
+  else document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>';
+}
+function showEvs(key,evs){
+  selDay=key; const [y,m,d]=key.split('-');
+  document.getElementById('calEventsPanel').innerHTML=
+    `<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">${d}/${m}/${y}</div>`+
+    evs.map(ev=>`<div class="cal-event-item"><div class="cal-event-dot" style="background:${ev.color}"></div><div><div class="cal-event-text">${ev.label}</div><div class="cal-event-agent">${ev.agent}</div></div></div>`).join('');
+}
+</script>
+</body>
+</html>

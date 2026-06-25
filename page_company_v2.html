@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Azienda</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── TOKEN SYSTEM ── */
+:root{
+  --carta:    #F5F0E8;
+  --bianco:   #FAFAF5;
+  --nero:     #1C1C1C;
+  --grigio:   #6B6B6B;
+  --bordo:    #DDD6CB;
+  --maker:    #4A7C59;
+  --maker-bg: #C7DFCF;
+  --maker-dk: #3A6145;
+  --life:     #C41E5A;
+  --life-bg:  #F5E0E6;
+  --sabbia:   #C4A865;
+  --sab-bg:   #E9DFC9;
+  --athlete:  #2B5F9E;
+  --ath-bg:   #D9E6F3;
+
+  /* follow-up badge colors */
+  --fu-7:  #C4A865;   /* sabbia — 7gg */
+  --fu-14: #D4701A;   /* arancione — 14gg */
+  --fu-30: #C41E5A;   /* rosso — 30gg */
+}
+@media(prefers-color-scheme:dark){
+  :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--bordo:#3A3A3A;--grigio:#9A9A9A;}
+  .header{background:transparent;}
+  .date-chip,.back-btn{background:#2E2E2E;border-color:#3A3A3A;}
+  .back-btn{color:#9A9A9A;}
+  .section,.company-header{background:#242424;border-color:#3A3A3A;}
+  .doc-item,.note-item,.note-new,.popup-card{background:#1A1A1A;border-color:#3A3A3A;}
+  .popup-textarea{background:#1A1A1A;border-color:#3A3A3A;}
+  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
+  #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{
+  font-family:'Jost',sans-serif; background:var(--carta); color:var(--nero);
+  min-height:100vh; padding-bottom:60px;
+  display:flex; flex-direction:column; align-items:center;
+}
+
+/* ── HEADER ── */
+.header{width:100%;max-width:540px;padding:16px 16px 10px;display:flex;flex-direction:column;gap:8px;}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.gdc-logo-wrap{display:flex;align-items:center;}
+
+.date-chip{display:flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--bordo);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:700;cursor:default;user-select:none;}
+.date-chip-dot{width:7px;height:7px;border-radius:50%;background:var(--sabbia);flex-shrink:0;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--bordo);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:700;color:var(--grigio);cursor:pointer;text-decoration:none;transition:border-color .15s,color .15s;font-family:'Jost',sans-serif;align-self:flex-start;}
+.back-btn:hover{border-color:var(--nero);color:var(--nero);}
+.company-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.topbar-badge{font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;}
+
+/* ── MAIN ── */
+.main{ width:100%; max-width:540px; padding:0 16px 0; display:flex; flex-direction:column; gap:16px; }
+
+/* ── HEADER AZIENDA ── */
+.company-header{
+  background:var(--bianco); border:1.5px solid var(--bordo); border-radius:16px;
+  padding:18px 16px 14px;
+}
+.company-name{
+  font-size:1.4rem; font-weight:800; letter-spacing:-.02em; line-height:1.1;
+  margin-bottom:6px;
+}
+.company-meta{
+  display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;
+}
+.tag{
+  font-size:.68rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+  padding:3px 9px; border-radius:999px; border:1.5px solid;
+}
+.tag-settore{ background:var(--sab-bg); color:#7A5C20; border-color:var(--sabbia); }
+.tag-lingua { background:var(--ath-bg); color:var(--athlete); border-color:var(--athlete); }
+.tag-score  { background:var(--maker-bg); color:var(--maker-dk); border-color:var(--maker); }
+.company-step-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-top:12px; border-top:1.5px solid var(--bordo);
+}
+.step-current{
+  display:flex; align-items:center; gap:8px;
+}
+.step-num{
+  width:28px; height:28px; border-radius:50%; background:var(--sabbia);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.75rem; font-weight:800; color:var(--nero); flex-shrink:0;
+}
+.step-label{ font-size:.82rem; font-weight:600; color:var(--nero); }
+.step-sub  { font-size:.7rem; color:var(--grigio); }
+.fu-badge{
+  font-size:.68rem; font-weight:700; padding:4px 10px; border-radius:999px;
+  display:flex; align-items:center; gap:5px;
+}
+.fu-14{ background:#FFF0E6; color:var(--fu-14); border:1.5px solid var(--fu-14); }
+.fu-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+/* ── SECTION WRAPPER ── */
+.section{
+  background:var(--bianco); border:1.5px solid var(--bordo); border-radius:16px;
+  overflow:hidden;
+}
+.sec-header{
+  padding:12px 16px 10px;
+  border-bottom:1.5px solid var(--bordo);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.sec-title{
+  font-size:.68rem; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--grigio);
+}
+.sec-body{ padding:14px 16px; }
+
+/* ── PIPELINE TIMELINE ── */
+.pipeline-grid{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+  margin-bottom:10px;
+}
+.pip-step{
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; padding:4px 2px; border-radius:8px;
+  transition:background .15s;
+}
+.pip-step:hover{ background:var(--carta); }
+.pip-dot{
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.65rem; font-weight:700;
+  border:2px solid var(--bordo); color:var(--grigio); background:var(--carta);
+  transition:all .2s; position:relative;
+}
+.pip-dot.done    { background:var(--maker-bg); border-color:var(--maker); color:var(--maker-dk); }
+.pip-dot.active  { background:var(--sabbia); border-color:#9A7835; color:var(--nero);
+                   box-shadow:0 0 0 3px rgba(196,168,101,.25); }
+.pip-dot.pending { background:var(--carta); border-color:var(--bordo); color:#AAA; }
+.pip-dot.refused { background:var(--life-bg); border-color:var(--life); color:var(--life); }
+.pip-lbl{
+  font-size:.52rem; font-weight:600; color:var(--grigio);
+  text-align:center; line-height:1.2;
+}
+/* connector line between steps */
+.pipe-row{
+  display:flex; align-items:center; gap:0; margin-bottom:10px;
+}
+.pipe-connector{
+  flex:1; height:2px; background:var(--bordo); margin:0 -2px; position:relative; top:-8px;
+}
+.pipe-connector.done{ background:var(--maker); }
+
+.pip-legend{
+  display:flex; gap:10px; flex-wrap:wrap;
+  font-size:.62rem; color:var(--grigio);
+}
+.pip-legend span{ display:flex; align-items:center; gap:4px; }
+.pip-legend .ld{ width:8px; height:8px; border-radius:50%; }
+
+/* ── DOCUMENTI ── */
+.doc-list{ display:flex; flex-direction:column; gap:8px; }
+.doc-item{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:10px; background:var(--carta);
+  border:1.5px solid var(--bordo); text-decoration:none; color:var(--nero);
+  transition:border-color .15s;
+}
+.doc-item:hover{ border-color:var(--athlete); }
+.doc-icon{
+  width:32px; height:32px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.65rem; font-weight:800; letter-spacing:.02em; flex-shrink:0;
+}
+.doc-icon.docx{ background:#E8F0FB; color:#2B5F9E; }
+.doc-icon.pptx{ background:#FDE8E0; color:#C0441A; }
+.doc-icon.pdf { background:#FFE8E8; color:#C41E5A; }
+.doc-icon.txt { background:var(--sab-bg); color:#7A5C20; }
+.doc-info{ flex:1; min-width:0; }
+.doc-name{ font-size:.78rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.doc-date{ font-size:.65rem; color:var(--grigio); }
+.doc-arrow{ color:var(--grigio); font-size:.85rem; flex-shrink:0; }
+
+/* ── AZIONI CONTESTUALI ── */
+.azioni-list{ display:flex; flex-direction:column; gap:8px; }
+.az-btn{
+  display:flex; align-items:center; gap:10px;
+  padding:11px 14px; border-radius:12px; border:2px solid;
+  font-family:'Jost',sans-serif; font-size:.82rem; font-weight:600;
+  cursor:pointer; text-align:left; width:100%;
+  transition:transform .1s, opacity .15s;
+}
+.az-btn:active{ transform:scale(.98); }
+.az-primary{ background:var(--maker); border-color:var(--maker); color:#fff; }
+.az-primary:hover{ background:var(--maker-dk); border-color:var(--maker-dk); }
+.az-secondary{ background:transparent; border-color:var(--sabbia); color:var(--nero); }
+.az-secondary:hover{ background:var(--sab-bg); }
+.az-ghost{ background:transparent; border-color:var(--bordo); color:var(--grigio); }
+.az-ghost:hover{ border-color:var(--grigio); color:var(--nero); }
+.az-icon{ font-size:1rem; flex-shrink:0; }
+.az-text{ display:flex; flex-direction:column; gap:1px; }
+.az-label{ font-size:.82rem; font-weight:600; }
+.az-sub  { font-size:.65rem; font-weight:400; opacity:.7; }
+
+/* ── PULSANTE A7 — 3 STATI ── */
+.az-btn.az-a7-disabled{
+  background:transparent; border-color:var(--bordo); color:#BBB4A8;
+  cursor:default; pointer-events:none;
+}
+.az-btn.az-a7-disabled .az-sub{ opacity:.6; }
+.az-btn.az-a7-active{
+  background:rgba(93,156,113,.1); border-color:#5D9C71; color:#3A6145;
+}
+.az-btn.az-a7-active:hover{ background:rgba(93,156,113,.18); }
+.az-btn.az-a7-done{
+  background:rgba(93,156,113,.06); border-color:rgba(93,156,113,.3); color:rgba(58,97,69,.55);
+  cursor:default; pointer-events:none;
+}
+.az-btn.az-a7-done .az-label{ font-weight:600; }
+
+/* ── CAMPO TESTO MAIL ── */
+.mail-field{
+  display:flex; flex-direction:column; gap:10px;
+}
+.mail-textarea{
+  width:100%; min-height:120px; padding:12px;
+  font-family:'Jost',sans-serif; font-size:.8rem; line-height:1.5;
+  background:var(--carta); border:1.5px solid var(--bordo); border-radius:10px;
+  color:var(--nero); resize:vertical; outline:none;
+  transition:border-color .2s;
+}
+.mail-textarea:focus{ border-color:var(--athlete); }
+.mail-textarea::placeholder{ color:#BBB4A8; }
+.mail-send-btn{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:11px 16px; border-radius:12px;
+  background:var(--sabbia); border:2px solid var(--sabbia);
+  font-family:'Jost',sans-serif; font-size:.82rem; font-weight:700; color:var(--nero);
+  cursor:pointer; transition:background .15s, transform .1s;
+}
+.mail-send-btn:hover{ background:#B89855; border-color:#B89855; }
+.mail-send-btn:active{ transform:scale(.98); }
+.mail-hint{
+  font-size:.68rem; color:var(--grigio); text-align:center; line-height:1.4;
+}
+
+/* ── NOTE ── */
+.note-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.note-item{
+  padding:10px 12px; background:var(--carta); border-radius:10px;
+  border-left:3px solid var(--bordo);
+}
+.note-date{ font-size:.62rem; color:var(--grigio); margin-bottom:3px; font-weight:600; letter-spacing:.04em; }
+.note-text{ font-size:.78rem; line-height:1.5; color:var(--nero); }
+.note-new{
+  width:100%; padding:10px 12px; min-height:72px;
+  font-family:'Jost',sans-serif; font-size:.78rem; line-height:1.5;
+  background:var(--carta); border:1.5px solid var(--bordo); border-radius:10px;
+  color:var(--nero); resize:none; outline:none; transition:border-color .2s;
+}
+.note-new:focus{ border-color:var(--maker); }
+.note-new::placeholder{ color:#BBB4A8; }
+.note-save{
+  margin-top:8px; width:100%; padding:9px;
+  font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700;
+  background:transparent; border:1.5px solid var(--maker); color:var(--maker);
+  border-radius:10px; cursor:pointer; transition:background .15s;
+}
+.note-save:hover{ background:var(--maker-bg); }
+
+/* ── POPUP NOTA RAPIDA ── */
+.popup-overlay{
+  position:fixed; inset:0; background:rgba(28,28,28,.45);
+  display:none; align-items:flex-end; justify-content:center;
+  z-index:200; backdrop-filter:blur(2px);
+}
+.popup-overlay.open{ display:flex; }
+.popup-card{
+  width:100%; max-width:480px; background:var(--bianco);
+  border-radius:20px 20px 0 0; padding:20px 20px 32px;
+  border-top:1.5px solid var(--bordo);
+}
+.popup-title{ font-size:.9rem; font-weight:700; margin-bottom:4px; }
+.popup-sub  { font-size:.75rem; color:var(--grigio); margin-bottom:14px; }
+.popup-textarea{
+  width:100%; min-height:80px; padding:10px 12px;
+  font-family:'Jost',sans-serif; font-size:.78rem; line-height:1.5;
+  background:var(--carta); border:1.5px solid var(--bordo); border-radius:10px;
+  color:var(--nero); resize:none; outline:none; margin-bottom:12px;
+  transition:border-color .2s;
+}
+.popup-textarea:focus{ border-color:var(--maker); }
+.popup-actions{ display:flex; gap:8px; }
+.popup-skip{
+  flex:1; padding:10px; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:600;
+  background:transparent; border:1.5px solid var(--bordo); color:var(--grigio); border-radius:10px; cursor:pointer;
+}
+.popup-confirm{
+  flex:2; padding:10px; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:700;
+  background:var(--maker); border:none; color:#fff; border-radius:10px; cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="gdc-logo-wrap">
+            <svg id="hub-master-svg"
+        viewBox="20 205 555 280"
+        xmlns="http://www.w3.org/2000/svg"
+        style="height:34px;width:auto;overflow:visible;"
+        font-family="Jost,sans-serif">
+        <g class="logo-G" fill="var(--nero)">
+          <path d="M141.92,331.53h45.01v44.28c-3.67,1.02-7.34,2.03-11.54,2.61c-4.76,0.65-10.2,0.74-15.19,0.72c-4.8-0.01-9.18-0.12-14.1-0.79c-5.48-0.75-11.64-2.21-17-4.34c-5.04-2-9.37-4.59-13.45-7.74c-4.06-3.13-7.87-6.81-10.92-10.85c-2.96-3.92-5.21-8.18-6.94-12.73c-1.77-4.65-3-9.62-3.69-14.68c-0.69-5.09-0.84-10.28-0.65-15.26c0.19-4.84,0.69-9.49,1.88-14.25c1.22-4.87,3.15-9.86,5.35-14.03c1.96-3.72,4.13-6.78,6.73-9.84c2.72-3.2,5.9-6.38,9.48-8.97c3.57-2.59,7.54-4.58,11.43-6.22c3.75-1.58,7.44-2.84,11.5-3.84c4.47-1.1,9.4-1.89,14.47-2.32c5.28-0.44,10.71-0.48,15.91-0.29c4.95,0.18,9.69,0.57,14.39,1.01c4.62,0.43,9.2,0.91,13.82,1.66c4.65,0.75,9.33,1.78,13.89,2.75c4.4,0.94,8.69,1.82,12.97,2.7v-35.44c-2.26-0.71-4.52-1.41-7.71-2.18c-4.85-1.17-11.84-2.47-18.19-3.4c-6.15-0.9-11.68-1.45-17.27-1.82c-5.46-0.36-10.98-0.55-16.54-0.61c-5.59-0.06-11.22,0.01-16.67,0.31c-5.3,0.29-10.42,0.79-15.69,1.64c-5.45,0.88-11.08,2.12-16.48,3.59c-5.13,1.39-10.07,2.98-14.41,4.81c-4.05,1.7-7.59,3.59-11.74,6.02c-4.78,2.8-10.37,6.31-14.66,9.67c-3.62,2.83-6.32,5.56-9.06,8.58c-2.89,3.17-5.83,6.65-8.58,10.83c-3.08,4.68-5.92,10.23-8.09,15.33c-1.93,4.53-3.32,8.71-4.44,12.96c-1.04,3.95-1.85,7.96-2.31,11.62c-0.41,3.3-0.53,6.32-0.61,9.61c-0.08,3.42-0.1,7.13,0.06,10.4c0.14,2.93,0.43,5.51,0.79,8.33c0.39,3.05,0.86,6.4,1.58,9.67c0.74,3.33,1.74,6.6,2.86,9.73c1.08,3.03,2.28,5.93,3.59,8.76c1.28,2.76,2.68,5.46,4.26,7.97c1.56,2.48,3.3,4.79,5.11,7.18c1.87,2.47,3.82,5.02,5.9,7.3c2,2.19,4.11,4.13,6.26,6.02c2.17,1.9,4.39,3.76,6.87,5.53c2.81,2.01,5.96,3.93,9.67,5.9c4.37,2.32,9.52,4.7,14.29,6.51c4.48,1.7,8.64,2.89,13.26,3.95c4.87,1.12,10.25,2.11,15.14,2.74c4.47,0.57,8.53,0.84,12.77,1.09c4.34,0.26,8.88,0.49,13.38,0.49c4.58,0,9.14-0.24,13.87-0.49c4.91-0.25,10.01-0.51,14.9-0.97c4.59-0.44,8.99-1.06,13.08-1.64c3.79-0.54,7.31-1.04,11.19-1.77c3.74-0.7,7.82-1.62,10.34-2.13c1.42-0.29,2.34-0.45,3.27-0.6V297.35h-83.33V331.53z"/>
+        </g>
+        <g class="logo-D" fill="var(--nero)">
+          <path d="M371.13,314.9c-0.07-4.76-0.29-9.13-0.87-13.53c-0.57-4.33-1.48-8.7-2.68-12.87c-1.24-4.31-2.78-8.41-5.39-12.92c-3.19-5.5-7.98-11.6-13.4-16.06c-5.09-4.18-10.74-6.92-16.06-9c-4.73-1.85-9.2-3.17-13.91-4.19c-4.99-1.08-10.24-1.83-16.16-2.15c-6.36-0.34-13.49-0.2-18.82,0.2c-3.83,0.29-6.74,0.72-9.64,1.14v144.51c1.58,0.49,3.01,0.64,5.18,0.81c3.71,0.3,9.58,0.68,15.28,0.76c6.12,0.09,12.03-0.15,17.58-0.94c5.22-0.74,10.1-1.95,15.14-3.7c5.25-1.83,10.67-4.24,15.31-7.23c4.36-2.81,8.05-6.12,11.35-9.72c3.2-3.49,6.05-7.24,8.34-11.27c2.28-3.99,4.01-8.25,5.33-12.73c1.38-4.68,2.31-9.6,2.84-14.79C371.1,325.84,371.21,320.13,371.13,314.9z"/>
+        </g>
+        <g class="logo-C" fill="var(--nero)">
+          <path d="M529.09,373.73c-3.89,1.18-9.52,2.99-14.35,4.08c-4.34,0.97-8.04,1.37-11.86,1.77c-3.72,0.39-7.55,0.78-11.31,1.04c-3.68,0.25-7.3,0.36-10.89,0.37c-3.55,0-7.08-0.1-10.64-0.42c-3.57-0.32-7.18-0.86-10.58-1.58c-3.24-0.69-6.28-1.55-9.31-2.74c-3.02-1.19-6.02-2.7-8.76-4.14c-2.53-1.33-4.84-2.59-7.06-4.26c-2.29-1.71-4.48-3.85-6.51-5.84c-1.96-1.92-3.76-3.72-5.35-6.14c-1.63-2.49-3.04-5.65-4.01-7.6c-0.34,2.13-1.02,4.71-2.13,7.6c-1.4,3.66-3.47,7.82-5.35,11.44c-1.73,3.32-3.31,6.19-5.35,9.19c-2.11,3.08-4.71,6.3-7.06,8.82c-1.92,2.07-3.67,3.68-5.53,5.23c2.87,2.55,6.8,5.18,10.28,7.42c3.27,2.11,6.14,3.88,9.67,5.59c4.12,2,9.12,3.93,14.17,5.54c5.12,1.63,10.29,2.93,15.08,3.95c4.42,0.94,8.53,1.63,13.08,2.13c5.32,0.58,11.24,0.89,18.13,0.97c8.07,0.09,17.46-0.13,24.88-0.73c5.64-0.46,10.14-1.14,14.29-1.89c3.79-0.68,7.29-1.42,11.74-2.56c5.04-1.29,11.3-3.09,14.9-4.08L529.09,373.73z"/>
+          <path d="M419.61,283.58c-0.3-1.87-0.67-3.3-1.45-5.42c-1.16-3.18-3.24-7.91-5.21-11.5c-1.75-3.2-3.4-5.49-5.61-8.28c-2.41-3.05-5.47-6.69-7.7-9.19c-1.64-1.83-2.83-3.05-4.63-4.54c3.01-2.17,6.02-4.35,9.1-6.44c3.23-2.2,6.54-4.31,10.54-6.34c4.64-2.36,10.19-4.61,15.34-6.34c4.78-1.61,9.21-2.77,13.81-3.78c4.59-1.01,9.34-1.89,14.01-2.56c5.07-0.73,10.04-1.21,16.67-1.33c8.51-0.15,19.76,0.32,27.52,0.92c5.33,0.42,9.01,0.9,12.89,1.64c3.57,0.68,7.32,1.58,10.74,2.45c3.11,0.8,5.95,1.57,8.8,2.35l-8.84,33.77c-3.24-0.98-6.16-1.89-9.43-2.65c-3.58-0.84-7.57-1.52-11.57-2.11c-4.08-0.6-8.17-1.11-12.21-1.38c-3.91-0.26-7.77-0.28-11.49-0.23c-3.58,0.05-7.02,0.18-10.63,0.51c-3.73,0.34-7.65,0.9-11.21,1.74c-3.31,0.78-6.32,1.8-9.33,2.97c-3,1.16-5.99,2.45-8.82,4.05c-2.79,1.57-5.44,3.45-7.74,5.35c-2.12,1.75-3.95,3.54-5.74,5.52c-1.77,1.96-3.5,4.11-4.89,6.05C421.35,280.45,420.41,281.96,419.61,283.58z"/>
+        </g>
+        <g class="logo-STUFF" fill="var(--nero)">
+          <path d="M209.13,450.89c0.55,0.47,1.1,0.94,1.57,1.52c0.51,0.63,0.94,1.38,1.14,2.25c0.23,0.98,0.19,2.11,0.07,3.18c-0.11,1.07-0.3,2.08-0.82,3.04c-0.59,1.07-1.61,2.07-2.72,2.86c-1.15,0.83-2.4,1.43-3.86,1.86c-1.54,0.45-3.31,0.69-4.65,0.86c-1.05,0.13-1.83,0.22-2.93,0.18c-1.5-0.05-3.62-0.33-5.4-0.68c-1.5-0.3-2.75-0.65-3.75-0.97c-0.72-0.23-1.31-0.44-1.89-0.64v-7.15c1.05,0.55,2.1,1.1,3.15,1.57c1.02,0.46,2.03,0.84,3.15,1.14c1.21,0.33,2.55,0.57,3.93,0.68c1.38,0.11,2.8,0.08,3.93-0.25c0.92-0.27,1.64-0.73,2.18-1.39c0.49-0.6,0.84-1.37,0.71-2c-0.12-0.6-0.67-1.09-1.22-1.5c-0.59-0.44-1.17-0.8-1.93-1.11c-1.01-0.41-2.33-0.75-3.75-1.11c-1.48-0.37-3.08-0.77-4.08-1.22c-0.73-0.33-1.14-0.68-1.97-1.13c-0.74-0.52-1.48-1.05-2.18-1.66c-0.71-0.62-1.37-1.33-1.75-2.18c-0.38-0.86-0.47-1.85-0.39-2.82c0.07-0.97,0.31-1.92,0.68-2.79c0.36-0.84,0.85-1.6,1.43-2.25c0.6-0.67,1.3-1.22,2.22-1.72c1.14-0.61,2.61-1.12,4.04-1.47c1.47-0.36,2.89-0.54,4.5-0.64c1.76-0.11,3.74-0.11,5.4,0.07c1.35,0.15,2.47,0.42,3.5,0.75c0.9,0.29,1.72,0.61,2.55,0.94v6.43c-0.58-0.35-1.17-0.7-1.8-1.08c-0.81-0.49-1.69-1.02-3.18-1.32c-2.21-0.45-5.76-0.4-7.51,0.04c-0.88,0.22-1.3,0.53-1.68,0.89c-0.31,0.3-0.59,0.64-0.71,1.11c-0.15,0.56-0.08,1.31,0.21,1.82c0.28,0.5,0.78,0.79,1.39,1.04c0.82,0.33,1.85,0.61,2.93,0.93c1.25,0.38,2.57,0.82,3.93,1.25c1.34,0.42,2.72,0.84,3.72,1.36C208.06,449.98,208.6,450.44,209.13,450.89z"/>
+          <polygon points="385.74,441.89 385.74,448.25 398.82,448.25 398.82,454.04 385.38,454.04 385.38,466.4 376.37,466.4 376.37,435.87 400.25,435.87 400.25,441.89"/>
+          <polygon points="239.23,442.01 239.23,465.99 243.88,465.99 248.53,465.99 248.53,442.01 258.74,442.01 258.74,435.87 243.88,435.87 229.02,435.87 229.02,442.01"/>
+          <polygon points="341.04,466.4 341.04,454.04 354.48,454.04 354.48,448.25 341.4,448.25 341.4,441.89 355.91,441.89 355.91,435.87 332.03,435.87 332.03,466.4"/>
+          <path d="M294.14,466.4c-0.43,0-0.87-0.01-1.49-0.04c-0.99-0.04-2.45-0.14-3.79-0.32c-1.34-0.18-2.55-0.45-3.72-0.93c-1.12-0.46-2.2-1.1-3.07-1.79c-0.77-0.6-1.37-1.23-1.97-1.93c-0.62-0.73-1.24-1.53-1.64-2.47c-0.41-0.95-0.59-2.03-0.73-2.92v-20.14h9.38v19.36c0.06,0.72,0.14,1.43,0.36,2.06c0.21,0.6,0.55,1.13,1,1.57c0.46,0.46,1.03,0.82,1.64,1.07c0.62,0.25,1.28,0.38,1.97,0.43c0.69,0.05,1.42,0.01,2.06,0.04c0.64-0.02,1.37,0.01,2.06-0.04c0.69-0.05,1.35-0.18,1.97-0.43c0.61-0.25,1.18-0.62,1.64-1.07c0.45-0.45,0.79-0.98,1-1.57c0.22-0.63,0.31-1.34,0.36-2.06v-19.36h9.38v20.14c-0.14,0.89-0.33,1.97-0.73,2.92c-0.4,0.94-1.02,1.74-1.64,2.47c-0.6,0.7-1.2,1.33-1.97,1.93c-0.87,0.68-1.95,1.33-3.07,1.79c-1.17,0.48-2.38,0.75-3.72,0.93c-1.33,0.18-2.8,0.28-3.79,0.32C295.01,466.4,294.58,466.4,294.14,466.4z"/>
+        </g>
+        <g class="logo-linee" fill="var(--nero)">
+          <rect x="34.04" y="446.1" width="116.55" height="7.14"/>
+          <rect x="436.27" y="446.1" width="116.18" height="7.14"/>
+        </g>
+      </svg>
+    </div>
+    <div class="date-chip">
+      <div class="date-chip-dot"></div>
+      <span id="dateLabel">—</span>
+    </div>
+  </div>
+  <div class="company-title-row">
+    <button class="back-btn" onclick="history.back()">← Pipeline</button>
+    <span class="topbar-badge tag tag-score">Score 82</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ① HEADER AZIENDA -->
+  <div class="company-header">
+    <div class="company-name">Mizuno Sport Italia</div>
+    <div class="company-meta">
+      <span class="tag tag-settore">Abbigliamento sportivo</span>
+      <span class="tag tag-lingua">🇮🇹 IT</span>
+    </div>
+    <div class="company-step-row">
+      <div class="step-current">
+        <div class="step-num">8</div>
+        <div>
+          <div class="step-label">Risposta ricevuta</div>
+          <div class="step-sub">In attesa di gestione</div>
+        </div>
+      </div>
+      <!-- Follow-up badge: 14 giorni da "Mail inviata" -->
+      <div class="fu-badge fu-14">
+        <div class="fu-dot"></div>
+        14gg fa
+      </div>
+    </div>
+  </div>
+
+  <!-- ② PIPELINE TIMELINE -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-title">Pipeline · Step 1–13</span>
+      <span style="font-size:.68rem;color:var(--grigio);">Tocca per aggiornare</span>
+    </div>
+    <div class="sec-body">
+      <!-- Riga 1: step 1-7 -->
+      <div style="display:flex;align-items:center;gap:0;margin-bottom:6px;">
+        <div class="pip-step" onclick="setStep(1)" title="Azienda trovata">
+          <div class="pip-dot done" id="s1">1</div>
+          <div class="pip-lbl">Trovata</div>
+        </div>
+        <div class="pipe-connector done"></div>
+        <div class="pip-step" onclick="setStep(2)" title="Scheda generata">
+          <div class="pip-dot done" id="s2">2</div>
+          <div class="pip-lbl">Scheda</div>
+        </div>
+        <div class="pipe-connector done"></div>
+        <div class="pip-step" onclick="setStep(3)" title="Media kit generato">
+          <div class="pip-dot done" id="s3">3</div>
+          <div class="pip-lbl">Media kit</div>
+        </div>
+        <div class="pipe-connector done"></div>
+        <div class="pip-step" onclick="setStep(4)" title="Media kit approvato">
+          <div class="pip-dot done" id="s4">4</div>
+          <div class="pip-lbl">Approvato</div>
+        </div>
+        <div class="pipe-connector done"></div>
+        <div class="pip-step" onclick="setStep(5)" title="Testo mail generato">
+          <div class="pip-dot done" id="s5">5</div>
+          <div class="pip-lbl">Testo mail</div>
+        </div>
+        <div class="pipe-connector done"></div>
+        <div class="pip-step" onclick="setStep(6)" title="Bozza Gmail pronta">
+          <div class="pip-dot done" id="s6">6</div>
+          <div class="pip-lbl">Bozza</div>
+        </div>
+        <div class="pipe-connector done"></div>
+        <div class="pip-step" onclick="setStep(7)" title="Mail inviata">
+          <div class="pip-dot done" id="s7">7</div>
+          <div class="pip-lbl">Inviata</div>
+        </div>
+      </div>
+      <!-- Riga 2: step 8-13 -->
+      <div style="display:flex;align-items:center;gap:0;">
+        <div class="pip-step" onclick="setStep(8)" title="Risposta ricevuta">
+          <div class="pip-dot active" id="s8">8</div>
+          <div class="pip-lbl">Risposta</div>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pip-step" onclick="setStep(9)" title="Risposta gestita">
+          <div class="pip-dot pending" id="s9">9</div>
+          <div class="pip-lbl">Gestita</div>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pip-step" onclick="setStep(10)" title="In trattativa">
+          <div class="pip-dot pending" id="s10">10</div>
+          <div class="pip-lbl">Trattativa</div>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pip-step" onclick="setStep(11)" title="Accordo raggiunto">
+          <div class="pip-dot pending" id="s11">11</div>
+          <div class="pip-lbl">Accordo</div>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pip-step" onclick="setStep(12)" title="Contratto firmato">
+          <div class="pip-dot pending" id="s12">12</div>
+          <div class="pip-lbl">Contratto</div>
+        </div>
+        <div class="pipe-connector"></div>
+        <div class="pip-step" onclick="setStep(13)" title="Rifiutato">
+          <div class="pip-dot pending" id="s13">✕</div>
+          <div class="pip-lbl">Rifiutato</div>
+        </div>
+      </div>
+      <!-- Legend -->
+      <div class="pip-legend" style="margin-top:10px;padding-top:10px;border-top:1.5px solid var(--bordo);">
+        <span><i class="ld" style="background:var(--maker)"></i> Completato</span>
+        <span><i class="ld" style="background:var(--sabbia)"></i> Step attuale</span>
+        <span><i class="ld" style="background:var(--bordo)"></i> In attesa</span>
+        <span><i class="ld" style="background:var(--life-bg);border:1.5px solid var(--life)"></i> Rifiutato</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ AZIONI CONTESTUALI (step 8: risposta ricevuta) -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-title">Azioni — Step 8</span>
+    </div>
+    <div class="sec-body">
+      <div class="azioni-list">
+        <button class="az-btn az-primary" onclick="openPopupThen('openA62')">
+          <span class="az-icon">✉️</span>
+          <div class="az-text">
+            <span class="az-label">Apri A6.2 — gestisci risposta</span>
+            <span class="az-sub">Claude genera la risposta alla loro mail</span>
+          </div>
+        </button>
+        <button class="az-btn az-secondary" onclick="openPopupThen('step9')">
+          <span class="az-icon">✓</span>
+          <div class="az-text">
+            <span class="az-label">Segna risposta gestita</span>
+            <span class="az-sub">Avanza a Step 9</span>
+          </div>
+        </button>
+        <button class="az-btn az-ghost" onclick="openPopupThen('step10')">
+          <span class="az-icon">🤝</span>
+          <div class="az-text">
+            <span class="az-label">Salta a In trattativa</span>
+            <span class="az-sub">Avanza direttamente a Step 10</span>
+          </div>
+        </button>
+        <button class="az-btn az-ghost" onclick="openPopupThen('step13')" style="border-color:var(--life);color:var(--life);">
+          <span class="az-icon">✕</span>
+          <div class="az-text">
+            <span class="az-label">Archivia come rifiutato</span>
+            <span class="az-sub">Step 13 — archiviato con note</span>
+          </div>
+        </button>
+
+        <!-- PULSANTE A7 — generato da buildA7Btn() -->
+        <div id="a7-btn-wrap" style="margin-top:4px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ DOCUMENTI -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-title">Documenti Drive</span>
+      <span style="font-size:.68rem;color:var(--athlete);font-weight:600;cursor:pointer;">↻ Sync</span>
+    </div>
+    <div class="sec-body">
+      <div class="doc-list">
+        <a class="doc-item" href="#" target="_blank">
+          <div class="doc-icon docx">DOCX</div>
+          <div class="doc-info">
+            <div class="doc-name">Scheda_Mizuno_Agente52.docx</div>
+            <div class="doc-date">Generato il 3 giu 2026</div>
+          </div>
+          <span class="doc-arrow">→</span>
+        </a>
+        <a class="doc-item" href="#" target="_blank">
+          <div class="doc-icon pptx">PPTX</div>
+          <div class="doc-info">
+            <div class="doc-name">mediakit_Mizuno.pptx</div>
+            <div class="doc-date">Generato il 3 giu 2026</div>
+          </div>
+          <span class="doc-arrow">→</span>
+        </a>
+        <a class="doc-item" href="#" target="_blank">
+          <div class="doc-icon pdf">PDF</div>
+          <div class="doc-info">
+            <div class="doc-name">mediakit_Mizuno.pdf</div>
+            <div class="doc-date">Approvato il 4 giu 2026</div>
+          </div>
+          <span class="doc-arrow">→</span>
+        </a>
+        <a class="doc-item" href="#" target="_blank">
+          <div class="doc-icon txt">TXT</div>
+          <div class="doc-info">
+            <div class="doc-name">mail_Mizuno_2026-06-05.txt</div>
+            <div class="doc-date">Creato il 5 giu 2026</div>
+          </div>
+          <span class="doc-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ NOTE -->
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-title">Note</span>
+      <span style="font-size:.68rem;color:var(--grigio);">Salvataggio automatico</span>
+    </div>
+    <div class="sec-body">
+      <div class="note-list" id="noteList">
+        <div class="note-item">
+          <div class="note-date">5 GIU 2026 · 14:32</div>
+          <div class="note-text">Hanno risposto in meno di 24h — molto interessati al formato reel. Chiedono disponibilità per una call la prossima settimana.</div>
+        </div>
+        <div class="note-item">
+          <div class="note-date">3 GIU 2026 · 09:15</div>
+          <div class="note-text">Media kit inviato. Contatto principale: Marco Ricci (marketing manager). Ha già visto il profilo, conosce il BPT.</div>
+        </div>
+      </div>
+      <textarea class="note-new" id="newNote" placeholder="Aggiungi una nota…"></textarea>
+      <button class="note-save" onclick="saveNote()">Salva nota</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- POPUP NOTA RAPIDA -->
+<div class="popup-overlay" id="popup">
+  <div class="popup-card">
+    <div class="popup-title">Vuoi aggiungere una nota?</div>
+    <div class="popup-sub">Aggiungi un contesto prima di procedere. Puoi saltare.</div>
+    <textarea class="popup-textarea" id="popupNote" placeholder="Es. Ho chiamato Marco, disponibile il 20 giugno…"></textarea>
+    <div class="popup-actions">
+      <button class="popup-skip"    onclick="closePopup(false)">Salta</button>
+      <button class="popup-confirm" onclick="closePopup(true)">Salva e procedi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── SUPABASE CONFIG ── */
+const SUPA_URL = 'https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+
+const STEP_NAMES = {
+  1:'Trovata', 2:'Scheda', 3:'Media kit', 4:'Approvato',
+  5:'Testo mail', 6:'Bozza Gmail', 7:'Mail inviata', 8:'Risposta',
+  9:'Gestita', 10:'Trattativa', 11:'Accordo', 12:'Contratto', 13:'Rifiutato'
+};
+
+/* ── LOAD COMPANY DAL URL ?id ── */
+async function loadCompany() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (!id) { showError('ID azienda mancante nell'URL'); return; }
+
+  try {
+    const res = await fetch(
+      SUPA_URL + '/rest/v1/companies?id=eq.' + id +
+      '&select=id,nome,settore,lingua,score,tag,step_attuale,step_1,step_2,step_3,step_4,step_5,step_6,step_7,step_8,step_9,step_10,step_11,step_12,step_13,data_mail_inviata,note,drive_folder,a7_status,created_at',
+      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.length) { showError('Azienda non trovata (id=' + id + ')'); return; }
+    populatePage(data[0]);
+  } catch(e) {
+    showError(e.message);
+  }
+}
+
+function showError(msg) {
+  document.querySelector('.company-name').textContent = 'Errore';
+  document.querySelector('.company-meta').innerHTML = '<span style="color:var(--life);font-size:.8rem">' + msg + '</span>';
+}
+
+function populatePage(co) {
+  // Nome e meta
+  document.querySelector('.company-name').textContent = co.nome || '—';
+  const metaEl = document.querySelector('.company-meta');
+  metaEl.innerHTML =
+    '<span class="tag tag-settore">' + (co.settore||'—') + '</span>' +
+    '<span class="tag tag-lingua">'+flagEmoji(co.lingua)+' '+(co.lingua||'IT')+'</span>' +
+    (co.tag ? '<span class="tag tag-settore">'+ co.tag +'</span>' : '');
+
+  // Step attuale
+  const step = co.step_attuale || 1;
+  currentStep = step;
+  document.querySelector('.step-num').textContent = step === 13 ? '✕' : step;
+  document.querySelector('.step-label').textContent = STEP_NAMES[step] || '—';
+  document.querySelector('.step-sub').textContent = step === 13 ? 'Chiusa' : 'Step ' + step + ' di 12';
+
+  // Score badge
+  const scoreBadge = document.querySelector('.topbar-badge.tag-score');
+  if (scoreBadge) scoreBadge.textContent = 'Score ' + (co.score || '—');
+
+  // Follow-up badge
+  const fuEl = document.querySelector('.fu-badge');
+  if (fuEl && co.data_mail_inviata && step >= 7 && step <= 9) {
+    const days = Math.floor((Date.now() - new Date(co.data_mail_inviata).getTime()) / 86400000);
+    if (days > 0) {
+      fuEl.textContent = '+' + days + 'gg';
+      fuEl.className = 'fu-badge ' + (days <= 7 ? 'fu-7' : days <= 14 ? 'fu-14' : 'fu-30');
+    }
+  } else if (fuEl) {
+    fuEl.style.display = 'none';
+  }
+
+  // Pipeline step dots
+  for (let i = 1; i <= 13; i++) {
+    const dot = document.getElementById('s' + i);
+    if (!dot) continue;
+    const completed = co['step_' + i];
+    const isCurrent = i === step;
+    dot.className = 'pip-dot' + (completed ? ' done' : '') + (isCurrent ? ' current' : '') + (i === 13 ? ' refused' : '');
+  }
+  updateConnectors(step);
+
+  // Note
+  const noteEl = document.querySelector('.note-text-display');
+  if (noteEl) noteEl.textContent = co.note || 'Nessuna nota.';
+
+  // Drive folder link
+  if (co.drive_folder) {
+    const driveLinks = document.querySelectorAll('a[href*="drive.google"]');
+    driveLinks.forEach(a => a.href = co.drive_folder);
+  }
+
+  // A7 status
+  if (co.a7_status) {
+    const a7el = document.querySelector('.a7-status-badge');
+    if (a7el) a7el.textContent = co.a7_status;
+  }
+
+  // Titolo pagina
+  document.title = 'GDC — ' + (co.nome || 'Azienda');
+}
+
+function flagEmoji(lingua) {
+  const map = { IT:'🇮🇹', EN:'🇬🇧', DE:'🇩🇪', FR:'🇫🇷', ES:'🇪🇸' };
+  return map[lingua] || '🌐';
+}
+
+/* ── Pipeline step click ── */
+let currentStep = 8;
+function setStep(n){
+  /* visual only per prototipo */
+  document.querySelectorAll('.pip-dot').forEach((el, i) => {
+    const step = i + 1;
+    el.className = 'pip-dot ' + (step < n ? 'done' : step === n ? 'active' : step === 13 ? 'pending' : 'pending');
+  });
+  currentStep = n;
+}
+
+/* ── Popup nota rapida ── */
+let _pendingAction = null;
+function openPopupThen(action){
+  _pendingAction = action;
+  document.getElementById('popupNote').value = '';
+  document.getElementById('popup').classList.add('open');
+}
+function closePopup(save){
+  const note = document.getElementById('popupNote').value.trim();
+  if(save && note) addNote(note);
+  document.getElementById('popup').classList.remove('open');
+  if(_pendingAction) execAction(_pendingAction);
+  _pendingAction = null;
+}
+document.getElementById('popup').addEventListener('click', function(e){
+  if(e.target === this) closePopup(false);
+});
+
+function execAction(action){
+  if(action === 'openA62'){
+    window.open('https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0','_blank');
+  } else if(action === 'step9')  { setStep(9); }
+  else if(action === 'step10') { setStep(10); }
+  else if(action === 'step13') {
+    setStep(13);
+    document.querySelectorAll('.pip-dot')[12].className = 'pip-dot refused';
+  }
+}
+
+/* ── Note ── */
+function addNote(text){
+  const now = new Date();
+  const date = now.toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}).toUpperCase()
+             + ' · ' + now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  const el = document.createElement('div');
+  el.className = 'note-item';
+  el.innerHTML = `<div class="note-date">${date}</div><div class="note-text">${text}</div>`;
+  document.getElementById('noteList').prepend(el);
+}
+function saveNote(){
+  const text = document.getElementById('newNote').value.trim();
+  if(!text) return;
+  addNote(text);
+  document.getElementById('newNote').value = '';
+}
+
+/* ── A7 — Genera bozza Gmail ── */
+
+// Dati simulati — verranno letti da Supabase nella chat del codice
+const company = {
+  name: 'Mizuno Italia',
+  has_mail_txt:     true,   // ← cambia a false per testare stato disabilitato
+  has_mediakit_pdf: true,   // ← cambia a false per testare stato disabilitato
+  a7_status:        null,   // ← imposta 'draft_created' per testare stato completato
+  a7_processed_at:  null    // ← es. '2026-06-10T09:30:00Z'
+};
+
+function buildA7Btn(){
+  var hasTxt = !!company.has_mail_txt;
+  var hasPdf = !!company.has_mediakit_pdf;
+  var a7st   = company.a7_status || null;
+  var a7at   = company.a7_processed_at || null;
+  var wrap   = document.getElementById('a7-btn-wrap');
+  if(!wrap) return;
+
+  // Stato 3 — COMPLETATO
+  if(a7st === 'draft_created'){
+    var dateStr = '';
+    if(a7at){
+      try{
+        var d = new Date(a7at);
+        dateStr = d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+      } catch(e){}
+    }
+    wrap.innerHTML =
+      '<button class="az-btn az-a7-done" disabled>' +
+        '<span class="az-icon">✓</span>' +
+        '<div class="az-text">' +
+          '<span class="az-label">Bozza creata</span>' +
+          (dateStr ? '<span class="az-sub">Creata il ' + dateStr + '</span>' : '') +
+        '</div>' +
+      '</button>';
+    return;
+  }
+
+  // Stato 2 — ATTIVO
+  if(hasTxt && hasPdf){
+    wrap.innerHTML =
+      '<button class="az-btn az-a7-active" id="btn-genera-bozza" onclick="onGeneraBozza()">' +
+        '<span class="az-icon">📨</span>' +
+        '<div class="az-text">' +
+          '<span class="az-label">Genera bozza Gmail ↗</span>' +
+          '<span class="az-sub">TXT + PDF pronti — A7 crea la bozza</span>' +
+        '</div>' +
+      '</button>';
+    return;
+  }
+
+  // Stato 1 — DISABILITATO
+  var mancanti = [];
+  if(!hasTxt) mancanti.push('mail TXT');
+  if(!hasPdf) mancanti.push('media kit PDF');
+  wrap.innerHTML =
+    '<button class="az-btn az-a7-disabled" disabled>' +
+      '<span class="az-icon">📨</span>' +
+      '<div class="az-text">' +
+        '<span class="az-label">Genera bozza Gmail</span>' +
+        '<span class="az-sub">In attesa di: ' + mancanti.join(' · ') + '</span>' +
+      '</div>' +
+    '</button>';
+}
+
+function onGeneraBozza(){
+  // Logica GitHub Actions da collegare nella chat del codice
+  console.log('[A7] Genera bozza Gmail per:', company.name);
+}
+
+buildA7Btn();
+
+/* ══ GDC LOGO MASTER ANIM ══ */
+(function(){
+  const svg=document.getElementById('hub-master-svg'); if(!svg) return;
+  const G=svg.querySelector('.logo-G'), D=svg.querySelector('.logo-D');
+  const C=svg.querySelector('.logo-C'), STUFF=svg.querySelector('.logo-STUFF');
+  const linee=svg.querySelector('.logo-linee');
+  [G,D,C,STUFF,linee].forEach(el=>{ el.style.opacity='0'; el.style.transition='opacity .22s ease'; });
+  setTimeout(()=>G.style.opacity='1',     200);
+  setTimeout(()=>D.style.opacity='1',     460);
+  setTimeout(()=>C.style.opacity='1',     720);
+  setTimeout(()=>STUFF.style.opacity='1', 980);
+  setTimeout(()=>linee.style.opacity='1',1240);
+})();
+/* ── DATE ── */
+(function(){
+  var now=new Date();
+  var el=document.getElementById('dateLabel');
+  if(el) el.textContent=now.toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase();
+})();
+/* ── INIT ── */
+loadCompany();
+</script>
+</body>
+</html>

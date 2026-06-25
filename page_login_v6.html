@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --athlete:#2B5F9E; --life:#C41E5A; --sabbia:#C4A865; --grigio:#6B6B6B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  min-height:100vh; font-family:'Jost',sans-serif; background:var(--carta);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; position:relative;
+}
+body::before{
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 55% 40% at 18% 28%, rgba(196,168,101,.14) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 35% at 82% 72%, rgba(196,30,90,.09) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 62% 18%, rgba(74,124,89,.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.card{
+  position:relative; z-index:1; width:min(420px,92vw);
+  background:rgba(250,250,245,0.52);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.72); border-radius:24px;
+  padding:44px 40px 40px;
+  box-shadow:0 8px 32px rgba(28,28,28,.11), 0 1px 0 rgba(255,255,255,.9) inset;
+  display:flex; flex-direction:column; gap:26px;
+}
+.logo-wrap{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.logo-svg{ width:100%; max-width:310px; height:auto; overflow:visible; }
+
+.st0{ fill:var(--nero); stroke:none; opacity:0; transition:opacity .35s ease, fill .45s ease; }
+
+.logo-G.vis   .st0,
+.logo-D.vis   .st0,
+.logo-C.vis   .st0,
+.logo-STUFF.vis .st0,
+.logo-linee.vis .st0{ opacity:1; }
+
+.logo-linee.c-life  .st0{ fill:var(--life);  }
+.logo-linee.c-maker .st0{ fill:var(--maker); }
+
+.tagline{ font-size:.7rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--grigio); text-align:center; }
+.divider{ height:1px; background:rgba(28,28,28,.10); }
+.form{ display:flex; flex-direction:column; gap:14px; }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field label{ font-size:.72rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--grigio); }
+.field input{
+  font-family:'Jost',sans-serif; font-size:.95rem; font-weight:500;
+  background:rgba(245,240,232,.75); border:2px solid var(--life);
+  border-radius:10px; padding:12px 14px; outline:none; color:var(--nero);
+  transition:border-color .25s, box-shadow .25s; width:100%;
+}
+.field input:focus{ border-color:var(--athlete); box-shadow:0 0 0 4px rgba(43,95,158,.12); }
+.field input.filled{ border-color:var(--maker); }
+.field input.filled:focus{ border-color:var(--athlete); }
+.btn{
+  font-family:'Jost',sans-serif; font-weight:700; font-size:1rem; letter-spacing:.04em;
+  border:none; border-radius:12px; padding:14px; cursor:pointer; width:100%;
+  transition:background .4s, box-shadow .3s, transform .1s;
+  background:var(--life); color:var(--bianco);
+  box-shadow:0 4px 16px rgba(196,30,90,.22); margin-top:4px;
+}
+.btn.ready{ background:var(--maker); box-shadow:0 4px 16px rgba(74,124,89,.26); }
+.btn:active{ transform:scale(.98); }
+.demo-row{ display:flex; gap:8px; }
+.demo-btn{
+  flex:1; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:600;
+  border:1px solid rgba(28,28,28,.18); border-radius:8px; padding:7px 10px;
+  background:transparent; cursor:pointer; color:var(--grigio); transition:background .2s;
+}
+.demo-btn:hover{ background:rgba(28,28,28,.06); }
+.footer{ font-size:.68rem; color:var(--grigio); text-align:center; letter-spacing:.04em; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-wrap">
+    <svg class="logo-svg" id="logoSvg"
+      viewBox="24 215.2 538.4 268"
+      xmlns="http://www.w3.org/2000/svg">
+<g>
+	<g id="LINE_00000147215544581221914730000017556053277840445091_" class="logo-STUFF">
+		<path class="st0" d="M209.13,450.89c0.55,0.47,1.1,0.94,1.57,1.52c0.51,0.63,0.94,1.38,1.14,2.25c0.23,0.98,0.19,2.11,0.07,3.18
+			c-0.11,1.07-0.3,2.08-0.82,3.04c-0.59,1.07-1.61,2.07-2.72,2.86c-1.15,0.83-2.4,1.43-3.86,1.86c-1.54,0.45-3.31,0.69-4.65,0.86
+			c-1.05,0.13-1.83,0.22-2.93,0.18c-1.5-0.05-3.62-0.33-5.4-0.68c-1.5-0.3-2.75-0.65-3.75-0.97c-0.72-0.23-1.31-0.44-1.89-0.64
+			v-7.15c1.05,0.55,2.1,1.1,3.15,1.57c1.02,0.46,2.03,0.84,3.15,1.14c1.21,0.33,2.55,0.57,3.93,0.68c1.38,0.11,2.8,0.08,3.93-0.25
+			c0.92-0.27,1.64-0.73,2.18-1.39c0.49-0.6,0.84-1.37,0.71-2c-0.12-0.6-0.67-1.09-1.22-1.5c-0.59-0.44-1.17-0.8-1.93-1.11
+			c-1.01-0.41-2.33-0.75-3.75-1.11c-1.48-0.37-3.08-0.77-4.08-1.22c-0.73-0.33-1.14-0.68-1.97-1.13c-0.74-0.52-1.48-1.05-2.18-1.66
+			c-0.71-0.62-1.37-1.33-1.75-2.18c-0.38-0.86-0.47-1.85-0.39-2.82c0.07-0.97,0.31-1.92,0.68-2.79c0.36-0.84,0.85-1.6,1.43-2.25
+			c0.6-0.67,1.3-1.22,2.22-1.72c1.14-0.61,2.61-1.12,4.04-1.47c1.47-0.36,2.89-0.54,4.5-0.64c1.76-0.11,3.74-0.11,5.4,0.07
+			c1.35,0.15,2.47,0.42,3.5,0.75c0.9,0.29,1.72,0.61,2.55,0.94v6.43c-0.58-0.35-1.17-0.7-1.8-1.08c-0.81-0.49-1.69-1.02-3.18-1.32
+			c-2.21-0.45-5.76-0.4-7.51,0.04c-0.88,0.22-1.3,0.53-1.68,0.89c-0.31,0.3-0.59,0.64-0.71,1.11c-0.15,0.56-0.08,1.31,0.21,1.82
+			c0.28,0.5,0.78,0.79,1.39,1.04c0.82,0.33,1.85,0.61,2.93,0.93c1.25,0.38,2.57,0.82,3.93,1.25c1.34,0.42,2.72,0.84,3.72,1.36
+			C208.06,449.98,208.6,450.44,209.13,450.89z"/>
+	</g>
+	<g class="logo-D"><path class="st0" d="M371.13,314.9c-0.07-4.76-0.29-9.13-0.87-13.53c-0.57-4.33-1.48-8.7-2.68-12.87
+		c-1.24-4.31-2.78-8.41-5.39-12.92c-3.19-5.5-7.98-11.6-13.4-16.06c-5.09-4.18-10.74-6.92-16.06-9c-4.73-1.85-9.2-3.17-13.91-4.19
+		c-4.99-1.08-10.24-1.83-16.16-2.15c-6.36-0.34-13.49-0.2-18.82,0.2c-3.83,0.29-6.74,0.72-9.64,1.14v144.51
+		c1.58,0.49,3.01,0.64,5.18,0.81c3.71,0.3,9.58,0.68,15.28,0.76c6.12,0.09,12.03-0.15,17.58-0.94c5.22-0.74,10.1-1.95,15.14-3.7
+		c5.25-1.83,10.67-4.24,15.31-7.23c4.36-2.81,8.05-6.12,11.35-9.72c3.2-3.49,6.05-7.24,8.34-11.27c2.28-3.99,4.01-8.25,5.33-12.73
+		c1.38-4.68,2.31-9.6,2.84-14.79C371.1,325.84,371.21,320.13,371.13,314.9z"/></g>
+	<g id="SPLINE_00000069367668720113781100000000291340512526655422_" class="logo-C">
+		<path class="st0" d="M529.09,373.73c-3.89,1.18-9.52,2.99-14.35,4.08c-4.34,0.97-8.04,1.37-11.86,1.77
+			c-3.72,0.39-7.55,0.78-11.31,1.04c-3.68,0.25-7.3,0.36-10.89,0.37c-3.55,0-7.08-0.1-10.64-0.42c-3.57-0.32-7.18-0.86-10.58-1.58
+			c-3.24-0.69-6.28-1.55-9.31-2.74c-3.02-1.19-6.02-2.7-8.76-4.14c-2.53-1.33-4.84-2.59-7.06-4.26c-2.29-1.71-4.48-3.85-6.51-5.84
+			c-1.96-1.92-3.76-3.72-5.35-6.14c-1.63-2.49-3.04-5.65-4.01-7.6c-0.34,2.13-1.02,4.71-2.13,7.6c-1.4,3.66-3.47,7.82-5.35,11.44
+			c-1.73,3.32-3.31,6.19-5.35,9.19c-2.11,3.08-4.71,6.3-7.06,8.82c-1.92,2.07-3.67,3.68-5.53,5.23c2.87,2.55,6.8,5.18,10.28,7.42
+			c3.27,2.11,6.14,3.88,9.67,5.59c4.12,2,9.12,3.93,14.17,5.54c5.12,1.63,10.29,2.93,15.08,3.95c4.42,0.94,8.53,1.63,13.08,2.13
+			c5.32,0.58,11.24,0.89,18.13,0.97c8.07,0.09,17.46-0.13,24.88-0.73c5.64-0.46,10.14-1.14,14.29-1.89
+			c3.79-0.68,7.29-1.42,11.74-2.56c5.04-1.29,11.3-3.09,14.9-4.08L529.09,373.73z"/>
+	</g>
+	<g id="LINE_00000001651888917271684330000003855687429294157467_" class="logo-STUFF">
+		<polygon class="st0" points="385.74,441.89 385.74,448.25 398.82,448.25 398.82,454.04 385.38,454.04 385.38,466.4 376.37,466.4 
+			376.37,435.87 400.25,435.87 400.25,441.89 		"/>
+	</g>
+	<g id="LINE_00000019647447151077181770000008148321592965470096_" class="logo-C">
+		<path class="st0" d="M419.61,283.58c-0.3-1.87-0.67-3.3-1.45-5.42c-1.16-3.18-3.24-7.91-5.21-11.5c-1.75-3.2-3.4-5.49-5.61-8.28
+			c-2.41-3.05-5.47-6.69-7.7-9.19c-1.64-1.83-2.83-3.05-4.63-4.54c3.01-2.17,6.02-4.35,9.1-6.44c3.23-2.2,6.54-4.31,10.54-6.34
+			c4.64-2.36,10.19-4.61,15.34-6.34c4.78-1.61,9.21-2.77,13.81-3.78c4.59-1.01,9.34-1.89,14.01-2.56
+			c5.07-0.73,10.04-1.21,16.67-1.33c8.51-0.15,19.76,0.32,27.52,0.92c5.33,0.42,9.01,0.9,12.89,1.64c3.57,0.68,7.32,1.58,10.74,2.45
+			c3.11,0.8,5.95,1.57,8.8,2.35l-8.84,33.77c-3.24-0.98-6.16-1.89-9.43-2.65c-3.58-0.84-7.57-1.52-11.57-2.11
+			c-4.08-0.6-8.17-1.11-12.21-1.38c-3.91-0.26-7.77-0.28-11.49-0.23c-3.58,0.05-7.02,0.18-10.63,0.51
+			c-3.73,0.34-7.65,0.9-11.21,1.74c-3.31,0.78-6.32,1.8-9.33,2.97c-3,1.16-5.99,2.45-8.82,4.05c-2.79,1.57-5.44,3.45-7.74,5.35
+			c-2.12,1.75-3.95,3.54-5.74,5.52c-1.77,1.96-3.5,4.11-4.89,6.05C421.35,280.45,420.41,281.96,419.61,283.58z"/>
+	</g>
+	<g id="LINE_00000157300796672028119790000008402497980686141372_" class="logo-STUFF">
+		<polygon class="st0" points="239.23,442.01 239.23,465.99 243.88,465.99 248.53,465.99 248.53,442.01 258.74,442.01 
+			258.74,435.87 243.88,435.87 229.02,435.87 229.02,442.01 		"/>
+	</g>
+	<g id="SPLINE_00000026152140255163234560000007459071454216237976_" class="logo-G">
+		<path class="st0" d="M141.92,331.53h45.01v44.28c-3.67,1.02-7.34,2.03-11.54,2.61c-4.76,0.65-10.2,0.74-15.19,0.72
+			c-4.8-0.01-9.18-0.12-14.1-0.79c-5.48-0.75-11.64-2.21-17-4.34c-5.04-2-9.37-4.59-13.45-7.74c-4.06-3.13-7.87-6.81-10.92-10.85
+			c-2.96-3.92-5.21-8.18-6.94-12.73c-1.77-4.65-3-9.62-3.69-14.68c-0.69-5.09-0.84-10.28-0.65-15.26c0.19-4.84,0.69-9.49,1.88-14.25
+			c1.22-4.87,3.15-9.86,5.35-14.03c1.96-3.72,4.13-6.78,6.73-9.84c2.72-3.2,5.9-6.38,9.48-8.97c3.57-2.59,7.54-4.58,11.43-6.22
+			c3.75-1.58,7.44-2.84,11.5-3.84c4.47-1.1,9.4-1.89,14.47-2.32c5.28-0.44,10.71-0.48,15.91-0.29c4.95,0.18,9.69,0.57,14.39,1.01
+			c4.62,0.43,9.2,0.91,13.82,1.66c4.65,0.75,9.33,1.78,13.89,2.75c4.4,0.94,8.69,1.82,12.97,2.7v-35.44
+			c-2.26-0.71-4.52-1.41-7.71-2.18c-4.85-1.17-11.84-2.47-18.19-3.4c-6.15-0.9-11.68-1.45-17.27-1.82
+			c-5.46-0.36-10.98-0.55-16.54-0.61c-5.59-0.06-11.22,0.01-16.67,0.31c-5.3,0.29-10.42,0.79-15.69,1.64
+			c-5.45,0.88-11.08,2.12-16.48,3.59c-5.13,1.39-10.07,2.98-14.41,4.81c-4.05,1.7-7.59,3.59-11.74,6.02
+			c-4.78,2.8-10.37,6.31-14.66,9.67c-3.62,2.83-6.32,5.56-9.06,8.58c-2.89,3.17-5.83,6.65-8.58,10.83
+			c-3.08,4.68-5.92,10.23-8.09,15.33c-1.93,4.53-3.32,8.71-4.44,12.96c-1.04,3.95-1.85,7.96-2.31,11.62
+			c-0.41,3.3-0.53,6.32-0.61,9.61c-0.08,3.42-0.1,7.13,0.06,10.4c0.14,2.93,0.43,5.51,0.79,8.33c0.39,3.05,0.86,6.4,1.58,9.67
+			c0.74,3.33,1.74,6.6,2.86,9.73c1.08,3.03,2.28,5.93,3.59,8.76c1.28,2.76,2.68,5.46,4.26,7.97c1.56,2.48,3.3,4.79,5.11,7.18
+			c1.87,2.47,3.82,5.02,5.9,7.3c2,2.19,4.11,4.13,6.26,6.02c2.17,1.9,4.39,3.76,6.87,5.53c2.81,2.01,5.96,3.93,9.67,5.9
+			c4.37,2.32,9.52,4.7,14.29,6.51c4.48,1.7,8.64,2.89,13.26,3.95c4.87,1.12,10.25,2.11,15.14,2.74c4.47,0.57,8.53,0.84,12.77,1.09
+			c4.34,0.26,8.88,0.49,13.38,0.49c4.58,0,9.14-0.24,13.87-0.49c4.91-0.25,10.01-0.51,14.9-0.97c4.59-0.44,8.99-1.06,13.08-1.64
+			c3.79-0.54,7.31-1.04,11.19-1.77c3.74-0.7,7.82-1.62,10.34-2.13c1.42-0.29,2.34-0.45,3.27-0.6V297.35h-83.33V331.53z"/>
+	</g>
+	<g id="LINE_00000028285818355533035180000006747006319108014469_" class="logo-STUFF">
+		<polygon class="st0" points="341.04,466.4 341.04,454.04 354.48,454.04 354.48,448.25 341.4,448.25 341.4,441.89 355.91,441.89 
+			355.91,435.87 332.03,435.87 332.03,466.4 		"/>
+	</g>
+	<g id="LINE_00000097470085890377632800000014711624094683535027_" class="logo-linee">
+		<rect x="34.04" y="446.1" class="st0" width="116.55" height="7.14"/>
+	</g>
+	<g id="LINE_00000160155339620842042220000016125921211899141556_" class="logo-linee">
+		<rect x="436.27" y="446.1" class="st0" width="116.18" height="7.14"/>
+	</g>
+	<g id="LINE_00000062183448783491009700000009193191203582222756_" class="logo-STUFF">
+		<path class="st0" d="M294.14,466.4c-0.43,0-0.87-0.01-1.49-0.04c-0.99-0.04-2.45-0.14-3.79-0.32c-1.34-0.18-2.55-0.45-3.72-0.93
+			c-1.12-0.46-2.2-1.1-3.07-1.79c-0.77-0.6-1.37-1.23-1.97-1.93c-0.62-0.73-1.24-1.53-1.64-2.47c-0.41-0.95-0.59-2.03-0.73-2.92
+			v-20.14h9.38v19.36c0.06,0.72,0.14,1.43,0.36,2.06c0.21,0.6,0.55,1.13,1,1.57c0.46,0.46,1.03,0.82,1.64,1.07
+			c0.62,0.25,1.28,0.38,1.97,0.43c0.69,0.05,1.42,0.01,2.06,0.04c0.64-0.02,1.37,0.01,2.06-0.04c0.69-0.05,1.35-0.18,1.97-0.43
+			c0.61-0.25,1.18-0.62,1.64-1.07c0.45-0.45,0.79-0.98,1-1.57c0.22-0.63,0.31-1.34,0.36-2.06v-19.36h9.38v20.14
+			c-0.14,0.89-0.33,1.97-0.73,2.92c-0.4,0.94-1.02,1.74-1.64,2.47c-0.6,0.7-1.2,1.33-1.97,1.93c-0.87,0.68-1.95,1.33-3.07,1.79
+			c-1.17,0.48-2.38,0.75-3.72,0.93c-1.33,0.18-2.8,0.28-3.79,0.32C295.01,466.4,294.58,466.4,294.14,466.4z"/>
+	</g>
+</g>
+    </svg>
+    <p class="tagline">GDC Workspace &nbsp;·&nbsp; Sistema Agenti</p>
+  </div>
+  <div class="divider"></div>
+  <div class="form">
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="giandcdalcorso11@gmail.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn" id="btn">Accedi</button>
+  </div>
+  <div class="demo-row">
+    <button class="demo-btn" onclick="replayLogo()">↺ Replay logo</button>
+    <button class="demo-btn" onclick="demoForm()">✎ Compila demo</button>
+  </div>
+  <p class="footer">GDC IA TEAM &nbsp;·&nbsp; uso privato</p>
+</div>
+<script>
+const svg   = document.getElementById('logoSvg');
+const email = document.getElementById('email');
+const pwd   = document.getElementById('password');
+const btn   = document.getElementById('btn');
+
+const G     = [...svg.querySelectorAll('.logo-G')];
+const D     = [...svg.querySelectorAll('.logo-D')];
+const C     = [...svg.querySelectorAll('.logo-C')];
+const STUFF = [...svg.querySelectorAll('.logo-STUFF')];
+const linee = [...svg.querySelectorAll('.logo-linee')];
+
+function resetLogo(){
+  [...G,...D,...C,...STUFF,...linee].forEach(el =>
+    el.classList.remove('vis','c-life','c-maker')
+  );
+}
+
+function showGroup(els, delay){
+  setTimeout(() => {
+    els.forEach((el, i) => setTimeout(() => el.classList.add('vis'), i * 15));
+  }, delay);
+}
+
+function animateLogo(){
+  resetLogo();
+  showGroup(G,      80);
+  showGroup(D,     420);
+  showGroup(C,     760);
+  showGroup(STUFF,1100);
+  showGroup(linee,1440);
+  setTimeout(() => {
+    linee.forEach(el => el.classList.add('c-life'));
+  }, 3300);
+}
+
+function updateForm(){
+  const e = email.value.trim().length > 0;
+  const p = pwd.value.trim().length > 0;
+  email.classList.toggle('filled', e);
+  pwd.classList.toggle('filled', p);
+  btn.classList.toggle('ready', e && p);
+  linee.forEach((el, idx) => {
+    el.classList.remove('c-life','c-maker');
+    if(e && p)              el.classList.add('c-maker');
+    else if(e && idx === 0) el.classList.add('c-maker');
+    else                    el.classList.add('c-life');
+  });
+}
+
+email.addEventListener('input', updateForm);
+pwd.addEventListener('input', updateForm);
+function replayLogo(){ animateLogo(); }
+function demoForm(){
+  email.value = 'giandcdalcorso11@gmail.com';
+  pwd.value   = 'password123';
+  updateForm();
+}
+animateLogo();
+</script>
+</body>
+</html>
