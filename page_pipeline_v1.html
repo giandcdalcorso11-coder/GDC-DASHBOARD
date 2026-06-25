@@ -158,6 +158,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
 
   <a href="page_home_v25.html" class="back-btn">← Home</a>
+  <a class="back-btn" href="page_hub_v1.html" style="margin-left:8px;">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    Hub
+  </a>
 
   <div>
     <div class="page-title">Pipeline Sponsorizzazioni</div>
@@ -321,7 +327,7 @@ function renderList(list){
     var bc = stepBadgeClass(c.step);
     var sc = scoreTagClass(c.score);
     var refused = c.step === 13;
-    return '<a class="co-card'+(refused?' refused':'')+'" href="company_page_v2.html?id='+c.id+'">' +
+    return '<a class="co-card'+(refused?' refused':'')+'" href="page_company_v2.html?id='+c.id+'">' +
       '<div class="step-badge '+bc+'">' +
         '<div class="step-num">'+(refused?'✕':c.step)+'</div>' +
       '</div>' +
