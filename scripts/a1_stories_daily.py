@@ -4,47 +4,57 @@ Ogni giorno alle 23:50 ora italiana.
 
 Flusso:
 1. Instagram Graph API → stories attive in questo momento
-2. Aggiunge le stories al file JSON del mese: stories_[mese]_[anno].json
-3. Carica il JSON aggiornato su Google Drive (cartella A1.2 → Archivio → [Mese])
+2. Scrive le stories su Google Sheet A1, tab "Stories_[Mese]_[Anno]"
+   (upsert per ID — aggiorna metriche se la story è già presente)
 
 Le stories scadono dopo ~24h su Instagram — questo script le cattura
 prima che spariscano, costruendo un archivio mensile completo.
+
+Nota: salvataggio su Google Sheets invece di Drive JSON perché
+i service account non hanno storage quota su Drive personale.
 
 Secrets GitHub richiesti:
   IG_ACCESS_TOKEN     — token a lunga durata Instagram Graph API
   IG_USER_ID          — ID numerico account Instagram
   GOOGLE_CREDENTIALS  — JSON service account Google (base64)
-  DRIVE_FOLDER_A1     — ID cartella Drive A1.2 root
 """
 
 import os
 import json
 import base64
-import io
-import tempfile
 import requests
 from datetime import datetime, date
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 
-IG_TOKEN     = os.environ["IG_ACCESS_TOKEN"]
-IG_USER_ID   = os.environ["IG_USER_ID"]
-DRIVE_ROOT   = os.environ["DRIVE_FOLDER_A1"]
+IG_TOKEN   = os.environ["IG_ACCESS_TOKEN"]
+IG_USER_ID = os.environ["IG_USER_ID"]
 
-today    = date.today()
-MESE_IT  = [
-    "", "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
-    "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
-][today.month]
+# Sheet A1 — ID fisso dal progetto (non richiede secret separato)
+SHEET_ID = "1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30"
+
+today   = date.today()
+MESI_IT = [
+    "", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+    "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+]
+MESE_IT  = MESI_IT[today.month]
 ANNO     = today.year
-FILENAME = f"stories_{MESE_IT}_{ANNO}.json"
+TAB_NAME = f"Stories_{MESE_IT}_{ANNO}"   # es. "Stories_Giugno_2026"
 
-print(f"▶ A1 Stories Daily — {today.strftime('%d/%m/%Y')} — {FILENAME}")
+COLUMNS = [
+    "story_id", "timestamp", "media_type", "permalink",
+    "captured_at",
+    "impressions", "reach", "replies",
+    "taps_forward", "taps_back", "exits",
+    "profile_visits", "follows"
+]
+
+print(f"▶ A1 Stories Daily — {today.strftime('%d/%m/%Y')} — tab: {TAB_NAME}")
 
 
 # ─── INSTAGRAM API ──────────────────────────────────────────────────────────────
@@ -58,12 +68,8 @@ def ig_get(endpoint, params={}):
 
 
 def fetch_active_stories():
-    """
-    Recupera tutte le stories attive ora sull'account.
-    Le stories sono disponibili solo nelle ~24h dopo la pubblicazione.
-    """
+    """Recupera tutte le stories attive + metriche via insights."""
     print("  → Fetch stories attive...")
-    # shares e likes non sono campi validi per le stories (solo feed post)
     fields = "id,timestamp,permalink,media_type"
     try:
         data = ig_get(f"{IG_USER_ID}/stories", {"fields": fields, "limit": 100})
@@ -74,22 +80,19 @@ def fetch_active_stories():
             return []
         raise
 
-    # Per ogni story, recupera metriche via insights
-    # Metriche valide per stories: NO shares/likes (solo feed post)
+    # Metriche valide per stories: NO shares/likes/navigation (non supportati)
+    INSIGHTS_METRICS = "impressions,reach,replies,taps_forward,taps_back,exits,profile_visits,follows"
+
     enriched = []
     for s in stories:
         try:
-            ins = ig_get(f"{s['id']}/insights", {
-                "metric": "impressions,reach,replies,taps_forward,taps_back,exits,navigation,profile_visits,follows"
-            })
-            metrics = {}
+            ins = ig_get(f"{s['id']}/insights", {"metric": INSIGHTS_METRICS})
             for m in ins.get("data", []):
-                metrics[m["name"]] = m["values"][0]["value"] if m.get("values") else m.get("value", 0)
-            s.update(metrics)
+                val = m["values"][0]["value"] if m.get("values") else m.get("value", 0)
+                s[m["name"]] = val
         except Exception as ex:
             print(f"    Insights story {s['id']} non disponibili: {ex}")
 
-        # Aggiungi data di capture per log
         s["captured_at"] = datetime.utcnow().isoformat()
         enriched.append(s)
 
@@ -97,139 +100,113 @@ def fetch_active_stories():
     return enriched
 
 
-# ─── GOOGLE DRIVE ───────────────────────────────────────────────────────────────
+# ─── GOOGLE SHEETS ──────────────────────────────────────────────────────────────
 
-def get_drive_service():
+def get_sheets_service():
     creds_b64  = os.environ["GOOGLE_CREDENTIALS"]
     creds_json = json.loads(base64.b64decode(creds_b64))
-    scopes     = ["https://www.googleapis.com/auth/drive"]
+    scopes     = ["https://www.googleapis.com/auth/spreadsheets"]
     creds      = Credentials.from_service_account_info(creds_json, scopes=scopes)
-    return build("drive", "v3", credentials=creds)
+    return build("sheets", "v4", credentials=creds)
 
 
-def find_or_create_folder(service, name, parent_id):
-    """Trova una cartella per nome in parent, o la crea se non esiste."""
-    query = (
-        f"name='{name}' and '{parent_id}' in parents "
-        f"and mimeType='application/vnd.google-apps.folder' and trashed=false"
-    )
-    results = service.files().list(q=query, fields="files(id)").execute()
-    files = results.get("files", [])
-    if files:
-        return files[0]["id"]
-    # Crea la cartella
-    meta = {
-        "name": name,
-        "mimeType": "application/vnd.google-apps.folder",
-        "parents": [parent_id]
-    }
-    folder = service.files().create(body=meta, fields="id").execute()
-    print(f"    Cartella '{name}' creata su Drive")
-    return folder["id"]
+def ensure_tab(service, tab_name):
+    """Crea il tab se non esiste. Ritorna True se appena creato."""
+    meta = service.spreadsheets().get(spreadsheetId=SHEET_ID).execute()
+    existing = [s["properties"]["title"] for s in meta.get("sheets", [])]
+    if tab_name in existing:
+        return False
+    # Crea tab
+    body = {"requests": [{"addSheet": {"properties": {"title": tab_name}}}]}
+    service.spreadsheets().batchUpdate(spreadsheetId=SHEET_ID, body=body).execute()
+    print(f"    Tab '{tab_name}' creato")
+    return True
 
 
-def find_file(service, name, folder_id):
-    query = f"name='{name}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, fields="files(id)").execute()
-    files = results.get("files", [])
-    return files[0]["id"] if files else None
+def write_header(service, tab_name):
+    """Scrive la riga di intestazione."""
+    service.spreadsheets().values().update(
+        spreadsheetId=SHEET_ID,
+        range=f"'{tab_name}'!A1",
+        valueInputOption="RAW",
+        body={"values": [COLUMNS]}
+    ).execute()
 
 
-def download_json(service, file_id):
-    """Scarica il JSON esistente e ritorna lista Python."""
-    request = service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while not done:
-        _, done = downloader.next_chunk()
-    fh.seek(0)
-    return json.loads(fh.read())
+def read_existing_ids(service, tab_name):
+    """Legge gli story_id già presenti nella colonna A (dalla riga 2 in poi)."""
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range=f"'{tab_name}'!A2:A"
+        ).execute()
+        rows = result.get("values", [])
+        return {row[0] for row in rows if row}
+    except Exception:
+        return set()
 
 
-def upload_json(service, data, filename, folder_id, existing_id=None):
-    """Carica (o aggiorna) il file JSON su Drive."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        tmp_path = f.name
+def story_to_row(s):
+    """Converte un dict story nella lista di valori per il foglio."""
+    return [str(s.get(col, "")) for col in COLUMNS]
 
-    media = MediaFileUpload(tmp_path, mimetype="application/json")
 
-    if existing_id:
-        service.files().update(fileId=existing_id, media_body=media).execute()
-        print(f"    JSON aggiornato: {filename} ({len(data)} stories totali)")
+def append_stories(service, tab_name, stories):
+    """Aggiunge le nuove stories in fondo al tab (upsert per ID)."""
+    existing_ids = read_existing_ids(service, tab_name)
+
+    new_rows = []
+    skipped  = 0
+    for s in stories:
+        sid = s.get("id") or s.get("story_id", "")
+        if not sid:
+            continue
+        if sid in existing_ids:
+            skipped += 1
+            continue
+        # Mappa "id" → "story_id" per il foglio
+        s_mapped = {**s, "story_id": sid}
+        new_rows.append(story_to_row(s_mapped))
+
+    if new_rows:
+        service.spreadsheets().values().append(
+            spreadsheetId=SHEET_ID,
+            range=f"'{tab_name}'!A1",
+            valueInputOption="RAW",
+            insertDataOption="INSERT_ROWS",
+            body={"values": new_rows}
+        ).execute()
+        print(f"    Scritte {len(new_rows)} nuove stories ({skipped} già presenti)")
     else:
-        meta = {"name": filename, "parents": [folder_id]}
-        service.files().create(body=meta, media_body=media, fields="id").execute()
-        print(f"    JSON creato: {filename} ({len(data)} stories)")
+        print(f"    Nessuna nuova story da aggiungere ({skipped} già presenti)")
 
-    os.unlink(tmp_path)
-
-
-# ─── DEDUPLICAZIONE ─────────────────────────────────────────────────────────────
-
-def merge_stories(existing, new_stories):
-    """
-    Unisce le nuove stories con quelle esistenti.
-    Deduplica per ID — aggiorna le metriche se la story era già presente
-    (le metriche cambiano durante le 24h di vita della story).
-    """
-    existing_map = {s["id"]: s for s in existing}
-
-    updated = 0
-    added   = 0
-    for s in new_stories:
-        sid = s["id"]
-        if sid in existing_map:
-            # Aggiorna metriche (potrebbero essere più alte)
-            existing_map[sid].update(s)
-            updated += 1
-        else:
-            existing_map[sid] = s
-            added += 1
-
-    result = list(existing_map.values())
-    # Ordina per timestamp decrescente
-    result.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
-
-    print(f"    Merge: {added} nuove, {updated} aggiornate, {len(result)} totali")
-    return result
+    return len(new_rows)
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────────
 
 def main():
-    # 1. Fetch stories attive ora
+    # 1. Fetch stories attive
     new_stories = fetch_active_stories()
 
     if not new_stories:
         print("  Nessuna story attiva — nulla da salvare")
         return
 
-    # 2. Setup Drive
-    service = get_drive_service()
+    # 2. Setup Sheets
+    service = get_sheets_service()
 
-    # 3. Trova/crea struttura cartelle: A1.2 → Archivio → [Mese Anno]
-    archivio_id = find_or_create_folder(service, "Archivio", DRIVE_ROOT)
-    mese_folder_name = f"{MESE_IT.capitalize()} {ANNO}"
-    mese_folder_id   = find_or_create_folder(service, mese_folder_name, archivio_id)
+    # 3. Assicura che il tab del mese esista
+    is_new = ensure_tab(service, TAB_NAME)
+    if is_new:
+        write_header(service, TAB_NAME)
 
-    # 4. Scarica JSON esistente (se c'è) e unisci
-    existing_id = find_file(service, FILENAME, mese_folder_id)
-    if existing_id:
-        print(f"  → File esistente trovato, carico...")
-        existing_stories = download_json(service, existing_id)
-        print(f"    Già archiviate: {len(existing_stories)} stories")
-    else:
-        existing_stories = []
-
-    merged = merge_stories(existing_stories, new_stories)
-
-    # 5. Carica JSON aggiornato su Drive
-    upload_json(service, merged, FILENAME, mese_folder_id, existing_id)
+    # 4. Upsert stories (append solo quelle nuove per ID)
+    added = append_stories(service, TAB_NAME, new_stories)
 
     print(f"\n✅ Stories Daily completato — {today.strftime('%d/%m/%Y')}")
-    print(f"   Stories nel file: {len(merged)}")
+    print(f"   Nuove stories aggiunte: {added}")
+    print(f"   Sheet: {SHEET_ID} — tab: {TAB_NAME}")
 
 
 if __name__ == "__main__":
