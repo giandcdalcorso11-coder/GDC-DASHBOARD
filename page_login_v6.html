@@ -70,14 +70,26 @@ body::before{
 }
 .btn.ready{ background:var(--maker); box-shadow:0 4px 16px rgba(74,124,89,.26); }
 .btn:active{ transform:scale(.98); }
-.demo-row{ display:flex; gap:8px; }
-.demo-btn{
-  flex:1; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:600;
-  border:1px solid rgba(28,28,28,.18); border-radius:8px; padding:7px 10px;
-  background:transparent; cursor:pointer; color:var(--grigio); transition:background .2s;
+.pwd-wrap{ position:relative; }
+.pwd-wrap input{ padding-right:42px; }
+.eye-btn{
+  position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  background:none; border:none; cursor:pointer; color:var(--grigio);
+  display:flex; align-items:center; padding:4px;
+  transition:color .2s;
 }
-.demo-btn:hover{ background:rgba(28,28,28,.06); }
-.footer{ font-size:.68rem; color:var(--grigio); text-align:center; letter-spacing:.04em; }
+.eye-btn:hover{ color:var(--nero); }
+.footer-row{
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer{ font-size:.68rem; color:var(--grigio); letter-spacing:.04em; }
+.replay-btn{
+  font-family:'Jost',sans-serif; font-size:.68rem; font-weight:600;
+  border:1px solid rgba(28,28,28,.14); border-radius:7px; padding:5px 9px;
+  background:transparent; cursor:pointer; color:var(--grigio);
+  transition:background .2s, color .2s; white-space:nowrap;
+}
+.replay-btn:hover{ background:rgba(28,28,28,.06); color:var(--nero); }
 </style>
 </head>
 <body>
@@ -185,15 +197,22 @@ body::before{
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      <div class="pwd-wrap">
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+        <button class="eye-btn" id="eyeBtn" type="button" tabindex="-1" aria-label="Mostra/nascondi password">
+          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <button class="btn" id="btn">Accedi</button>
   </div>
-  <div class="demo-row">
-    <button class="demo-btn" onclick="replayLogo()">↺ Replay logo</button>
-    <button class="demo-btn" onclick="demoForm()">✎ Compila demo</button>
+  <div class="footer-row">
+    <p class="footer">GDC IA TEAM &nbsp;·&nbsp; uso privato</p>
+    <button class="replay-btn" onclick="replayLogo()">↺ Replay logo</button>
   </div>
-  <p class="footer">GDC IA TEAM &nbsp;·&nbsp; uso privato</p>
 </div>
 <script>
 const svg   = document.getElementById('logoSvg');
@@ -248,12 +267,67 @@ function updateForm(){
 email.addEventListener('input', updateForm);
 pwd.addEventListener('input', updateForm);
 function replayLogo(){ animateLogo(); }
-function demoForm(){
-  email.value = 'giandcdalcorso11@gmail.com';
-  pwd.value   = 'password123';
-  updateForm();
-}
 animateLogo();
+
+// ── EYE TOGGLE ──
+const eyeBtn = document.getElementById('eyeBtn');
+const eyeIcon = document.getElementById('eyeIcon');
+eyeBtn.addEventListener('click', () => {
+  const show = pwd.type === 'password';
+  pwd.type = show ? 'text' : 'password';
+  eyeIcon.innerHTML = show
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+});
+
+// ── AUTH ──
+const SB_URL = 'https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SB_KEY = 'sb_publishable_DCzX82HTZ1avt-NJxGAz4Q_6ZlxMudV';
+
+btn.addEventListener('click', doLogin);
+document.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const e = email.value.trim();
+  const p = pwd.value.trim();
+  if (!e || !p) return;
+  btn.disabled = true;
+  btn.textContent = 'Accesso...';
+  try {
+    const res = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ email: e, password: p })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      try {
+        sessionStorage.setItem('gdc_token', data.access_token);
+        sessionStorage.setItem('gdc_uid', data.user.id);
+      } catch(err){}
+      window.location.href = 'page_hub_v1.html';
+    } else {
+      showError('Email o password non corretti.');
+      btn.disabled = false;
+      btn.textContent = 'Accedi';
+    }
+  } catch(err) {
+    showError('Errore di connessione.');
+    btn.disabled = false;
+    btn.textContent = 'Accedi';
+  }
+}
+
+function showError(msg) {
+  let el = document.getElementById('login-err');
+  if (!el) {
+    el = document.createElement('p');
+    el.id = 'login-err';
+    el.style.cssText = 'color:#C2193A;font-size:.75rem;text-align:center;margin-top:8px;font-family:Jost,sans-serif;';
+    btn.parentNode.insertBefore(el, btn.nextSibling);
+  }
+  el.textContent = msg;
+}
 </script>
 </body>
 </html>
