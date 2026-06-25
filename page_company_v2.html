@@ -603,7 +603,9 @@ const STEP_NAMES = {
 async function loadCompany() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  if (!id) { showError('ID azienda mancante nell'URL'); return; }
+  if (!id) { showError('ID azienda mancante nell’URL'); return; }
+
+  document.querySelector('.company-name').textContent = 'Caricamento...';
 
   try {
     const res = await fetch(
@@ -614,9 +616,11 @@ async function loadCompany() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!data.length) { showError('Azienda non trovata (id=' + id + ')'); return; }
+    company.name = data[0].nome || '';
+    company.a7_status = data[0].a7_status || null;
     populatePage(data[0]);
   } catch(e) {
-    showError(e.message);
+    showError('Errore fetch: ' + e.message);
   }
 }
 
