@@ -683,7 +683,7 @@ function goToAgent(id){
 }
 
 // MESSAGGI EDITABILI — localStorage per A5/A6/A7
-const EDITABLE_IDS=['A5','A6'];
+const EDITABLE_IDS=['A5','A6','A5_1','A5_2','A6_1','A6_2'];
 let _curMsgId='',_defaultMsg='';
 function lsKey(id){return'gdc_msg_'+id;}
 function getSavedMsg(id){try{return localStorage.getItem(lsKey(id))||null;}catch(e){return null;}}
