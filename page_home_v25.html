@@ -282,7 +282,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a1">AGENTE 1 &#x2014; Data Collector</span><span class="agent-tag">&#x26A1; Auto</span></div>
       <div class="agent-desc">Script GitHub Actions. Sync dati Instagram + BPT Calendar ogni 1&#xB0; del mese.</div>
-      <div id="chip-a1"></div>
+      
     </div>
     <div class="actions" id="actions-a1">
       <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions" target="_blank"><svg><use href="#ic-check"/></svg><span>Avvia Run Manuale</span></a>
@@ -309,7 +309,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a2">AGENTE 2 &#x2014; Analyst</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Analizza i dati Instagram e genera il report mensile.</div>
-      <div id="chip-a2"></div>
+      
     </div>
     <div class="actions" id="actions-a2"></div>
     <div class="stato-row" id="stato-row-a2"></div>
@@ -339,7 +339,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a3">AGENTE 3 &#x2014; Planner</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Genera il piano editoriale mensile su report A2 e calendario BPT.</div>
-      <div id="chip-a3"></div>
+      
     </div>
     <div class="actions" id="actions-a3"></div>
     <div class="stato-row" id="stato-row-a3"></div>
@@ -364,7 +364,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a4">AGENTE 4 &#x2014; Brief &amp; Script</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Scrive brief e script post del mese in formato PDF.</div>
-      <div id="chip-a4"></div>
+      
     </div>
     <div class="actions" id="actions-a4"></div>
     <div class="stato-row" id="stato-row-a4"></div>
@@ -388,11 +388,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Pipeline sponsorizzazioni &#x2014; ricerca e qualifica aziende target.</div>
-      <div id="chip-a5"></div>
+      
+    </div>
+    <div style="padding:0 10px 6px;">
+      <a class="lg-btn" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;margin:0">DB</span><span>Supabase Pipeline</span></a>
     </div>
     <div class="actions" id="actions-a5" style="grid-template-columns:1fr 1fr;">
-      <button class="lg-btn" onclick="openMsg('A5','Messaggio A5',MSGS.A5)"><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
-      <a class="lg-btn" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000">DB</span><span>&#x2192; Supabase</span></a>
+      <button class="lg-btn" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.1</span></button>
+      <button class="lg-btn" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.2</span></button>
       <a class="lg-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.1 Claude</span></a>
       <a class="lg-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.2 Claude</span></a>
     </div>
@@ -417,11 +420,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Genera media kit e gestisce le relazioni commerciali per azienda.</div>
-      <div id="chip-a6"></div>
+      
+    </div>
+    <div style="padding:0 10px 6px;">
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gslide" style="margin:0">Slide</span><span>Drive A6 &#x2192; Output</span></a>
     </div>
     <div class="actions" id="actions-a6" style="grid-template-columns:1fr 1fr;">
-      <button class="lg-btn" onclick="openMsg('A6','Messaggio A6',MSGS.A6)"><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank"><span class="fmt-badge fmt-gslide">Slide</span><span>&#x2192; Drive A6</span></a>
+      <button class="lg-btn" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.1</span></button>
+      <button class="lg-btn" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.2</span></button>
       <a class="lg-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.1 Claude</span></a>
       <a class="lg-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.2 Claude</span></a>
     </div>
@@ -444,7 +450,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span><span class="agent-tag">&#x26A1; Auto</span></div>
       <div class="agent-desc">Genera bozze Gmail da TXT + PDF in Drive. Polling ogni 15 min.</div>
-      <div id="chip-a7"></div>
+      
     </div>
     <div class="actions" id="actions-a7">
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
@@ -488,8 +494,10 @@ const MSGS={
   A2:"Ciao A2. E' il momento del report mensile.\n\nFile dati:\n"+DRIVE.A1+"\n\nGoogle Sheet:\n"+SHEET_A1+"\n\nMese: "+Mm1+" "+Am1+"\n\nSalva in:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1,
   A3:"Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\nCALENDARIO: [caricamento...]\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0,
   A4:"Ciao A4. Script mensili.\n\nGoogle Sheet Analytics A1:\n"+SHEET_A1+"\n\nReport A2 (mese corrente — "+M0+" "+A0+"):\n"+DRIVE.A2+"\n-> report_GDC_"+M0+"_"+A0+"\n\nReport A2 (mese precedente — "+Mm1+" "+Am1+"):\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nPiano A3 (mese corrente — "+M0+" "+A0+"):\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0+"\n\nPiano A3 (mese precedente — "+Mm1+" "+Am1+"):\n"+DRIVE.A3+"\n-> piano_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nSalva in:\n"+DRIVE.A4+"\n-> brief_"+M0+"_"+A0+".docx",
-  A5:"Ciao A5.\nFacciamo una ricerca sull'azienda: [NOME AZIENDA]\n\nin seguito aggiorna la pipeline sponsorizzazioni su Supabase.\n\nProgetto Supabase: pnzabwfsgkvejnrtrjcp.supabase.co\nTabella: companies\n\nSe l'azienda non esiste: inserisci una nuova riga.\nSe esiste già: aggiorna i dati della riga esistente.",
-  A6:"Ciao A6.\nContinua con le relazioni commerciali per l'azienda: [NOME AZIENDA]\n\nDati azienda disponibili su Supabase:\nProgetto: pnzabwfsgkvejnrtrjcp.supabase.co\nTabella: companies\n\nVerifica i follow-up in scadenza e aggiorna lo step pipeline.",
+  A5_1:"Ciao A5.1.\nFacciamo una ricerca sull'azienda: [NOME AZIENDA]\n\nIn seguito aggiorna la pipeline tramite la Edge Function Supabase.\nEndpoint: https://pnzabwfsgkvejnrtrjcp.supabase.co/functions/v1/upsert_company\n\nCrea un artifact HTML con il bottone per eseguire il fetch. Se l'azienda non esiste: INSERT. Se esiste: UPDATE.",
+  A5_2:"Ciao A5.2.\nProduci la scheda aziendale per: [NOME AZIENDA]\n\nID Supabase: [ID]\n\nLeggi i dati dalla tabella companies:\nGET https://pnzabwfsgkvejnrtrjcp.supabase.co/rest/v1/companies?id=eq.[ID]&select=*\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n\nProduci il DOCX completo con tutte le sezioni e salvalo in:\nhttps://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr",
+  A6_1:"Ciao A6.1.\nProduci il Media Kit per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive:\nhttps://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr\n-> scheda_[NOME AZIENDA].docx\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n-> report_GDC_"+Mm1+"_"+Am1+"\n-> report_GDC_"+Mm2+"_"+Am2+"\n\nProduci il PPTX Media Kit e salvalo in:\nhttps://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4",
+  A6_2:"Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive:\nhttps://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr\n-> scheda_[NOME AZIENDA].docx\n\nSalva il TXT approvato in:\nhttps://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4\n-> mail_[NOME AZIENDA]_[YYYY-MM-DD].txt\n\nFormato TXT obbligatorio:\nOggetto: ...\nDestinatario: ...\nCorpo:\n[testo completo]",
 };
 
 function buildMsgA3(calBpt){
