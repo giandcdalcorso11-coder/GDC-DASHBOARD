@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 """
 GDC IA TEAM — Agente 7 — Gmail Drafter
-GitHub Actions script: polling Drive A6 ogni 15 min.
+Trigger: workflow_dispatch da home webapp con parametro company_name.
 
 Flusso:
-  1. Lista file mail_*.txt in Drive A6 non ancora processati
-  2. Per ogni TXT: legge header (TO, SUBJECT, ATTACHMENT, LANGUAGE)
-     e corpo mail
-  3. Trova il PDF corrispondente (ATTACHMENT header) nella stessa cartella
-  4. Crea bozza Gmail con corpo + allegato PDF
-  5. Sposta il TXT in sottocartella "processed/" di Drive A6
-  6. Aggiorna stato A7 su Supabase
+  1. Riceve company_name come parametro
+  2. Cerca TXT (mail_*.txt) e PDF nella cartella Drive A6/Aziende/[NOME AZIENDA]/
+  3. Se PDF assente: stop con errore
+  4. Se entrambi presenti: crea bozza Gmail con PDF allegato
+  5. Aggiorna Supabase companies (a7_status, a7_processed_at, a7_draft_id, a7_processed_file_id)
+  6. Aggiorna Supabase agent_states (stato a7)
 
-Formato atteso TXT (mail_NOMEAZIENDA_YYYYMMDD.txt):
-  TO: marketing@azienda.com
+Formato TXT (mail_[AZIENDA]_YYYY-MM-DD.txt):
+  TO: email@azienda.com
   SUBJECT: Oggetto della mail
-  ATTACHMENT: media_kit_NOMEAZIENDA.pdf
+  ATTACHMENT: media_kit_[AZIENDA].pdf
   LANGUAGE: IT
 
   Corpo della mail qui.
@@ -39,24 +38,26 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
+
 # ── CONFIG ──────────────────────────────────────────────────────────
-DRIVE_FOLDER_A6   = os.environ['DRIVE_FOLDER_A6']   # 1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4
-GMAIL_CLIENT_ID   = os.environ['GMAIL_CLIENT_ID']
-GMAIL_CLIENT_SECRET = os.environ['GMAIL_CLIENT_SECRET']
-GMAIL_REFRESH_TOKEN = os.environ['GMAIL_REFRESH_TOKEN']
-GOOGLE_CREDENTIALS  = os.environ['GOOGLE_CREDENTIALS']  # service account JSON per Drive
-SUPABASE_URL      = os.environ['SUPABASE_URL']
-SUPABASE_KEY      = os.environ['SUPABASE_KEY']
-GMAIL_FROM        = 'giandcdalcorso11@gmail.com'
-PROCESSED_FOLDER_NAME = 'processed'
+DRIVE_FOLDER_A6_AZIENDE = os.environ['DRIVE_FOLDER_A6_AZIENDE']  # 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_
+GMAIL_CLIENT_ID         = os.environ['GMAIL_CLIENT_ID']
+GMAIL_CLIENT_SECRET     = os.environ['GMAIL_CLIENT_SECRET']
+GMAIL_REFRESH_TOKEN     = os.environ['GMAIL_REFRESH_TOKEN']
+GOOGLE_CREDENTIALS      = os.environ['GOOGLE_CREDENTIALS']  # base64-encoded service account JSON
+SUPABASE_URL            = os.environ['SUPABASE_URL']        # https://pnzabwfsgkvejnrtrjcp.supabase.co
+SUPABASE_KEY            = os.environ['SUPABASE_KEY']
+COMPANY_NAME            = os.environ['COMPANY_NAME']        # passato via workflow_dispatch
+GMAIL_FROM              = 'giandcdalcorso11@gmail.com'
 
 
 # ── DRIVE CLIENT (service account) ──────────────────────────────────
 def get_drive_service():
-    import base64
     from google.oauth2 import service_account
 
-    creds_info = json.loads(base64.b64decode(GOOGLE_CREDENTIALS))
+    # GOOGLE_CREDENTIALS è base64-encoded nel GitHub Secret
+    creds_json = base64.b64decode(GOOGLE_CREDENTIALS).decode('utf-8')
+    creds_info = json.loads(creds_json)
     creds = service_account.Credentials.from_service_account_info(
         creds_info,
         scopes=['https://www.googleapis.com/auth/drive']
@@ -79,39 +80,49 @@ def get_gmail_service():
 
 
 # ── DRIVE HELPERS ────────────────────────────────────────────────────
-def get_or_create_processed_folder(drive, parent_id):
-    """Trova o crea la sottocartella 'processed' in Drive A6."""
+def find_company_folder(drive, aziende_folder_id, company_name):
+    """Trova la sottocartella [NOME AZIENDA] dentro A6/Aziende/."""
     res = drive.files().list(
-        q=f"name='{PROCESSED_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' "
-          f"and '{parent_id}' in parents and trashed=false",
+        q=(
+            f"name='{company_name}' "
+            f"and mimeType='application/vnd.google-apps.folder' "
+            f"and '{aziende_folder_id}' in parents "
+            f"and trashed=false"
+        ),
         fields='files(id,name)'
     ).execute()
-
     files = res.get('files', [])
-    if files:
-        return files[0]['id']
-
-    folder = drive.files().create(
-        body={
-            'name': PROCESSED_FOLDER_NAME,
-            'mimeType': 'application/vnd.google-apps.folder',
-            'parents': [parent_id]
-        },
-        fields='id'
-    ).execute()
-    print(f"Creata cartella 'processed': {folder['id']}")
-    return folder['id']
+    if not files:
+        return None
+    return files[0]['id']
 
 
-def list_pending_txt(drive, folder_id, processed_folder_id):
-    """Lista i file mail_*.txt che NON sono ancora nella cartella processed."""
+def list_files_in_folder(drive, folder_id):
+    """Lista tutti i file in una cartella Drive."""
     res = drive.files().list(
-        q=f"name contains 'mail_' and name contains '.txt' "
-          f"and '{folder_id}' in parents and trashed=false "
-          f"and mimeType='text/plain'",
-        fields='files(id,name,createdTime)'
+        q=f"'{folder_id}' in parents and trashed=false",
+        fields='files(id,name,mimeType,createdTime)'
     ).execute()
     return res.get('files', [])
+
+
+def find_txt_in_files(files):
+    """Trova il file mail_*.txt più recente tra i file listati."""
+    txts = [f for f in files if f['name'].startswith('mail_') and f['name'].endswith('.txt')]
+    if not txts:
+        return None
+    # Ordina per data creazione decrescente, prende il più recente
+    txts.sort(key=lambda f: f.get('createdTime', ''), reverse=True)
+    return txts[0]
+
+
+def find_pdf_in_files(files):
+    """Trova il file PDF tra i file listati."""
+    pdfs = [f for f in files if f['mimeType'] == 'application/pdf']
+    if not pdfs:
+        return None
+    pdfs.sort(key=lambda f: f.get('createdTime', ''), reverse=True)
+    return pdfs[0]
 
 
 def download_file_text(drive, file_id):
@@ -136,26 +147,6 @@ def download_file_bytes(drive, file_id):
     return buf.getvalue()
 
 
-def find_pdf_in_folder(drive, folder_id, pdf_name):
-    """Cerca un PDF per nome nella cartella Drive A6."""
-    res = drive.files().list(
-        q=f"name='{pdf_name}' and '{folder_id}' in parents and trashed=false",
-        fields='files(id,name)'
-    ).execute()
-    files = res.get('files', [])
-    return files[0]['id'] if files else None
-
-
-def move_to_processed(drive, file_id, processed_folder_id, parent_folder_id):
-    """Sposta il TXT nella cartella 'processed'."""
-    drive.files().update(
-        fileId=file_id,
-        addParents=processed_folder_id,
-        removeParents=parent_folder_id,
-        fields='id,parents'
-    ).execute()
-
-
 # ── TXT PARSER ───────────────────────────────────────────────────────
 def parse_mail_txt(content):
     """
@@ -176,11 +167,9 @@ def parse_mail_txt(content):
         if in_body:
             body_lines.append(line)
             continue
-
         if line.strip() == '':
             in_body = True
             continue
-
         if ':' in line:
             key, _, value = line.partition(':')
             headers[key.strip().upper()] = value.strip()
@@ -189,26 +178,20 @@ def parse_mail_txt(content):
 
 
 # ── GMAIL DRAFT ──────────────────────────────────────────────────────
-def create_gmail_draft(gmail, to_addr, subject, body_text, pdf_bytes=None, pdf_filename=None):
-    """Crea una bozza Gmail con eventuale allegato PDF."""
-    if pdf_bytes:
-        msg = MIMEMultipart()
-        msg['to'] = to_addr
-        msg['from'] = GMAIL_FROM
-        msg['subject'] = subject
-        msg.attach(MIMEText(body_text, 'plain', 'utf-8'))
+def create_gmail_draft(gmail, to_addr, subject, body_text, pdf_bytes, pdf_filename):
+    """Crea una bozza Gmail con allegato PDF."""
+    msg = MIMEMultipart()
+    msg['to'] = to_addr
+    msg['from'] = GMAIL_FROM
+    msg['subject'] = subject
+    msg.attach(MIMEText(body_text, 'plain', 'utf-8'))
 
-        attachment = MIMEApplication(pdf_bytes, _subtype='pdf')
-        attachment.add_header(
-            'Content-Disposition', 'attachment',
-            filename=pdf_filename or 'media_kit.pdf'
-        )
-        msg.attach(attachment)
-    else:
-        msg = MIMEText(body_text, 'plain', 'utf-8')
-        msg['to'] = to_addr
-        msg['from'] = GMAIL_FROM
-        msg['subject'] = subject
+    attachment = MIMEApplication(pdf_bytes, _subtype='pdf')
+    attachment.add_header(
+        'Content-Disposition', 'attachment',
+        filename=pdf_filename
+    )
+    msg.attach(attachment)
 
     raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
     draft = gmail.users().drafts().create(
@@ -219,107 +202,143 @@ def create_gmail_draft(gmail, to_addr, subject, body_text, pdf_bytes=None, pdf_f
 
 
 # ── SUPABASE ─────────────────────────────────────────────────────────
-def update_supabase_state(stato):
-    headers = {
+def supabase_headers():
+    return {
         'apikey': SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
     }
+
+
+def update_agent_state(stato):
+    """Aggiorna agent_states per a7."""
     payload = {
         'stato': stato,
         'updated_at': datetime.now(timezone.utc).isoformat()
     }
     url = f"{SUPABASE_URL}/rest/v1/agent_states?agent_id=eq.a7"
-    r = requests.patch(url, json=payload, headers=headers, timeout=10)
+    r = requests.patch(url, json=payload, headers=supabase_headers(), timeout=10)
     if r.status_code not in (200, 204):
-        print(f"Warning Supabase: {r.status_code} {r.text}")
+        print(f"[A7] Warning agent_states: {r.status_code} {r.text}")
+
+
+def update_company_a7(company_name, status, draft_id=None, file_id=None):
+    """Aggiorna le colonne a7_* nella tabella companies per questa azienda."""
+    payload = {
+        'a7_status': status,
+        'a7_processed_at': datetime.now(timezone.utc).isoformat(),
+    }
+    if draft_id:
+        payload['a7_draft_id'] = draft_id
+    if file_id:
+        payload['a7_processed_file_id'] = file_id
+
+    # Usa nome azienda come chiave (case-insensitive con ilike)
+    url = f"{SUPABASE_URL}/rest/v1/companies?nome=ilike.{requests.utils.quote(company_name)}"
+    r = requests.patch(url, json=payload, headers=supabase_headers(), timeout=10)
+    if r.status_code not in (200, 204):
+        print(f"[A7] Warning companies: {r.status_code} {r.text}")
+    else:
+        print(f"[A7] Supabase companies aggiornato: a7_status={status}")
 
 
 # ── MAIN ─────────────────────────────────────────────────────────────
 def main():
     print(f"[A7] Start — {datetime.now(timezone.utc).isoformat()}")
+    print(f"[A7] Azienda: {COMPANY_NAME}")
 
-    drive = get_drive_service()
-    gmail = get_gmail_service()
+    update_agent_state('working')
 
-    # Trova o crea cartella processed
-    processed_id = get_or_create_processed_folder(drive, DRIVE_FOLDER_A6)
+    try:
+        drive = get_drive_service()
+        gmail = get_gmail_service()
 
-    # Lista TXT in attesa
-    pending = list_pending_txt(drive, DRIVE_FOLDER_A6, processed_id)
-    print(f"[A7] File TXT in attesa: {len(pending)}")
+        # 1. Trova sottocartella azienda in A6/Aziende/
+        company_folder_id = find_company_folder(drive, DRIVE_FOLDER_A6_AZIENDE, COMPANY_NAME)
+        if not company_folder_id:
+            msg = f"Cartella '{COMPANY_NAME}' non trovata in Drive A6/Aziende/"
+            print(f"[A7] ERRORE: {msg}")
+            update_agent_state('idle')
+            update_company_a7(COMPANY_NAME, 'error')
+            sys.exit(1)
 
-    if not pending:
-        print("[A7] Nessun file da processare. Exit.")
-        return
+        print(f"[A7] Cartella azienda trovata: {company_folder_id}")
 
-    update_supabase_state('in_corso')
-    drafts_created = 0
-    errors = 0
+        # 2. Lista file nella cartella
+        files = list_files_in_folder(drive, company_folder_id)
+        print(f"[A7] File trovati nella cartella: {[f['name'] for f in files]}")
 
-    for file_info in pending:
-        file_id = file_info['id']
-        file_name = file_info['name']
-        print(f"\n[A7] Processo: {file_name}")
+        # 3. Trova TXT
+        txt_file = find_txt_in_files(files)
+        if not txt_file:
+            print(f"[A7] ERRORE: nessun file mail_*.txt trovato in A6/Aziende/{COMPANY_NAME}/")
+            update_agent_state('idle')
+            update_company_a7(COMPANY_NAME, 'error')
+            sys.exit(1)
 
-        try:
-            # Scarica e parsa il TXT
-            content = download_file_text(drive, file_id)
-            headers, body = parse_mail_txt(content)
+        print(f"[A7] TXT trovato: {txt_file['name']}")
 
-            to_addr = headers.get('TO', '')
-            subject = headers.get('SUBJECT', '(nessun oggetto)')
-            attachment_name = headers.get('ATTACHMENT', '')
+        # 4. Trova PDF — se assente: stop
+        pdf_file = find_pdf_in_files(files)
+        if not pdf_file:
+            print(f"[A7] ERRORE: nessun PDF trovato in A6/Aziende/{COMPANY_NAME}/")
+            print(f"[A7] Caricare il PDF prima di lanciare A7.")
+            update_agent_state('idle')
+            update_company_a7(COMPANY_NAME, 'error')
+            sys.exit(1)
 
-            if not to_addr:
-                print(f"  SKIP: campo TO mancante in {file_name}")
-                errors += 1
-                continue
+        print(f"[A7] PDF trovato: {pdf_file['name']}")
 
-            print(f"  TO: {to_addr}")
-            print(f"  SUBJECT: {subject}")
-            print(f"  ATTACHMENT: {attachment_name or 'nessuno'}")
+        # 5. Scarica e parsa il TXT
+        txt_content = download_file_text(drive, txt_file['id'])
+        headers, body = parse_mail_txt(txt_content)
 
-            # Cerca il PDF allegato
-            pdf_bytes = None
-            if attachment_name:
-                pdf_id = find_pdf_in_folder(drive, DRIVE_FOLDER_A6, attachment_name)
-                if pdf_id:
-                    pdf_bytes = download_file_bytes(drive, pdf_id)
-                    print(f"  PDF trovato: {attachment_name} ({len(pdf_bytes)//1024} KB)")
-                else:
-                    print(f"  Warning: PDF '{attachment_name}' non trovato in Drive A6")
+        to_addr = headers.get('TO', '').strip()
+        subject  = headers.get('SUBJECT', '(nessun oggetto)').strip()
 
-            # Crea bozza Gmail
-            draft_id = create_gmail_draft(
-                gmail,
-                to_addr=to_addr,
-                subject=subject,
-                body_text=body,
-                pdf_bytes=pdf_bytes,
-                pdf_filename=attachment_name or None
-            )
-            print(f"  Bozza Gmail creata: {draft_id}")
+        if not to_addr:
+            print(f"[A7] ERRORE: campo TO mancante nel TXT")
+            update_agent_state('idle')
+            update_company_a7(COMPANY_NAME, 'error')
+            sys.exit(1)
 
-            # Sposta TXT in processed
-            move_to_processed(drive, file_id, processed_id, DRIVE_FOLDER_A6)
-            print(f"  Spostato in processed/")
+        print(f"[A7] TO: {to_addr}")
+        print(f"[A7] SUBJECT: {subject}")
 
-            drafts_created += 1
+        # 6. Scarica PDF
+        pdf_bytes = download_file_bytes(drive, pdf_file['id'])
+        print(f"[A7] PDF scaricato: {len(pdf_bytes) // 1024} KB")
 
-        except Exception as e:
-            print(f"  ERRORE su {file_name}: {e}")
-            errors += 1
+        # 7. Crea bozza Gmail
+        draft_id = create_gmail_draft(
+            gmail,
+            to_addr=to_addr,
+            subject=subject,
+            body_text=body,
+            pdf_bytes=pdf_bytes,
+            pdf_filename=pdf_file['name']
+        )
+        print(f"[A7] Bozza Gmail creata: {draft_id}")
 
-    print(f"\n[A7] Fine — {drafts_created} bozze create, {errors} errori")
+        # 8. Aggiorna Supabase
+        update_company_a7(
+            COMPANY_NAME,
+            status='drafted',
+            draft_id=draft_id,
+            file_id=txt_file['id']
+        )
+        update_agent_state('done')
 
-    if errors == 0:
-        update_supabase_state('done')
-    elif drafts_created > 0:
-        update_supabase_state('done')  # parziale ma OK
-    else:
-        update_supabase_state('idle')
+        print(f"[A7] Fine — bozza creata con successo per {COMPANY_NAME}")
+
+    except Exception as e:
+        print(f"[A7] ERRORE imprevisto: {e}")
+        import traceback
+        traceback.print_exc()
+        update_agent_state('idle')
+        update_company_a7(COMPANY_NAME, 'error')
+        sys.exit(1)
 
 
 if __name__ == '__main__':
