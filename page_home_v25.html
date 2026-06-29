@@ -127,6 +127,23 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .msg-reset-btn:hover{border-color:var(--grigio);}
 .msg-edit-hint{font-size:.62rem;color:var(--grigio);font-style:italic;}
 @media(prefers-color-scheme:dark){.msg-textarea{background:#1A1A1A;color:var(--nero);}}
+/* A7 Picker */
+.a7-picker-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;padding-bottom:24px;}
+.a7-picker-overlay.open{display:flex;}
+.a7-picker{background:var(--bianco);border:1.5px solid var(--border);border-radius:20px;width:calc(100% - 32px);max-width:480px;overflow:hidden;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.a7-picker-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.a7-picker-title{font-weight:800;font-size:.88rem;}
+.a7-picker-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--grigio);padding:4px 8px;border-radius:6px;}
+.a7-picker-close:hover{background:var(--border);}
+.a7-picker-body{padding:14px 16px;}
+.a7-picker-label{font-size:.72rem;font-weight:700;color:var(--grigio);margin-bottom:8px;}
+.a7-select{width:100%;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:600;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;cursor:pointer;margin-bottom:14px;}
+.a7-select:focus{border-color:var(--sabbia);}
+.a7-launch-btn{width:100%;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:800;padding:12px;border:none;border-radius:12px;background:var(--sabbia);color:#fff;cursor:pointer;transition:opacity .15s;}
+.a7-launch-btn:hover{opacity:.88;}
+.a7-launch-btn:disabled{background:#ccc;cursor:not-allowed;opacity:.6;}
+.a7-status-msg{font-size:.72rem;color:var(--grigio);text-align:center;margin-top:10px;min-height:18px;}
+@media(prefers-color-scheme:dark){.a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}
 .st-queued{border-color:var(--life);opacity:.65;}.st-queued .agent-name{color:var(--life);}
 .st-working{border-color:var(--sabbia);}.st-working .agent-name{color:var(--sabbia-dk);}
 .st-done{border-color:var(--maker);}.st-done .agent-name{color:var(--maker);}
@@ -214,6 +231,29 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="msg-body"><textarea class="msg-textarea" id="msgText" spellcheck="false"></textarea><div class="msg-footer"><span class="msg-edit-hint" id="msgEditHint"></span><button class="msg-reset-btn" id="msgResetBtn" onclick="resetMsg()">&#x21BA; Ripristina</button></div></div>
   </div>
 </div>
+<!-- A7 Picker -->
+<div class="a7-picker-overlay" id="a7PickerOverlay" onclick="closeA7PickerIfBg(event)">
+  <div class="a7-picker">
+    <div class="a7-picker-head">
+      <span class="a7-picker-title">Crea Bozza Gmail — A7</span>
+      <button class="a7-picker-close" onclick="closeA7Picker()">&#x2715;</button>
+    </div>
+    <div class="a7-picker-body">
+      <div class="a7-picker-label">Seleziona azienda</div>
+      <select class="a7-select" id="a7CompanySelect">
+        <option value="">Caricamento aziende...</option>
+      </select>
+      <button class="a7-launch-btn" id="a7LaunchBtn" onclick="launchA7()" disabled>&#x25B6; Lancia A7</button>
+      <div class="a7-status-msg" id="a7StatusMsg"></div>
+      <div id="a7TokenSection" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div class="a7-picker-label" style="margin-bottom:6px;">&#x26A0; GitHub Token mancante</div>
+        <input type="password" id="a7TokenInput" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;font-family:'Jost',sans-serif;font-size:.78rem;padding:9px 12px;border:1.5px solid var(--sabbia);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;margin-bottom:8px;">
+        <button onclick="saveGhToken()" style="width:100%;font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;padding:9px;border:none;border-radius:10px;background:var(--sabbia-bg);color:var(--sabbia-dk);cursor:pointer;">Salva token</button>
+        <div style="font-size:.62rem;color:var(--grigio);margin-top:6px;line-height:1.5;">Token GitHub con scope <strong>workflow</strong>. Salvato solo nel tuo browser.</div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="cal-overlay" id="calOverlay" onclick="closeCalIfBg(event)">
   <div class="cal-popup">
     <div class="cal-head">
@@ -265,6 +305,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <symbol id="ic-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
     <symbol id="ic-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
     <symbol id="ic-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></symbol>
+    <symbol id="ic-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></symbol>
   </defs></svg>
   <!-- A1 -->
   <div class="acard" id="card-a1"><div class="acard-body">
@@ -453,7 +494,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       
     </div>
     <div class="actions" id="actions-a7">
-      <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
+      <button class="lg-btn lg-primary" id="btn-a7-launch" onclick="openA7Picker()"><svg><use href="#ic-play"/></svg><span>Crea Bozza</span></button>
       <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank"><svg><use href="#ic-mail"/></svg><span>&#x2192; Gmail Bozze</span></a>
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
     </div>
@@ -832,6 +873,107 @@ function renderCal(){
   else document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>';
 }
 function showEvs(key,evs){selDay=key;const p=key.split('-');document.getElementById('calEventsPanel').innerHTML='<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">'+p[2]+'/'+p[1]+'/'+p[0]+'</div>'+evs.map(ev=>'<div class="cal-event-item"><div class="cal-event-dot" style="background:'+ev.color+'"></div><div><div class="cal-event-text">'+ev.label+'</div><div class="cal-event-agent">'+ev.agent+'</div></div></div>').join('');}
+
+// ── A7 PICKER ────────────────────────────────────────────────────────
+const GH_OWNER = 'giandcdalcorso11-coder';
+const GH_REPO  = 'GDC-DASHBOARD';
+const GH_WORKFLOW = 'a7_gmail_drafter.yml';
+
+async function loadA7Companies() {
+  const sel = document.getElementById('a7CompanySelect');
+  try {
+    const r = await fetch(
+      SUPA_URL + '/rest/v1/companies?select=nome,a7_status&order=nome.asc',
+      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    );
+    const data = await r.json();
+    if (!data || !data.length) {
+      sel.innerHTML = '<option value="">Nessuna azienda in pipeline</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">— Seleziona azienda —</option>' +
+      data.map(c => {
+        const badge = c.a7_status === 'drafted' ? ' ✓' : c.a7_status === 'error' ? ' ⚠' : '';
+        return `<option value="${c.nome}">${c.nome}${badge}</option>`;
+      }).join('');
+    sel.onchange = () => {
+      document.getElementById('a7LaunchBtn').disabled = !sel.value;
+      document.getElementById('a7StatusMsg').textContent = '';
+    };
+  } catch(e) {
+    sel.innerHTML = '<option value="">Errore caricamento aziende</option>';
+  }
+}
+
+function openA7Picker() {
+  document.getElementById('a7PickerOverlay').classList.add('open');
+  document.getElementById('a7StatusMsg').textContent = '';
+  document.getElementById('a7LaunchBtn').disabled = true;
+  const ghToken = localStorage.getItem('gdc_gh_token') || '';
+  document.getElementById('a7TokenSection').style.display = ghToken ? 'none' : 'block';
+  loadA7Companies();
+}
+function closeA7Picker() { document.getElementById('a7PickerOverlay').classList.remove('open'); }
+function closeA7PickerIfBg(e) { if(e.target === document.getElementById('a7PickerOverlay')) closeA7Picker(); }
+
+function saveGhToken() {
+  const val = document.getElementById('a7TokenInput').value.trim();
+  if (!val) return;
+  localStorage.setItem('gdc_gh_token', val);
+  document.getElementById('a7TokenSection').style.display = 'none';
+  document.getElementById('a7StatusMsg').textContent = '✓ Token salvato.';
+  document.getElementById('a7TokenInput').value = '';
+}
+
+async function launchA7() {
+  const sel = document.getElementById('a7CompanySelect');
+  const company = sel.value;
+  if (!company) return;
+
+  const btn = document.getElementById('a7LaunchBtn');
+  const statusEl = document.getElementById('a7StatusMsg');
+  btn.disabled = true;
+  btn.textContent = 'Avvio in corso...';
+  statusEl.textContent = '';
+
+  // Recupera il GH token da localStorage (opzionale — se non c'è mostra istruzione)
+  const ghToken = localStorage.getItem('gdc_gh_token') || '';
+  if (!ghToken) {
+    document.getElementById('a7TokenSection').style.display = 'block';
+    statusEl.textContent = '';
+    btn.disabled = false;
+    btn.textContent = '▶ Lancia A7';
+    return;
+  }
+
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + ghToken,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main', inputs: { company_name: company } })
+      }
+    );
+    if (r.status === 204) {
+      statusEl.textContent = '✓ A7 avviato per ' + company + '. Controlla GitHub Actions.';
+      btn.textContent = '✓ Avviato';
+    } else {
+      const err = await r.text();
+      statusEl.textContent = 'Errore GitHub: ' + r.status + ' — ' + err.substring(0, 80);
+      btn.disabled = false;
+      btn.textContent = '▶ Lancia A7';
+    }
+  } catch(e) {
+    statusEl.textContent = 'Errore di rete: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = '▶ Lancia A7';
+  }
+}
 
 loadStates();
 </script>
