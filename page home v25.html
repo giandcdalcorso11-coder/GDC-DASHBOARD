@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="it">
 <head>
 <meta charset="UTF-8">
@@ -212,7 +211,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <button class="msg-close" onclick="closeMsg()">&#x2715;</button>
       </div>
     </div>
-    <div class="msg-body"><textarea class="msg-textarea" id="msgText" spellcheck="false"></textarea><div class="msg-footer"><span class="msg-edit-hint" id="msgEditHint"></span><button class="msg-reset-btn" id="msgResetBtn" onclick="resetMsg()"><div class="msg-body"><pre class="msg-text" id="msgText"></pre></div>#x21BA; Ripristina</button></div></div>
+    <div class="msg-body"><textarea class="msg-textarea" id="msgText" spellcheck="false"></textarea><div class="msg-footer"><span class="msg-edit-hint" id="msgEditHint"></span><button class="msg-reset-btn" id="msgResetBtn" onclick="resetMsg()">&#x21BA; Ripristina</button></div></div>
   </div>
 </div>
 <div class="cal-overlay" id="calOverlay" onclick="closeCalIfBg(event)">
@@ -283,18 +282,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a1">AGENTE 1 &#x2014; Data Collector</span><span class="agent-tag">&#x26A1; Auto</span></div>
       <div class="agent-desc">Script GitHub Actions. Sync dati Instagram + BPT Calendar ogni 1&#xB0; del mese.</div>
-
-```
-</div>
-<div class="actions" id="actions-a1">
-  <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions" target="_blank"><svg><use href="#ic-check"/></svg><span>Avvia Run Manuale</span></a>
-  <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank"><span class="fmt-badge fmt-gsheet">Fogli</span><span>&#x2192; Analytics GDC</span></a>
-  <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
-</div>
-<div class="stato-row" id="stato-row-a1"></div>
-</div>
-```
-
+      
+    </div>
+    <div class="actions" id="actions-a1">
+      <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions" target="_blank"><svg><use href="#ic-check"/></svg><span>Avvia Run Manuale</span></a>
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank"><span class="fmt-badge fmt-gsheet">Fogli</span><span>&#x2192; Analytics GDC</span></a>
+      <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
+    </div>
+    <div class="stato-row" id="stato-row-a1"></div>
+    </div>
   </div></div>
   <!-- A2 -->
   <div class="acard" id="card-a2"><div class="acard-body">
@@ -313,14 +309,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a2">AGENTE 2 &#x2014; Analyst</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Analizza i dati Instagram e genera il report mensile.</div>
-
-```
-</div>
-<div class="actions" id="actions-a2"></div>
-<div class="stato-row" id="stato-row-a2"></div>
-</div>
-```
-
+      
+    </div>
+    <div class="actions" id="actions-a2"></div>
+    <div class="stato-row" id="stato-row-a2"></div>
+    </div>
   </div></div>
   <!-- A3 -->
   <div class="acard" id="card-a3"><div class="acard-body">
@@ -346,14 +339,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a3">AGENTE 3 &#x2014; Planner</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Genera il piano editoriale mensile su report A2 e calendario BPT.</div>
-
-```
-</div>
-<div class="actions" id="actions-a3"></div>
-<div class="stato-row" id="stato-row-a3"></div>
-</div>
-```
-
+      
+    </div>
+    <div class="actions" id="actions-a3"></div>
+    <div class="stato-row" id="stato-row-a3"></div>
+    </div>
   </div></div>
   <!-- A4 -->
   <div class="acard" id="card-a4"><div class="acard-body">
@@ -374,14 +364,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a4">AGENTE 4 &#x2014; Brief &amp; Script</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Scrive brief e script post del mese in formato PDF.</div>
-
-```
-</div>
-<div class="actions" id="actions-a4"></div>
-<div class="stato-row" id="stato-row-a4"></div>
-</div>
-```
-
+      
+    </div>
+    <div class="actions" id="actions-a4"></div>
+    <div class="stato-row" id="stato-row-a4"></div>
+    </div>
   </div></div>
   <!-- A5 -->
   <div class="acard" id="card-a5"><div class="acard-body">
@@ -401,22 +388,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Pipeline sponsorizzazioni &#x2014; ricerca e qualifica aziende target.</div>
-
-```
-</div>
-<div style="padding:0 10px 6px;">
-  <a class="lg-btn" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;margin:0">DB</span><span>Supabase Pipeline</span></a>
-</div>
-<div class="actions" id="actions-a5" style="grid-template-columns:1fr 1fr;">
-  <button class="lg-btn" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.1</span></button>
-  <button class="lg-btn" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.2</span></button>
-  <a class="lg-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.1 Claude</span></a>
-  <a class="lg-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.2 Claude</span></a>
-</div>
-<div class="stato-row" id="stato-row-a5"></div>
-</div>
-```
-
+      
+    </div>
+    <div style="padding:0 10px 6px;">
+      <a class="lg-btn" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;margin:0">DB</span><span>Supabase Pipeline</span></a>
+    </div>
+    <div class="actions" id="actions-a5" style="grid-template-columns:1fr 1fr;">
+      <button class="lg-btn" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.1</span></button>
+      <button class="lg-btn" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.2</span></button>
+      <a class="lg-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.1 Claude</span></a>
+      <a class="lg-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.2 Claude</span></a>
+    </div>
+    <div class="stato-row" id="stato-row-a5"></div>
+    </div>
   </div></div>
   <!-- A6 -->
   <div class="acard" id="card-a6"><div class="acard-body">
@@ -436,22 +420,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span><span class="agent-tag">&#x1F464; Claude</span></div>
       <div class="agent-desc">Genera media kit e gestisce le relazioni commerciali per azienda.</div>
-
-```
-</div>
-<div style="padding:0 10px 6px;">
-  <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gslide" style="margin:0">Slide</span><span>Drive A6 &#x2192; Output</span></a>
-</div>
-<div class="actions" id="actions-a6" style="grid-template-columns:1fr 1fr;">
-  <button class="lg-btn" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.1</span></button>
-  <button class="lg-btn" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.2</span></button>
-  <a class="lg-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.1 Claude</span></a>
-  <a class="lg-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.2 Claude</span></a>
-</div>
-<div class="stato-row" id="stato-row-a6"></div>
-</div>
-```
-
+      
+    </div>
+    <div style="padding:0 10px 6px;">
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gslide" style="margin:0">Slide</span><span>Drive A6 &#x2192; Output</span></a>
+    </div>
+    <div class="actions" id="actions-a6" style="grid-template-columns:1fr 1fr;">
+      <button class="lg-btn" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.1</span></button>
+      <button class="lg-btn" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.2</span></button>
+      <a class="lg-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.1 Claude</span></a>
+      <a class="lg-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.2 Claude</span></a>
+    </div>
+    <div class="stato-row" id="stato-row-a6"></div>
+    </div>
   </div></div>
   <!-- A7 -->
   <div class="acard" id="card-a7"><div class="acard-body">
@@ -469,18 +450,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span><span class="agent-tag">&#x26A1; Auto</span></div>
       <div class="agent-desc">Genera bozze Gmail da TXT + PDF in Drive. Polling ogni 15 min.</div>
-
-```
-</div>
-<div class="actions" id="actions-a7">
-  <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
-  <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank"><svg><use href="#ic-mail"/></svg><span>&#x2192; Gmail Bozze</span></a>
-  <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
-</div>
-<div class="stato-row" id="stato-row-a7"></div>
-</div>
-```
-
+      
+    </div>
+    <div class="actions" id="actions-a7">
+      <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-copy"/></svg><span>Messaggio</span></button>
+      <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank"><svg><use href="#ic-mail"/></svg><span>&#x2192; Gmail Bozze</span></a>
+      <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
+    </div>
+    <div class="stato-row" id="stato-row-a7"></div>
+    </div>
   </div></div>
 </div>
 <div class="legend">
@@ -506,357 +484,356 @@ const now=new Date();
 const DD=String(now.getDate()).padStart(2,'0'),MM=String(now.getMonth()+1).padStart(2,'0'),YY=now.getFullYear();
 document.getElementById('dateChipText').textContent=DD+'/'+MM+'/'+YY;
 
-const DRIVE={A1:‘https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM’,A2:‘https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC’,A3:‘https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK’,A4:‘https://drive.google.com/drive/folders/1uJZEyjjh01UzkgZmKAYw7qifsqurkaIs’};
-const SHEET_A1=‘https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit’;
-const PROJ={A2:‘https://claude.ai/project/019daf24-2357-7778-bc6e-12d45625b40b’,A3:‘https://claude.ai/project/019dc48d-98e7-7375-ba30-d1c514ecc02f’,A4:‘https://claude.ai/project/019de015-ecb8-7180-8162-bf05cd25fcd6’};
-const FILE_CUR={A2:‘report_GDC_’+Mm1+’*’+Am1,A3:’piano*’+M0+’*’+A0,A4:’brief*’+M0+’*’+A0+’.docx’};
-const FILE_FMT={A2:‘gslide’,A3:‘gslide’,A4:‘gdoc’};
-const FILE_FMT_LBL={A2:‘Slide’,A3:‘Slide’,A4:‘Doc’};
+const DRIVE={A1:'https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM',A2:'https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC',A3:'https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK',A4:'https://drive.google.com/drive/folders/1uJZEyjjh01UzkgZmKAYw7qifsqurkaIs'};
+const SHEET_A1='https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit';
+const PROJ={A2:'https://claude.ai/project/019daf24-2357-7778-bc6e-12d45625b40b',A3:'https://claude.ai/project/019dc48d-98e7-7375-ba30-d1c514ecc02f',A4:'https://claude.ai/project/019de015-ecb8-7180-8162-bf05cd25fcd6'};
+const FILE_CUR={A2:'report_GDC_'+Mm1+'_'+Am1,A3:'piano_'+M0+'_'+A0,A4:'brief_'+M0+'_'+A0+'.docx'};
+const FILE_FMT={A2:'gslide',A3:'gslide',A4:'gdoc'};
+const FILE_FMT_LBL={A2:'Slide',A3:'Slide',A4:'Doc'};
 const MSGS={
-A2:“Ciao A2. E’ il momento del report mensile.\n\nFile dati:\n”+DRIVE.A1+”\n\nGoogle Sheet:\n”+SHEET_A1+”\n\nMese: “+Mm1+” “+Am1+”\n\nSalva in:\n”+DRIVE.A2+”\n-> report_GDC*”+Mm1+”*”+Am1,
-A3:“Ciao A3. Piano editoriale.\n\nSheet Analytics:\n”+SHEET_A1+”\n\nReport A2:\n”+DRIVE.A2+”\n-> report_GDC*”+Mm1+”*”+Am1+”\n\nMese: “+M0+” “+A0+”\nCALENDARIO: [caricamento…]\n\nSalva in:\n”+DRIVE.A3+”\n-> piano*”+M0+”*”+A0,
-A4:“Ciao A4. Script mensili.\n\nGoogle Sheet Analytics A1:\n”+SHEET_A1+”\n\nReport A2 (mese corrente — “+M0+” “+A0+”):\n”+DRIVE.A2+”\n-> report_GDC*”+M0+”*”+A0+”\n\nReport A2 (mese precedente — “+Mm1+” “+Am1+”):\n”+DRIVE.A2+”\n-> report_GDC*”+Mm1+”*”+Am1+”\n\nPiano A3 (mese corrente — “+M0+” “+A0+”):\n”+DRIVE.A3+”\n-> piano*”+M0+”*”+A0+”\n\nPiano A3 (mese precedente — “+Mm1+” “+Am1+”):\n”+DRIVE.A3+”\n-> piano*”+Mm1+”*”+Am1+”\n\nMese: “+M0+” “+A0+”\n\nSalva in:\n”+DRIVE.A4+”\n-> brief*”+M0+”*”+A0+”.docx”,
-A5_1:“Ciao A5.1.\nFacciamo una ricerca sull’azienda: [NOME AZIENDA]\n\nDopo l’analisi, aggiorna la pipeline usando il connector Supabase GDC.\nTabella: companies\nProgetto: pnzabwfsgkvejnrtrjcp\n\nSe l’azienda non esiste: INSERT. Se esiste già: UPDATE.\nConferma in chat l’operazione eseguita con nome, score e step_attuale.”,
-A5_2:“Ciao A5.2.\nProduci la scheda aziendale per: [NOME AZIENDA]\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n\nPrima di produrre il DOCX:\n1. Cerca in Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L) la cartella [NOME AZIENDA]\n2. Se non esiste: creala\n3. Comunicami il percorso dove caricare il file\n\nPoi produci il DOCX completo con tutte le sezioni.”,
-A6_1:“Ciao A6.1.\nProduci il Media Kit per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda*[NOME AZIENDA].docx.\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n-> lista la cartella e identifica autonomamente i 2 report piu recenti.\n\nCartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):\nCerca se esiste gia la cartella [NOME AZIENDA]:\n- Se esiste: non fare nulla, indicami il link.\n- Se non esiste: creala e indicami il link.\n\nProduci il PPTX Media Kit e presentamelo via present_files.\n\nNota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sara il PDF ad essere allegato da A7 alla mail.”,
-A6_2:“Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nMedia Kit (A6.1) in Drive A6 — opzionale ma consigliato:\nCerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].\nSe trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.\n\nDopo approvazione, salva il TXT nella sottocartella specifica dell’azienda:\nCartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella [NOME AZIENDA] -> salva li il file\n-> mail_[NOME AZIENDA]_YYYY-MM-DD.txt\nNon salvare nella radice di Aziende ne in altre cartelle.”,
+  A2:"Ciao A2. E' il momento del report mensile.\n\nFile dati:\n"+DRIVE.A1+"\n\nGoogle Sheet:\n"+SHEET_A1+"\n\nMese: "+Mm1+" "+Am1+"\n\nSalva in:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1,
+  A3:"Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\nCALENDARIO: [caricamento...]\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0,
+  A4:"Ciao A4. Script mensili.\n\nGoogle Sheet Analytics A1:\n"+SHEET_A1+"\n\nReport A2 (mese corrente — "+M0+" "+A0+"):\n"+DRIVE.A2+"\n-> report_GDC_"+M0+"_"+A0+"\n\nReport A2 (mese precedente — "+Mm1+" "+Am1+"):\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nPiano A3 (mese corrente — "+M0+" "+A0+"):\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0+"\n\nPiano A3 (mese precedente — "+Mm1+" "+Am1+"):\n"+DRIVE.A3+"\n-> piano_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nSalva in:\n"+DRIVE.A4+"\n-> brief_"+M0+"_"+A0+".docx",
+  A5_1:"Ciao A5.1.\nFacciamo una ricerca sull'azienda: [NOME AZIENDA]\n\nDopo l'analisi, aggiorna la pipeline usando il connector Supabase GDC.\nTabella: companies\nProgetto: pnzabwfsgkvejnrtrjcp\n\nSe l'azienda non esiste: INSERT. Se esiste già: UPDATE.\nConferma in chat l'operazione eseguita con nome, score e step_attuale.",
+  A5_2:"Ciao A5.2.\nProduci la scheda aziendale per: [NOME AZIENDA]\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n\nPrima di produrre il DOCX:\n1. Cerca in Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L) la cartella [NOME AZIENDA]\n2. Se non esiste: creala\n3. Comunicami il percorso dove caricare il file\n\nPoi produci il DOCX completo con tutte le sezioni.",
+  A6_1:"Ciao A6.1.\nProduci il Media Kit per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n-> lista la cartella e identifica autonomamente i 2 report piu recenti.\n\nCartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):\nCerca se esiste gia la cartella [NOME AZIENDA]:\n- Se esiste: non fare nulla, indicami il link.\n- Se non esiste: creala e indicami il link.\n\nProduci il PPTX Media Kit e presentamelo via present_files.\n\nNota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sara il PDF ad essere allegato da A7 alla mail.",
+  A6_2:"Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nMedia Kit (A6.1) in Drive A6 — opzionale ma consigliato:\nCerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].\nSe trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.\n\nDopo approvazione, salva il TXT nella sottocartella specifica dell'azienda:\nCartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella [NOME AZIENDA] -> salva li il file\n-> mail_[NOME AZIENDA]_YYYY-MM-DD.txt\nNon salvare nella radice di Aziende ne in altre cartelle.",
 };
 
 function buildMsgA3(calBpt){
-const cal=calBpt||’[calendario BPT non disponibile — esegui bpt_calendar.py]’;
-MSGS.A3=“Ciao A3. Piano editoriale.\n\nSheet Analytics:\n”+SHEET_A1+”\n\nReport A2:\n”+DRIVE.A2+”\n-> report_GDC_”+Mm1+”*”+Am1+”\n\nMese: “+M0+” “+A0+”\n\nCALENDARIO IMPEGNI:\n”+cal+”\n\nSalva in:\n”+DRIVE.A3+”\n-> piano*”+M0+”_”+A0;
+  const cal=calBpt||'[calendario BPT non disponibile — esegui bpt_calendar.py]';
+  MSGS.A3="Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nCALENDARIO IMPEGNI:\n"+cal+"\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0;
 }
 
-const SUPA_URL=‘https://pnzabwfsgkvejnrtrjcp.supabase.co’;
-const SUPA_KEY=‘eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk’;
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
 const THREE_DAYS=3*24*60*60*1000;
 
 function mapState(row){
-if(!row) return ‘sleep’;
-const st=row.stato||’’;
-const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
-if(st===‘working’) return ‘active’;
-if(st===‘ready’||st===‘queued’) return ‘queued’;
-if(st===‘done’) return age<THREE_DAYS?‘done’:‘sleep’;
-if(st===‘riposo’) return age<THREE_DAYS?‘rest’:‘sleep’;
-return ‘sleep’;
+  if(!row) return 'sleep';
+  const st=row.stato||'';
+  const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='working') return 'active';
+  if(st==='ready'||st==='queued') return 'queued';
+  if(st==='done') return age<THREE_DAYS?'done':'sleep';
+  if(st==='riposo') return age<THREE_DAYS?'rest':'sleep';
+  return 'sleep';
 }
 const CFG={
-rest: {bg:‘bg-rest’, css:‘s-rest’, card:‘st-rest’, lbl:‘Riposo’,    chip:’<span class="status-chip" style="background:#E8E8E8;color:#555">○ Riposo</span>’},
-queued:{bg:‘bg-queued’,css:‘s-queued’,card:‘st-queued’,lbl:‘In coda’,chip:’<span class="status-chip chip-queued">⏸ In attesa</span>’},
-active:{bg:‘bg-active’,css:‘s-active’,card:‘st-working’,lbl:‘In corso’,chip:’<span class="status-chip chip-working"><span class="spinner-dot"></span> Claude al lavoro…</span>’},
-done: {bg:‘bg-done’, css:‘s-done’, card:‘st-done’, lbl:‘Completato’,chip:’<span class="status-chip chip-done">✓ Completato</span>’},
-sleep:{bg:‘bg-sleep’,css:‘s-sleep’,card:‘st-sleep’,lbl:‘Inattivo’,  chip:’<span class="status-chip chip-sleep">○ Inattivo</span>’},
+  rest: {bg:'bg-rest', css:'s-rest', card:'st-rest', lbl:'Riposo',    chip:'<span class="status-chip" style="background:#E8E8E8;color:#555">&#x25CB; Riposo</span>'},
+  queued:{bg:'bg-queued',css:'s-queued',card:'st-queued',lbl:'In coda',chip:'<span class="status-chip chip-queued">&#x23F8; In attesa</span>'},
+  active:{bg:'bg-active',css:'s-active',card:'st-working',lbl:'In corso',chip:'<span class="status-chip chip-working"><span class="spinner-dot"></span> Claude al lavoro...</span>'},
+  done: {bg:'bg-done', css:'s-done', card:'st-done', lbl:'Completato',chip:'<span class="status-chip chip-done">&#x2713; Completato</span>'},
+  sleep:{bg:'bg-sleep',css:'s-sleep',card:'st-sleep',lbl:'Inattivo',  chip:'<span class="status-chip chip-sleep">&#x25CB; Inattivo</span>'},
 };
 const PRI={active:5,queued:4,done:3,rest:2,sleep:1};
-function worstState(rows){let b=‘sleep’;rows.forEach(r=>{if(!r)return;const s=mapState(r);if((PRI[s]||0)>(PRI[b]||0))b=s;});return b;}
+function worstState(rows){let b='sleep';rows.forEach(r=>{if(!r)return;const s=mapState(r);if((PRI[s]||0)>(PRI[b]||0))b=s;});return b;}
 
 var a4RAF=null,a5RAF=null,a6RAF=null,a7RAF=null;
 function stopAnim(id){
-if(id===‘a5’&&a5RAF){cancelAnimationFrame(a5RAF);a5RAF=null;
-const arc=document.getElementById(‘c-arc’);if(arc)arc.style.strokeDashoffset=‘0’;
-const badge=document.getElementById(‘c-badge’);if(badge){badge.setAttribute(‘cx’,‘87’);badge.setAttribute(‘cy’,‘91’);}
-const dash=document.getElementById(‘c-dash-line’);if(dash){dash.setAttribute(‘x1’,‘65’);dash.setAttribute(‘y1’,‘60’);dash.setAttribute(‘x2’,‘82’);dash.setAttribute(‘y2’,‘84’);}
-}
-if(id===‘a6’&&a6RAF){cancelAnimationFrame(a6RAF);a6RAF=null;
-const fold=document.getElementById(‘c-fold’);if(fold)fold.setAttribute(‘d’,‘M85 9 L85 28 L104 28’);
-[0,1,2].forEach(i=>{const r=document.getElementById(‘c-r’+i+’-a6’);if(r){r.style.opacity=‘1’;r.style.transform=‘scaleX(1)’;}});
-}
-if(id===‘a7’&&a7RAF){cancelAnimationFrame(a7RAF);a7RAF=null;
-const v=document.getElementById(‘c-v’);if(v)v.setAttribute(‘d’,‘M18 24 L60 46 L102 24’);
-const dot=document.getElementById(‘c-dot’);if(dot)dot.setAttribute(‘cy’,‘46’);
-}
+  if(id==='a5'&&a5RAF){cancelAnimationFrame(a5RAF);a5RAF=null;
+    const arc=document.getElementById('c-arc');if(arc)arc.style.strokeDashoffset='0';
+    const badge=document.getElementById('c-badge');if(badge){badge.setAttribute('cx','87');badge.setAttribute('cy','91');}
+    const dash=document.getElementById('c-dash-line');if(dash){dash.setAttribute('x1','65');dash.setAttribute('y1','60');dash.setAttribute('x2','82');dash.setAttribute('y2','84');}
+  }
+  if(id==='a6'&&a6RAF){cancelAnimationFrame(a6RAF);a6RAF=null;
+    const fold=document.getElementById('c-fold');if(fold)fold.setAttribute('d','M85 9 L85 28 L104 28');
+    [0,1,2].forEach(i=>{const r=document.getElementById('c-r'+i+'-a6');if(r){r.style.opacity='1';r.style.transform='scaleX(1)';}});
+  }
+  if(id==='a7'&&a7RAF){cancelAnimationFrame(a7RAF);a7RAF=null;
+    const v=document.getElementById('c-v');if(v)v.setAttribute('d','M18 24 L60 46 L102 24');
+    const dot=document.getElementById('c-dot');if(dot)dot.setAttribute('cy','46');
+  }
 }
 function setLogoState(id,st){
-const c=CFG[st]||CFG.sleep;
-const box=document.getElementById(‘box-’+id);
-const wrap=document.getElementById(‘wrap-’+id);
-const lbl=document.getElementById(‘lbl-’+id);
-const chip=document.getElementById(‘chip-’+id);
-const card=document.getElementById(‘card-’+id);
-if(box) box.className=’logo-box ’+c.bg;
-if(lbl) lbl.textContent=c.lbl;
-if(chip) chip.innerHTML=c.chip;
-if(card) card.className=’acard ’+c.card;
-if(id===‘a4’){
-if(wrap) wrap.className=’a4-wrap ’+c.css;
-if(st===‘active’) startA4Anim();
-else{if(a4RAF){cancelAnimationFrame(a4RAF);a4RAF=null;}const d=document.getElementById(‘c-doc’);if(d)d.style.strokeDashoffset=‘0’;[‘c-r0’,‘c-r1’,‘c-r2’,‘c-r3’].forEach(r=>{const el=document.getElementById(r);if(el)el.style.transform=‘scaleX(1)’;});const cur=document.getElementById(‘c-cur’);if(cur){cur.style.opacity=‘1’;cur.setAttribute(‘x’,‘57’);cur.setAttribute(‘y’,‘79’);}}
-} else {
-if(wrap) wrap.className=c.css;
+  const c=CFG[st]||CFG.sleep;
+  const box=document.getElementById('box-'+id);
+  const wrap=document.getElementById('wrap-'+id);
+  const lbl=document.getElementById('lbl-'+id);
+  const chip=document.getElementById('chip-'+id);
+  const card=document.getElementById('card-'+id);
+  if(box) box.className='logo-box '+c.bg;
+  if(lbl) lbl.textContent=c.lbl;
+  if(chip) chip.innerHTML=c.chip;
+  if(card) card.className='acard '+c.card;
+  if(id==='a4'){
+    if(wrap) wrap.className='a4-wrap '+c.css;
+    if(st==='active') startA4Anim();
+    else{if(a4RAF){cancelAnimationFrame(a4RAF);a4RAF=null;}const d=document.getElementById('c-doc');if(d)d.style.strokeDashoffset='0';['c-r0','c-r1','c-r2','c-r3'].forEach(r=>{const el=document.getElementById(r);if(el)el.style.transform='scaleX(1)';});const cur=document.getElementById('c-cur');if(cur){cur.style.opacity='1';cur.setAttribute('x','57');cur.setAttribute('y','79');}}
+  } else {
+    if(wrap) wrap.className=c.css;
+  }
+  if(id==='a5'&&st==='active') startA5Anim(); else if(id==='a5') stopAnim('a5');
+  if(id==='a6'&&st==='active') startA6Anim(); else if(id==='a6') stopAnim('a6');
+  if(id==='a7'&&st==='active') startA7Anim(); else if(id==='a7') stopAnim('a7');
 }
-if(id===‘a5’&&st===‘active’) startA5Anim(); else if(id===‘a5’) stopAnim(‘a5’);
-if(id===‘a6’&&st===‘active’) startA6Anim(); else if(id===‘a6’) stopAnim(‘a6’);
-if(id===‘a7’&&st===‘active’) startA7Anim(); else if(id===‘a7’) stopAnim(‘a7’);
-}
-const STATO_CYCLE={sleep:‘queued’,queued:‘working’,working:‘done’,done:‘riposo’,riposo:‘queued’,rest:‘queued’};
-const STATO_LABELS={queued:‘In coda’,working:‘In corso’,done:‘Completato’,riposo:‘Riposo’,sleep:‘Inattivo’};
+const STATO_CYCLE={sleep:'queued',queued:'working',working:'done',done:'riposo',riposo:'queued',rest:'queued'};
+const STATO_LABELS={queued:'In coda',working:'In corso',done:'Completato',riposo:'Riposo',sleep:'Inattivo'};
 const STATO_PILLS=[
-{key:‘queued’,  supaKey:‘queued’,  label:‘In coda’,   cls:‘sp-queued’},
-{key:‘working’, supaKey:‘working’, label:‘In corso’,  cls:‘sp-working’},
-{key:‘done’,    supaKey:‘done’,    label:‘Fatto’,     cls:‘sp-done’},
-{key:‘riposo’,  supaKey:‘riposo’,  label:‘Riposo’,    cls:‘sp-rest’},
-{key:‘sleep’,   supaKey:‘sleep’,   label:‘Inattivo’,  cls:‘sp-sleep’},
+  {key:'queued',  supaKey:'queued',  label:'In coda',   cls:'sp-queued'},
+  {key:'working', supaKey:'working', label:'In corso',  cls:'sp-working'},
+  {key:'done',    supaKey:'done',    label:'Fatto',     cls:'sp-done'},
+  {key:'riposo',  supaKey:'riposo',  label:'Riposo',    cls:'sp-rest'},
+  {key:'sleep',   supaKey:'sleep',   label:'Inattivo',  cls:'sp-sleep'},
 ];
 
 function renderStatoRow(id, supaStato){
-const row=document.getElementById(‘stato-row-’+id.toLowerCase());
-if(!row) return;
-// supaStato è il valore raw da Supabase (queued/working/done/riposo/sleep)
-const cur=supaStato||‘sleep’;
-row.innerHTML=STATO_PILLS.map(p=>{
-const isActive=(p.supaKey===cur)||(p.supaKey===‘sleep’&&(cur===‘sleep’||cur===’’||!cur));
-return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
-}).join(’’);
+  const row=document.getElementById('stato-row-'+id.toLowerCase());
+  if(!row) return;
+  // supaStato è il valore raw da Supabase (queued/working/done/riposo/sleep)
+  const cur=supaStato||'sleep';
+  row.innerHTML=STATO_PILLS.map(p=>{
+    const isActive=(p.supaKey===cur)||(p.supaKey==='sleep'&&(cur==='sleep'||cur===''||!cur));
+    return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
+  }).join('');
 }
 
 async function setStatoRaw(agentId, newStato){
-const ids=agentId===‘A5’?[‘a5_1’,‘a5_2’]:agentId===‘A6’?[‘a6_1’,‘a6_2’]:[agentId.toLowerCase()];
-try{
-await Promise.all(ids.map(aid=>
-fetch(SUPA_URL+’/rest/v1/agent_states?agent_id=eq.’+aid,{
-method:‘PATCH’,
-headers:{‘apikey’:SUPA_KEY,‘Authorization’:’Bearer ’+SUPA_KEY,‘Content-Type’:‘application/json’,‘Prefer’:‘return=minimal’},
-body:JSON.stringify({stato:newStato,updated_at:new Date().toISOString()})
-})
-));
-await loadStates();
-}catch(e){console.error(‘setStatoRaw error:’,e);}
+  const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
+  try{
+    await Promise.all(ids.map(aid=>
+      fetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
+        method:'PATCH',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({stato:newStato,updated_at:new Date().toISOString()})
+      })
+    ));
+    await loadStates();
+  }catch(e){console.error('setStatoRaw error:',e);}
 }
 
 function renderActionsSimple(id,st){
-// per A5/A6 i bottoni sono hardcodati nell’HTML, non serve riscriverli
-// aggiorna solo la stato-row
+  // per A5/A6 i bottoni sono hardcodati nell'HTML, non serve riscriverli
+  // aggiorna solo la stato-row
 }
 
 async function setStato(agentId,currentSt){
-const nextSupabase=STATO_CYCLE[currentSt]||‘queued’;
-const ids=agentId===‘A5’?[‘a5_1’,‘a5_2’]:agentId===‘A6’?[‘a6_1’,‘a6_2’]:[agentId.toLowerCase()];
-try{
-await Promise.all(ids.map(aid=>
-fetch(SUPA_URL+’/rest/v1/agent_states?agent_id=eq.’+aid,{
-method:‘PATCH’,
-headers:{‘apikey’:SUPA_KEY,‘Authorization’:’Bearer ’+SUPA_KEY,‘Content-Type’:‘application/json’,‘Prefer’:‘return=minimal’},
-body:JSON.stringify({stato:nextSupabase,updated_at:new Date().toISOString()})
-})
-));
-await loadStates();
-}catch(e){console.error(‘setStato error:’,e);}
+  const nextSupabase=STATO_CYCLE[currentSt]||'queued';
+  const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
+  try{
+    await Promise.all(ids.map(aid=>
+      fetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
+        method:'PATCH',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({stato:nextSupabase,updated_at:new Date().toISOString()})
+      })
+    ));
+    await loadStates();
+  }catch(e){console.error('setStato error:',e);}
 }
 
 function renderActions(id,st){
-const acts=document.getElementById(‘actions-’+id.toLowerCase());if(!acts)return;
-const isQ=(st===‘queued’),isA=(st===‘active’),isD=(st===‘done’);
-const fname=isD?(FILE_CUR[id]||’’):’’;
-const fshort=fname.length>14?fname.slice(0,14)+’…’:fname;
-const fmt=FILE_FMT[id]||‘pdf’,fmtL=FILE_FMT_LBL[id]||‘File’;
-const msgBtn=isD?’<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-check"/></svg><span>Inviato ✓</span></button>’:(’<button class=”’+(isQ?‘lg-btn lg-primary’:isA?‘lg-btn’:‘lg-btn lg-disabled’)+’” ‘+((!isQ&&!isA)?‘disabled’:’’)+’ onclick=“copyMsg('’+id+’')” ><svg><use href="#ic-copy"/></svg><span onclick="event.stopPropagation();openMsg(\''+id+'\',\'Messaggio '+id+'\',MSGS[\''+id+'\'])" class="show-msg-link">mostra</span></button>’);
-const driveBtn=fname?(’<a class="'+(isD?'lg-btn lg-done':'lg-btn')+'" href="'+DRIVE[id]+'" target="_blank"><span class="fmt-badge fmt-'+fmt+'">’+fmtL+’</span><span>→ ‘+fshort+’</span></a>’):’<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-folder"/></svg><span>Drive</span></button>’;
-const href=PROJ[id]||’#’;
-const chatBtn=(href!==’#’&&(isQ||isA||isD))?(’<a class="'+(isD?'lg-btn lg-done':'lg-btn lg-primary')+'" href="'+href+'" target="_blank"><svg><use href="#ic-chat"/></svg><span>→ ‘+id+’ in Claude</span></a>’):’<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>→ ‘+id+’ in Claude</span></button>’;
-acts.innerHTML=msgBtn+driveBtn+chatBtn;
+  const acts=document.getElementById('actions-'+id.toLowerCase());if(!acts)return;
+  const isQ=(st==='queued'),isA=(st==='active'),isD=(st==='done');
+  const fname=isD?(FILE_CUR[id]||''):'';
+  const fshort=fname.length>14?fname.slice(0,14)+'...':fname;
+  const fmt=FILE_FMT[id]||'pdf',fmtL=FILE_FMT_LBL[id]||'File';
+  const msgBtn=isD?'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-check"/></svg><span>Inviato &#x2713;</span></button>':('<button class="'+(isQ?'lg-btn lg-primary':isA?'lg-btn':'lg-btn lg-disabled')+'" '+((!isQ&&!isA)?'disabled':'')+' onclick="copyMsg(\''+id+'\')" ><svg><use href="#ic-copy"/></svg><span onclick="event.stopPropagation();openMsg(\''+id+'\',\'Messaggio '+id+'\',MSGS[\''+id+'\'])" class="show-msg-link">mostra</span></button>');
+  const driveBtn=fname?('<a class="'+(isD?'lg-btn lg-done':'lg-btn')+'" href="'+DRIVE[id]+'" target="_blank"><span class="fmt-badge fmt-'+fmt+'">'+fmtL+'</span><span>&#x2192; '+fshort+'</span></a>'):'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-folder"/></svg><span>Drive</span></button>';
+  const href=PROJ[id]||'#';
+  const chatBtn=(href!=='#'&&(isQ||isA||isD))?('<a class="'+(isD?'lg-btn lg-done':'lg-btn lg-primary')+'" href="'+href+'" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; '+id+' in Claude</span></a>'):'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>&#x2192; '+id+' in Claude</span></button>';
+  acts.innerHTML=msgBtn+driveBtn+chatBtn;
 }
 function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]).catch(()=>{});}
 
 async function loadStates(){
-try{
-const res=await fetch(SUPA_URL+’/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt’,{headers:{‘apikey’:SUPA_KEY,‘Authorization’:’Bearer ’+SUPA_KEY}});
-if(!res.ok) throw new Error(’HTTP ’+res.status);
-const rows=await res.json();
-const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
-// Costruisce MSGS.A3 con calendario BPT reale
-const bptRow=byId[‘bpt_calendar’];
-buildMsgA3(bptRow?bptRow.calendario_bpt:null);
-[‘a1’,‘a2’,‘a3’,‘a4’,‘a7’].forEach(id=>{
-const row=byId[id];
-const st=mapState(row);
-setLogoState(id,st);
-if([‘a2’,‘a3’,‘a4’].includes(id)) renderActions(id.toUpperCase(),st);
-renderStatoRow(id.toUpperCase(), row?row.stato:‘sleep’);
-});
-const st5=worstState([byId[‘a5_1’],byId[‘a5_2’]]);
-const st6=worstState([byId[‘a6_1’],byId[‘a6_2’]]);
-setLogoState(‘a5’,st5);
-setLogoState(‘a6’,st6);
-renderActionsSimple(‘A5’,st5);
-renderActionsSimple(‘A6’,st6);
-// stato-row A5/A6 usa il valore del sub-agente principale
-const raw5=(byId[‘a5_1’]||byId[‘a5_2’]);
-const raw6=(byId[‘a6_1’]||byId[‘a6_2’]);
-renderStatoRow(‘A5’, raw5?raw5.stato:‘sleep’);
-renderStatoRow(‘A6’, raw6?raw6.stato:‘sleep’);
-document.getElementById(‘sysLabel’).textContent=‘Tutti i sistemi attivi’;
-document.getElementById(‘sysLabel’).style.color=‘var(–maker)’;
-document.getElementById(‘sysMeta’).textContent=‘Aggiornato alle ‘+new Date().toLocaleTimeString(‘it-IT’,{hour:‘2-digit’,minute:‘2-digit’});
-}catch(e){
-console.error(‘Supabase:’,e);
-[‘a1’,‘a2’,‘a3’,‘a4’,‘a5’,‘a6’,‘a7’].forEach(id=>{setLogoState(id,‘sleep’);});
-[‘A2’,‘A3’,‘A4’].forEach(id=>renderActions(id,‘sleep’));
-[‘A1’,‘A2’,‘A3’,‘A4’,‘A5’,‘A6’,‘A7’].forEach(id=>renderStatoRow(id,‘sleep’));
-document.getElementById(‘sysLabel’).textContent=‘Offline — dati non disponibili’;
-document.getElementById(‘sysLabel’).style.color=‘var(–grigio)’;
-document.getElementById(‘sysMeta’).textContent=’’;
-}
+  try{
+    const res=await fetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
+    // Costruisce MSGS.A3 con calendario BPT reale
+    const bptRow=byId['bpt_calendar'];
+    buildMsgA3(bptRow?bptRow.calendario_bpt:null);
+    ['a1','a2','a3','a4','a7'].forEach(id=>{
+      const row=byId[id];
+      const st=mapState(row);
+      setLogoState(id,st);
+      if(['a2','a3','a4'].includes(id)) renderActions(id.toUpperCase(),st);
+      renderStatoRow(id.toUpperCase(), row?row.stato:'sleep');
+    });
+    const st5=worstState([byId['a5_1'],byId['a5_2']]);
+    const st6=worstState([byId['a6_1'],byId['a6_2']]);
+    setLogoState('a5',st5);
+    setLogoState('a6',st6);
+    renderActionsSimple('A5',st5);
+    renderActionsSimple('A6',st6);
+    // stato-row A5/A6 usa il valore del sub-agente principale
+    const raw5=(byId['a5_1']||byId['a5_2']);
+    const raw6=(byId['a6_1']||byId['a6_2']);
+    renderStatoRow('A5', raw5?raw5.stato:'sleep');
+    renderStatoRow('A6', raw6?raw6.stato:'sleep');
+    document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
+    document.getElementById('sysLabel').style.color='var(--maker)';
+    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
+    console.error('Supabase:',e);
+    ['a1','a2','a3','a4','a5','a6','a7'].forEach(id=>{setLogoState(id,'sleep');});
+    ['A2','A3','A4'].forEach(id=>renderActions(id,'sleep'));
+    ['A1','A2','A3','A4','A5','A6','A7'].forEach(id=>renderStatoRow(id,'sleep'));
+    document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
+    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('sysMeta').textContent='';
+  }
 }
 
 function goToAgent(id){
-const map={a2:‘page_agent_a2_v3.html’,a3:‘page_agent_a3_v1.html’,a4:‘page_agent_a4_v1.html’,a5:‘page_agent_a5_v1.html’,a6:‘page_agent_a6_v1.html’,a7:‘page_agent_a7_v1.html’};
-if(map[id]) window.location.href=map[id];
+  const map={a2:'page_agent_a2_v3.html',a3:'page_agent_a3_v1.html',a4:'page_agent_a4_v1.html',a5:'page_agent_a5_v1.html',a6:'page_agent_a6_v1.html',a7:'page_agent_a7_v1.html'};
+  if(map[id]) window.location.href=map[id];
 }
 
 // MESSAGGI EDITABILI — localStorage per A5/A6/A7
-const EDITABLE_IDS=[‘A5’,‘A6’,‘A5_1’,‘A5_2’,‘A6_1’,‘A6_2’];
-let _curMsgId=’’,*defaultMsg=’’;
-function lsKey(id){return’gdc_msg*’+id;}
+const EDITABLE_IDS=['A5','A6','A5_1','A5_2','A6_1','A6_2'];
+let _curMsgId='',_defaultMsg='';
+function lsKey(id){return'gdc_msg_'+id;}
 function getSavedMsg(id){try{return localStorage.getItem(lsKey(id))||null;}catch(e){return null;}}
 function saveMsg(id,txt){try{localStorage.setItem(lsKey(id),txt);}catch(e){}}
 function resetMsg(){
-const ta=document.getElementById(‘msgText’);
-ta.value=_defaultMsg;
-saveMsg(_curMsgId,_defaultMsg);
-document.getElementById(‘msgEditHint’).textContent=‘Ripristinato’;
-setTimeout(()=>document.getElementById(‘msgEditHint’).textContent=EDITABLE_IDS.includes(_curMsgId)?‘Modificabile — le modifiche vengono salvate’:’’,1500);
+  const ta=document.getElementById('msgText');
+  ta.value=_defaultMsg;
+  saveMsg(_curMsgId,_defaultMsg);
+  document.getElementById('msgEditHint').textContent='Ripristinato';
+  setTimeout(()=>document.getElementById('msgEditHint').textContent=EDITABLE_IDS.includes(_curMsgId)?'Modificabile — le modifiche vengono salvate':'',1500);
 }
 function openMsg(id,title,msg){
-_curMsgId=id; _defaultMsg=msg;
-const saved=EDITABLE_IDS.includes(id)?getSavedMsg(id):null;
-const txt=saved||msg;
-const ta=document.getElementById(‘msgText’);
-ta.value=txt;
-ta.readOnly=!EDITABLE_IDS.includes(id);
-ta.style.cursor=EDITABLE_IDS.includes(id)?‘text’:‘default’;
-document.getElementById(‘msgTitle’).textContent=title;
-document.getElementById(‘msgEditHint’).textContent=EDITABLE_IDS.includes(id)?‘Modificabile — le modifiche vengono salvate’:’’;
-document.getElementById(‘msgResetBtn’).style.display=EDITABLE_IDS.includes(id)?’’:‘none’;
-document.getElementById(‘msgCopyBtn’).textContent=‘Copia’;
-document.getElementById(‘msgCopyBtn’).className=‘msg-copy-btn’;
-document.getElementById(‘msgOverlay’).classList.add(‘open’);
-if(EDITABLE_IDS.includes(id)){
-ta.oninput=()=>saveMsg(id,ta.value);
-} else {
-ta.oninput=null;
+  _curMsgId=id; _defaultMsg=msg;
+  const saved=EDITABLE_IDS.includes(id)?getSavedMsg(id):null;
+  const txt=saved||msg;
+  const ta=document.getElementById('msgText');
+  ta.value=txt;
+  ta.readOnly=!EDITABLE_IDS.includes(id);
+  ta.style.cursor=EDITABLE_IDS.includes(id)?'text':'default';
+  document.getElementById('msgTitle').textContent=title;
+  document.getElementById('msgEditHint').textContent=EDITABLE_IDS.includes(id)?'Modificabile — le modifiche vengono salvate':'';
+  document.getElementById('msgResetBtn').style.display=EDITABLE_IDS.includes(id)?'':'none';
+  document.getElementById('msgCopyBtn').textContent='Copia';
+  document.getElementById('msgCopyBtn').className='msg-copy-btn';
+  document.getElementById('msgOverlay').classList.add('open');
+  if(EDITABLE_IDS.includes(id)){
+    ta.oninput=()=>saveMsg(id,ta.value);
+  } else {
+    ta.oninput=null;
+  }
 }
-}
-function closeMsg(){document.getElementById(‘msgOverlay’).classList.remove(‘open’);}
-function closeMsgIfBg(e){if(e.target===document.getElementById(‘msgOverlay’))closeMsg();}
+function closeMsg(){document.getElementById('msgOverlay').classList.remove('open');}
+function closeMsgIfBg(e){if(e.target===document.getElementById('msgOverlay'))closeMsg();}
 function copyMsgPopup(){
-const txt=document.getElementById(‘msgText’).value;
-navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});
-const btn=document.getElementById(‘msgCopyBtn’);
-btn.textContent=‘Copiato \u2713’;btn.className=‘msg-copy-btn copied’;
-setTimeout(()=>{btn.textContent=‘Copia’;btn.className=‘msg-copy-btn’;},2000);
+  const txt=document.getElementById('msgText').value;
+  navigator.clipboard&&navigator.clipboard.writeText(txt).catch(()=>{});
+  const btn=document.getElementById('msgCopyBtn');
+  btn.textContent='Copiato \u2713';btn.className='msg-copy-btn copied';
+  setTimeout(()=>{btn.textContent='Copia';btn.className='msg-copy-btn';},2000);
 }
 
 function startA4Anim(){
-if(a4RAF) cancelAnimationFrame(a4RAF);
-const doc=document.getElementById(‘c-doc’),cur=document.getElementById(‘c-cur’);
-const rows=[‘c-r0’,‘c-r1’,‘c-r2’,‘c-r3’].map(id=>document.getElementById(id));
-if(!doc||!cur||rows.some(r=>!r)) return;
-const X0=30,X1=[84,84,84,44],CY=[32,49,66,88],CH=18,T_DOC=450,T_ROW=680,T_SNAP=100,T_BLINK=300,T_PAUSE=700;
-const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
-const setCur=(x,cy,v)=>{cur.setAttribute(‘x’,x);cur.setAttribute(‘y’,cy-CH/2);cur.style.opacity=v?1:0;};
-const setRow=(i,s)=>{rows[i].style.transform=‘scaleX(’+s+’)’;};
-let ph=‘doc’,phT=0;
-const reset=()=>{doc.style.strokeDashoffset=390;rows.forEach((_,i)=>setRow(i,0));setCur(X0,CY[0],true);ph=‘doc’;cur.setAttribute(‘x’,‘57’);cur.setAttribute(‘y’,‘79’);};
-const tick=ts=>{
-if(!phT) phT=ts; const dt=ts-phT;
-if(ph===‘doc’){const p=Math.min(dt/T_DOC,1);doc.style.strokeDashoffset=390*(1-ease(p));if(p>=1){ph=‘row0’;phT=ts;setCur(X0,CY[0],true);}}
-else if(ph.startsWith(‘row’)){const ri=+ph[3],p=Math.min(dt/T_ROW,1),ep=ease(p);setCur(X0+ep*(X1[ri]-X0),CY[ri],true);setRow(ri,Math.max(0,(p-.08)/.92));if(p>=1){setRow(ri,1);setCur(X1[ri],CY[ri],false);ph=ri<3?‘snap’+ri:‘blink’;phT=ts;}}
-else if(ph.startsWith(‘snap’)){if(dt>=T_SNAP){const ri=+ph[4];setCur(X0,CY[ri+1],true);ph=‘row’+(ri+1);phT=ts;}}
-else if(ph===‘blink’){const c=Math.floor(dt/T_BLINK);setCur(X1[3],CY[3],c%2===0);if(c>=6){setCur(X1[3],CY[3],false);ph=‘pause’;phT=ts;}}
-else if(ph===‘pause’){if(dt>=T_PAUSE){reset();phT=ts;}}
-a4RAF=requestAnimationFrame(tick);
-};
-reset(); a4RAF=requestAnimationFrame(tick);
+  if(a4RAF) cancelAnimationFrame(a4RAF);
+  const doc=document.getElementById('c-doc'),cur=document.getElementById('c-cur');
+  const rows=['c-r0','c-r1','c-r2','c-r3'].map(id=>document.getElementById(id));
+  if(!doc||!cur||rows.some(r=>!r)) return;
+  const X0=30,X1=[84,84,84,44],CY=[32,49,66,88],CH=18,T_DOC=450,T_ROW=680,T_SNAP=100,T_BLINK=300,T_PAUSE=700;
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const setCur=(x,cy,v)=>{cur.setAttribute('x',x);cur.setAttribute('y',cy-CH/2);cur.style.opacity=v?1:0;};
+  const setRow=(i,s)=>{rows[i].style.transform='scaleX('+s+')';};
+  let ph='doc',phT=0;
+  const reset=()=>{doc.style.strokeDashoffset=390;rows.forEach((_,i)=>setRow(i,0));setCur(X0,CY[0],true);ph='doc';cur.setAttribute('x','57');cur.setAttribute('y','79');};
+  const tick=ts=>{
+    if(!phT) phT=ts; const dt=ts-phT;
+    if(ph==='doc'){const p=Math.min(dt/T_DOC,1);doc.style.strokeDashoffset=390*(1-ease(p));if(p>=1){ph='row0';phT=ts;setCur(X0,CY[0],true);}}
+    else if(ph.startsWith('row')){const ri=+ph[3],p=Math.min(dt/T_ROW,1),ep=ease(p);setCur(X0+ep*(X1[ri]-X0),CY[ri],true);setRow(ri,Math.max(0,(p-.08)/.92));if(p>=1){setRow(ri,1);setCur(X1[ri],CY[ri],false);ph=ri<3?'snap'+ri:'blink';phT=ts;}}
+    else if(ph.startsWith('snap')){if(dt>=T_SNAP){const ri=+ph[4];setCur(X0,CY[ri+1],true);ph='row'+(ri+1);phT=ts;}}
+    else if(ph==='blink'){const c=Math.floor(dt/T_BLINK);setCur(X1[3],CY[3],c%2===0);if(c>=6){setCur(X1[3],CY[3],false);ph='pause';phT=ts;}}
+    else if(ph==='pause'){if(dt>=T_PAUSE){reset();phT=ts;}}
+    a4RAF=requestAnimationFrame(tick);
+  };
+  reset(); a4RAF=requestAnimationFrame(tick);
 }
 
 function startA5Anim(){
-if(a5RAF){cancelAnimationFrame(a5RAF);a5RAF=null;}
-const arc=document.getElementById(‘c-arc’),badge=document.getElementById(‘c-badge’),dash=document.getElementById(‘c-dash-line’);
-if(!arc||!badge||!dash) return;
-const OCX=58,OCY=50,R=50.22,A0s=54.73*Math.PI/180,AD=80*Math.PI/180,AL=192;
-const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
-const setBadge=a=>{const bx=OCX+R*Math.cos(a),by=OCY+R*Math.sin(a);badge.setAttribute(‘cx’,bx.toFixed(2));badge.setAttribute(‘cy’,by.toFixed(2));const d=Math.atan2(by-OCY,bx-OCX);dash.setAttribute(‘x1’,(OCX+13*Math.cos(d)).toFixed(2));dash.setAttribute(‘y1’,(OCY+13*Math.sin(d)).toFixed(2));dash.setAttribute(‘x2’,(OCX+(R-10)*Math.cos(d)).toFixed(2));dash.setAttribute(‘y2’,(OCY+(R-10)*Math.sin(d)).toFixed(2));};
-let ph=‘go’,phT=0;
-const tick=ts=>{if(!a5RAF) return;if(!phT)phT=ts;const dt=ts-phT;
-if(ph===‘go’){const p=Math.min(dt/1400,1),ep=ease(p);setBadge(A0s+ep*AD);arc.style.strokeDashoffset=ep*AL;if(p>=1){ph=‘h1’;phT=ts;}}
-else if(ph===‘h1’){if(dt>=300){ph=‘back’;phT=ts;}}
-else if(ph===‘back’){const p=Math.min(dt/1300,1),ep=ease(p);setBadge(A0s+(1-ep)*AD);arc.style.strokeDashoffset=(1-ep)*AL;if(p>=1){ph=‘h2’;phT=ts;}}
-else if(ph===‘h2’){if(dt>=400){ph=‘go’;phT=ts;setBadge(A0s);arc.style.strokeDashoffset=0;}}
-a5RAF=requestAnimationFrame(tick);};
-setBadge(A0s); a5RAF=requestAnimationFrame(tick);
+  if(a5RAF){cancelAnimationFrame(a5RAF);a5RAF=null;}
+  const arc=document.getElementById('c-arc'),badge=document.getElementById('c-badge'),dash=document.getElementById('c-dash-line');
+  if(!arc||!badge||!dash) return;
+  const OCX=58,OCY=50,R=50.22,A0s=54.73*Math.PI/180,AD=80*Math.PI/180,AL=192;
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const setBadge=a=>{const bx=OCX+R*Math.cos(a),by=OCY+R*Math.sin(a);badge.setAttribute('cx',bx.toFixed(2));badge.setAttribute('cy',by.toFixed(2));const d=Math.atan2(by-OCY,bx-OCX);dash.setAttribute('x1',(OCX+13*Math.cos(d)).toFixed(2));dash.setAttribute('y1',(OCY+13*Math.sin(d)).toFixed(2));dash.setAttribute('x2',(OCX+(R-10)*Math.cos(d)).toFixed(2));dash.setAttribute('y2',(OCY+(R-10)*Math.sin(d)).toFixed(2));};
+  let ph='go',phT=0;
+  const tick=ts=>{if(!a5RAF) return;if(!phT)phT=ts;const dt=ts-phT;
+    if(ph==='go'){const p=Math.min(dt/1400,1),ep=ease(p);setBadge(A0s+ep*AD);arc.style.strokeDashoffset=ep*AL;if(p>=1){ph='h1';phT=ts;}}
+    else if(ph==='h1'){if(dt>=300){ph='back';phT=ts;}}
+    else if(ph==='back'){const p=Math.min(dt/1300,1),ep=ease(p);setBadge(A0s+(1-ep)*AD);arc.style.strokeDashoffset=(1-ep)*AL;if(p>=1){ph='h2';phT=ts;}}
+    else if(ph==='h2'){if(dt>=400){ph='go';phT=ts;setBadge(A0s);arc.style.strokeDashoffset=0;}}
+    a5RAF=requestAnimationFrame(tick);};
+  setBadge(A0s); a5RAF=requestAnimationFrame(tick);
 }
 
 function startA6Anim(){
-if(a6RAF){cancelAnimationFrame(a6RAF);a6RAF=null;}
-const fold=document.getElementById(‘c-fold’),rows=[0,1,2].map(i=>document.getElementById(‘c-r’+i+’-a6’));
-if(!fold||rows.some(r=>!r)) return;
-const A={x:85,y:9},C={x:104,y:28},B0={x:85,y:28},B1={x:104,y:9};
-const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
-const setFold=p=>{const bx=B0.x+p*(B1.x-B0.x),by=B0.y+p*(B1.y-B0.y);fold.setAttribute(‘d’,‘M’+A.x+’ ‘+A.y+’ L’+bx.toFixed(2)+’ ‘+by.toFixed(2)+’ L’+C.x+’ ‘+C.y);};
-const FS=[0,130,260],FE=[280,410,540],IS=[900,1280,1660],IE=[1220,1600,1980];
-let st=null;
-const tick=ts=>{if(!a6RAF) return;if(st===null)st=ts;const t=ts-st;
-if(t<600)setFold(ease(t/600));else if(t<1000)setFold(1);else if(t<1600)setFold(1-ease((t-1000)/600));else setFold(0);
-rows.forEach((r,i)=>{if(t<FS[i]){r.style.opacity=1;r.style.transform=‘scaleX(1)’;}else if(t<FE[i]){const p=(t-FS[i])/280;r.style.opacity=1-ease(p);r.style.transform=‘scaleX(1)’;}else if(t<IS[i]){r.style.opacity=0;r.style.transform=‘scaleX(0)’;}else if(t<IE[i]){const p=ease((t-IS[i])/320);r.style.opacity=p;r.style.transform=‘scaleX(’+p+’)’;}else{r.style.opacity=1;r.style.transform=‘scaleX(1)’;}});
-if(t>=2530)st=null; a6RAF=requestAnimationFrame(tick);};
-setFold(0); a6RAF=requestAnimationFrame(tick);
+  if(a6RAF){cancelAnimationFrame(a6RAF);a6RAF=null;}
+  const fold=document.getElementById('c-fold'),rows=[0,1,2].map(i=>document.getElementById('c-r'+i+'-a6'));
+  if(!fold||rows.some(r=>!r)) return;
+  const A={x:85,y:9},C={x:104,y:28},B0={x:85,y:28},B1={x:104,y:9};
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const setFold=p=>{const bx=B0.x+p*(B1.x-B0.x),by=B0.y+p*(B1.y-B0.y);fold.setAttribute('d','M'+A.x+' '+A.y+' L'+bx.toFixed(2)+' '+by.toFixed(2)+' L'+C.x+' '+C.y);};
+  const FS=[0,130,260],FE=[280,410,540],IS=[900,1280,1660],IE=[1220,1600,1980];
+  let st=null;
+  const tick=ts=>{if(!a6RAF) return;if(st===null)st=ts;const t=ts-st;
+    if(t<600)setFold(ease(t/600));else if(t<1000)setFold(1);else if(t<1600)setFold(1-ease((t-1000)/600));else setFold(0);
+    rows.forEach((r,i)=>{if(t<FS[i]){r.style.opacity=1;r.style.transform='scaleX(1)';}else if(t<FE[i]){const p=(t-FS[i])/280;r.style.opacity=1-ease(p);r.style.transform='scaleX(1)';}else if(t<IS[i]){r.style.opacity=0;r.style.transform='scaleX(0)';}else if(t<IE[i]){const p=ease((t-IS[i])/320);r.style.opacity=p;r.style.transform='scaleX('+p+')';}else{r.style.opacity=1;r.style.transform='scaleX(1)';}});
+    if(t>=2530)st=null; a6RAF=requestAnimationFrame(tick);};
+  setFold(0); a6RAF=requestAnimationFrame(tick);
 }
 
 function startA7Anim(){
-if(a7RAF){cancelAnimationFrame(a7RAF);a7RAF=null;}
-const v=document.getElementById(‘c-v’),dot=document.getElementById(‘c-dot’);
-if(!v||!dot) return;
-const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
-const T_O=900,T_H1=400,T_C=800,T_H2=500,CYCLE=T_O+T_H1+T_C+T_H2;
-const setEnv=p=>{const cy=46+p*(20-46);dot.setAttribute(‘cy’,cy.toFixed(2));v.setAttribute(‘d’,‘M18 24 L60 ‘+cy.toFixed(2)+’ L102 24’);};
-let st=null;
-const tick=ts=>{if(!a7RAF) return;if(st===null)st=ts;const t=ts-st;
-if(t<T_O)setEnv(ease(t/T_O));else if(t<T_O+T_H1)setEnv(1);else if(t<T_O+T_H1+T_C)setEnv(1-ease((t-T_O-T_H1)/T_C));else if(t<CYCLE)setEnv(0);else st=null;
-a7RAF=requestAnimationFrame(tick);};
-setEnv(0); a7RAF=requestAnimationFrame(tick);
+  if(a7RAF){cancelAnimationFrame(a7RAF);a7RAF=null;}
+  const v=document.getElementById('c-v'),dot=document.getElementById('c-dot');
+  if(!v||!dot) return;
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const T_O=900,T_H1=400,T_C=800,T_H2=500,CYCLE=T_O+T_H1+T_C+T_H2;
+  const setEnv=p=>{const cy=46+p*(20-46);dot.setAttribute('cy',cy.toFixed(2));v.setAttribute('d','M18 24 L60 '+cy.toFixed(2)+' L102 24');};
+  let st=null;
+  const tick=ts=>{if(!a7RAF) return;if(st===null)st=ts;const t=ts-st;
+    if(t<T_O)setEnv(ease(t/T_O));else if(t<T_O+T_H1)setEnv(1);else if(t<T_O+T_H1+T_C)setEnv(1-ease((t-T_O-T_H1)/T_C));else if(t<CYCLE)setEnv(0);else st=null;
+    a7RAF=requestAnimationFrame(tick);};
+  setEnv(0); a7RAF=requestAnimationFrame(tick);
 }
 
 (function(){
-const svg=document.getElementById(‘hub-master-svg’);if(!svg)return;
-const G=svg.querySelector(’.logo-G’),D=svg.querySelector(’.logo-D’),C=svg.querySelector(’.logo-C’),STUFF=svg.querySelector(’.logo-STUFF’),linee=svg.querySelector(’.logo-linee’);
-[G,D,C,STUFF,linee].forEach(el=>{el.style.opacity=‘0’;el.style.transition=‘opacity .22s ease’;});
-setTimeout(()=>G.style.opacity=‘1’,200);setTimeout(()=>D.style.opacity=‘1’,460);setTimeout(()=>C.style.opacity=‘1’,720);setTimeout(()=>STUFF.style.opacity=‘1’,980);setTimeout(()=>linee.style.opacity=‘1’,1240);
+  const svg=document.getElementById('hub-master-svg');if(!svg)return;
+  const G=svg.querySelector('.logo-G'),D=svg.querySelector('.logo-D'),C=svg.querySelector('.logo-C'),STUFF=svg.querySelector('.logo-STUFF'),linee=svg.querySelector('.logo-linee');
+  [G,D,C,STUFF,linee].forEach(el=>{el.style.opacity='0';el.style.transition='opacity .22s ease';});
+  setTimeout(()=>G.style.opacity='1',200);setTimeout(()=>D.style.opacity='1',460);setTimeout(()=>C.style.opacity='1',720);setTimeout(()=>STUFF.style.opacity='1',980);setTimeout(()=>linee.style.opacity='1',1240);
 })();
 
 const CAL_EVENTS={
-[YY+’-’+MM+’-01’]:[{label:‘A1 — Sync dati Instagram completato’,agent:‘A1’,color:’#4A7C59’}],
-[YY+’-’+MM+’-’+DD]:[{label:‘A1 — BPT Calendar aggiornato’,agent:‘A1’,color:’#4A7C59’}],
+  [YY+'-'+MM+'-01']:[{label:'A1 — Sync dati Instagram completato',agent:'A1',color:'#4A7C59'}],
+  [YY+'-'+MM+'-'+DD]:[{label:'A1 — BPT Calendar aggiornato',agent:'A1',color:'#4A7C59'}],
 };
 let calY=parseInt(YY),calM=parseInt(MM)-1,selDay=null;
-function openCal(){calY=parseInt(YY);calM=parseInt(MM)-1;document.getElementById(‘calOverlay’).classList.add(‘open’);renderCal();}
-function closeCal(){document.getElementById(‘calOverlay’).classList.remove(‘open’);}
-function closeCalIfBg(e){if(e.target===document.getElementById(‘calOverlay’))closeCal();}
-function calNav(d){calM+=d;if(calM<0){calM=11;calY–;}if(calM>11){calM=0;calY++;}renderCal();}
+function openCal(){calY=parseInt(YY);calM=parseInt(MM)-1;document.getElementById('calOverlay').classList.add('open');renderCal();}
+function closeCal(){document.getElementById('calOverlay').classList.remove('open');}
+function closeCalIfBg(e){if(e.target===document.getElementById('calOverlay'))closeCal();}
+function calNav(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
 function renderCal(){
-document.getElementById(‘calMonthLabel’).textContent=MESI_S[calM]+’ ‘+calY;
-const grid=document.getElementById(‘calDays’);grid.innerHTML=’’;
-const fd=(new Date(calY,calM,1).getDay()+6)%7;
-const dim=new Date(calY,calM+1,0).getDate();
-for(let i=0;i<fd;i++){const el=document.createElement(‘div’);el.className=‘cal-day’;grid.appendChild(el);}
-for(let d=1;d<=dim;d++){
-const ds=String(d).padStart(2,‘0’),ms=String(calM+1).padStart(2,‘0’);
-const key=calY+’-’+ms+’-’+ds;
-const evs=CAL_EVENTS[key]||[];
-const el=document.createElement(‘div’);
-const isToday=key===YY+’-’+MM+’-’+DD;
-el.className=‘cal-day’+(isToday?’ today’:’’)+(evs.length?’ has-event’:’’);
-el.innerHTML=’<span class="day-num">’+d+’</span>’;
-if(evs.length){const dots=document.createElement(‘div’);dots.className=‘event-dots’;evs.slice(0,3).forEach(ev=>{const dot=document.createElement(‘div’);dot.className=‘event-dot’;dot.style.background=ev.color;dots.appendChild(dot);});el.appendChild(dots);el.onclick=()=>showEvs(key,evs);}
-grid.appendChild(el);
+  document.getElementById('calMonthLabel').textContent=MESI_S[calM]+' '+calY;
+  const grid=document.getElementById('calDays');grid.innerHTML='';
+  const fd=(new Date(calY,calM,1).getDay()+6)%7;
+  const dim=new Date(calY,calM+1,0).getDate();
+  for(let i=0;i<fd;i++){const el=document.createElement('div');el.className='cal-day';grid.appendChild(el);}
+  for(let d=1;d<=dim;d++){
+    const ds=String(d).padStart(2,'0'),ms=String(calM+1).padStart(2,'0');
+    const key=calY+'-'+ms+'-'+ds;
+    const evs=CAL_EVENTS[key]||[];
+    const el=document.createElement('div');
+    const isToday=key===YY+'-'+MM+'-'+DD;
+    el.className='cal-day'+(isToday?' today':'')+(evs.length?' has-event':'');
+    el.innerHTML='<span class="day-num">'+d+'</span>';
+    if(evs.length){const dots=document.createElement('div');dots.className='event-dots';evs.slice(0,3).forEach(ev=>{const dot=document.createElement('div');dot.className='event-dot';dot.style.background=ev.color;dots.appendChild(dot);});el.appendChild(dots);el.onclick=()=>showEvs(key,evs);}
+    grid.appendChild(el);
+  }
+  if(selDay&&CAL_EVENTS[selDay])showEvs(selDay,CAL_EVENTS[selDay]);
+  else document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>';
 }
-if(selDay&&CAL_EVENTS[selDay])showEvs(selDay,CAL_EVENTS[selDay]);
-else document.getElementById(‘calEventsPanel’).innerHTML=’<span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>’;
-}
-function showEvs(key,evs){selDay=key;const p=key.split(’-’);document.getElementById(‘calEventsPanel’).innerHTML=’<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">’+p[2]+’/’+p[1]+’/’+p[0]+’</div>’+evs.map(ev=>’<div class="cal-event-item"><div class="cal-event-dot" style="background:'+ev.color+'"></div><div><div class="cal-event-text">’+ev.label+’</div><div class="cal-event-agent">’+ev.agent+’</div></div></div>’).join(’’);}
+function showEvs(key,evs){selDay=key;const p=key.split('-');document.getElementById('calEventsPanel').innerHTML='<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">'+p[2]+'/'+p[1]+'/'+p[0]+'</div>'+evs.map(ev=>'<div class="cal-event-item"><div class="cal-event-dot" style="background:'+ev.color+'"></div><div><div class="cal-event-text">'+ev.label+'</div><div class="cal-event-agent">'+ev.agent+'</div></div></div>').join('');}
 
 loadStates();
 </script>
-
 </body>
 </html>
