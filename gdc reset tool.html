@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC Reset Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:#F5F0E8;color:#1C1C1C;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px;}
+h1{font-size:1.1rem;font-weight:800;margin-bottom:4px;}
+.sub{font-size:.75rem;color:#6B6B6B;margin-bottom:24px;}
+.card{background:#FAFAF5;border:1.5px solid #ddd6cb;border-radius:16px;padding:18px;width:100%;max-width:480px;margin-bottom:14px;}
+.card-title{font-weight:700;font-size:.82rem;margin-bottom:10px;}
+.key-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px;border:1px solid #ddd6cb;border-radius:10px;background:#F5F0E8;}
+.key-name{font-size:.72rem;font-weight:700;flex:1;word-break:break-all;}
+.key-val{font-size:.62rem;color:#6B6B6B;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn{padding:7px 14px;border-radius:8px;border:none;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;cursor:pointer;}
+.btn-red{background:#C2193A;color:#fff;}
+.btn-green{background:#4A7C59;color:#fff;}
+.btn-gray{background:#ddd6cb;color:#1C1C1C;}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.log{background:#1C1C1C;color:#4A7C59;font-family:'Courier New',monospace;font-size:.7rem;border-radius:10px;padding:12px;min-height:60px;white-space:pre-wrap;word-break:break-all;margin-top:8px;}
+.empty{color:#6B6B6B;font-size:.75rem;font-style:italic;}
+</style>
+</head>
+<body>
+<h1>GDC Reset Tool</h1>
+<p class="sub">Gestione localStorage — GDC WORKSPACE</p>
+
+<div class="card">
+  <div class="card-title">Chiavi gdc_msg_* nel localStorage</div>
+  <div id="keyList"><span class="empty">Caricamento...</span></div>
+  <div class="actions">
+    <button class="btn btn-red" onclick="resetAll()">↺ Ripristina TUTTO</button>
+    <button class="btn btn-gray" onclick="refresh()">⟳ Aggiorna</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Log operazioni</div>
+  <div class="log" id="log">Pronto.</div>
+</div>
+
+<div class="card">
+  <div class="card-title" style="margin-bottom:6px;">⚠️ Istruzioni</div>
+  <p style="font-size:.72rem;line-height:1.6;color:#6B6B6B;">
+    1. Questo tool funziona solo se aperto dallo <strong>stesso dominio</strong> di GDC WORKSPACE (<code>giandcdalcorso11-coder.github.io</code>).<br><br>
+    2. Se vedi "0 chiavi trovate" significa che il localStorage è già pulito — il problema è altrove.<br><br>
+    3. Dopo il reset, torna su GDC WORKSPACE e riapri il messaggio A6.2.
+  </p>
+</div>
+
+<script>
+const PREFIX = 'gdc_msg_';
+
+function log(msg) {
+  const el = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString('it-IT');
+  el.textContent = '[' + ts + '] ' + msg + '\n' + el.textContent;
+}
+
+function getGdcKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(PREFIX)) keys.push(k);
+  }
+  return keys;
+}
+
+function refresh() {
+  const keys = getGdcKeys();
+  const el = document.getElementById('keyList');
+  if (keys.length === 0) {
+    el.innerHTML = '<span class="empty">0 chiavi trovate — localStorage già pulito.</span>';
+    log('Nessuna chiave gdc_msg_* trovata.');
+    return;
+  }
+  el.innerHTML = keys.map(k => {
+    const val = localStorage.getItem(k) || '';
+    const preview = val.substring(0, 60).replace(/\n/g, ' ');
+    return `<div class="key-row">
+      <div>
+        <div class="key-name">${k}</div>
+        <div class="key-val">${preview}${val.length > 60 ? '…' : ''}</div>
+      </div>
+      <button class="btn btn-red" onclick="resetKey('${k}')">Reset</button>
+    </div>`;
+  }).join('');
+  log(keys.length + ' chiave/i trovata/e: ' + keys.join(', '));
+}
+
+function resetKey(key) {
+  localStorage.removeItem(key);
+  log('Rimossa: ' + key);
+  refresh();
+}
+
+function resetAll() {
+  const keys = getGdcKeys();
+  if (keys.length === 0) { log('Nessuna chiave da rimuovere.'); return; }
+  keys.forEach(k => localStorage.removeItem(k));
+  log('Rimosse ' + keys.length + ' chiave/i: ' + keys.join(', '));
+  refresh();
+}
+
+refresh();
+</script>
+</body>
+</html>
