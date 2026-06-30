@@ -1,0 +1,35 @@
+name: IG Token Refresh
+
+on:
+  schedule:
+    - cron: '0 6 */50 * *'
+  workflow_dispatch: {}
+
+jobs:
+  refresh-token:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pynacl
+
+      - name: Run IG token refresh
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          META_APP_ID:     ${{ secrets.META_APP_ID }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          GH_PAT_REPO:     ${{ secrets.GH_PAT_REPO }}
+          GH_OWNER:        giandcdalcorso11-coder
+          GH_REPO_NAME:    GDC-DASHBOARD
+          SUPABASE_URL:    ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:    ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/ig_token_refresh.py
