@@ -1,4 +1,4 @@
-name: IG Token Refresh
+name: IG_Token_Refresh
 
 on:
   schedule:
