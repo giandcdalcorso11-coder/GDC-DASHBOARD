@@ -188,8 +188,9 @@ def fetch_tagged_posts():
     Impressioni e reach non disponibili per media altrui via API — restano vuoti.
     """
     print("  → Fetch post taggati (repost)...")
-    # owner non supportato da /tags — solo campi base disponibili per media altrui
-    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count"
+    # Proviamo prima con fields minimi per diagnosticare se il 400
+    # e causato dai fields o dall'endpoint/permessi
+    fields = "id,timestamp,media_type,permalink"
     tagged = []
     url = f"{IG_USER_ID}/tags"
     params = {"fields": fields, "limit": 100}
@@ -289,26 +290,61 @@ def drive_download_excel(service, file_id, mime_type, dest_path):
     print(f"    Excel scaricato: {dest_path}")
 
 
-def drive_download_stories_json(service, folder_id):
-    """Scarica il JSON delle stories archiviate dallo script daily per il mese target."""
-    filename = f"stories_{MESE_IT.lower()}_{ANNO}.json"
-    file_id, _ = drive_find_file(service, filename, folder_id)
-    if not file_id:
-        print(f"    Nessun file stories trovato: {filename}")
+def read_stories_from_sheet(drive_service):
+    """
+    Legge le stories del mese target dal tab Stories_{MESE_IT}_{ANNO}
+    del Google Sheet A1 (stesso Sheet in cui le scrive il daily script).
+    Restituisce lista di dict compatibili con compile_sheet_stories().
+    """
+    from googleapiclient.discovery import build as gbuild
+    from google.oauth2.service_account import Credentials as Creds
+
+    tab_name = f"Stories_{MESE_IT}_{ANNO}"   # es. Stories_Giugno_2026
+    print(f"  → Leggo stories dal Sheet tab '{tab_name}'...")
+
+    # Riusa le credenziali già disponibili
+    creds_b64  = os.environ["GOOGLE_CREDENTIALS"]
+    creds_json = json.loads(base64.b64decode(creds_b64))
+    scopes     = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    creds      = Creds.from_service_account_info(creds_json, scopes=scopes)
+    sheets_svc = gbuild("sheets", "v4", credentials=creds)
+
+    SHEET_ID = "1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30"
+
+    try:
+        result = sheets_svc.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range=f"'{tab_name}'!A1:M"
+        ).execute()
+    except Exception as e:
+        print(f"    Tab '{tab_name}' non trovato o non accessibile: {e}")
         return []
 
-    from googleapiclient.http import MediaIoBaseDownload
-    import io
-    request = service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while not done:
-        _, done = downloader.next_chunk()
-    fh.seek(0)
-    data = json.loads(fh.read())
-    print(f"    Caricate {len(data)} stories dall'archivio")
-    return data
+    rows = result.get("values", [])
+    if len(rows) < 2:
+        print(f"    Tab '{tab_name}' vuoto o solo header")
+        return []
+
+    headers = rows[0]
+    stories = []
+    for row in rows[1:]:
+        # Padda la riga se ha meno colonne dell'header
+        padded = row + [""] * (len(headers) - len(row))
+        s = dict(zip(headers, padded))
+        # Normalizza i tipi numerici
+        for field in ("impressions", "reach", "replies", "taps_forward",
+                      "taps_back", "exits", "profile_visits", "follows"):
+            try:
+                s[field] = int(s[field]) if s.get(field) else 0
+            except (ValueError, TypeError):
+                s[field] = 0
+        # Normalizza timestamp per parse_ts()
+        if s.get("timestamp"):
+            s["timestamp"] = s["timestamp"]
+        stories.append(s)
+
+    print(f"    Caricate {len(stories)} stories dal tab")
+    return stories
 
 
 def drive_upload_excel(service, local_path, folder_id, existing_id=None):
@@ -318,7 +354,13 @@ def drive_upload_excel(service, local_path, folder_id, existing_id=None):
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     if existing_id:
-        service.files().update(fileId=existing_id, media_body=media).execute()
+        # Specifica mimeType nel body per forzare la conversione in Google Sheets nativo
+        # Senza questo Google Drive restituisce 500 quando il file è già nativo
+        service.files().update(
+            fileId=existing_id,
+            body={"mimeType": "application/vnd.google-apps.spreadsheet"},
+            media_body=media
+        ).execute()
         print(f"    Foglio Google aggiornato su Drive (ID: {existing_id})")
     else:
         meta = {
@@ -738,8 +780,8 @@ def main():
     # 4. Setup Drive
     drive_service, _ = get_drive_service()
 
-    # 5. Carica stories archiviate dallo script daily
-    stories = drive_download_stories_json(drive_service, DRIVE_FOLDER)
+    # 5. Legge stories dal tab Google Sheet (salvate dallo script daily)
+    stories = read_stories_from_sheet(drive_service)
 
     # 6. Scarica Excel esistente (o parti da zero)
     with tempfile.TemporaryDirectory() as tmpdir:
