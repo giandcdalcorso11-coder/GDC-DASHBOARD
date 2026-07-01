@@ -1,13 +1,14 @@
 """
 GDC IA TEAM — Script A1 Monthly
-Ogni 1° del mese alle 08:00 ora italiana.
+Ogni 2° del mese alle 08:00 ora italiana.
 
 Flusso:
-1. Instagram Graph API → metriche post + reel + stories del mese precedente
-2. Compila Instagram_Analytics_GDC.xlsx (5 sheet)
-3. Carica su Google Drive (cartella A1.2)
-4. Aggiorna Supabase → stato A1 = done
-5. Invia Web Push notification
+1. Instagram Graph API → metriche post + reel del mese precedente (originali)
+2. Instagram Graph API → post taggati da altri account nel mese precedente (repost)
+3. Compila Instagram_Analytics_GDC.xlsx (5 sheet)
+4. Carica su Google Drive (cartella A1.2)
+5. Aggiorna Supabase → stato A1 = done
+6. Invia Web Push notification
 
 Secrets GitHub richiesti:
   IG_ACCESS_TOKEN       — token a lunga durata Instagram Graph API
@@ -53,27 +54,27 @@ SUPA_KEY     = os.environ["SUPABASE_KEY"]
 VAPID_PRIV   = os.environ["VAPID_PRIVATE_KEY"]
 VAPID_EMAIL  = os.environ["VAPID_EMAIL"]
 
-EXCEL_FILENAME       = "Instagram_Analytics_GDC"        # nome senza estensione — file nativo Google
-EXCEL_FILENAME_LOCAL = "Instagram_Analytics_GDC.xlsx"    # nome locale temporaneo con estensione
+EXCEL_FILENAME       = "Instagram_Analytics_GDC"
+EXCEL_FILENAME_LOCAL = "Instagram_Analytics_GDC.xlsx"
 
 # Mese precedente (quello da analizzare)
-today        = date.today()
-target       = today - relativedelta(months=1)
-MESE_NUM     = target.month
-ANNO         = target.year
-MESE_IT      = [
+today         = date.today()
+target        = today - relativedelta(months=1)
+MESE_NUM      = target.month
+ANNO          = target.year
+MESE_IT       = [
     "", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
     "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
 ][MESE_NUM]
-MESE_LABEL   = f"{MESE_IT} {ANNO}"
-PRIMO_GIORNO = date(ANNO, MESE_NUM, 1)
+MESE_LABEL    = f"{MESE_IT} {ANNO}"
+PRIMO_GIORNO  = date(ANNO, MESE_NUM, 1)
 ULTIMO_GIORNO = date(ANNO, MESE_NUM, monthrange(ANNO, MESE_NUM)[1])
 
 # Palette colori GDC
-COLOR_GRAY_SEP  = "D3D3D3"   # separatore mesi
-COLOR_YELLOW    = "FFD700"   # categorie da confermare
-COLOR_HEADER    = "1C1C1C"   # header nero
-COLOR_WHITE     = "FFFFFF"
+COLOR_GRAY_SEP = "D3D3D3"
+COLOR_YELLOW   = "FFD700"
+COLOR_HEADER   = "1C1C1C"
+COLOR_WHITE    = "FFFFFF"
 
 print(f"▶ A1 Monthly — {MESE_LABEL}")
 print(f"  Periodo: {PRIMO_GIORNO} → {ULTIMO_GIORNO}")
@@ -93,12 +94,10 @@ def ig_get(endpoint, params={}):
 def fetch_post_insights(media_id, media_type):
     """
     Recupera metriche avanzate per un singolo post/reel via /insights.
-    Le metriche disponibili variano per tipo di media.
+    Solo per media propri — non disponibile per media di altri account.
     """
-    # Metriche per IMAGE/CAROUSEL_ALBUM
     if media_type in ("IMAGE", "CAROUSEL_ALBUM"):
         metric = "impressions,reach,saved,shares,likes,comments,follows"
-    # Metriche per VIDEO/REELS
     elif media_type in ("VIDEO", "REELS"):
         metric = "impressions,reach,saved,shares,likes,comments,follows,plays"
     else:
@@ -110,8 +109,7 @@ def fetch_post_insights(media_id, media_type):
             "period": "lifetime"
         })
         return {m["name"]: m["values"][0]["value"] for m in ins.get("data", [])}
-    except Exception as e:
-        # Prova con metriche minime se quelle avanzate falliscono
+    except Exception:
         try:
             ins = ig_get(f"{media_id}/insights", {
                 "metric": "impressions,reach,saved,shares",
@@ -124,11 +122,10 @@ def fetch_post_insights(media_id, media_type):
 
 def fetch_posts():
     """
-    Recupera tutti i post/reel del mese target.
+    Recupera tutti i post/reel ORIGINALI del mese target da /me/media.
     Paginazione automatica finché non usciamo dal periodo.
     """
-    print("  → Fetch post/reel...")
-    # Solo campi base nel media endpoint — le metriche si prendono da /insights
+    print("  → Fetch post originali...")
     fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,username"
     posts = []
     url = f"{IG_USER_ID}/media"
@@ -143,17 +140,15 @@ def fetch_posts():
             item_date = ts.date()
 
             if item_date > ULTIMO_GIORNO:
-                continue  # ancora nel mese corrente, salta
+                continue
             if item_date < PRIMO_GIORNO:
-                print(f"    Trovati {len(posts)} post nel periodo")
+                print(f"    Trovati {len(posts)} post originali nel periodo")
                 return posts
 
-            # Recupera metriche avanzate per ogni media
             metrics = fetch_post_insights(item["id"], item.get("media_type", "IMAGE"))
             item.update(metrics)
             posts.append(item)
 
-        # Paginazione
         next_url = data.get("paging", {}).get("next")
         if not next_url:
             break
@@ -162,26 +157,64 @@ def fetch_posts():
         params = dict(urlparse.parse_qsl(parsed.query))
         url = f"{IG_USER_ID}/media"
 
-    print(f"    Trovati {len(posts)} post nel periodo")
+    print(f"    Trovati {len(posts)} post originali nel periodo")
     return posts
 
 
-def fetch_stories_archive():
+def fetch_tagged_posts():
     """
-    Recupera stories dal Drive (accumulo giornaliero dello script daily).
-    Restituisce le top 10 per visualizzazioni del mese target.
+    Recupera i post di altri account che taggano @giandcdalcorso nel mese target.
+    Usa l'endpoint /{user-id}/tags (richiede instagram_manage_insights).
+    Impressioni e reach non disponibili per media altrui via API — restano vuoti.
     """
-    print("  → Carico stories da Drive archive...")
-    # Le stories sono già salvate dallo script daily in JSON su Drive
-    # Vengono caricate nella funzione drive_download_stories()
-    return []  # placeholder — popolato dopo il download Drive
+    print("  → Fetch post taggati (repost)...")
+    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,owner"
+    tagged = []
+    url = f"{IG_USER_ID}/tags"
+    params = {"fields": fields, "limit": 100}
+
+    while True:
+        try:
+            data = ig_get(url, params)
+        except Exception as e:
+            print(f"    /tags non disponibile: {e}")
+            return []
+
+        items = data.get("data", [])
+        if not items:
+            break
+
+        for item in items:
+            ts = datetime.fromisoformat(item["timestamp"].replace("Z", "+00:00"))
+            item_date = ts.date()
+
+            if item_date > ULTIMO_GIORNO:
+                continue
+            if item_date < PRIMO_GIORNO:
+                print(f"    Trovati {len(tagged)} post taggati nel periodo")
+                return tagged
+
+            # Marca esplicitamente come repost — impressioni/reach non disponibili
+            item["_tipo_autore"] = "REPOST"
+            tagged.append(item)
+
+        next_url = data.get("paging", {}).get("next")
+        if not next_url:
+            break
+        import urllib.parse as urlparse
+        parsed = urlparse.urlparse(next_url)
+        params = dict(urlparse.parse_qsl(parsed.query))
+        url = f"{IG_USER_ID}/tags"
+
+    print(f"    Trovati {len(tagged)} post taggati nel periodo")
+    return tagged
 
 
 # ─── 2. GOOGLE DRIVE ────────────────────────────────────────────────────────────
 
 def get_drive_service():
     """Crea servizio Google Drive da credenziali service account."""
-    creds_b64 = os.environ["GOOGLE_CREDENTIALS"]
+    creds_b64  = os.environ["GOOGLE_CREDENTIALS"]
     creds_json = json.loads(base64.b64decode(creds_b64))
     scopes = [
         "https://www.googleapis.com/auth/drive",
@@ -192,10 +225,7 @@ def get_drive_service():
 
 
 def drive_find_file(service, name, folder_id):
-    """
-    Trova un file per nome in una cartella Drive.
-    Ritorna (id, mimeType) o (None, None).
-    """
+    """Trova un file per nome in una cartella Drive. Ritorna (id, mimeType) o (None, None)."""
     query = f"name='{name}' and '{folder_id}' in parents and trashed=false"
     results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
     files = results.get("files", [])
@@ -214,10 +244,7 @@ def drive_find_file(service, name, folder_id):
 
 
 def drive_download_excel(service, file_id, mime_type, dest_path):
-    """
-    Scarica il file Excel dal Drive.
-    Se e un Foglio Google nativo, usa Export in formato xlsx.
-    """
+    """Scarica il file Excel dal Drive. Se Foglio Google nativo, esporta in xlsx."""
     from googleapiclient.http import MediaIoBaseDownload
     import io
 
@@ -242,10 +269,7 @@ def drive_download_excel(service, file_id, mime_type, dest_path):
 
 
 def drive_download_stories_json(service, folder_id):
-    """
-    Scarica tutti i file stories_[mese]_[anno].json del mese target.
-    Restituisce lista di stories aggregate.
-    """
+    """Scarica il JSON delle stories archiviate dallo script daily per il mese target."""
     filename = f"stories_{MESE_IT.lower()}_{ANNO}.json"
     file_id, _ = drive_find_file(service, filename, folder_id)
     if not file_id:
@@ -267,25 +291,19 @@ def drive_download_stories_json(service, folder_id):
 
 
 def drive_upload_excel(service, local_path, folder_id, existing_id=None):
-    """
-    Carica (o aggiorna) il file Excel su Drive convertendolo in Foglio Google nativo.
-    La conversione avviene passando mimeType nativo nel file_metadata.
-    I file nativi Google sono leggibili direttamente dagli agenti successivi via Drive API.
-    """
+    """Carica (o aggiorna) il file Excel su Drive come Foglio Google nativo."""
     media = MediaFileUpload(
         local_path,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     if existing_id:
-        # Aggiorna file esistente — Drive mantiene il formato nativo
         service.files().update(fileId=existing_id, media_body=media).execute()
         print(f"    Foglio Google aggiornato su Drive (ID: {existing_id})")
     else:
-        # Crea nuovo file con conversione automatica in Foglio Google nativo
         meta = {
-            "name": EXCEL_FILENAME,          # senza estensione
+            "name": EXCEL_FILENAME,
             "parents": [folder_id],
-            "mimeType": "application/vnd.google-apps.spreadsheet"  # forza conversione
+            "mimeType": "application/vnd.google-apps.spreadsheet"
         }
         f = service.files().create(body=meta, media_body=media, fields="id").execute()
         print(f"    Foglio Google creato su Drive (ID: {f['id']})")
@@ -352,7 +370,6 @@ def get_or_create_workbook(local_path):
     """Apre l'Excel esistente o ne crea uno nuovo con i 5 sheet."""
     if os.path.exists(local_path):
         wb = openpyxl.load_workbook(local_path)
-        # Assicura che tutti gli sheet esistano
         for name in SHEET_NAMES:
             if name not in wb.sheetnames:
                 wb.create_sheet(name)
@@ -362,7 +379,6 @@ def get_or_create_workbook(local_path):
         wb.remove(wb.active)
         for name in SHEET_NAMES:
             wb.create_sheet(name)
-        # Scrivi gli header
         for sheet_name, headers in HEADERS.items():
             ws = wb[sheet_name]
             ws.append(headers)
@@ -383,100 +399,93 @@ def _style_header_row(ws, headers):
         ws.column_dimensions[get_column_letter(col)].width = 18
 
 
-def _add_separator_row(ws, n_cols):
-    """Riga grigia separatore tra mesi."""
-    ws.append([""] * n_cols)
-    gray_fill = PatternFill("solid", fgColor=COLOR_GRAY_SEP)
-    row = ws.max_row
-    for col in range(1, n_cols + 1):
-        ws.cell(row=row, column=col).fill = gray_fill
-
-
-def find_insert_row(ws, mese_label):
-    """
-    Trova la riga di inserimento: sopra i dati del mese più recente già presente.
-    Struttura: header (row 1) → mese più recente → separatore → mese precedente → ...
-    Se il mese esiste già, ritorna None (skip).
-    """
-    # Controlla se il mese esiste già
-    for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
-        if row[0] == mese_label:
-            return None  # già presente
-
-    # Inserisci dopo l'header (row 1) — i nuovi dati vanno sempre in cima
-    return 2
-
-
 def compile_sheet_post(wb, posts):
-    """Compila Sheet 2 — Insights Post."""
+    """
+    Compila Sheet 2 — Insights Post.
+    Riceve la lista unificata di originali + repost già mergiata.
+    Per i repost: impressioni e reach vuoti (non disponibili via API per media altrui).
+    Per gli originali: tutte le metriche da /insights.
+    Celle categoria gialle solo per ORIGINALE.
+    """
     ws = wb["Insights Post"]
     headers = HEADERS["Insights Post"]
 
-    # Controlla se il mese esiste già
     for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
         if row[0] == MESE_LABEL:
             print(f"    Sheet Post: {MESE_LABEL} già presente, skip")
             return
 
-    # Ordina per data decrescente
-    posts_sorted = sorted(
-        posts,
-        key=lambda p: p.get("timestamp", ""),
-        reverse=True
-    )
+    posts_sorted = sorted(posts, key=lambda p: p.get("timestamp", ""), reverse=True)
 
-    # Trova riga di inserimento (dopo header, prima degli altri mesi)
     insert_at = 2
-
     rows_to_insert = []
     yellow_fill = PatternFill("solid", fgColor=COLOR_YELLOW)
 
     for p in posts_sorted:
         data_str, ora_str = parse_ts(p.get("timestamp", ""))
         tipo_contenuto = media_type_to_gdc(p.get("media_type", ""))
-        username       = p.get("username", p.get("owner", {}).get("username", ""))
-        tipo_autore    = "ORIGINALE" if username == "giandcdalcorso" else "REPOST"
 
-        views     = p.get("impressions", p.get("views", 0)) or 0
-        reach     = p.get("reach") if tipo_autore == "ORIGINALE" else None
-        likes     = p.get("like_count", 0) or 0
-        comments  = p.get("comments_count", 0) or 0
-        saved     = p.get("saved", 0) or 0
-        shares    = p.get("shares", 0) or 0
-        follows   = p.get("follows", 0) or 0
+        # Determina tipo autore:
+        # - _tipo_autore="REPOST" → taggato da altro account (fetch_tagged_posts)
+        # - username == "giandcdalcorso" → originale (fetch_posts)
+        # - altrimenti → originale (fallback sicuro)
+        if p.get("_tipo_autore") == "REPOST":
+            tipo_autore = "REPOST"
+        else:
+            username    = p.get("username", p.get("owner", {}).get("username", ""))
+            tipo_autore = "ORIGINALE" if (not username or username == "giandcdalcorso") else "REPOST"
 
-        interactions = likes + comments + saved + shares
-        er           = round(interactions / reach, 4) if reach else ""
-        viralita     = round((shares / reach) * 100, 4) if reach else ""
-        sentiment    = round((saved + shares) / likes, 4) if likes > 0 else ""
+        if tipo_autore == "REPOST":
+            # Per i repost le impressioni e reach non sono disponibili via API
+            views  = ""
+            reach  = ""
+            saved  = ""
+            shares = p.get("shares", "") or ""
+            follows = ""
+        else:
+            views  = p.get("impressions", p.get("views", 0)) or 0
+            reach  = p.get("reach") or ""
+            saved  = p.get("saved", 0) or 0
+            shares = p.get("shares", 0) or 0
+            follows = p.get("follows", 0) or 0
+
+        likes    = p.get("like_count", 0) or 0
+        comments = p.get("comments_count", 0) or 0
+
+        # KPI calcolati solo per originali con reach
+        if tipo_autore == "ORIGINALE" and reach:
+            interactions = likes + comments + (saved or 0) + (shares or 0)
+            er           = round(interactions / reach, 4)
+            viralita     = round(((shares or 0) / reach) * 100, 4)
+        else:
+            interactions = likes + comments + (saved or 0) + (shares or 0) if tipo_autore == "REPOST" else likes + comments + (saved or 0) + (shares or 0)
+            er           = ""
+            viralita     = ""
+
+        sentiment = round(((saved or 0) + (shares or 0)) / likes, 4) if (tipo_autore == "ORIGINALE" and likes > 0) else ""
         collaborazione = "Sì" if tipo_autore == "REPOST" else "No"
 
         rows_to_insert.append([
             MESE_LABEL, data_str, ora_str, tipo_contenuto, tipo_autore,
             p.get("caption", "")[:500] if p.get("caption") else "",
-            "",  # Categoria Primaria — da confermare
-            "",  # Categoria Secondaria — da confermare
+            "",  # Categoria Primaria — compila tu
+            "",  # Categoria Secondaria — compila tu
             p.get("permalink", ""),
-            views, reach if reach is not None else "",
+            views, reach,
             likes, comments, saved, shares,
             interactions, er, viralita, sentiment,
             follows, collaborazione, ""
         ])
 
-    # Inserisci separatore + righe (dal basso verso l'alto per mantenere l'ordine)
-    # Prima il separatore, poi le righe dati
-    sep_row = [""] * len(headers)
     ws.insert_rows(insert_at, amount=len(rows_to_insert) + 1)
 
     for i, row_data in enumerate(rows_to_insert):
         r = insert_at + i
         for j, val in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=j, value=val)
-            # Celle gialle per categorie ORIGINALE
             if j in (7, 8) and row_data[4] == "ORIGINALE":
                 cell.fill = yellow_fill
 
-    # Riga separatore grigia dopo i dati del nuovo mese
     gray_fill = PatternFill("solid", fgColor=COLOR_GRAY_SEP)
     sep_row_num = insert_at + len(rows_to_insert)
     for col in range(1, len(headers) + 1):
@@ -496,7 +505,6 @@ def compile_sheet_stories(wb, stories):
             print(f"    Sheet Stories: {MESE_LABEL} già presente, skip")
             return
 
-    # Top 10 per visualizzazioni
     top10 = sorted(stories, key=lambda s: s.get("impressions", 0), reverse=True)[:10]
 
     insert_at = 2
@@ -505,22 +513,21 @@ def compile_sheet_stories(wb, stories):
     for i, s in enumerate(top10):
         data_str, ora_str = parse_ts(s.get("timestamp", ""))
         r = insert_at + i
-        ws.cell(row=r, column=1, value=MESE_LABEL)
-        ws.cell(row=r, column=2, value=data_str)
-        ws.cell(row=r, column=3, value=ora_str)
-        ws.cell(row=r, column=4, value=s.get("permalink", ""))
-        ws.cell(row=r, column=5, value=s.get("impressions", 0))
-        ws.cell(row=r, column=6, value=s.get("reach", ""))
-        ws.cell(row=r, column=7, value=s.get("like_count", 0))
-        ws.cell(row=r, column=8, value=s.get("shares", 0))
-        ws.cell(row=r, column=9, value=s.get("replies", 0))
+        ws.cell(row=r, column=1,  value=MESE_LABEL)
+        ws.cell(row=r, column=2,  value=data_str)
+        ws.cell(row=r, column=3,  value=ora_str)
+        ws.cell(row=r, column=4,  value=s.get("permalink", ""))
+        ws.cell(row=r, column=5,  value=s.get("impressions", 0))
+        ws.cell(row=r, column=6,  value=s.get("reach", ""))
+        ws.cell(row=r, column=7,  value=s.get("like_count", 0))
+        ws.cell(row=r, column=8,  value=s.get("shares", 0))
+        ws.cell(row=r, column=9,  value=s.get("replies", 0))
         ws.cell(row=r, column=10, value=s.get("navigation", 0))
         ws.cell(row=r, column=11, value=s.get("taps_forward", 0))
         ws.cell(row=r, column=12, value=s.get("profile_visits", 0))
         ws.cell(row=r, column=13, value=s.get("follows", 0))
         ws.cell(row=r, column=14, value="")
 
-    # Separatore
     gray_fill = PatternFill("solid", fgColor=COLOR_GRAY_SEP)
     sep_row = insert_at + len(top10)
     for col in range(1, len(headers) + 1):
@@ -539,10 +546,13 @@ def compile_sheet_panoramica(wb, posts, stories):
             print(f"    Sheet Panoramica: {MESE_LABEL} già presente, skip")
             return
 
-    originali = [p for p in posts if p.get("username", "") == "giandcdalcorso"]
-    tot_views_post = sum(p.get("impressions", 0) or 0 for p in posts)
+    originali = [p for p in posts if p.get("_tipo_autore") != "REPOST" and
+                 p.get("username", "giandcdalcorso") == "giandcdalcorso"]
+    repost    = [p for p in posts if p.get("_tipo_autore") == "REPOST"]
+
+    tot_views_post    = sum(p.get("impressions", 0) or 0 for p in originali)
     tot_views_stories = sum(s.get("impressions", 0) or 0 for s in stories)
-    tot_interactions = sum(
+    tot_interactions  = sum(
         (p.get("like_count", 0) or 0) +
         (p.get("comments_count", 0) or 0) +
         (p.get("saved", 0) or 0) +
@@ -555,25 +565,29 @@ def compile_sheet_panoramica(wb, posts, stories):
         MESE_LABEL,
         date.today().strftime("%d/%m/%Y"),
         periodo,
-        "",  # Post Totali Profilo — non disponibile via API senza permessi extra
-        "",  # Follower Totali — idem
-        "",  # Following — idem
+        "",  # Post Totali Profilo — non disponibile via API
+        "",  # Follower Totali — non disponibile via API
+        "",  # Following — non disponibile via API
         tot_views_post + tot_views_stories,
         tot_interactions,
         len(originali),
         len(stories),
-        ""
+        f"Repost taggati: {len(repost)}"
     ]
 
     ws.insert_rows(2, amount=1)
     for j, val in enumerate(row_data, 1):
         ws.cell(row=2, column=j, value=val)
 
-    print(f"    Sheet Panoramica: riga {MESE_LABEL} inserita")
+    print(f"    Sheet Panoramica: riga {MESE_LABEL} inserita (originali: {len(originali)}, repost: {len(repost)})")
 
 
 def compile_sheet_kpi(wb, posts, stories):
-    """Compila Sheet 4 — KPI Medi."""
+    """
+    Compila Sheet 4 — KPI Medi.
+    I KPI sono calcolati solo sui post ORIGINALI con reach disponibile.
+    I repost non entrano nei calcoli (reach/impressioni non disponibili via API).
+    """
     ws = wb["KPI Medi"]
 
     for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
@@ -581,7 +595,8 @@ def compile_sheet_kpi(wb, posts, stories):
             print(f"    Sheet KPI: {MESE_LABEL} già presente, skip")
             return
 
-    originali = [p for p in posts if p.get("username", "") == "giandcdalcorso"]
+    originali = [p for p in posts if p.get("_tipo_autore") != "REPOST" and
+                 p.get("username", "giandcdalcorso") == "giandcdalcorso"]
     con_reach  = [p for p in originali if p.get("reach")]
 
     er_vals       = []
@@ -596,8 +611,8 @@ def compile_sheet_kpi(wb, posts, stories):
 
     sentiment_vals = []
     for p in originali:
-        likes = p.get("like_count", 0) or 0
-        saved = p.get("saved", 0) or 0
+        likes  = p.get("like_count", 0) or 0
+        saved  = p.get("saved", 0) or 0
         shares = p.get("shares", 0) or 0
         if likes > 0:
             sentiment_vals.append(round((saved + shares) / likes, 4))
@@ -662,19 +677,24 @@ def send_push(title, body):
 # ─── MAIN ─────────────────────────────────────────────────────────────────────────
 
 def main():
-    # Aggiorna stato → working
     supabase_update_state("a1", "working")
 
-    # 1. Fetch dati Instagram
-    posts = fetch_posts()
+    # 1. Fetch post originali dal profilo
+    posts_originali = fetch_posts()
 
-    # 2. Setup Drive
+    # 2. Fetch post taggati da altri account (repost)
+    posts_repost = fetch_tagged_posts()
+
+    # 3. Unifica: originali + repost, ordinati per timestamp
+    all_posts = posts_originali + posts_repost
+
+    # 4. Setup Drive
     drive_service, _ = get_drive_service()
 
-    # 3. Carica stories archiviate dallo script daily
+    # 5. Carica stories archiviate dallo script daily
     stories = drive_download_stories_json(drive_service, DRIVE_FOLDER)
 
-    # 4. Scarica Excel esistente (o parti da zero)
+    # 6. Scarica Excel esistente (o parti da zero)
     with tempfile.TemporaryDirectory() as tmpdir:
         local_excel = os.path.join(tmpdir, EXCEL_FILENAME_LOCAL)
 
@@ -684,34 +704,35 @@ def main():
 
         wb = get_or_create_workbook(local_excel)
 
-        # 5. Compila i 4 sheet (il 5° è di A2/A3, non si tocca)
-        post_rows = compile_sheet_post(wb, posts)
+        # 7. Compila i 4 sheet
+        compile_sheet_post(wb, all_posts)
         compile_sheet_stories(wb, stories)
-        compile_sheet_panoramica(wb, posts, stories)
-        compile_sheet_kpi(wb, posts, stories)
+        compile_sheet_panoramica(wb, all_posts, stories)
+        compile_sheet_kpi(wb, all_posts, stories)
 
-        # 6. Salva e carica su Drive
+        # 8. Salva e carica su Drive
         wb.save(local_excel)
         drive_upload_excel(drive_service, local_excel, DRIVE_FOLDER, existing_id)
-    # 7. Aggiorna Supabase → done
+
+    # 9. Aggiorna Supabase → done
     supabase_update_state("a1", "done", {
         "mese": MESE_LABEL,
-        "n_post": len(posts),
+        "n_post": len(posts_originali),
+        "n_repost": len(posts_repost),
         "n_stories": len(stories),
         "drive_folder": DRIVE_FOLDER
     })
 
-    # 8. Push notification → sblocca A2
+    # 10. Push notification → sblocca A2
     supabase_update_state("a2", "ready")
     send_push(
         "✅ A1 completato",
         f"Analytics {MESE_LABEL} pronti. Apri A2 per generare il report."
     )
 
-    originali = len([p for p in posts if p.get("username", "") == "giandcdalcorso"])
-    repost    = len(posts) - originali
     print(f"\n✅ A1 Monthly completato — {MESE_LABEL}")
-    print(f"   Post: {len(posts)} (ORIGINALE: {originali} | REPOST: {repost})")
+    print(f"   Post originali: {len(posts_originali)}")
+    print(f"   Post taggati (repost): {len(posts_repost)}")
     print(f"   Stories in archivio: {len(stories)}")
 
 
