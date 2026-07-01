@@ -91,6 +91,26 @@ def ig_get(endpoint, params={}):
     return r.json()
 
 
+def fetch_profile_data():
+    """
+    Recupera dati aggregati del profilo: follower, following, media count.
+    Richiede instagram_basic — disponibile con il token attuale.
+    """
+    print("  → Fetch dati profilo...")
+    try:
+        data = ig_get(IG_USER_ID, {
+            "fields": "followers_count,follows_count,media_count,name"
+        })
+        followers = data.get("followers_count", "")
+        following = data.get("follows_count", "")
+        media_count = data.get("media_count", "")
+        print(f"    Profilo: {followers} follower, {following} following, {media_count} post totali")
+        return followers, following, media_count
+    except Exception as e:
+        print(f"    Profilo non disponibile: {e}")
+        return "", "", ""
+
+
 def fetch_post_insights(media_id, media_type):
     """
     Recupera metriche avanzate per un singolo post/reel via /insights.
@@ -168,7 +188,8 @@ def fetch_tagged_posts():
     Impressioni e reach non disponibili per media altrui via API — restano vuoti.
     """
     print("  → Fetch post taggati (repost)...")
-    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,owner"
+    # owner non supportato da /tags — solo campi base disponibili per media altrui
+    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count"
     tagged = []
     url = f"{IG_USER_ID}/tags"
     params = {"fields": fields, "limit": 100}
@@ -410,10 +431,30 @@ def compile_sheet_post(wb, posts):
     ws = wb["Insights Post"]
     headers = HEADERS["Insights Post"]
 
-    for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
+    # Controlla se il mese esiste già
+    mese_rows = []
+    for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
         if row[0] == MESE_LABEL:
+            mese_rows.append(i)
+
+    if mese_rows:
+        # Controlla se ci sono repost già inseriti
+        repost_presenti = any(
+            ws.cell(row=r, column=5).value == "REPOST"
+            for r in mese_rows
+        )
+        repost_in_arrivo = any(p.get("_tipo_autore") == "REPOST" for p in posts)
+
+        if repost_presenti or not repost_in_arrivo:
             print(f"    Sheet Post: {MESE_LABEL} già presente, skip")
             return
+        else:
+            # Mese presente ma senza repost e ora ne abbiamo — cancella e reinserisce
+            print(f"    Sheet Post: {MESE_LABEL} presente senza repost — forzo reinserimento")
+            # Trova anche la riga separatore (grigia) dopo il blocco mese
+            last_row = max(mese_rows)
+            # Cancella dal primo al separatore incluso
+            ws.delete_rows(min(mese_rows), last_row - min(mese_rows) + 2)
 
     posts_sorted = sorted(posts, key=lambda p: p.get("timestamp", ""), reverse=True)
 
@@ -537,14 +578,15 @@ def compile_sheet_stories(wb, stories):
     return top10
 
 
-def compile_sheet_panoramica(wb, posts, stories):
+def compile_sheet_panoramica(wb, posts, stories, profile_data=None):
     """Compila Sheet 1 — Panoramica Profilo."""
     ws = wb["Panoramica Profilo"]
 
-    for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
+    # Cancella e reinserisce sempre — dati profilo e totali possono cambiare
+    for i, row in enumerate(ws.iter_rows(min_row=2, max_col=1, values_only=True), start=2):
         if row[0] == MESE_LABEL:
-            print(f"    Sheet Panoramica: {MESE_LABEL} già presente, skip")
-            return
+            ws.delete_rows(i, 1)
+            break
 
     originali = [p for p in posts if p.get("_tipo_autore") != "REPOST" and
                  p.get("username", "giandcdalcorso") == "giandcdalcorso"]
@@ -561,13 +603,15 @@ def compile_sheet_panoramica(wb, posts, stories):
     )
     periodo = f"{PRIMO_GIORNO.strftime('%d/%m/%Y')} → {ULTIMO_GIORNO.strftime('%d/%m/%Y')}"
 
+    followers, following, media_count = profile_data if profile_data else ("", "", "")
+
     row_data = [
         MESE_LABEL,
         date.today().strftime("%d/%m/%Y"),
         periodo,
-        "",  # Post Totali Profilo — non disponibile via API
-        "",  # Follower Totali — non disponibile via API
-        "",  # Following — non disponibile via API
+        media_count,
+        followers,
+        following,
         tot_views_post + tot_views_stories,
         tot_interactions,
         len(originali),
@@ -679,10 +723,13 @@ def send_push(title, body):
 def main():
     supabase_update_state("a1", "working")
 
-    # 1. Fetch post originali dal profilo
+    # 1. Fetch dati aggregati profilo (follower, following, media count)
+    profile_data = fetch_profile_data()
+
+    # 2. Fetch post originali dal profilo
     posts_originali = fetch_posts()
 
-    # 2. Fetch post taggati da altri account (repost)
+    # 3. Fetch post taggati da altri account (repost)
     posts_repost = fetch_tagged_posts()
 
     # 3. Unifica: originali + repost, ordinati per timestamp
@@ -707,7 +754,7 @@ def main():
         # 7. Compila i 4 sheet
         compile_sheet_post(wb, all_posts)
         compile_sheet_stories(wb, stories)
-        compile_sheet_panoramica(wb, all_posts, stories)
+        compile_sheet_panoramica(wb, all_posts, stories, profile_data)
         compile_sheet_kpi(wb, all_posts, stories)
 
         # 8. Salva e carica su Drive
