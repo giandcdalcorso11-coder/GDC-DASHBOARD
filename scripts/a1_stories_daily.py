@@ -34,7 +34,6 @@ from googleapiclient.discovery import build
 IG_TOKEN   = os.environ["IG_ACCESS_TOKEN"]
 IG_USER_ID = os.environ["IG_USER_ID"]
 
-# Sheet A1 — ID fisso dal progetto (non richiede secret separato)
 SHEET_ID = "1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30"
 
 today   = date.today()
@@ -44,7 +43,7 @@ MESI_IT = [
 ]
 MESE_IT  = MESI_IT[today.month]
 ANNO     = today.year
-TAB_NAME = f"Stories_{MESE_IT}_{ANNO}"   # es. "Stories_Giugno_2026"
+TAB_NAME = f"Stories_{MESE_IT}_{ANNO}"
 
 COLUMNS = [
     "story_id", "timestamp", "media_type", "permalink",
@@ -53,6 +52,11 @@ COLUMNS = [
     "taps_forward", "taps_back", "exits",
     "profile_visits", "follows"
 ]
+
+# Metriche sicure per stories (period=lifetime obbligatorio)
+# Suddivise in core (sempre disponibili) e extra (tentativo separato)
+METRICS_CORE  = "impressions,reach,replies,taps_forward,taps_back,exits"
+METRICS_EXTRA = ["profile_visits", "follows"]
 
 print(f"▶ A1 Stories Daily — {today.strftime('%d/%m/%Y')} — tab: {TAB_NAME}")
 
@@ -67,6 +71,43 @@ def ig_get(endpoint, params={}):
     return r.json()
 
 
+def fetch_story_insights(story_id):
+    """
+    Recupera metriche per una singola story.
+    Strategia a due livelli:
+    1. Chiama le metriche core con period=lifetime (obbligatorio per stories)
+    2. Tenta le metriche extra una per una — le salta se non disponibili
+    """
+    metrics = {}
+
+    # Livello 1 — metriche core (sempre disponibili)
+    try:
+        ins = ig_get(f"{story_id}/insights", {
+            "metric": METRICS_CORE,
+            "period": "lifetime"
+        })
+        for m in ins.get("data", []):
+            val = m["values"][0]["value"] if m.get("values") else m.get("value", 0)
+            metrics[m["name"]] = val
+    except Exception as e:
+        print(f"      Core insights non disponibili per {story_id}: {e}")
+
+    # Livello 2 — metriche extra (tentativo individuale)
+    for metric in METRICS_EXTRA:
+        try:
+            ins = ig_get(f"{story_id}/insights", {
+                "metric": metric,
+                "period": "lifetime"
+            })
+            for m in ins.get("data", []):
+                val = m["values"][0]["value"] if m.get("values") else m.get("value", 0)
+                metrics[m["name"]] = val
+        except Exception:
+            pass  # metrica non disponibile per questa story — skip silenzioso
+
+    return metrics
+
+
 def fetch_active_stories():
     """Recupera tutte le stories attive + metriche via insights."""
     print("  → Fetch stories attive...")
@@ -75,26 +116,21 @@ def fetch_active_stories():
         data = ig_get(f"{IG_USER_ID}/stories", {"fields": fields, "limit": 100})
         stories = data.get("data", [])
     except requests.HTTPError as e:
-        if "does not support" in str(e) or "OAuthException" in str(e):
-            print(f"    ATTENZIONE: permesso stories non disponibile — {e}")
-            return []
-        raise
+        print(f"    ATTENZIONE: permesso stories non disponibile — {e}")
+        return []
 
-    # Metriche valide per stories: NO shares/likes/navigation (non supportati)
-    INSIGHTS_METRICS = "impressions,reach,replies,taps_forward,taps_back,exits,profile_visits,follows"
+    if not stories:
+        print("    Nessuna story attiva al momento")
+        return []
 
     enriched = []
     for s in stories:
-        try:
-            ins = ig_get(f"{s['id']}/insights", {"metric": INSIGHTS_METRICS})
-            for m in ins.get("data", []):
-                val = m["values"][0]["value"] if m.get("values") else m.get("value", 0)
-                s[m["name"]] = val
-        except Exception as ex:
-            print(f"    Insights story {s['id']} non disponibili: {ex}")
-
+        print(f"    Story {s['id']} ({s.get('media_type','')}) — fetch insights...")
+        ins = fetch_story_insights(s["id"])
+        s.update(ins)
         s["captured_at"] = datetime.utcnow().isoformat()
         enriched.append(s)
+        print(f"      impressions={ins.get('impressions','?')}  reach={ins.get('reach','?')}  replies={ins.get('replies','?')}")
 
     print(f"    Trovate {len(enriched)} stories attive")
     return enriched
@@ -111,12 +147,11 @@ def get_sheets_service():
 
 
 def ensure_tab(service, tab_name):
-    """Crea il tab se non esiste. Ritorna True se appena creato."""
+    """Crea il tab se non esiste."""
     meta = service.spreadsheets().get(spreadsheetId=SHEET_ID).execute()
     existing = [s["properties"]["title"] for s in meta.get("sheets", [])]
     if tab_name in existing:
         return False
-    # Crea tab
     body = {"requests": [{"addSheet": {"properties": {"title": tab_name}}}]}
     service.spreadsheets().batchUpdate(spreadsheetId=SHEET_ID, body=body).execute()
     print(f"    Tab '{tab_name}' creato")
@@ -124,7 +159,6 @@ def ensure_tab(service, tab_name):
 
 
 def write_header(service, tab_name):
-    """Scrive la riga di intestazione."""
     service.spreadsheets().values().update(
         spreadsheetId=SHEET_ID,
         range=f"'{tab_name}'!A1",
@@ -134,7 +168,7 @@ def write_header(service, tab_name):
 
 
 def read_existing_ids(service, tab_name):
-    """Legge gli story_id già presenti nella colonna A (dalla riga 2 in poi)."""
+    """Legge gli story_id già presenti (colonna A dalla riga 2)."""
     try:
         result = service.spreadsheets().values().get(
             spreadsheetId=SHEET_ID,
@@ -151,22 +185,50 @@ def story_to_row(s):
     return [str(s.get(col, "")) for col in COLUMNS]
 
 
-def append_stories(service, tab_name, stories):
-    """Aggiunge le nuove stories in fondo al tab (upsert per ID)."""
-    existing_ids = read_existing_ids(service, tab_name)
+def upsert_stories(service, tab_name, stories):
+    """
+    Upsert stories:
+    - Nuove (ID non presente) → append in fondo
+    - Già presenti → aggiorna le metriche sulla riga esistente
+    """
+    # Leggi tutte le righe esistenti per trovare posizione per ID
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range=f"'{tab_name}'!A2:A"
+        ).execute()
+        existing_rows = result.get("values", [])
+    except Exception:
+        existing_rows = []
 
-    new_rows = []
-    skipped  = 0
+    id_to_row = {}
+    for i, row in enumerate(existing_rows, start=2):
+        if row:
+            id_to_row[row[0]] = i
+
+    new_rows    = []
+    updated     = 0
+    skipped     = 0
+
     for s in stories:
         sid = s.get("id") or s.get("story_id", "")
         if not sid:
             continue
-        if sid in existing_ids:
-            skipped += 1
-            continue
-        # Mappa "id" → "story_id" per il foglio
         s_mapped = {**s, "story_id": sid}
-        new_rows.append(story_to_row(s_mapped))
+        row_data = story_to_row(s_mapped)
+
+        if sid in id_to_row:
+            # Aggiorna riga esistente con metriche aggiornate
+            row_num = id_to_row[sid]
+            service.spreadsheets().values().update(
+                spreadsheetId=SHEET_ID,
+                range=f"'{tab_name}'!A{row_num}",
+                valueInputOption="RAW",
+                body={"values": [row_data]}
+            ).execute()
+            updated += 1
+        else:
+            new_rows.append(row_data)
 
     if new_rows:
         service.spreadsheets().values().append(
@@ -176,11 +238,9 @@ def append_stories(service, tab_name, stories):
             insertDataOption="INSERT_ROWS",
             body={"values": new_rows}
         ).execute()
-        print(f"    Scritte {len(new_rows)} nuove stories ({skipped} già presenti)")
-    else:
-        print(f"    Nessuna nuova story da aggiungere ({skipped} già presenti)")
 
-    return len(new_rows)
+    print(f"    Nuove stories aggiunte: {len(new_rows)} | Aggiornate: {updated}")
+    return len(new_rows), updated
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────────
@@ -201,11 +261,23 @@ def main():
     if is_new:
         write_header(service, TAB_NAME)
 
-    # 4. Upsert stories (append solo quelle nuove per ID)
-    added = append_stories(service, TAB_NAME, new_stories)
+    # Assicura header se tab esisteva ma era vuoto
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SHEET_ID,
+            range=f"'{TAB_NAME}'!A1:A1"
+        ).execute()
+        if not result.get("values"):
+            write_header(service, TAB_NAME)
+    except Exception:
+        pass
+
+    # 4. Upsert stories (append nuove, aggiorna metriche esistenti)
+    added, updated = upsert_stories(service, TAB_NAME, new_stories)
 
     print(f"\n✅ Stories Daily completato — {today.strftime('%d/%m/%Y')}")
     print(f"   Nuove stories aggiunte: {added}")
+    print(f"   Stories aggiornate: {updated}")
     print(f"   Sheet: {SHEET_ID} — tab: {TAB_NAME}")
 
 
