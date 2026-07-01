@@ -718,7 +718,6 @@ def main():
     supabase_update_state("a1", "done", {
         "mese": MESE_LABEL,
         "n_post": len(posts_originali),
-        "n_repost": len(posts_repost),
         "n_stories": len(stories),
         "drive_folder": DRIVE_FOLDER
     })
