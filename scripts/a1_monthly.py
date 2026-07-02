@@ -542,30 +542,18 @@ def compile_sheet_post(wb, posts):
     ws = wb["Insights Post"]
     headers = HEADERS["Insights Post"]
 
-    # Controlla se il mese esiste già
-    mese_rows = []
-    for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        if row[0] == MESE_LABEL:
-            mese_rows.append(i)
-
+    # Se il mese è già presente, cancella il blocco esistente (dati + riga
+    # separatore grigia) e lo riscrive da zero. Idempotente: sicuro
+    # rilanciare la run più volte senza dover pulire il foglio a mano
+    # (vedi step 20, punto 4 — richiesta esplicita).
+    mese_rows = [
+        i for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2)
+        if row[0] == MESE_LABEL
+    ]
     if mese_rows:
-        # Controlla se ci sono repost già inseriti
-        repost_presenti = any(
-            ws.cell(row=r, column=5).value == "REPOST"
-            for r in mese_rows
-        )
-        repost_in_arrivo = any(p.get("_tipo_autore") == "REPOST" for p in posts)
-
-        if repost_presenti or not repost_in_arrivo:
-            print(f"    Sheet Post: {MESE_LABEL} già presente, skip")
-            return
-        else:
-            # Mese presente ma senza repost e ora ne abbiamo — cancella e reinserisce
-            print(f"    Sheet Post: {MESE_LABEL} presente senza repost — forzo reinserimento")
-            # Trova anche la riga separatore (grigia) dopo il blocco mese
-            last_row = max(mese_rows)
-            # Cancella dal primo al separatore incluso
-            ws.delete_rows(min(mese_rows), last_row - min(mese_rows) + 2)
+        last_row = max(mese_rows)
+        ws.delete_rows(min(mese_rows), last_row - min(mese_rows) + 2)  # +2 = include separatore
+        print(f"    Sheet Post: {MESE_LABEL} presente — cancellato e riscritto")
 
     posts_sorted = sorted(posts, key=lambda p: p.get("timestamp", ""), reverse=True)
 
@@ -650,14 +638,23 @@ def compile_sheet_post(wb, posts):
 
 
 def compile_sheet_stories(wb, stories):
-    """Compila Sheet 3 — Insights Stories (top 10 per visualizzazioni)."""
+    """
+    Compila Sheet 3 — Insights Stories (top 10 per visualizzazioni).
+    Se il mese è già presente, cancella il blocco esistente (dati +
+    separatore) e lo riscrive da zero — idempotente, stesso pattern di
+    compile_sheet_post (vedi step 20, punto 4).
+    """
     ws = wb["Insights Stories"]
     headers = HEADERS["Insights Stories"]
 
-    for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
-        if row[0] == MESE_LABEL:
-            print(f"    Sheet Stories: {MESE_LABEL} già presente, skip")
-            return
+    mese_rows = [
+        i for i, row in enumerate(ws.iter_rows(min_row=2, max_col=1, values_only=True), start=2)
+        if row[0] == MESE_LABEL
+    ]
+    if mese_rows:
+        last_row = max(mese_rows)
+        ws.delete_rows(min(mese_rows), last_row - min(mese_rows) + 2)  # +2 = include separatore
+        print(f"    Sheet Stories: {MESE_LABEL} presente — cancellato e riscritto")
 
     top10 = sorted(stories, key=lambda s: s.get("views", 0), reverse=True)[:10]
 
@@ -747,10 +744,15 @@ def compile_sheet_kpi(wb, posts, stories):
     """
     ws = wb["KPI Medi"]
 
-    for row in ws.iter_rows(min_row=2, max_col=1, values_only=True):
-        if row[0] == MESE_LABEL:
-            print(f"    Sheet KPI: {MESE_LABEL} già presente, skip")
-            return
+    # Se il mese è già presente, cancella la riga esistente e la riscrive
+    # da zero — idempotente, stesso pattern degli altri sheet (step 20, punto 4).
+    mese_rows = [
+        i for i, row in enumerate(ws.iter_rows(min_row=2, max_col=1, values_only=True), start=2)
+        if row[0] == MESE_LABEL
+    ]
+    if mese_rows:
+        ws.delete_rows(min(mese_rows), max(mese_rows) - min(mese_rows) + 1)
+        print(f"    Sheet KPI: {MESE_LABEL} presente — cancellato e riscritto")
 
     originali = [p for p in posts if p.get("_tipo_autore") != "REPOST" and
                  p.get("username", "giandcdalcorso") == "giandcdalcorso"]
