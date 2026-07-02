@@ -116,12 +116,15 @@ def fetch_post_insights(media_id, media_type):
     Recupera metriche avanzate per un singolo post/reel via /insights.
     Solo per media propri — non disponibile per media di altri account.
     """
+    # Nota (step 20, 3.4/3.12): impressions -> views. follows rimossa dalla
+    # richiesta per i post: non supportata via API (confermato dai test su
+    # VIDEO/Reel e CAROUSEL_ALBUM), la colonna resta strutturalmente vuota.
     if media_type in ("IMAGE", "CAROUSEL_ALBUM"):
-        metric = "impressions,reach,saved,shares,likes,comments,follows"
+        metric = "views,reach,saved,shares,likes,comments"
     elif media_type in ("VIDEO", "REELS"):
-        metric = "impressions,reach,saved,shares,likes,comments,follows,plays"
+        metric = "views,reach,saved,shares,likes,comments,plays"
     else:
-        metric = "impressions,reach,saved,shares,likes,comments,follows"
+        metric = "views,reach,saved,shares,likes,comments"
 
     try:
         ins = ig_get(f"{media_id}/insights", {
@@ -132,7 +135,7 @@ def fetch_post_insights(media_id, media_type):
     except Exception:
         try:
             ins = ig_get(f"{media_id}/insights", {
-                "metric": "impressions,reach,saved,shares",
+                "metric": "views,reach,saved,shares",
                 "period": "lifetime"
             })
             return {m["name"]: m["values"][0]["value"] for m in ins.get("data", [])}
@@ -332,8 +335,8 @@ def read_stories_from_sheet(drive_service):
         padded = row + [""] * (len(headers) - len(row))
         s = dict(zip(headers, padded))
         # Normalizza i tipi numerici
-        for field in ("impressions", "reach", "replies", "taps_forward",
-                      "taps_back", "exits", "profile_visits", "follows"):
+        for field in ("views", "reach", "replies", "navigation",
+                      "profile_visits", "follows", "shares"):
             try:
                 s[field] = int(s[field]) if s.get(field) else 0
             except (ValueError, TypeError):
@@ -526,7 +529,7 @@ def compile_sheet_post(wb, posts):
             shares = p.get("shares", "") or ""
             follows = ""
         else:
-            views  = p.get("impressions", p.get("views", 0)) or 0
+            views  = p.get("views", 0) or 0
             reach  = p.get("reach") or ""
             saved  = p.get("saved", 0) or 0
             shares = p.get("shares", 0) or 0
@@ -588,7 +591,7 @@ def compile_sheet_stories(wb, stories):
             print(f"    Sheet Stories: {MESE_LABEL} già presente, skip")
             return
 
-    top10 = sorted(stories, key=lambda s: s.get("impressions", 0), reverse=True)[:10]
+    top10 = sorted(stories, key=lambda s: s.get("views", 0), reverse=True)[:10]
 
     insert_at = 2
     ws.insert_rows(insert_at, amount=len(top10) + 1)
@@ -600,13 +603,13 @@ def compile_sheet_stories(wb, stories):
         ws.cell(row=r, column=2,  value=data_str)
         ws.cell(row=r, column=3,  value=ora_str)
         ws.cell(row=r, column=4,  value=s.get("permalink", ""))
-        ws.cell(row=r, column=5,  value=s.get("impressions", 0))
+        ws.cell(row=r, column=5,  value=s.get("views", 0))
         ws.cell(row=r, column=6,  value=s.get("reach", ""))
         ws.cell(row=r, column=7,  value=s.get("like_count", 0))
         ws.cell(row=r, column=8,  value=s.get("shares", 0))
         ws.cell(row=r, column=9,  value=s.get("replies", 0))
         ws.cell(row=r, column=10, value=s.get("navigation", 0))
-        ws.cell(row=r, column=11, value=s.get("taps_forward", 0))
+        ws.cell(row=r, column=11, value="")  # Sticker Taps: non piu' scomponibile via API (navigation e' aggregato unico) — colonna da valutare in pulizia (3.11)
         ws.cell(row=r, column=12, value=s.get("profile_visits", 0))
         ws.cell(row=r, column=13, value=s.get("follows", 0))
         ws.cell(row=r, column=14, value="")
@@ -634,8 +637,8 @@ def compile_sheet_panoramica(wb, posts, stories, profile_data=None):
                  p.get("username", "giandcdalcorso") == "giandcdalcorso"]
     repost    = [p for p in posts if p.get("_tipo_autore") == "REPOST"]
 
-    tot_views_post    = sum(p.get("impressions", 0) or 0 for p in originali)
-    tot_views_stories = sum(s.get("impressions", 0) or 0 for s in stories)
+    tot_views_post    = sum(p.get("views", 0) or 0 for p in originali)
+    tot_views_stories = sum(s.get("views", 0) or 0 for s in stories)
     tot_interactions  = sum(
         (p.get("like_count", 0) or 0) +
         (p.get("comments_count", 0) or 0) +
@@ -706,14 +709,14 @@ def compile_sheet_kpi(wb, posts, stories):
     row_data = [
         MESE_LABEL,
         safe_mean(er_vals),
-        safe_mean([p.get("impressions", 0) for p in originali]),
+        safe_mean([p.get("views", 0) for p in originali]),
         safe_mean([p.get("reach") for p in con_reach]),
         safe_mean([p.get("like_count", 0) for p in originali]),
         safe_mean([p.get("comments_count", 0) for p in originali]),
         safe_mean([p.get("saved", 0) for p in originali]),
         safe_mean(viralita_vals),
         safe_mean(sentiment_vals),
-        safe_mean([s.get("impressions", 0) for s in stories]),
+        safe_mean([s.get("views", 0) for s in stories]),
         safe_mean([s.get("reach", 0) for s in stories]),
     ]
 
