@@ -4,7 +4,7 @@ Ogni 2° del mese alle 08:00 ora italiana.
 
 Flusso:
 1. Instagram Graph API → metriche post + reel del mese precedente (originali)
-2. Instagram Graph API → post taggati da altri account nel mese precedente (repost)
+2. CSV Meta Business Suite (Drive "Archivio docs MBS") → repost/menzioni del mese precedente
 3. Compila Instagram_Analytics_GDC.xlsx (5 sheet)
 4. Carica su Google Drive (cartella A1.2)
 5. Aggiorna Supabase → stato A1 = done
@@ -26,6 +26,9 @@ import os
 import json
 import base64
 import tempfile
+import re
+import csv
+import io
 import requests
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -184,55 +187,118 @@ def fetch_posts():
     return posts
 
 
-def fetch_tagged_posts():
-    """
-    Recupera i post di altri account che taggano @giandcdalcorso nel mese target.
-    Usa l'endpoint /{user-id}/tags (richiede instagram_manage_insights).
-    Impressioni e reach non disponibili per media altrui via API — restano vuoti.
-    """
-    print("  → Fetch post taggati (repost)...")
-    # Proviamo prima con fields minimi per diagnosticare se il 400
-    # e causato dai fields o dall'endpoint/permessi
-    fields = "id,timestamp,media_type,permalink"
-    tagged = []
-    url = f"{IG_USER_ID}/tags"
-    params = {"fields": fields, "limit": 100}
+MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS" — struttura flat
+MBS_FILE_SUFFIX = "_3909528329355109.csv"              # File Content/Post — unico che importiamo
 
-    while True:
+# Mappa "Tipo di post" (etichette MBS) -> valori media_type stile API,
+# cosi' compile_sheet_post puo' riusare media_type_to_gdc() senza differenze
+# di formattazione tra post originali e repost.
+MBS_TIPO_MAP = {
+    "Carosello di Instagram": "CAROUSEL_ALBUM",
+    "Reel di Instagram":      "VIDEO",
+    "Foto di Instagram":      "IMAGE",
+    "Post di Instagram":      "IMAGE",
+}
+
+
+def find_mbs_csv(drive_service):
+    """
+    Cerca in 'Archivio docs MBS' il CSV Content/Post del mese target.
+    Riconosce il file dal suffisso fisso nel nome + dalle date embedded
+    (es. Jun-01-2026_Jun-30-2026_3909528329355109.csv) — non serve
+    rinominare il file caricato. Se piu' file corrispondono allo stesso
+    mese, usa quello caricato piu' di recente (vedi step 20, 3.7).
+    """
+    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType='text/csv'"
+    results = drive_service.files().list(
+        q=query, fields="files(id, name, createdTime)"
+    ).execute()
+
+    candidates = []
+    for f in results.get("files", []):
+        name = f["name"]
+        if not name.endswith(MBS_FILE_SUFFIX):
+            continue
+        m = re.match(r"^([A-Za-z]{3})-(\d{2})-(\d{4})_", name)
+        if not m:
+            continue
         try:
-            data = ig_get(url, params)
-        except Exception as e:
-            print(f"    /tags non disponibile: {e}")
-            return []
+            file_start = datetime.strptime(f"{m.group(1)} {m.group(3)}", "%b %Y").date()
+        except ValueError:
+            continue
+        if file_start.year == ANNO and file_start.month == MESE_NUM:
+            candidates.append(f)
 
-        items = data.get("data", [])
-        if not items:
-            break
+    if not candidates:
+        return None
 
-        for item in items:
-            ts = datetime.fromisoformat(item["timestamp"].replace("Z", "+00:00"))
-            item_date = ts.date()
+    candidates.sort(key=lambda f: f.get("createdTime", ""), reverse=True)
+    return candidates[0]["id"]
 
-            if item_date > ULTIMO_GIORNO:
-                continue
-            if item_date < PRIMO_GIORNO:
-                print(f"    Trovati {len(tagged)} post taggati nel periodo")
-                return tagged
 
-            # Marca esplicitamente come repost — impressioni/reach non disponibili
-            item["_tipo_autore"] = "REPOST"
-            tagged.append(item)
+def fetch_mbs_reposts(drive_service):
+    """
+    Legge il CSV Content/Post MBS del mese target, tiene solo le righe
+    con account diverso dal proprio (repost/menzioni — le righe del
+    proprio account sono gia' coperte dall'API) e le converte nello
+    stesso formato usato per i post originali (vedi step 20, 4.2).
 
-        next_url = data.get("paging", {}).get("next")
-        if not next_url:
-            break
-        import urllib.parse as urlparse
-        parsed = urlparse.urlparse(next_url)
-        params = dict(urlparse.parse_qsl(parsed.query))
-        url = f"{IG_USER_ID}/tags"
+    Se il file non e' ancora su Drive la run prosegue comunque, senza
+    repost per questo giro — nessun errore bloccante.
+    Notifica email + flag a1_mbs_missing su Supabase: Blocco 3, punto 7,
+    ancora DA FARE — non implementato in questo step.
+    """
+    print("  → Fetch repost da CSV MBS...")
+    file_id = find_mbs_csv(drive_service)
+    if not file_id:
+        print(f"    ⚠ CSV MBS non trovato per {MESE_LABEL} — repost vuoti per questo run")
+        return []
 
-    print(f"    Trovati {len(tagged)} post taggati nel periodo")
-    return tagged
+    from googleapiclient.http import MediaIoBaseDownload
+    request = drive_service.files().get_media(fileId=file_id)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        _, done = downloader.next_chunk()
+    fh.seek(0)
+    text = fh.read().decode("utf-8-sig")
+
+    def to_int(v):
+        v = (v or "").strip()
+        return int(v) if v.lstrip("-").isdigit() else 0
+
+    reader = csv.DictReader(io.StringIO(text))
+    repost = []
+    for row in reader:
+        account_id = (row.get("ID dell'account") or "").strip()
+        if not account_id or account_id == IG_USER_ID:
+            continue  # riga del proprio account — gia' coperta dall'API
+
+        try:
+            pub = datetime.strptime(row.get("Orario di pubblicazione", "").strip(), "%m/%d/%Y %H:%M")
+        except ValueError:
+            continue
+        if not (PRIMO_GIORNO <= pub.date() <= ULTIMO_GIORNO):
+            continue
+
+        tipo_raw = row.get("Tipo di post", "").strip()
+        repost.append({
+            "timestamp":      pub.strftime("%Y-%m-%dT%H:%M:%S+0000"),
+            "media_type":     MBS_TIPO_MAP.get(tipo_raw, tipo_raw),
+            "caption":        row.get("Descrizione", ""),
+            "permalink":      row.get("Permalink", ""),
+            "username":       row.get("Nome utente dell'account", ""),
+            "owner_name":     row.get("Nome account", ""),
+            "like_count":     to_int(row.get("Mi piace")),
+            "comments_count": to_int(row.get("Commenti")),
+            "shares":         to_int(row.get("Condivisioni")),
+            "views":          to_int(row.get("Visualizzazioni")),
+            "_tipo_autore":   "REPOST",
+        })
+
+    print(f"    Trovati {len(repost)} repost nel periodo (fonte: MBS)")
+    return repost
 
 
 # ─── 2. GOOGLE DRIVE ────────────────────────────────────────────────────────────
@@ -512,7 +578,7 @@ def compile_sheet_post(wb, posts):
         tipo_contenuto = media_type_to_gdc(p.get("media_type", ""))
 
         # Determina tipo autore:
-        # - _tipo_autore="REPOST" → taggato da altro account (fetch_tagged_posts)
+        # - _tipo_autore="REPOST" → da CSV MBS (fetch_mbs_reposts)
         # - username == "giandcdalcorso" → originale (fetch_posts)
         # - altrimenti → originale (fallback sicuro)
         if p.get("_tipo_autore") == "REPOST":
@@ -522,8 +588,9 @@ def compile_sheet_post(wb, posts):
             tipo_autore = "ORIGINALE" if (not username or username == "giandcdalcorso") else "REPOST"
 
         if tipo_autore == "REPOST":
-            # Per i repost le impressioni e reach non sono disponibili via API
-            views  = ""
+            # Salvataggi, copertura e follower acquisiti non sono disponibili
+            # per contenuti di altri account, nemmeno via MBS (step 20, 4.2)
+            views  = p.get("views", "") or ""
             reach  = ""
             saved  = ""
             shares = p.get("shares", "") or ""
@@ -550,6 +617,7 @@ def compile_sheet_post(wb, posts):
 
         sentiment = round(((saved or 0) + (shares or 0)) / likes, 4) if (tipo_autore == "ORIGINALE" and likes > 0) else ""
         collaborazione = "Sì" if tipo_autore == "REPOST" else "No"
+        note = f"Repost di: {p.get('owner_name', '')}" if tipo_autore == "REPOST" and p.get("owner_name") else ""
 
         rows_to_insert.append([
             MESE_LABEL, data_str, ora_str, tipo_contenuto, tipo_autore,
@@ -560,7 +628,7 @@ def compile_sheet_post(wb, posts):
             views, reach,
             likes, comments, saved, shares,
             interactions, er, viralita, sentiment,
-            follows, collaborazione, ""
+            follows, collaborazione, note
         ])
 
     ws.insert_rows(insert_at, amount=len(rows_to_insert) + 1)
@@ -774,19 +842,19 @@ def main():
     # 2. Fetch post originali dal profilo
     posts_originali = fetch_posts()
 
-    # 3. Fetch post taggati da altri account (repost)
-    posts_repost = fetch_tagged_posts()
-
-    # 3. Unifica: originali + repost, ordinati per timestamp
-    all_posts = posts_originali + posts_repost
-
-    # 4. Setup Drive
+    # 3. Setup Drive (serve anche per leggere il CSV MBS dei repost)
     drive_service, _ = get_drive_service()
 
-    # 5. Legge stories dal tab Google Sheet (salvate dallo script daily)
+    # 4. Fetch repost da CSV MBS (sostituisce /tags — vedi step 20, 3.6)
+    posts_repost = fetch_mbs_reposts(drive_service)
+
+    # 5. Unifica: originali + repost, ordinati per timestamp
+    all_posts = posts_originali + posts_repost
+
+    # 6. Legge stories dal tab Google Sheet (salvate dallo script daily)
     stories = read_stories_from_sheet(drive_service)
 
-    # 6. Scarica Excel esistente (o parti da zero)
+    # 7. Scarica Excel esistente (o parti da zero)
     with tempfile.TemporaryDirectory() as tmpdir:
         local_excel = os.path.join(tmpdir, EXCEL_FILENAME_LOCAL)
 
@@ -796,17 +864,17 @@ def main():
 
         wb = get_or_create_workbook(local_excel)
 
-        # 7. Compila i 4 sheet
+        # 8. Compila i 4 sheet
         compile_sheet_post(wb, all_posts)
         compile_sheet_stories(wb, stories)
         compile_sheet_panoramica(wb, all_posts, stories, profile_data)
         compile_sheet_kpi(wb, all_posts, stories)
 
-        # 8. Salva e carica su Drive
+        # 9. Salva e carica su Drive
         wb.save(local_excel)
         drive_upload_excel(drive_service, local_excel, DRIVE_FOLDER, existing_id)
 
-    # 9. Aggiorna Supabase → done
+    # 10. Aggiorna Supabase → done
     supabase_update_state("a1", "done", {
         "mese": MESE_LABEL,
         "n_post": len(posts_originali),
@@ -814,7 +882,7 @@ def main():
         "drive_folder": DRIVE_FOLDER
     })
 
-    # 10. Push notification → sblocca A2
+    # 11. Push notification → sblocca A2
     supabase_update_state("a2", "ready")
     send_push(
         "✅ A1 completato",
