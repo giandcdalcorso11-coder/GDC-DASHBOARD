@@ -48,15 +48,17 @@ TAB_NAME = f"Stories_{MESE_IT}_{ANNO}"
 COLUMNS = [
     "story_id", "timestamp", "media_type", "permalink",
     "captured_at",
-    "impressions", "reach", "replies",
-    "taps_forward", "taps_back", "exits",
-    "profile_visits", "follows"
+    "views", "reach", "replies",
+    "navigation",
+    "profile_visits", "follows", "shares"
 ]
 
 # Metriche sicure per stories (period=lifetime obbligatorio)
 # Suddivise in core (sempre disponibili) e extra (tentativo separato)
-METRICS_CORE  = "impressions,reach,replies,taps_forward,taps_back,exits"
-METRICS_EXTRA = ["profile_visits", "follows"]
+# Nota (step 20, 3.4): impressions -> views; taps_forward/taps_back/exits
+# consolidate nell'aggregato unico navigation (non piu' scomponibile via API)
+METRICS_CORE  = "views,reach,replies,navigation"
+METRICS_EXTRA = ["profile_visits", "follows", "shares"]
 
 print(f"▶ A1 Stories Daily — {today.strftime('%d/%m/%Y')} — tab: {TAB_NAME}")
 
@@ -130,7 +132,7 @@ def fetch_active_stories():
         s.update(ins)
         s["captured_at"] = datetime.utcnow().isoformat()
         enriched.append(s)
-        print(f"      impressions={ins.get('impressions','?')}  reach={ins.get('reach','?')}  replies={ins.get('replies','?')}")
+        print(f"      views={ins.get('views','?')}  reach={ins.get('reach','?')}  replies={ins.get('replies','?')}")
 
     print(f"    Trovate {len(enriched)} stories attive")
     return enriched
