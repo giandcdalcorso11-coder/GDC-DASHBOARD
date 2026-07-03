@@ -117,45 +117,36 @@ body{
 }
 .sec-body{ padding:14px 16px; }
 
-/* ── PIPELINE TIMELINE ── */
-.pipeline-grid{
-  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
-  margin-bottom:10px;
-}
-.pip-step{
-  display:flex; flex-direction:column; align-items:center; gap:4px;
-  cursor:pointer; padding:4px 2px; border-radius:8px;
-  transition:background .15s;
-}
-.pip-step:hover{ background:var(--carta); }
+/* ── PIPELINE TIMELINE — colonna verticale ── */
+.pipeline-col{ display:flex; flex-direction:column; }
+.pip-row{ display:flex; gap:12px; cursor:pointer; border-radius:10px; transition:background .15s; padding:0 4px; }
+.pip-row:hover{ background:var(--carta); }
+.pip-rail{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:26px; padding-top:2px; }
 .pip-dot{
-  width:26px; height:26px; border-radius:50%;
+  width:26px; height:26px; border-radius:50%; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
   font-size:.65rem; font-weight:700;
   border:2px solid var(--bordo); color:var(--grigio); background:var(--carta);
-  transition:all .2s; position:relative;
+  transition:all .2s;
 }
 .pip-dot.done    { background:var(--maker-bg); border-color:var(--maker); color:var(--maker-dk); }
 .pip-dot.active  { background:var(--sabbia); border-color:#9A7835; color:var(--nero);
                    box-shadow:0 0 0 3px rgba(196,168,101,.25); }
 .pip-dot.pending { background:var(--carta); border-color:var(--bordo); color:#AAA; }
 .pip-dot.refused { background:var(--life-bg); border-color:var(--life); color:var(--life); }
-.pip-lbl{
-  font-size:.52rem; font-weight:600; color:var(--grigio);
-  text-align:center; line-height:1.2;
-}
-/* connector line between steps */
-.pipe-row{
-  display:flex; align-items:center; gap:0; margin-bottom:10px;
-}
-.pipe-connector{
-  flex:1; height:2px; background:var(--bordo); margin:0 -2px; position:relative; top:-8px;
-}
-.pipe-connector.done{ background:var(--maker); }
+.pip-line{ width:2px; flex:1; min-height:18px; background:var(--bordo); margin:2px 0; }
+.pip-line.done{ background:var(--maker); }
+.pip-content{ flex:1; min-width:0; padding:4px 0 16px; }
+.pip-top-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.pip-name{ font-size:.8rem; font-weight:700; color:var(--nero); }
+.pip-date{ font-size:.62rem; font-weight:600; color:var(--grigio); white-space:nowrap; flex-shrink:0; }
+.pip-note{ font-size:.68rem; color:var(--grigio); margin-top:3px; line-height:1.35; }
+.pip-note.empty{ opacity:.5; font-style:italic; }
 
 .pip-legend{
   display:flex; gap:10px; flex-wrap:wrap;
   font-size:.62rem; color:var(--grigio);
+  margin-top:8px; padding-top:10px; border-top:1.5px solid var(--bordo);
 }
 .pip-legend span{ display:flex; align-items:center; gap:4px; }
 .pip-legend .ld{ width:8px; height:8px; border-radius:50%; }
@@ -223,6 +214,38 @@ body{
 /* ── CAMPO TESTO MAIL ── */
 .mail-field{
   display:flex; flex-direction:column; gap:10px;
+}
+
+/* ── ACCESSO RAPIDO AGENTI ── */
+.agent-row{ display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:12px; background:var(--carta); border:1.5px solid var(--bordo); margin-bottom:8px; }
+.agent-row:last-child{ margin-bottom:0; }
+.agent-row-name{ flex:1; font-size:.76rem; font-weight:700; min-width:0; }
+.agent-row-btns{ display:flex; gap:6px; flex-shrink:0; }
+.agent-mini-btn{ display:flex; align-items:center; gap:4px; padding:6px 10px; border-radius:8px; border:1.5px solid var(--bordo); background:var(--bianco); font-size:.66rem; font-weight:700; color:var(--nero); cursor:pointer; text-decoration:none; font-family:'Jost',sans-serif; white-space:nowrap; }
+.agent-mini-btn:hover{ border-color:var(--athlete); }
+.agent-mini-btn.copy{ color:var(--athlete); border-color:var(--ath-bg); }
+
+/* ── POPUP MESSAGGIO PRECOMPILATO ── */
+.msg-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:300; display:none; align-items:flex-end; justify-content:center; }
+.msg-overlay.open{ display:flex; }
+.msg-popup{ background:var(--bianco); border-radius:20px 20px 0 0; width:100%; max-width:540px; max-height:70vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 -4px 24px rgba(28,28,28,.18); }
+.msg-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid var(--bordo); }
+.msg-title{ font-weight:800; font-size:.92rem; }
+.msg-copy-btn{ font-family:'Jost',sans-serif; font-size:.72rem; font-weight:700; background:var(--life); color:#fff; border:none; border-radius:8px; padding:6px 14px; cursor:pointer; }
+.msg-copy-btn:hover{ background:#a51530; } .msg-copy-btn.copied{ background:var(--maker); }
+.msg-close{ background:none; border:none; font-size:1.1rem; cursor:pointer; color:var(--grigio); padding:4px 8px; border-radius:6px; margin-left:6px; }
+.msg-close:hover{ background:var(--bordo); }
+.msg-body{ padding:14px 16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:8px; }
+.msg-textarea{ font-size:.78rem; font-family:'Courier New',monospace; line-height:1.7; color:var(--nero); white-space:pre-wrap; background:var(--carta); border-radius:10px; padding:12px 14px; border:1.5px solid var(--bordo); resize:vertical; min-height:180px; width:100%; outline:none; transition:border-color .2s; box-sizing:border-box; }
+.msg-textarea:focus{ border-color:var(--grigio); }
+.msg-footer{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.msg-reset-btn{ font-family:'Jost',sans-serif; font-size:.68rem; font-weight:700; background:none; border:1px solid var(--bordo); color:var(--grigio); border-radius:8px; padding:5px 12px; cursor:pointer; transition:border-color .15s; }
+.msg-reset-btn:hover{ border-color:var(--grigio); }
+.msg-edit-hint{ font-size:.62rem; color:var(--grigio); font-style:italic; }
+@media(prefers-color-scheme:dark){
+  .agent-row{ background:#1A1A1A; }
+  .agent-mini-btn{ background:#242424; }
+  .msg-textarea{ background:#1A1A1A; }
 }
 .mail-textarea{
   width:100%; min-height:120px; padding:12px;
@@ -386,77 +409,179 @@ body{
       <span style="font-size:.68rem;color:var(--grigio);">Tocca per aggiornare</span>
     </div>
     <div class="sec-body">
-      <!-- Riga 1: step 1-7 -->
-      <div style="display:flex;align-items:center;gap:0;margin-bottom:6px;">
-        <div class="pip-step" onclick="setStep(1)" title="Azienda trovata">
-          <div class="pip-dot done" id="s1">1</div>
-          <div class="pip-lbl">Trovata</div>
+      <div class="pipeline-col">
+        <div class="pip-row" onclick="setStep(1)" title="Azienda trovata">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s1">1</div>
+            <div class="pip-line done"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">1 · Trovata</span>
+              <span class="pip-date" id="sd1">—</span>
+            </div>
+            <div class="pip-note empty" id="sn1">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector done"></div>
-        <div class="pip-step" onclick="setStep(2)" title="Scheda generata">
-          <div class="pip-dot done" id="s2">2</div>
-          <div class="pip-lbl">Scheda</div>
+        <div class="pip-row" onclick="setStep(2)" title="Scheda generata">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s2">2</div>
+            <div class="pip-line done"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">2 · Scheda</span>
+              <span class="pip-date" id="sd2">—</span>
+            </div>
+            <div class="pip-note empty" id="sn2">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector done"></div>
-        <div class="pip-step" onclick="setStep(3)" title="Media kit generato">
-          <div class="pip-dot done" id="s3">3</div>
-          <div class="pip-lbl">Media kit</div>
+        <div class="pip-row" onclick="setStep(3)" title="Media kit generato">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s3">3</div>
+            <div class="pip-line done"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">3 · Media kit</span>
+              <span class="pip-date" id="sd3">—</span>
+            </div>
+            <div class="pip-note empty" id="sn3">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector done"></div>
-        <div class="pip-step" onclick="setStep(4)" title="Media kit approvato">
-          <div class="pip-dot done" id="s4">4</div>
-          <div class="pip-lbl">Approvato</div>
+        <div class="pip-row" onclick="setStep(4)" title="Media kit approvato">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s4">4</div>
+            <div class="pip-line done"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">4 · Approvato</span>
+              <span class="pip-date" id="sd4">—</span>
+            </div>
+            <div class="pip-note empty" id="sn4">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector done"></div>
-        <div class="pip-step" onclick="setStep(5)" title="Testo mail generato">
-          <div class="pip-dot done" id="s5">5</div>
-          <div class="pip-lbl">Testo mail</div>
+        <div class="pip-row" onclick="setStep(5)" title="Testo mail generato">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s5">5</div>
+            <div class="pip-line done"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">5 · Testo mail</span>
+              <span class="pip-date" id="sd5">—</span>
+            </div>
+            <div class="pip-note empty" id="sn5">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector done"></div>
-        <div class="pip-step" onclick="setStep(6)" title="Bozza Gmail pronta">
-          <div class="pip-dot done" id="s6">6</div>
-          <div class="pip-lbl">Bozza</div>
+        <div class="pip-row" onclick="setStep(6)" title="Bozza Gmail pronta">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s6">6</div>
+            <div class="pip-line done"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">6 · Bozza</span>
+              <span class="pip-date" id="sd6">—</span>
+            </div>
+            <div class="pip-note empty" id="sn6">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector done"></div>
-        <div class="pip-step" onclick="setStep(7)" title="Mail inviata">
-          <div class="pip-dot done" id="s7">7</div>
-          <div class="pip-lbl">Inviata</div>
+        <div class="pip-row" onclick="setStep(7)" title="Mail inviata">
+          <div class="pip-rail">
+            <div class="pip-dot done" id="s7">7</div>
+            <div class="pip-line"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">7 · Inviata</span>
+              <span class="pip-date" id="sd7">—</span>
+            </div>
+            <div class="pip-note empty" id="sn7">Nessuna nota</div>
+          </div>
         </div>
-      </div>
-      <!-- Riga 2: step 8-13 -->
-      <div style="display:flex;align-items:center;gap:0;">
-        <div class="pip-step" onclick="setStep(8)" title="Risposta ricevuta">
-          <div class="pip-dot active" id="s8">8</div>
-          <div class="pip-lbl">Risposta</div>
+        <div class="pip-row" onclick="setStep(8)" title="Risposta ricevuta">
+          <div class="pip-rail">
+            <div class="pip-dot active" id="s8">8</div>
+            <div class="pip-line"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">8 · Risposta</span>
+              <span class="pip-date" id="sd8">—</span>
+            </div>
+            <div class="pip-note empty" id="sn8">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector"></div>
-        <div class="pip-step" onclick="setStep(9)" title="Risposta gestita">
-          <div class="pip-dot pending" id="s9">9</div>
-          <div class="pip-lbl">Gestita</div>
+        <div class="pip-row" onclick="setStep(9)" title="Risposta gestita">
+          <div class="pip-rail">
+            <div class="pip-dot pending" id="s9">9</div>
+            <div class="pip-line"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">9 · Gestita</span>
+              <span class="pip-date" id="sd9">—</span>
+            </div>
+            <div class="pip-note empty" id="sn9">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector"></div>
-        <div class="pip-step" onclick="setStep(10)" title="In trattativa">
-          <div class="pip-dot pending" id="s10">10</div>
-          <div class="pip-lbl">Trattativa</div>
+        <div class="pip-row" onclick="setStep(10)" title="In trattativa">
+          <div class="pip-rail">
+            <div class="pip-dot pending" id="s10">10</div>
+            <div class="pip-line"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">10 · Trattativa</span>
+              <span class="pip-date" id="sd10">—</span>
+            </div>
+            <div class="pip-note empty" id="sn10">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector"></div>
-        <div class="pip-step" onclick="setStep(11)" title="Accordo raggiunto">
-          <div class="pip-dot pending" id="s11">11</div>
-          <div class="pip-lbl">Accordo</div>
+        <div class="pip-row" onclick="setStep(11)" title="Accordo raggiunto">
+          <div class="pip-rail">
+            <div class="pip-dot pending" id="s11">11</div>
+            <div class="pip-line"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">11 · Accordo</span>
+              <span class="pip-date" id="sd11">—</span>
+            </div>
+            <div class="pip-note empty" id="sn11">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector"></div>
-        <div class="pip-step" onclick="setStep(12)" title="Contratto firmato">
-          <div class="pip-dot pending" id="s12">12</div>
-          <div class="pip-lbl">Contratto</div>
+        <div class="pip-row" onclick="setStep(12)" title="Contratto firmato">
+          <div class="pip-rail">
+            <div class="pip-dot pending" id="s12">12</div>
+            <div class="pip-line"></div>
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">12 · Contratto</span>
+              <span class="pip-date" id="sd12">—</span>
+            </div>
+            <div class="pip-note empty" id="sn12">Nessuna nota</div>
+          </div>
         </div>
-        <div class="pipe-connector"></div>
-        <div class="pip-step" onclick="setStep(13)" title="Rifiutato">
-          <div class="pip-dot pending" id="s13">✕</div>
-          <div class="pip-lbl">Rifiutato</div>
+        <div class="pip-row" onclick="setStep(13)" title="Rifiutato">
+          <div class="pip-rail">
+            <div class="pip-dot pending refused" id="s13">✕</div>
+            
+          </div>
+          <div class="pip-content">
+            <div class="pip-top-row">
+              <span class="pip-name">13 · Rifiutato</span>
+              <span class="pip-date" id="sd13">—</span>
+            </div>
+            <div class="pip-note empty" id="sn13">Nessuna nota</div>
+          </div>
         </div>
       </div>
       <!-- Legend -->
-      <div class="pip-legend" style="margin-top:10px;padding-top:10px;border-top:1.5px solid var(--bordo);">
+      <div class="pip-legend">
         <span><i class="ld" style="background:var(--maker)"></i> Completato</span>
         <span><i class="ld" style="background:var(--sabbia)"></i> Step attuale</span>
         <span><i class="ld" style="background:var(--bordo)"></i> In attesa</span>
@@ -465,45 +590,44 @@ body{
     </div>
   </div>
 
-  <!-- ③ AZIONI CONTESTUALI (step 8: risposta ricevuta) -->
-  <div class="section">
+  <!-- ③ AZIONI CONTESTUALI — dinamiche per step -->
+  <div class="section" id="azioni-section">
     <div class="sec-header">
-      <span class="sec-title">Azioni — Step 8</span>
+      <span class="sec-title">Agenti — accesso rapido</span>
     </div>
     <div class="sec-body">
-      <div class="azioni-list">
-        <button class="az-btn az-primary" onclick="openPopupThen('openA62')">
-          <span class="az-icon">✉️</span>
-          <div class="az-text">
-            <span class="az-label">Apri A6.2 — gestisci risposta</span>
-            <span class="az-sub">Claude genera la risposta alla loro mail</span>
-          </div>
-        </button>
-        <button class="az-btn az-secondary" onclick="openPopupThen('step9')">
-          <span class="az-icon">✓</span>
-          <div class="az-text">
-            <span class="az-label">Segna risposta gestita</span>
-            <span class="az-sub">Avanza a Step 9</span>
-          </div>
-        </button>
-        <button class="az-btn az-ghost" onclick="openPopupThen('step10')">
-          <span class="az-icon">🤝</span>
-          <div class="az-text">
-            <span class="az-label">Salta a In trattativa</span>
-            <span class="az-sub">Avanza direttamente a Step 10</span>
-          </div>
-        </button>
-        <button class="az-btn az-ghost" onclick="openPopupThen('step13')" style="border-color:var(--life);color:var(--life);">
-          <span class="az-icon">✕</span>
-          <div class="az-text">
-            <span class="az-label">Archivia come rifiutato</span>
-            <span class="az-sub">Step 13 — archiviato con note</span>
-          </div>
-        </button>
+      <div class="agent-quick-list" id="agentQuickList"></div>
+    </div>
+  </div>
 
-        <!-- PULSANTE A7 — generato da buildA7Btn() -->
-        <div id="a7-btn-wrap" style="margin-top:4px;"></div>
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-title">Bozza Gmail</span>
+    </div>
+    <div class="sec-body">
+      <div class="azioni-list" id="a7-btn-wrap"></div>
+      <div class="azioni-list" style="margin-top:8px;">
+        <a class="az-btn az-secondary" href="https://mail.google.com/mail/u/0/#drafts" target="_blank" style="text-decoration:none;">
+          <span class="az-icon">📧</span>
+          <div class="az-text"><span class="az-label">Apri Gmail Bozze</span><span class="az-sub">Controlla o invia la bozza generata</span></div>
+        </a>
       </div>
+      <div id="a7TokenSection" style="display:none;margin-top:12px;border-top:1.5px solid var(--bordo);padding-top:12px;">
+        <div style="font-size:.7rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">⚠ GitHub Token mancante</div>
+        <input type="password" id="a7TokenInput" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;font-family:'Jost',sans-serif;font-size:.78rem;padding:9px 12px;border:1.5px solid var(--sabbia);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;margin-bottom:8px;box-sizing:border-box;">
+        <button onclick="saveGhToken()" style="width:100%;font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;padding:9px;border:none;border-radius:10px;background:var(--sab-bg);color:#7A5C20;cursor:pointer;">Salva token</button>
+        <div style="font-size:.62rem;color:var(--grigio);margin-top:6px;line-height:1.5;">Token GitHub con scope <strong>workflow</strong>. Salvato solo in questo browser (condiviso con la Home).</div>
+      </div>
+      <div class="a7-status-msg" id="a7StatusMsg" style="font-size:.7rem;color:var(--grigio);margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-header">
+      <span class="sec-title" id="azioni-title">Avanzamento</span>
+    </div>
+    <div class="sec-body">
+      <div class="azioni-list" id="azioni-list"></div>
     </div>
   </div>
 
@@ -511,7 +635,6 @@ body{
   <div class="section">
     <div class="sec-header">
       <span class="sec-title">Documenti Drive</span>
-      <span style="font-size:.68rem;color:var(--athlete);font-weight:600;cursor:pointer;">↻ Sync</span>
     </div>
     <div class="sec-body">
       <div class="doc-list" id="docList"><div style="font-size:.72rem;color:var(--grigio);padding:8px 0;">Caricamento documenti...</div></div>
@@ -532,6 +655,23 @@ body{
   </div>
 
 </div><!-- /main -->
+
+<!-- POPUP MESSAGGIO PRECOMPILATO -->
+<div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
+  <div class="msg-popup">
+    <div class="msg-head">
+      <span class="msg-title" id="msgTitle">Messaggio precompilato</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="msg-copy-btn" id="msgCopyBtn" onclick="copyMsgPopup()">Copia</button>
+        <button class="msg-close" onclick="closeMsg()">✕</button>
+      </div>
+    </div>
+    <div class="msg-body">
+      <textarea class="msg-textarea" id="msgText" spellcheck="false"></textarea>
+      <div class="msg-footer"><span class="msg-edit-hint" id="msgEditHint"></span><button class="msg-reset-btn" id="msgResetBtn" onclick="resetMsg()">↺ Ripristina</button></div>
+    </div>
+  </div>
+</div>
 
 <!-- POPUP NOTA RAPIDA -->
 <div class="popup-overlay" id="popup">
@@ -567,16 +707,14 @@ async function loadCompany() {
 
   try {
     const res = await fetch(
-      SUPA_URL + '/rest/v1/companies?id=eq.' + id +
-      '&select=id,nome,settore,lingua,score,tag,step_attuale,step_1,step_2,step_3,step_4,step_5,step_6,step_7,step_8,step_9,step_10,step_11,step_12,step_13,data_mail_inviata,note,drive_folder,a7_status,created_at',
+      SUPA_URL + '/rest/v1/companies?id=eq.' + id + '&select=*',
       { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (!data.length) { showError('Azienda non trovata (id=' + id + ')'); return; }
     currentCompanyId = data[0].id;
-    company.name = data[0].nome || '';
-    company.a7_status = data[0].a7_status || null;
+    currentCompanyData = data[0];
     populatePage(data[0]);
   } catch(e) {
     showError('Errore fetch: ' + e.message);
@@ -620,13 +758,37 @@ function populatePage(co) {
     fuEl.style.display = 'none';
   }
 
-  // Pipeline step dots
+  // Pipeline step dots + data/nota per step (Fase 1 Supabase: step_N_date + step_notes JSONB — fallback a placeholder finché non implementata)
   for (let i = 1; i <= 13; i++) {
     const dot = document.getElementById('s' + i);
     if (!dot) continue;
     const completed = co['step_' + i];
     const isCurrent = i === step;
     dot.className = 'pip-dot' + (completed ? ' done' : '') + (isCurrent ? ' current' : '') + (i === 13 ? ' refused' : '');
+
+    const dateEl = document.getElementById('sd' + i);
+    if (dateEl) {
+      const rawDate = co['step_' + i + '_date'];
+      if (rawDate) {
+        try {
+          dateEl.textContent = new Date(rawDate).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' });
+        } catch(e) { dateEl.textContent = '—'; }
+      } else {
+        dateEl.textContent = '—';
+      }
+    }
+
+    const noteEl = document.getElementById('sn' + i);
+    if (noteEl) {
+      const stepNote = co.step_notes && co.step_notes[i];
+      if (stepNote) {
+        noteEl.textContent = stepNote;
+        noteEl.classList.remove('empty');
+      } else {
+        noteEl.textContent = 'Nessuna nota';
+        noteEl.classList.add('empty');
+      }
+    }
   }
   updateConnectors(step);
 
@@ -649,34 +811,37 @@ function populatePage(co) {
   // Titolo pagina
   document.title = 'GDC — ' + (co.nome || 'Azienda');
 
-  // Documenti Drive — generati dal nome azienda
-  const nomeSafe = (co.nome || 'Azienda').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-  const driveHref = co.drive_folder || '#';
+  // Azioni dinamiche
+  renderAzioni(step);
+  renderAgentQuick(co);
+  buildA7Btn(co);
+
+  // Documenti Drive — legge URL reali da Supabase (colonne doc_*_url, quando esistenti via select=*)
+  // Finché Fase 4 (pipeline_watcher) non scrive questi campi, mostra placeholder "Non ancora generato"
   const docList = document.getElementById('docList');
   if (docList) {
-    const docs = [
-      { type:'docx', label:'DOCX', name:'Scheda_' + nomeSafe + '_A5.2.docx',   desc:'Scheda azienda' },
-      { type:'pptx', label:'PPTX', name:'mediakit_' + nomeSafe + '.pptx',       desc:'Media kit' },
-      { type:'pdf',  label:'PDF',  name:'mediakit_' + nomeSafe + '.pdf',         desc:'Media kit PDF' },
-      { type:'txt',  label:'TXT',  name:'mail_' + nomeSafe + '_*.txt',           desc:'Testo mail A6.2' },
+    const docsConfig = [
+      { type:'docx', label:'DOCX', desc:'Scheda azienda (A5.2)',        urlKey:'doc_scheda_url' },
+      { type:'pptx', label:'PPTX', desc:'Media kit (A6.1)',              urlKey:'doc_mediakit_pptx_url' },
+      { type:'pdf',  label:'PDF',  desc:'Media kit PDF (revisionato)',   urlKey:'doc_mediakit_pdf_url' },
+      { type:'txt',  label:'TXT',  desc:'Testo mail (A6.2)',             urlKey:'doc_mail_txt_url' },
     ];
-    // Mostra solo doc rilevanti allo step
-    const step = co.step_attuale || 1;
-    const visible = docs.filter((_,i) => (i+1)*2 <= step + 3);
-    if (visible.length === 0) {
-      docList.innerHTML = '<div style="font-size:.72rem;color:var(--grigio);padding:8px 0;">Nessun documento ancora generato.</div>';
-    } else {
-      docList.innerHTML = visible.map(d =>
-        `<a class="doc-item" href="${driveHref}" target="_blank">
+    docList.innerHTML = docsConfig.map(d => {
+      const url = co[d.urlKey];
+      if (url) {
+        return `<a class="doc-item" href="${url}" target="_blank">
           <div class="doc-icon ${d.type}">${d.label}</div>
-          <div class="doc-info">
-            <div class="doc-name">${d.name}</div>
-            <div class="doc-date">${d.desc}</div>
-          </div>
+          <div class="doc-info"><div class="doc-name">${d.desc}</div><div class="doc-date">Apri file →</div></div>
           <span class="doc-arrow">→</span>
-        </a>`
-      ).join('');
-    }
+        </a>`;
+      } else {
+        return `<div class="doc-item" style="opacity:.5;cursor:default;">
+          <div class="doc-icon ${d.type}">${d.label}</div>
+          <div class="doc-info"><div class="doc-name">${d.desc}</div><div class="doc-date">Non ancora generato</div></div>
+          <span class="doc-arrow" style="color:var(--grigio)">—</span>
+        </div>`;
+      }
+    }).join('');
   }
 
   // Note da Supabase
@@ -703,7 +868,7 @@ function populatePage(co) {
 }
 
 function updateConnectors(step) {
-  const connectors = document.querySelectorAll('.pipe-connector');
+  const connectors = document.querySelectorAll('.pip-line');
   connectors.forEach((el, i) => {
     // connector i sits between dot i+1 and dot i+2
     el.classList.toggle('done', (i + 1) < step);
@@ -717,6 +882,7 @@ function flagEmoji(lingua) {
 
 /* ── ID azienda corrente ── */
 let currentCompanyId = null;
+let currentCompanyData = null;
 let currentStep = 1;
 
 /* ── UPDATE STEP SU SUPABASE ── */
@@ -744,13 +910,15 @@ function setStep(n){
   });
   updateConnectors(n);
   currentStep = n;
-  // Aggiorna label step nel hero
   const stepNum = document.querySelector('.step-num');
   const stepLabel = document.querySelector('.step-label');
   const stepSub = document.querySelector('.step-sub');
   if (stepNum) stepNum.textContent = n === 13 ? '✕' : n;
   if (stepLabel) stepLabel.textContent = STEP_NAMES[n] || '—';
   if (stepSub) stepSub.textContent = n === 13 ? 'Chiusa' : 'Step ' + n + ' di 12';
+  // Salva su Supabase + aggiorna azioni
+  updateStep(n);
+  renderAzioni(n);
 }
 
 /* ── Popup nota rapida ── */
@@ -778,6 +946,113 @@ function execAction(action, note){
   else if(action === 'step13') {
     setStep(13); updateStep(13);
     document.querySelectorAll('.pip-dot')[12].className = 'pip-dot refused';
+    if(note) saveNoteText(note);
+  }
+}
+
+/* ── Azioni: avanzamento step ── */
+let MSGS = {};
+
+function azBtn(icon, label, sub, action, style=''){
+  return `<button class="az-btn az-secondary" onclick="openPopupThen('${action}')" style="${style}">
+    <span class="az-icon">${icon}</span>
+    <div class="az-text"><span class="az-label">${label}</span><span class="az-sub">${sub}</span></div>
+  </button>`;
+}
+function azRefuse(){
+  return `<button class="az-btn az-ghost" onclick="openPopupThen('step13')" style="border-color:var(--life);color:var(--life);">
+    <span class="az-icon">✕</span>
+    <div class="az-text"><span class="az-label">Archivia come rifiutato</span><span class="az-sub">Step 13 — archiviato con note</span></div>
+  </button>`;
+}
+
+function renderAzioni(step){
+  const title = document.getElementById('azioni-title');
+  const list  = document.getElementById('azioni-list');
+  if (!title || !list) return;
+  title.textContent = 'Avanzamento — Step ' + step;
+  let html = '';
+  if (step <= 2) {
+    html += azBtn('✓','Scheda completata — avanza a Step 2','Segna A5.2 come fatto','step2');
+    html += azRefuse();
+  } else if (step === 3) {
+    html += azBtn('✓','Media kit approvato — avanza a Step 4','Scheda + media kit pronti','step4');
+    html += azRefuse();
+  } else if (step === 4) {
+    html += azBtn('✓','Testo mail pronto — avanza a Step 5','TXT salvato in Drive A6','step5');
+    html += azRefuse();
+  } else if (step === 5) {
+    html += azBtn('✓','Bozza pronta — avanza a Step 6','Gmail draft creata','step6');
+    html += azRefuse();
+  } else if (step === 6) {
+    html += azBtn('✓','Mail inviata — avanza a Step 7','Segna come inviata','step7');
+    html += azRefuse();
+  } else if (step === 7) {
+    html += azBtn('✓','Risposta ricevuta — avanza a Step 8','Hanno risposto','step8');
+    html += azRefuse();
+  } else if (step === 8) {
+    html += azBtn('✓','Risposta gestita — avanza a Step 9','','step9');
+    html += azBtn('🤝','Salta a In trattativa — Step 10','Avanza direttamente','step10');
+    html += azRefuse();
+  } else if (step === 9) {
+    html += azBtn('🤝','In trattativa — avanza a Step 10','','step10');
+    html += azRefuse();
+  } else if (step === 10) {
+    html += azBtn('✓','Accordo raggiunto — avanza a Step 11','','step11');
+    html += azRefuse();
+  } else if (step === 11) {
+    html += azBtn('✓','Contratto firmato — avanza a Step 12','','step12');
+    html += azRefuse();
+  } else if (step >= 12) {
+    html += '<div style="font-size:.78rem;color:var(--maker);padding:8px 0;font-weight:600;">✓ Pipeline completata per questa azienda.</div>';
+  }
+  list.innerHTML = html;
+}
+
+/* ── Accesso rapido agenti — sempre visibile, indipendente dallo step ── */
+const PROJ = {
+  A51: 'https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f',
+  A52: 'https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b',
+  A61: 'https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159',
+  A62: 'https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0'
+};
+
+function buildMsgsForCompany(nome){
+  const n = nome || '[NOME AZIENDA]';
+  return {
+    A5_1: "Ciao A5.1.\nFacciamo una ricerca sull'azienda: " + n + "\n\nDopo l'analisi, aggiorna la pipeline usando il connector Supabase GDC.\nTabella: companies\nProgetto: pnzabwfsgkvejnrtrjcp\n\nSe l'azienda non esiste: INSERT. Se esiste già: UPDATE.\nConferma in chat l'operazione eseguita con nome, score e step_attuale.",
+    A5_2: "Ciao A5.2.\nProduci la scheda aziendale per: " + n + "\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n\nPrima di produrre il DOCX:\n1. Cerca in Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L) la cartella " + n + "\n2. Se non esiste: creala\n3. Comunicami il percorso dove caricare il file\n\nPoi produci il DOCX completo con tutte le sezioni.",
+    A6_1: "Ciao A6.1.\nProduci il Media Kit per: " + n + "\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella " + n + " e leggi il file scheda_" + n + ".docx.\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n-> lista la cartella e identifica autonomamente i 2 report piu recenti.\n\nCartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):\nCerca se esiste gia la cartella " + n + ":\n- Se esiste: non fare nulla, indicami il link.\n- Se non esiste: creala e indicami il link.\n\nProduci il PPTX Media Kit e presentamelo via present_files.\n\nNota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sara il PDF ad essere allegato da A7 alla mail.",
+    A6_2: "Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: " + n + "\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella " + n + " e leggi il file scheda_" + n + ".docx.\n\nMedia Kit (A6.1) in Drive A6 — opzionale ma consigliato:\nCerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella " + n + ".\nSe trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.\n\nDopo approvazione, salva il TXT nella sottocartella specifica dell'azienda:\nCartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella " + n + " -> salva li il file\n-> mail_" + n + "_YYYY-MM-DD.txt\nNon salvare nella radice di Aziende ne in altre cartelle."
+  };
+}
+
+function renderAgentQuick(co){
+  const wrap = document.getElementById('agentQuickList');
+  if (!wrap) return;
+  MSGS = buildMsgsForCompany(co.nome);
+  const agents = [
+    { id:'A5_1', label:'A5.1 — Ricerca azienda', url:PROJ.A51 },
+    { id:'A5_2', label:'A5.2 — Scheda azienda',  url:PROJ.A52 },
+    { id:'A6_1', label:'A6.1 — Media kit',       url:PROJ.A61 },
+    { id:'A6_2', label:'A6.2 — Mail e trattativa', url:PROJ.A62 }
+  ];
+  wrap.innerHTML = agents.map(a => `
+    <div class="agent-row">
+      <span class="agent-row-name">${a.label}</span>
+      <div class="agent-row-btns">
+        <a class="agent-mini-btn" href="${a.url}" target="_blank">💬 Apri chat</a>
+        <button class="agent-mini-btn copy" onclick="openMsg('${a.id}','Messaggio ${a.label}',MSGS['${a.id}'])">📋 Messaggio</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── execAction aggiornato ── */
+function execAction(action, note){
+  const stepMap = {step2:2,step4:4,step5:5,step6:6,step7:7,step8:8,step9:9,step10:10,step11:11,step12:12,step13:13};
+  if (stepMap[action] !== undefined) {
+    setStep(stepMap[action]);
     if(note) saveNoteText(note);
   }
 }
@@ -824,22 +1099,16 @@ function saveNote(){
   document.getElementById('newNote').value = '';
 }
 
-/* ── A7 — Genera bozza Gmail ── */
+/* ── A7 — Genera bozza Gmail (reale, wired a GitHub Actions) ── */
+const GH_OWNER = 'giandcdalcorso11-coder';
+const GH_REPO  = 'GDC-DASHBOARD';
+const GH_WORKFLOW = 'a7_gmail_drafter.yml';
 
-// Dati simulati — verranno letti da Supabase nella chat del codice
-const company = {
-  name: 'Mizuno Italia',
-  has_mail_txt:     true,   // ← cambia a false per testare stato disabilitato
-  has_mediakit_pdf: true,   // ← cambia a false per testare stato disabilitato
-  a7_status:        null,   // ← imposta 'draft_created' per testare stato completato
-  a7_processed_at:  null    // ← es. '2026-06-10T09:30:00Z'
-};
-
-function buildA7Btn(){
-  var hasTxt = !!company.has_mail_txt;
-  var hasPdf = !!company.has_mediakit_pdf;
-  var a7st   = company.a7_status || null;
-  var a7at   = company.a7_processed_at || null;
+function buildA7Btn(co){
+  var hasTxt = !!co.doc_mail_txt_url;
+  var hasPdf = !!co.doc_mediakit_pdf_url;
+  var a7st   = co.a7_status || null;
+  var a7at   = co.a7_processed_at || null;
   var wrap   = document.getElementById('a7-btn-wrap');
   if(!wrap) return;
 
@@ -863,7 +1132,7 @@ function buildA7Btn(){
     return;
   }
 
-  // Stato 2 — ATTIVO
+  // Stato 2 — ATTIVO (nota: hasTxt/hasPdf dipendono dalle colonne doc_*_url, popolate da Fase 4 pipeline_watcher — finché non esiste, resta sempre in stato "in attesa")
   if(hasTxt && hasPdf){
     wrap.innerHTML =
       '<button class="az-btn az-a7-active" id="btn-genera-bozza" onclick="onGeneraBozza()">' +
@@ -890,12 +1159,95 @@ function buildA7Btn(){
     '</button>';
 }
 
-function onGeneraBozza(){
-  // Logica GitHub Actions da collegare nella chat del codice
-  console.log('[A7] Genera bozza Gmail per:', company.name);
+function saveGhToken(){
+  const val = document.getElementById('a7TokenInput').value.trim();
+  if (!val) return;
+  localStorage.setItem('gdc_gh_token', val);
+  document.getElementById('a7TokenSection').style.display = 'none';
+  document.getElementById('a7StatusMsg').textContent = '✓ Token salvato.';
+  document.getElementById('a7TokenInput').value = '';
 }
 
-buildA7Btn();
+async function onGeneraBozza(){
+  if (!currentCompanyData) return;
+  const nome = currentCompanyData.nome;
+  const btn = document.getElementById('btn-genera-bozza');
+  const statusEl = document.getElementById('a7StatusMsg');
+  const ghToken = localStorage.getItem('gdc_gh_token') || '';
+
+  if (!ghToken) {
+    document.getElementById('a7TokenSection').style.display = 'block';
+    statusEl.textContent = '';
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.querySelector('.az-label').textContent = 'Avvio in corso...'; }
+  statusEl.textContent = '';
+
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + ghToken,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main', inputs: { company_name: nome } })
+      }
+    );
+    if (r.status === 204) {
+      statusEl.textContent = '✓ A7 avviato per ' + nome + '. Controlla GitHub Actions — la pagina non si aggiorna da sola, ricarica tra qualche minuto.';
+      if (btn) { btn.querySelector('.az-label').textContent = '✓ Avviato'; }
+    } else {
+      const err = await r.text();
+      statusEl.textContent = 'Errore GitHub: ' + r.status + ' — ' + err.substring(0, 80);
+      if (btn) { btn.disabled = false; btn.querySelector('.az-label').textContent = 'Genera bozza Gmail ↗'; }
+    }
+  } catch(e) {
+    statusEl.textContent = 'Errore di rete: ' + e.message;
+    if (btn) { btn.disabled = false; btn.querySelector('.az-label').textContent = 'Genera bozza Gmail ↗'; }
+  }
+}
+
+/* ── Messaggio precompilato — popup, salvataggio bozza locale per azienda ── */
+const EDITABLE_IDS = ['A5_1','A5_2','A6_1','A6_2'];
+let _curMsgId = '', _defaultMsg = '';
+function lsKey(id){ return 'gdc_msg_' + id + '_' + (currentCompanyId || 'x'); }
+function getSavedMsg(id){ try{ return localStorage.getItem(lsKey(id)) || null; } catch(e){ return null; } }
+function saveMsg(id, txt){ try{ localStorage.setItem(lsKey(id), txt); } catch(e){} }
+function resetMsg(){
+  const ta = document.getElementById('msgText');
+  ta.value = _defaultMsg;
+  saveMsg(_curMsgId, _defaultMsg);
+  document.getElementById('msgEditHint').textContent = 'Ripristinato';
+  setTimeout(() => document.getElementById('msgEditHint').textContent = 'Modificabile — le modifiche vengono salvate', 1500);
+}
+function openMsg(id, title, msg){
+  _curMsgId = id; _defaultMsg = msg;
+  const saved = getSavedMsg(id);
+  const txt = saved || msg;
+  const ta = document.getElementById('msgText');
+  ta.value = txt;
+  ta.readOnly = false;
+  document.getElementById('msgTitle').textContent = title;
+  document.getElementById('msgEditHint').textContent = 'Modificabile — le modifiche vengono salvate';
+  document.getElementById('msgResetBtn').style.display = '';
+  document.getElementById('msgCopyBtn').textContent = 'Copia';
+  document.getElementById('msgCopyBtn').className = 'msg-copy-btn';
+  document.getElementById('msgOverlay').classList.add('open');
+  ta.oninput = () => saveMsg(id, ta.value);
+}
+function closeMsg(){ document.getElementById('msgOverlay').classList.remove('open'); }
+function closeMsgIfBg(e){ if(e.target === document.getElementById('msgOverlay')) closeMsg(); }
+function copyMsgPopup(){
+  const txt = document.getElementById('msgText').value;
+  navigator.clipboard && navigator.clipboard.writeText(txt).catch(()=>{});
+  const btn = document.getElementById('msgCopyBtn');
+  btn.textContent = 'Copiato ✓'; btn.className = 'msg-copy-btn copied';
+  setTimeout(() => { btn.textContent = 'Copia'; btn.className = 'msg-copy-btn'; }, 2000);
+}
 
 /* ══ GDC LOGO MASTER ANIM ══ */
 (function(){
