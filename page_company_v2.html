@@ -224,6 +224,8 @@ body{
 .agent-mini-btn{ display:flex; align-items:center; gap:4px; padding:6px 10px; border-radius:8px; border:1.5px solid var(--bordo); background:var(--bianco); font-size:.66rem; font-weight:700; color:var(--nero); cursor:pointer; text-decoration:none; font-family:'Jost',sans-serif; white-space:nowrap; }
 .agent-mini-btn:hover{ border-color:var(--athlete); }
 .agent-mini-btn.copy{ color:var(--athlete); border-color:var(--ath-bg); }
+.agent-mini-btn:disabled{ opacity:.5; cursor:default; }
+.agent-mini-btn:disabled:hover{ border-color:var(--bordo); }
 
 /* ── POPUP MESSAGGIO PRECOMPILATO ── */
 .msg-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:300; display:none; align-items:flex-end; justify-content:center; }
@@ -590,54 +592,20 @@ body{
     </div>
   </div>
 
-  <!-- ③ AZIONI CONTESTUALI — dinamiche per step -->
+  <!-- ③ AZIONI RAPIDE — agenti + A7, sempre visibili -->
   <div class="section" id="azioni-section">
     <div class="sec-header">
-      <span class="sec-title">Agenti — accesso rapido</span>
+      <span class="sec-title">Azioni rapide</span>
     </div>
     <div class="sec-body">
       <div class="agent-quick-list" id="agentQuickList"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="sec-header">
-      <span class="sec-title">Bozza Gmail</span>
-    </div>
-    <div class="sec-body">
-      <div class="azioni-list" id="a7-btn-wrap"></div>
-      <div class="azioni-list" style="margin-top:8px;">
-        <a class="az-btn az-secondary" href="https://mail.google.com/mail/u/0/#drafts" target="_blank" style="text-decoration:none;">
-          <span class="az-icon">📧</span>
-          <div class="az-text"><span class="az-label">Apri Gmail Bozze</span><span class="az-sub">Controlla o invia la bozza generata</span></div>
-        </a>
-      </div>
-      <div id="a7TokenSection" style="display:none;margin-top:12px;border-top:1.5px solid var(--bordo);padding-top:12px;">
+      <div id="a7TokenSection" style="display:none;margin-top:4px;margin-bottom:8px;border-top:1.5px solid var(--bordo);padding-top:12px;">
         <div style="font-size:.7rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">⚠ GitHub Token mancante</div>
         <input type="password" id="a7TokenInput" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;font-family:'Jost',sans-serif;font-size:.78rem;padding:9px 12px;border:1.5px solid var(--sabbia);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;margin-bottom:8px;box-sizing:border-box;">
         <button onclick="saveGhToken()" style="width:100%;font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;padding:9px;border:none;border-radius:10px;background:var(--sab-bg);color:#7A5C20;cursor:pointer;">Salva token</button>
         <div style="font-size:.62rem;color:var(--grigio);margin-top:6px;line-height:1.5;">Token GitHub con scope <strong>workflow</strong>. Salvato solo in questo browser (condiviso con la Home).</div>
       </div>
-      <div class="a7-status-msg" id="a7StatusMsg" style="font-size:.7rem;color:var(--grigio);margin-top:8px;"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="sec-header">
-      <span class="sec-title" id="azioni-title">Avanzamento</span>
-    </div>
-    <div class="sec-body">
-      <div class="azioni-list" id="azioni-list"></div>
-    </div>
-  </div>
-
-  <!-- ④ DOCUMENTI -->
-  <div class="section">
-    <div class="sec-header">
-      <span class="sec-title">Documenti Drive</span>
-    </div>
-    <div class="sec-body">
-      <div class="doc-list" id="docList"><div style="font-size:.72rem;color:var(--grigio);padding:8px 0;">Caricamento documenti...</div></div>
+      <div class="a7-status-msg" id="a7StatusMsg" style="font-size:.7rem;color:var(--grigio);"></div>
     </div>
   </div>
 
@@ -815,34 +783,6 @@ function populatePage(co) {
   renderAzioni(step);
   renderAgentQuick(co);
   buildA7Btn(co);
-
-  // Documenti Drive — legge URL reali da Supabase (colonne doc_*_url, quando esistenti via select=*)
-  // Finché Fase 4 (pipeline_watcher) non scrive questi campi, mostra placeholder "Non ancora generato"
-  const docList = document.getElementById('docList');
-  if (docList) {
-    const docsConfig = [
-      { type:'docx', label:'DOCX', desc:'Scheda azienda (A5.2)',        urlKey:'doc_scheda_url' },
-      { type:'pptx', label:'PPTX', desc:'Media kit (A6.1)',              urlKey:'doc_mediakit_pptx_url' },
-      { type:'pdf',  label:'PDF',  desc:'Media kit PDF (revisionato)',   urlKey:'doc_mediakit_pdf_url' },
-      { type:'txt',  label:'TXT',  desc:'Testo mail (A6.2)',             urlKey:'doc_mail_txt_url' },
-    ];
-    docList.innerHTML = docsConfig.map(d => {
-      const url = co[d.urlKey];
-      if (url) {
-        return `<a class="doc-item" href="${url}" target="_blank">
-          <div class="doc-icon ${d.type}">${d.label}</div>
-          <div class="doc-info"><div class="doc-name">${d.desc}</div><div class="doc-date">Apri file →</div></div>
-          <span class="doc-arrow">→</span>
-        </a>`;
-      } else {
-        return `<div class="doc-item" style="opacity:.5;cursor:default;">
-          <div class="doc-icon ${d.type}">${d.label}</div>
-          <div class="doc-info"><div class="doc-name">${d.desc}</div><div class="doc-date">Non ancora generato</div></div>
-          <span class="doc-arrow" style="color:var(--grigio)">—</span>
-        </div>`;
-      }
-    }).join('');
-  }
 
   // Note da Supabase
   const noteList = document.getElementById('noteList');
@@ -1027,15 +967,23 @@ function buildMsgsForCompany(nome){
   };
 }
 
+function driveSearchFallback(nome){
+  return 'https://drive.google.com/drive/search?q=' + encodeURIComponent(nome || '');
+}
+
 function renderAgentQuick(co){
   const wrap = document.getElementById('agentQuickList');
   if (!wrap) return;
   MSGS = buildMsgsForCompany(co.nome);
+  const fallback = driveSearchFallback(co.nome);
+  const folderScheda  = co.drive_folder_scheda  || fallback; // cartella A5.2 (Schede aziendali/[NOME])
+  const folderAzienda = co.drive_folder_azienda || fallback; // cartella A6.1/A6.2/A7 (Aziende/[NOME]) — stessa per tutti e tre
+
   const agents = [
-    { id:'A5_1', label:'A5.1 — Ricerca azienda', url:PROJ.A51 },
-    { id:'A5_2', label:'A5.2 — Scheda azienda',  url:PROJ.A52 },
-    { id:'A6_1', label:'A6.1 — Media kit',       url:PROJ.A61 },
-    { id:'A6_2', label:'A6.2 — Mail e trattativa', url:PROJ.A62 }
+    { id:'A5_1', label:'A5.1 — Ricerca azienda',   url:PROJ.A51, folder:fallback },
+    { id:'A5_2', label:'A5.2 — Scheda azienda',    url:PROJ.A52, folder:folderScheda },
+    { id:'A6_1', label:'A6.1 — Media kit',         url:PROJ.A61, folder:folderAzienda },
+    { id:'A6_2', label:'A6.2 — Mail e trattativa', url:PROJ.A62, folder:folderAzienda }
   ];
   wrap.innerHTML = agents.map(a => `
     <div class="agent-row">
@@ -1043,9 +991,15 @@ function renderAgentQuick(co){
       <div class="agent-row-btns">
         <a class="agent-mini-btn" href="${a.url}" target="_blank">💬 Apri chat</a>
         <button class="agent-mini-btn copy" onclick="openMsg('${a.id}','Messaggio ${a.label}',MSGS['${a.id}'])">📋 Messaggio</button>
+        <a class="agent-mini-btn" href="${a.folder}" target="_blank">📁 Cartella</a>
       </div>
     </div>
-  `).join('');
+  `).join('') + `
+    <div class="agent-row">
+      <span class="agent-row-name">A7 — Mail generator</span>
+      <div class="agent-row-btns" id="a7-btn-wrap"></div>
+    </div>
+  `;
 }
 
 /* ── execAction aggiornato ── */
@@ -1105,58 +1059,26 @@ const GH_REPO  = 'GDC-DASHBOARD';
 const GH_WORKFLOW = 'a7_gmail_drafter.yml';
 
 function buildA7Btn(co){
-  var hasTxt = !!co.doc_mail_txt_url;
-  var hasPdf = !!co.doc_mediakit_pdf_url;
-  var a7st   = co.a7_status || null;
-  var a7at   = co.a7_processed_at || null;
-  var wrap   = document.getElementById('a7-btn-wrap');
+  var wrap = document.getElementById('a7-btn-wrap');
   if(!wrap) return;
+  var a7st = co.a7_status || null;
+  var a7at = co.a7_processed_at || null;
+  var folderAzienda = co.drive_folder_azienda || driveSearchFallback(co.nome);
 
-  // Stato 3 — COMPLETATO
+  var genBtn;
   if(a7st === 'draft_created'){
     var dateStr = '';
     if(a7at){
-      try{
-        var d = new Date(a7at);
-        dateStr = d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
-      } catch(e){}
+      try{ dateStr = new Date(a7at).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'}); } catch(e){}
     }
-    wrap.innerHTML =
-      '<button class="az-btn az-a7-done" disabled>' +
-        '<span class="az-icon">✓</span>' +
-        '<div class="az-text">' +
-          '<span class="az-label">Bozza creata</span>' +
-          (dateStr ? '<span class="az-sub">Creata il ' + dateStr + '</span>' : '') +
-        '</div>' +
-      '</button>';
-    return;
+    genBtn = '<span class="agent-mini-btn" style="opacity:.55;cursor:default;">✓ Bozza creata' + (dateStr ? ' (' + dateStr + ')' : '') + '</span>';
+  } else {
+    genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" onclick="onGeneraBozza()">📨 Genera bozza</button>';
   }
 
-  // Stato 2 — ATTIVO (nota: hasTxt/hasPdf dipendono dalle colonne doc_*_url, popolate da Fase 4 pipeline_watcher — finché non esiste, resta sempre in stato "in attesa")
-  if(hasTxt && hasPdf){
-    wrap.innerHTML =
-      '<button class="az-btn az-a7-active" id="btn-genera-bozza" onclick="onGeneraBozza()">' +
-        '<span class="az-icon">📨</span>' +
-        '<div class="az-text">' +
-          '<span class="az-label">Genera bozza Gmail ↗</span>' +
-          '<span class="az-sub">TXT + PDF pronti — A7 crea la bozza</span>' +
-        '</div>' +
-      '</button>';
-    return;
-  }
-
-  // Stato 1 — DISABILITATO
-  var mancanti = [];
-  if(!hasTxt) mancanti.push('mail TXT');
-  if(!hasPdf) mancanti.push('media kit PDF');
-  wrap.innerHTML =
-    '<button class="az-btn az-a7-disabled" disabled>' +
-      '<span class="az-icon">📨</span>' +
-      '<div class="az-text">' +
-        '<span class="az-label">Genera bozza Gmail</span>' +
-        '<span class="az-sub">In attesa di: ' + mancanti.join(' · ') + '</span>' +
-      '</div>' +
-    '</button>';
+  wrap.innerHTML = genBtn +
+    '<a class="agent-mini-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank">📧 Gmail Bozze</a>' +
+    '<a class="agent-mini-btn" href="' + folderAzienda + '" target="_blank">📁 Cartella</a>';
 }
 
 function saveGhToken(){
@@ -1181,7 +1103,7 @@ async function onGeneraBozza(){
     return;
   }
 
-  if (btn) { btn.disabled = true; btn.querySelector('.az-label').textContent = 'Avvio in corso...'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Avvio...'; }
   statusEl.textContent = '';
 
   try {
@@ -1199,15 +1121,15 @@ async function onGeneraBozza(){
     );
     if (r.status === 204) {
       statusEl.textContent = '✓ A7 avviato per ' + nome + '. Controlla GitHub Actions — la pagina non si aggiorna da sola, ricarica tra qualche minuto.';
-      if (btn) { btn.querySelector('.az-label').textContent = '✓ Avviato'; }
+      if (btn) { btn.textContent = '✓ Avviato'; }
     } else {
       const err = await r.text();
       statusEl.textContent = 'Errore GitHub: ' + r.status + ' — ' + err.substring(0, 80);
-      if (btn) { btn.disabled = false; btn.querySelector('.az-label').textContent = 'Genera bozza Gmail ↗'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📨 Genera bozza'; }
     }
   } catch(e) {
     statusEl.textContent = 'Errore di rete: ' + e.message;
-    if (btn) { btn.disabled = false; btn.querySelector('.az-label').textContent = 'Genera bozza Gmail ↗'; }
+    if (btn) { btn.disabled = false; btn.textContent = '📨 Genera bozza'; }
   }
 }
 
