@@ -30,6 +30,7 @@ import re
 import csv
 import io
 import requests
+from email.mime.text import MIMEText
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 from calendar import monthrange
@@ -56,6 +57,14 @@ SUPA_URL     = os.environ["SUPABASE_URL"]
 SUPA_KEY     = os.environ["SUPABASE_KEY"]
 VAPID_PRIV   = os.environ["VAPID_PRIVATE_KEY"]
 VAPID_EMAIL  = os.environ["VAPID_EMAIL"]
+
+# Gmail — invio email reale (non bozza) per notifica MBS mancante (step 20, 3.9)
+# Facoltative: se assenti, send_email() fa solo un print e non blocca la run
+GMAIL_CLIENT_ID     = os.environ.get("GMAIL_CLIENT_ID", "")
+GMAIL_CLIENT_SECRET = os.environ.get("GMAIL_CLIENT_SECRET", "")
+GMAIL_REFRESH_TOKEN = os.environ.get("GMAIL_REFRESH_TOKEN", "")
+GMAIL_FROM          = "giandcdalcorso11@gmail.com"
+GMAIL_TO            = "giandcdalcorso11@gmail.com"
 
 EXCEL_FILENAME       = "Instagram_Analytics_GDC"
 EXCEL_FILENAME_LOCAL = "Instagram_Analytics_GDC.xlsx"
@@ -187,6 +196,66 @@ def fetch_posts():
     return posts
 
 
+# ─── EMAIL NOTIFICHE (Gmail — invio reale, non bozza — step 20, 3.9) ────────
+
+def get_gmail_service():
+    from google.oauth2.credentials import Credentials as GmailCredentials
+    from google.auth.transport.requests import Request as GmailRequest
+    creds = GmailCredentials(
+        token=None,
+        refresh_token=GMAIL_REFRESH_TOKEN,
+        client_id=GMAIL_CLIENT_ID,
+        client_secret=GMAIL_CLIENT_SECRET,
+        token_uri="https://oauth2.googleapis.com/token",
+        scopes=["https://www.googleapis.com/auth/gmail.send"]
+    )
+    creds.refresh(GmailRequest())
+    return build("gmail", "v1", credentials=creds)
+
+
+def send_email(subject, body_text):
+    """Invia una email reale (non bozza). Richiede scope gmail.send sul
+    refresh token — vedi step 20, punto 6. Se le credenziali non sono
+    configurate, non blocca la run: logga soltanto."""
+    if not (GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET and GMAIL_REFRESH_TOKEN):
+        print(f"    Email: credenziali Gmail non configurate, skip ({subject})")
+        return
+    try:
+        msg = MIMEText(body_text, "plain", "utf-8")
+        msg["to"] = GMAIL_TO
+        msg["from"] = GMAIL_FROM
+        msg["subject"] = subject
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+        gmail = get_gmail_service()
+        gmail.users().messages().send(userId="me", body={"raw": raw}).execute()
+        print(f"    Email inviata: {subject}")
+    except Exception as e:
+        print(f"    ⚠ Invio email fallito ({subject}): {e}")
+
+
+# ─── FLAG SUPABASE — CSV MBS mancante (step 20, 3.9/3.10) ───────────────────
+
+def supabase_get_mbs_flag():
+    """Legge lo stato attuale del flag mbs_missing per l'agente A1."""
+    supabase = create_client(SUPA_URL, SUPA_KEY)
+    res = supabase.table("agent_states").select("mbs_missing,mbs_missing_mese").eq("agent_id", "a1").execute()
+    if res.data:
+        row = res.data[0]
+        return bool(row.get("mbs_missing", False)), row.get("mbs_missing_mese")
+    return False, None
+
+
+def supabase_set_mbs_flag(missing, mese=None):
+    """Scrive/aggiorna il flag mbs_missing per l'agente A1 (usato anche da a1_mbs_watcher.py)."""
+    supabase = create_client(SUPA_URL, SUPA_KEY)
+    supabase.table("agent_states").upsert({
+        "agent_id": "a1",
+        "mbs_missing": missing,
+        "mbs_missing_mese": mese,
+        "updated_at": datetime.utcnow().isoformat()
+    }, on_conflict="agent_id").execute()
+
+
 MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS" — struttura flat
 MBS_FILE_SUFFIX = "_3909528329355109.csv"              # File Content/Post — unico che importiamo
 
@@ -244,15 +313,38 @@ def fetch_mbs_reposts(drive_service):
     stesso formato usato per i post originali (vedi step 20, 4.2).
 
     Se il file non e' ancora su Drive la run prosegue comunque, senza
-    repost per questo giro — nessun errore bloccante.
-    Notifica email + flag a1_mbs_missing su Supabase: Blocco 3, punto 7,
-    ancora DA FARE — non implementato in questo step.
+    repost per questo giro — nessun errore bloccante. Invia una email
+    reale di avviso e scrive il flag mbs_missing su Supabase, cosi'
+    a1_mbs_watcher.py sa quando ricontrollare (step 20, 3.9/3.10).
     """
     print("  → Fetch repost da CSV MBS...")
     file_id = find_mbs_csv(drive_service)
+
     if not file_id:
         print(f"    ⚠ CSV MBS non trovato per {MESE_LABEL} — repost vuoti per questo run")
+        send_email(
+            f"⚠ A1: file MBS mancante — {MESE_LABEL}",
+            f"Il file MBS repost per {MESE_LABEL} non è ancora su Drive "
+            f"(cartella 'Archivio docs MBS').\n\n"
+            f"La run di A1 è proseguita comunque: post e stories originali "
+            f"sono stati aggiornati, ma i repost non sono inclusi in questo giro.\n\n"
+            f"Carica il CSV Content Insights quando puoi — a1_mbs_watcher.py "
+            f"lo rileverà in automatico e completerà i repost senza bisogno "
+            f"di rilanciare nulla a mano (fino al giorno 10 del mese)."
+        )
+        supabase_set_mbs_flag(True, MESE_LABEL)
         return []
+
+    # File trovato: se il flag era attivo per QUESTO mese, vuol dire che
+    # arriviamo da un run precedente senza CSV — manda la conferma e pulisci.
+    was_missing, missing_mese = supabase_get_mbs_flag()
+    if was_missing and missing_mese == MESE_LABEL:
+        send_email(
+            f"✅ A1: repost di {MESE_LABEL} recuperati",
+            f"Il file MBS per {MESE_LABEL} è stato trovato ed elaborato. "
+            f"I repost sono stati inseriti nel foglio Instagram_Analytics_GDC."
+        )
+        supabase_set_mbs_flag(False, None)
 
     from googleapiclient.http import MediaIoBaseDownload
     request = drive_service.files().get_media(fileId=file_id)
