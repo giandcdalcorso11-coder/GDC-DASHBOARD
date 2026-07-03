@@ -22,7 +22,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
   .date-chip{background:#2E2E2E;border-color:var(--border);}
   .empty-state{background:var(--bianco);}
-  .sort-btn{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}
+  .filters-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}
 }
 
 /* ══ HEADER ══ */
@@ -57,14 +57,38 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .search-input:focus{border-color:var(--sabbia);}
 .search-input::placeholder{color:#AAA4A0;}
 
-/* ══ FILTER + SORT ══ */
-.filter-row{display:flex;align-items:center;gap:7px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-.filter-row::-webkit-scrollbar{display:none;}
-.filter-pill{flex-shrink:0;padding:5px 13px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);font-size:.72rem;font-weight:700;color:var(--grigio);cursor:pointer;transition:all .15s;white-space:nowrap;}
+/* ══ FILTRI PILL ══ */
+.filters-bar{display:flex;}
+.filters-pill{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);font-size:.76rem;font-weight:700;color:var(--grigio);cursor:pointer;transition:all .15s;font-family:'Jost',sans-serif;}
+.filters-pill:hover{border-color:var(--grigio);color:var(--nero);}
+.filters-pill.active{background:var(--sabbia);border-color:var(--sabbia-dk);color:var(--nero);}
+
+/* ══ PANNELLO FILTRI (bottom sheet) ══ */
+.filters-overlay{position:fixed;inset:0;background:rgba(28,28,28,.4);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;display:flex;align-items:flex-end;justify-content:center;}
+.filters-overlay.open{opacity:1;pointer-events:auto;}
+.filters-sheet{width:100%;max-width:540px;background:var(--bianco);border-radius:20px 20px 0 0;padding:18px 16px 24px;transform:translateY(100%);transition:transform .25s cubic-bezier(.22,.8,.36,1);max-height:80vh;overflow-y:auto;}
+.filters-overlay.open .filters-sheet{transform:translateY(0);}
+.filters-sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.filters-sheet-title{font-size:.95rem;font-weight:800;}
+.filters-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--carta);color:var(--grigio);font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.filters-section{margin-bottom:16px;}
+.filters-section-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grigio);margin-bottom:8px;}
+.filters-chip-row{display:flex;flex-wrap:wrap;gap:7px;}
+.filter-pill{flex-shrink:0;padding:6px 13px;border-radius:999px;background:var(--carta);border:1.5px solid var(--border);font-size:.74rem;font-weight:700;color:var(--grigio);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Jost',sans-serif;}
 .filter-pill.active{background:var(--sabbia);border-color:var(--sabbia-dk);color:var(--nero);}
 .filter-pill:hover:not(.active){border-color:var(--grigio);color:var(--nero);}
-.sort-btn{margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:4px;padding:5px 11px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);font-size:.7rem;font-weight:700;color:var(--grigio);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.sort-btn:hover{border-color:var(--grigio);color:var(--nero);}
+.sort-pill{flex-shrink:0;display:flex;align-items:center;gap:3px;padding:6px 13px;border-radius:999px;background:var(--carta);border:1.5px solid var(--border);font-size:.74rem;font-weight:700;color:var(--grigio);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Jost',sans-serif;}
+.sort-pill.active{background:var(--athlete);border-color:var(--athlete);color:#fff;}
+.sort-pill:hover:not(.active){border-color:var(--grigio);color:var(--nero);}
+.sort-arrow{font-size:.7rem;}
+.filters-reset-btn{width:100%;padding:10px;border-radius:12px;background:none;border:1.5px solid var(--border);color:var(--grigio);font-size:.76rem;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;transition:all .15s;}
+.filters-reset-btn:hover{border-color:var(--life);color:var(--life);}
+
+@media(prefers-color-scheme:dark){
+  .filters-sheet{background:var(--bianco);}
+  .filters-close{background:#1A1A1A;}
+  .filter-pill,.sort-pill{background:#1A1A1A;border-color:var(--border);}
+}
 
 /* ══ SECTION LABEL ══ */
 .section-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grigio);padding:0 2px;}
@@ -157,13 +181,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 
-  <a href="page_home_v25.html" class="back-btn">← Home</a>
-  <a class="back-btn" href="page_hub_v1.html" style="margin-left:8px;">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-    Hub
-  </a>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <a href="page_home_v25.html" class="back-btn">← Home</a>
+    <a class="back-btn" href="page_hub_v1.html">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Hub
+    </a>
+  </div>
 
   <div>
     <div class="page-title">Pipeline Sponsorizzazioni</div>
@@ -196,19 +222,61 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <input type="text" class="search-input" id="searchInput" placeholder="Cerca azienda…" oninput="applyFilters()">
   </div>
 
-  <!-- FILTER PILLS + SORT -->
-  <div class="filter-row">
-    <button class="filter-pill active" onclick="setFilter('tutte',this)">Tutte</button>
-    <button class="filter-pill" onclick="setFilter('outreach',this)">Outreach</button>
-    <button class="filter-pill" onclick="setFilter('risposta',this)">Risposta</button>
-    <button class="filter-pill" onclick="setFilter('trattativa',this)">Trattativa</button>
-    <button class="filter-pill" onclick="setFilter('rifiutate',this)">Rifiutate</button>
-    <button class="sort-btn" id="sortBtn" onclick="toggleSort()">↕ Step</button>
+  <!-- FILTRI PILL -->
+  <div class="filters-bar">
+    <button class="filters-pill" id="filtersPillBtn" onclick="openFiltersPanel()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="4 4 20 4 14 12 14 19 10 21 10 12 4 4"/></svg>
+      <span id="filtersPillLabel">Filtri</span>
+    </button>
   </div>
 
   <!-- LIST -->
   <div class="co-list" id="coList"></div>
 
+</div>
+
+<!-- PANNELLO FILTRI -->
+<div class="filters-overlay" id="filtersOverlay" onclick="closeFiltersPanel(event)">
+  <div class="filters-sheet" onclick="event.stopPropagation()">
+    <div class="filters-sheet-header">
+      <span class="filters-sheet-title">Filtri e ordinamento</span>
+      <button class="filters-close" onclick="closeFiltersPanel()">✕</button>
+    </div>
+
+    <div class="filters-section">
+      <div class="filters-section-label">Stato</div>
+      <div class="filters-chip-row">
+        <button class="filter-pill active" data-filter="tutte" onclick="setFilter('tutte',this)">Tutte</button>
+        <button class="filter-pill" data-filter="outreach" onclick="setFilter('outreach',this)">Outreach</button>
+        <button class="filter-pill" data-filter="risposta" onclick="setFilter('risposta',this)">Risposta</button>
+        <button class="filter-pill" data-filter="trattativa" onclick="setFilter('trattativa',this)">Trattativa</button>
+        <button class="filter-pill" data-filter="rifiutate" onclick="setFilter('rifiutate',this)">Rifiutate</button>
+      </div>
+    </div>
+
+    <div class="filters-section">
+      <div class="filters-section-label">Score</div>
+      <div class="filters-chip-row">
+        <button class="filter-pill active" data-score="tutti" onclick="setScoreFilter('tutti',this)">Tutti</button>
+        <button class="filter-pill" data-score="alto" onclick="setScoreFilter('alto',this)">Alto 7-10</button>
+        <button class="filter-pill" data-score="medio" onclick="setScoreFilter('medio',this)">Medio 5-6</button>
+        <button class="filter-pill" data-score="basso" onclick="setScoreFilter('basso',this)">Basso 1-4</button>
+      </div>
+    </div>
+
+    <div class="filters-section">
+      <div class="filters-section-label">Ordina per</div>
+      <div class="filters-chip-row">
+        <button class="sort-pill active" data-sort="step" onclick="setSort('step',this)">Step <span class="sort-arrow">↓</span></button>
+        <button class="sort-pill" data-sort="score" onclick="setSort('score',this)">Score</button>
+        <button class="sort-pill" data-sort="followup" onclick="setSort('followup',this)">Follow-up</button>
+        <button class="sort-pill" data-sort="contatto" onclick="setSort('contatto',this)">Data contatto</button>
+        <button class="sort-pill" data-sort="nome" onclick="setSort('nome',this)">Nome</button>
+      </div>
+    </div>
+
+    <button class="filters-reset-btn" onclick="resetFilters()">Reimposta tutto</button>
+  </div>
 </div>
 
 <!-- FAB aggiungi azienda -->
@@ -227,7 +295,9 @@ const STEP_NAMES = {
 
 let COMPANIES = [];
 let activeFilter = 'tutte';
-let sortAsc = true;
+let scoreFilter = 'tutti';
+let sortBy = 'step';
+let sortAsc = false;
 
 // ─── FETCH SUPABASE ───────────────────────────────────────────────────────────
 async function loadCompanies() {
@@ -249,6 +319,7 @@ async function loadCompanies() {
       tag:           c.tag     || '',
       step:          c.step_attuale || 1,
       followup_days: calcFollowup(c.data_mail_inviata, c.step_attuale),
+      contact_date:  c.data_mail_inviata || null,
       note:          c.note    || '',
       a7_status:     c.a7_status || ''
     }));
@@ -270,31 +341,105 @@ function calcFollowup(data_mail, step) {
 // ─── FILTRI ──────────────────────────────────────────────────────────────────
 function setFilter(f, el){
   activeFilter = f;
-  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('[data-filter]').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   applyFilters();
 }
 
-function toggleSort(){
-  sortAsc = !sortAsc;
-  document.getElementById('sortBtn').textContent = sortAsc ? '↕ Step' : '↕ Step ↑';
+function setScoreFilter(f, el){
+  scoreFilter = f;
+  document.querySelectorAll('[data-score]').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
   applyFilters();
+}
+
+function setSort(s, el){
+  if(sortBy === s){
+    sortAsc = !sortAsc;
+  } else {
+    sortBy = s;
+    sortAsc = (s === 'nome'); // nome parte A→Z, i numerici partono dal più alto
+  }
+  document.querySelectorAll('.sort-pill').forEach(p => {
+    p.classList.remove('active');
+    const a = p.querySelector('.sort-arrow');
+    if(a) a.remove();
+  });
+  el.classList.add('active');
+  const arrow = document.createElement('span');
+  arrow.className = 'sort-arrow';
+  arrow.textContent = sortAsc ? '↑' : '↓';
+  el.appendChild(arrow);
+  applyFilters();
+}
+
+function openFiltersPanel(){ document.getElementById('filtersOverlay').classList.add('open'); }
+function closeFiltersPanel(e){
+  if(e && e.target !== e.currentTarget) return;
+  document.getElementById('filtersOverlay').classList.remove('open');
+}
+
+function resetFilters(){
+  activeFilter = 'tutte'; scoreFilter = 'tutti'; sortBy = 'step'; sortAsc = false;
+  document.querySelectorAll('[data-filter]').forEach(p => p.classList.toggle('active', p.dataset.filter === 'tutte'));
+  document.querySelectorAll('[data-score]').forEach(p => p.classList.toggle('active', p.dataset.score === 'tutti'));
+  document.querySelectorAll('.sort-pill').forEach(p => {
+    p.classList.remove('active');
+    const a = p.querySelector('.sort-arrow');
+    if(a) a.remove();
+  });
+  const stepPill = document.querySelector('.sort-pill[data-sort="step"]');
+  stepPill.classList.add('active');
+  stepPill.insertAdjacentHTML('beforeend', '<span class="sort-arrow">↓</span>');
+  applyFilters();
+}
+
+function updateFiltersPillLabel(){
+  let count = 0;
+  if(activeFilter !== 'tutte') count++;
+  if(scoreFilter !== 'tutti') count++;
+  const btn = document.getElementById('filtersPillBtn');
+  const lbl = document.getElementById('filtersPillLabel');
+  lbl.textContent = count > 0 ? 'Filtri · ' + count : 'Filtri';
+  btn.classList.toggle('active', count > 0);
 }
 
 function filterCompany(c){
   const q = document.getElementById('searchInput').value.toLowerCase();
   if(q && !c.name.toLowerCase().includes(q) && !c.settore.toLowerCase().includes(q)) return false;
-  if(activeFilter === 'outreach')  return c.step >= 1 && c.step <= 7;
-  if(activeFilter === 'risposta')  return c.step >= 8 && c.step <= 9;
-  if(activeFilter === 'trattativa')return c.step >= 10 && c.step <= 12;
-  if(activeFilter === 'rifiutate') return c.step === 13;
+  if(activeFilter === 'outreach'   && !(c.step >= 1 && c.step <= 7))   return false;
+  if(activeFilter === 'risposta'   && !(c.step >= 8 && c.step <= 9))   return false;
+  if(activeFilter === 'trattativa' && !(c.step >= 10 && c.step <= 12)) return false;
+  if(activeFilter === 'rifiutate'  && c.step !== 13) return false;
+  if(scoreFilter === 'alto'  && !(c.score >= 7)) return false;
+  if(scoreFilter === 'medio' && !(c.score >= 5 && c.score <= 6)) return false;
+  if(scoreFilter === 'basso' && !(c.score >= 1 && c.score <= 4)) return false;
   return true;
 }
 
 function applyFilters(){
   const filtered = COMPANIES.filter(filterCompany);
-  filtered.sort((a,b) => sortAsc ? b.step - a.step : a.step - b.step);
+  filtered.sort((a, b) => {
+    // Data contatto: gestita a parte — aziende senza data vanno sempre in fondo, in entrambe le direzioni
+    if(sortBy === 'contatto'){
+      const at = a.contact_date ? new Date(a.contact_date).getTime() : null;
+      const bt = b.contact_date ? new Date(b.contact_date).getTime() : null;
+      if(at === null && bt === null) return 0;
+      if(at === null) return 1;
+      if(bt === null) return -1;
+      return sortAsc ? at - bt : bt - at; // asc = dal più vecchio, desc = dal più recente
+    }
+    let av, bv;
+    if(sortBy === 'score')        { av = a.score;               bv = b.score; }
+    else if(sortBy === 'followup'){ av = a.followup_days || 0;   bv = b.followup_days || 0; }
+    else if(sortBy === 'nome')    { av = a.name.toLowerCase();   bv = b.name.toLowerCase(); }
+    else                          { av = a.step;                 bv = b.step; } // step (default)
+    if(av < bv) return sortAsc ? -1 : 1;
+    if(av > bv) return sortAsc ? 1 : -1;
+    return 0;
+  });
   renderList(filtered);
+  updateFiltersPillLabel();
 }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
@@ -306,9 +451,9 @@ function stepBadgeClass(step){
 }
 
 function scoreTagClass(score){
-  if(score >= 80) return 'tag-score-hi';
-  if(score >= 65) return 'tag-score-mid';
-  return 'tag-score-lo';
+  if(score >= 7) return 'tag-score-hi';   // 7-10: buon fit / fit perfetto
+  if(score >= 5) return 'tag-score-mid';  // 5-6: fit parziale
+  return 'tag-score-lo';                  // 1-4: basso fit
 }
 
 function fuHtml(days){
