@@ -36,6 +36,9 @@ jobs:
           PUSH_SUBSCRIPTION:  ${{ secrets.PUSH_SUBSCRIPTION }}
           VAPID_PRIVATE_KEY:  ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_EMAIL:        ${{ secrets.VAPID_EMAIL }}
+          GMAIL_CLIENT_ID:     ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
         run: python scripts/a1_monthly.py
 
       - name: Notifica fallimento A1

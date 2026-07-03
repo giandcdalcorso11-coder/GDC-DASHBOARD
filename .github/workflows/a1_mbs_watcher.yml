@@ -1,0 +1,36 @@
+name: A1 MBS Watcher
+
+on:
+  schedule:
+    # Ogni 30 minuti, SOLO dal giorno 2 al giorno 10 del mese.
+    # Fuori da questa finestra il workflow non si attiva: zero run,
+    # zero rumore nello storico Actions (vedi step 20, 3.10).
+    - cron: '*/30 * 2-10 * *'
+  workflow_dispatch:
+
+jobs:
+  check-mbs-file:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Installa dipendenze
+        run: pip install -r scripts/requirements.txt
+
+      - name: Controlla CSV MBS e ritriggera A1 se trovato
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+          GH_PAT_REPO:        ${{ secrets.GH_PAT_REPO }}
+        run: python scripts/a1_mbs_watcher.py
