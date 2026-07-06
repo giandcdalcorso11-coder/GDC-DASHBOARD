@@ -32,7 +32,7 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           DRIVE_FOLDER_A1:    ${{ secrets.DRIVE_FOLDER_A1 }}
           SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PUSH_SUBSCRIPTION:  ${{ secrets.PUSH_SUBSCRIPTION }}
           VAPID_PRIVATE_KEY:  ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_EMAIL:        ${{ secrets.VAPID_EMAIL }}
@@ -92,7 +92,7 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           DRIVE_FOLDER_A3:    ${{ secrets.DRIVE_FOLDER_A3 }}
           SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python scripts/bpt_calendar.py
 
       - name: Notifica fallimento BPT
