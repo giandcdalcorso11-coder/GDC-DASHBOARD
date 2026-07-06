@@ -1,4 +1,4 @@
-name: IG_Token_Refresh
+name: IG Token Refresh
 
 on:
   schedule:
@@ -30,6 +30,6 @@ jobs:
           GH_PAT_REPO:     ${{ secrets.GH_PAT_REPO }}
           GH_OWNER:        giandcdalcorso11-coder
           GH_REPO_NAME:    GDC-DASHBOARD
-          SUPABASE_URL:    ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:    ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:  ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python scripts/ig_token_refresh.py
