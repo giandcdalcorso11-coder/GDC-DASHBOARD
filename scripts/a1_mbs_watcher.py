@@ -19,7 +19,7 @@ Vedi step 20, sezione 3.10.
 
 Variabili d'ambiente richieste:
   GOOGLE_CREDENTIALS  — service account JSON, base64 (stesso pattern di a1_monthly.py)
-  SUPABASE_URL / SUPABASE_KEY
+  SUPABASE_URL / SUPABASE_SERVICE_KEY  (service_role: bypassa la RLS, mai l'anon key)
   GH_PAT_REPO         — Personal Access Token scope 'repo' (già usato da ig_token_refresh.py
                          per scrivere i GitHub Secrets — stesso PAT, scope sufficiente
                          anche per attivare un workflow_dispatch)
@@ -37,7 +37,7 @@ from googleapiclient.discovery import build
 from supabase import create_client
 
 SUPA_URL = os.environ["SUPABASE_URL"]
-SUPA_KEY = os.environ["SUPABASE_KEY"]
+SUPA_KEY = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 GH_PAT   = os.environ["GH_PAT_REPO"]
 
 GH_OWNER = "giandcdalcorso11-coder"
