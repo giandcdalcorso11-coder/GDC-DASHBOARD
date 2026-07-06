@@ -16,7 +16,7 @@ Secrets GitHub richiesti:
   GOOGLE_CREDENTIALS    — JSON service account Google (base64)
   DRIVE_FOLDER_A1       — ID cartella Drive A1.2
   SUPABASE_URL          — URL progetto Supabase
-  SUPABASE_KEY          — anon/service key Supabase
+  SUPABASE_SERVICE_KEY  — service_role key Supabase (bypassa la RLS; NON l'anon key)
   PUSH_SUBSCRIPTION     — JSON subscription Web Push (base64)
   VAPID_PRIVATE_KEY     — chiave privata VAPID
   VAPID_EMAIL           — email per VAPID
@@ -54,7 +54,7 @@ IG_TOKEN     = os.environ["IG_ACCESS_TOKEN"]
 IG_USER_ID   = os.environ["IG_USER_ID"]
 DRIVE_FOLDER = os.environ["DRIVE_FOLDER_A1"]
 SUPA_URL     = os.environ["SUPABASE_URL"]
-SUPA_KEY     = os.environ["SUPABASE_KEY"]
+SUPA_KEY     = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 VAPID_PRIV   = os.environ["VAPID_PRIVATE_KEY"]
 VAPID_EMAIL  = os.environ["VAPID_EMAIL"]
 
