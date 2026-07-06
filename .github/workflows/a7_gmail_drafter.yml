@@ -34,5 +34,5 @@ jobs:
           GMAIL_REFRESH_TOKEN:     ${{ secrets.GMAIL_REFRESH_TOKEN }}
           GOOGLE_CREDENTIALS:      ${{ secrets.GOOGLE_CREDENTIALS }}
           SUPABASE_URL:            ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:            ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_KEY:    ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python scripts/a7_gmail_drafter.py
