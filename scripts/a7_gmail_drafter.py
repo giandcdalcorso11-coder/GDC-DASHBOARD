@@ -46,7 +46,7 @@ GMAIL_CLIENT_SECRET     = os.environ['GMAIL_CLIENT_SECRET']
 GMAIL_REFRESH_TOKEN     = os.environ['GMAIL_REFRESH_TOKEN']
 GOOGLE_CREDENTIALS      = os.environ['GOOGLE_CREDENTIALS']  # base64-encoded service account JSON
 SUPABASE_URL            = os.environ['SUPABASE_URL']        # https://pnzabwfsgkvejnrtrjcp.supabase.co
-SUPABASE_KEY            = os.environ['SUPABASE_KEY']
+SUPABASE_KEY            = os.environ['SUPABASE_SERVICE_KEY']  # service_role: bypassa la RLS, mai l'anon key
 COMPANY_NAME            = os.environ['COMPANY_NAME']        # passato via workflow_dispatch
 GMAIL_FROM              = 'giandcdalcorso11@gmail.com'
 
