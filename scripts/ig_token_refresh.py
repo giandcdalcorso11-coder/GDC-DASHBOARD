@@ -21,8 +21,8 @@ Secrets GitHub richiesti:
   GH_PAT_REPO         — Personal Access Token con scope 'repo' (per scrivere il secret)
   GH_OWNER            — username GitHub (es. giandcdalcorso11-coder)
   GH_REPO_NAME        — nome del repo (es. GDC-DASHBOARD)
-  SUPABASE_URL        — URL progetto Supabase
-  SUPABASE_KEY        — service/anon key Supabase
+  SUPABASE_URL          — URL progetto Supabase
+  SUPABASE_SERVICE_KEY  — service_role key Supabase (bypassa la RLS; NON l'anon key)
 """
 
 import os
@@ -41,7 +41,7 @@ GH_PAT            = os.environ["GH_PAT_REPO"]
 GH_OWNER          = os.environ["GH_OWNER"]
 GH_REPO           = os.environ["GH_REPO_NAME"]
 SUPABASE_URL      = os.environ["SUPABASE_URL"]
-SUPABASE_KEY      = os.environ["SUPABASE_KEY"]
+SUPABASE_KEY      = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 
 GRAPH_API_VERSION = "v21.0"
 
