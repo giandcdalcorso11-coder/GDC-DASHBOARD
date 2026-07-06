@@ -30,7 +30,7 @@ jobs:
       - name: Controlla CSV MBS e ritriggera A1 se trovato
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_URL:          ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:  ${{ secrets.SUPABASE_SERVICE_KEY }}
           GH_PAT_REPO:        ${{ secrets.GH_PAT_REPO }}
         run: python scripts/a1_mbs_watcher.py
