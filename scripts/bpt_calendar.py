@@ -15,8 +15,8 @@ Flusso:
 Secrets GitHub richiesti:
   GOOGLE_CREDENTIALS  — JSON service account Google (base64)
   DRIVE_FOLDER_A3     — ID cartella Drive A3
-  SUPABASE_URL        — URL progetto Supabase
-  SUPABASE_KEY        — anon/service key Supabase
+  SUPABASE_URL          — URL progetto Supabase
+  SUPABASE_SERVICE_KEY  — service_role key Supabase (bypassa la RLS; NON l'anon key)
 """
 
 import os
@@ -38,7 +38,7 @@ from supabase import create_client
 
 DRIVE_FOLDER_A3 = os.environ.get("DRIVE_FOLDER_A3", "")  # opzionale
 SUPA_URL        = os.environ["SUPABASE_URL"]
-SUPA_KEY        = os.environ["SUPABASE_KEY"]
+SUPA_KEY        = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 
 # Mese da pianificare = mese corrente + 1
 today           = date.today()
