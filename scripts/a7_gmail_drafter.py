@@ -22,6 +22,14 @@ Formato TXT (mail_[AZIENDA]_YYYY-MM-DD.txt):
   Corpo della mail qui.
   Tutto il testo.
   Firma inclusa.
+
+Nota sulla ricerca azienda su Supabase (v3, Luglio 2026):
+  La corrispondenza col nome e' parziale (ilike '%company_name%'), non piu'
+  esatta — cosi' digitare "Barbuscia" trova comunque "Barbuscia S.p.A.".
+  Se il nome passato corrisponde a PIU' di un'azienda, lo script non
+  aggiorna nulla su Supabase (per evitare di scrivere sull'azienda
+  sbagliata) e stampa un avviso con i nomi in conflitto: in quel caso
+  rilanciare specificando il nome per esteso.
 """
 
 import os
@@ -225,8 +233,43 @@ def update_agent_state(stato):
         print(f"[A7] Warning agent_states: {r.status_code} {r.text}")
 
 
+def find_company_row(company_name, select='id'):
+    """
+    Cerca l'azienda per nome, tollerante a corrispondenze parziali
+    (es. 'Barbuscia' trova 'Barbuscia S.p.A.').
+
+    Ritorna: (row, None) se trovata UNA sola corrispondenza,
+             (None, 'not_found') se nessuna corrispondenza,
+             (None, 'ambiguous') se piu' di una corrispondenza — in questo
+             caso NON si procede mai con un aggiornamento alla cieca, per
+             evitare di scrivere sull'azienda sbagliata.
+    """
+    url = (
+        f"{SUPABASE_URL}/rest/v1/companies"
+        f"?nome=ilike.*{requests.utils.quote(company_name)}*"
+        f"&select={select}"
+    )
+    r = requests.get(url, headers=supabase_headers(), timeout=10)
+    if r.status_code != 200:
+        print(f"[A7] Warning lettura companies: {r.status_code} {r.text}")
+        return None, 'error'
+    rows = r.json()
+    if not rows:
+        return None, 'not_found'
+    if len(rows) > 1:
+        nomi = [row.get('nome', '?') for row in rows]
+        print(f"[A7] ATTENZIONE: '{company_name}' corrisponde a piu' aziende {nomi} — nessun aggiornamento Supabase per evitare ambiguita'. Usa il nome esatto.")
+        return None, 'ambiguous'
+    return rows[0], None
+
+
 def update_company_a7(company_name, status, draft_id=None, file_id=None):
     """Aggiorna le colonne a7_* nella tabella companies per questa azienda."""
+    row, err = find_company_row(company_name, select='id,nome')
+    if err:
+        print(f"[A7] Nessun aggiornamento a7_status per '{company_name}' ({err})")
+        return
+
     payload = {
         'a7_status': status,
         'a7_processed_at': datetime.now(timezone.utc).isoformat(),
@@ -236,13 +279,12 @@ def update_company_a7(company_name, status, draft_id=None, file_id=None):
     if file_id:
         payload['a7_processed_file_id'] = file_id
 
-    # Usa nome azienda come chiave (case-insensitive con ilike)
-    url = f"{SUPABASE_URL}/rest/v1/companies?nome=ilike.{requests.utils.quote(company_name)}"
+    url = f"{SUPABASE_URL}/rest/v1/companies?id=eq.{row['id']}"
     r = requests.patch(url, json=payload, headers=supabase_headers(), timeout=10)
     if r.status_code not in (200, 204):
         print(f"[A7] Warning companies: {r.status_code} {r.text}")
     else:
-        print(f"[A7] Supabase companies aggiornato: a7_status={status}")
+        print(f"[A7] Supabase companies aggiornato ({row['nome']}): a7_status={status}")
 
 
 # ── PIPELINE STEP 6 — Bozza Gmail ───────────────────────────────────
@@ -251,21 +293,6 @@ def update_company_a7(company_name, status, draft_id=None, file_id=None):
 # usato dagli agenti Claude. Qui serve prima una GET per leggere lo
 # stato attuale, poi calcolare il merge in Python, poi il PATCH.
 
-def get_company_pipeline_row(company_name):
-    """Legge id, step_attuale, step_6_date, step_notes per il merge."""
-    url = (
-        f"{SUPABASE_URL}/rest/v1/companies"
-        f"?nome=ilike.{requests.utils.quote(company_name)}"
-        f"&select=id,step_attuale,step_6_date,step_notes"
-    )
-    r = requests.get(url, headers=supabase_headers(), timeout=10)
-    if r.status_code != 200:
-        print(f"[A7] Warning lettura pipeline: {r.status_code} {r.text}")
-        return None
-    rows = r.json()
-    return rows[0] if rows else None
-
-
 def update_pipeline_step_6(company_name, draft_id):
     """
     Avanza la pipeline a step 6 (Bozza Gmail) dopo la creazione della bozza.
@@ -273,9 +300,9 @@ def update_pipeline_step_6(company_name, draft_id):
     oltre a mano), lascia step_attuale invariato ma aggiorna comunque
     step_6 / step_6_date / step_notes per coerenza della timeline.
     """
-    row = get_company_pipeline_row(company_name)
-    if not row:
-        print(f"[A7] Impossibile leggere la riga pipeline per {company_name} — step 6 non aggiornato")
+    row, err = find_company_row(company_name, select='id,nome,step_attuale,step_6_date,step_notes')
+    if err:
+        print(f"[A7] Impossibile aggiornare step 6 per '{company_name}' ({err})")
         return
 
     current_step = row.get('step_attuale') or 0
