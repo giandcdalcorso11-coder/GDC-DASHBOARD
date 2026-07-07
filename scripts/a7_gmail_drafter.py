@@ -9,7 +9,9 @@ Flusso:
   3. Se PDF assente: stop con errore
   4. Se entrambi presenti: crea bozza Gmail con PDF allegato
   5. Aggiorna Supabase companies (a7_status, a7_processed_at, a7_draft_id, a7_processed_file_id)
-  6. Aggiorna Supabase agent_states (stato a7)
+  6. Aggiorna Supabase companies — pipeline step 6 "Bozza Gmail" (step_6, step_6_date, step_notes,
+     step_attuale se non gia' avanzato oltre da Gianluca) — v2, Luglio 2026
+  7. Aggiorna Supabase agent_states (stato a7)
 
 Formato TXT (mail_[AZIENDA]_YYYY-MM-DD.txt):
   TO: email@azienda.com
@@ -243,6 +245,61 @@ def update_company_a7(company_name, status, draft_id=None, file_id=None):
         print(f"[A7] Supabase companies aggiornato: a7_status={status}")
 
 
+# ── PIPELINE STEP 6 — Bozza Gmail ───────────────────────────────────
+# NOTA: la REST API di PostgREST non supporta il merge jsonb '||' o
+# COALESCE lato server in un singolo PATCH come fa il connector SQL
+# usato dagli agenti Claude. Qui serve prima una GET per leggere lo
+# stato attuale, poi calcolare il merge in Python, poi il PATCH.
+
+def get_company_pipeline_row(company_name):
+    """Legge id, step_attuale, step_6_date, step_notes per il merge."""
+    url = (
+        f"{SUPABASE_URL}/rest/v1/companies"
+        f"?nome=ilike.{requests.utils.quote(company_name)}"
+        f"&select=id,step_attuale,step_6_date,step_notes"
+    )
+    r = requests.get(url, headers=supabase_headers(), timeout=10)
+    if r.status_code != 200:
+        print(f"[A7] Warning lettura pipeline: {r.status_code} {r.text}")
+        return None
+    rows = r.json()
+    return rows[0] if rows else None
+
+
+def update_pipeline_step_6(company_name, draft_id):
+    """
+    Avanza la pipeline a step 6 (Bozza Gmail) dopo la creazione della bozza.
+    Non retrocede mai: se step_attuale e' gia' >= 6 (Gianluca ha avanzato
+    oltre a mano), lascia step_attuale invariato ma aggiorna comunque
+    step_6 / step_6_date / step_notes per coerenza della timeline.
+    """
+    row = get_company_pipeline_row(company_name)
+    if not row:
+        print(f"[A7] Impossibile leggere la riga pipeline per {company_name} — step 6 non aggiornato")
+        return
+
+    current_step = row.get('step_attuale') or 0
+    step_6_date = row.get('step_6_date') or datetime.now(timezone.utc).isoformat()
+    notes = row.get('step_notes') or {}
+    notes['6'] = f"Bozza Gmail creata (draft_id={draft_id})."
+
+    payload = {
+        'step_1': True, 'step_2': True, 'step_3': True,
+        'step_4': True, 'step_5': True, 'step_6': True,
+        'step_6_date': step_6_date,
+        'step_notes': notes,
+    }
+    if current_step < 6:
+        payload['step_attuale'] = 6
+
+    url = f"{SUPABASE_URL}/rest/v1/companies?id=eq.{row['id']}"
+    r = requests.patch(url, json=payload, headers=supabase_headers(), timeout=10)
+    if r.status_code not in (200, 204):
+        print(f"[A7] Warning aggiornamento step 6: {r.status_code} {r.text}")
+    else:
+        print(f"[A7] Step pipeline aggiornato: step_6=true, step_attuale={payload.get('step_attuale', current_step)}")
+
+
 # ── MAIN ─────────────────────────────────────────────────────────────
 def main():
     print(f"[A7] Start — {datetime.now(timezone.utc).isoformat()}")
@@ -328,6 +385,7 @@ def main():
             draft_id=draft_id,
             file_id=txt_file['id']
         )
+        update_pipeline_step_6(COMPANY_NAME, draft_id)
         update_agent_state('done')
 
         print(f"[A7] Fine — bozza creata con successo per {COMPANY_NAME}")
