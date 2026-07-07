@@ -140,8 +140,14 @@ body{
 .pip-top-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .pip-name{ font-size:.8rem; font-weight:700; color:var(--nero); }
 .pip-date{ font-size:.62rem; font-weight:600; color:var(--grigio); white-space:nowrap; flex-shrink:0; }
-.pip-note{ font-size:.68rem; color:var(--grigio); margin-top:3px; line-height:1.35; }
+.pip-note{ font-size:.68rem; color:var(--grigio); line-height:1.35; flex:1; min-width:0; }
 .pip-note.empty{ opacity:.5; font-style:italic; }
+.pip-note-row{ display:flex; align-items:flex-start; gap:6px; margin-top:3px; }
+.pip-note-edit{
+  flex-shrink:0; border:none; background:none; cursor:pointer;
+  font-size:.68rem; color:var(--grigio); opacity:.5; padding:0 2px; line-height:1.35;
+}
+.pip-note-edit:hover{ opacity:1; color:var(--maker); }
 
 .pip-legend{
   display:flex; gap:10px; flex-wrap:wrap;
@@ -422,7 +428,10 @@ body{
               <span class="pip-name">1 · Trovata</span>
               <span class="pip-date" id="sd1">—</span>
             </div>
-            <div class="pip-note empty" id="sn1">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn1">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(1, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(2)" title="Scheda generata">
@@ -435,7 +444,10 @@ body{
               <span class="pip-name">2 · Scheda</span>
               <span class="pip-date" id="sd2">—</span>
             </div>
-            <div class="pip-note empty" id="sn2">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn2">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(2, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(3)" title="Media kit generato">
@@ -448,7 +460,10 @@ body{
               <span class="pip-name">3 · Media kit</span>
               <span class="pip-date" id="sd3">—</span>
             </div>
-            <div class="pip-note empty" id="sn3">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn3">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(3, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(4)" title="Media kit approvato">
@@ -461,7 +476,10 @@ body{
               <span class="pip-name">4 · Approvato</span>
               <span class="pip-date" id="sd4">—</span>
             </div>
-            <div class="pip-note empty" id="sn4">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn4">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(4, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(5)" title="Testo mail generato">
@@ -474,7 +492,10 @@ body{
               <span class="pip-name">5 · Testo mail</span>
               <span class="pip-date" id="sd5">—</span>
             </div>
-            <div class="pip-note empty" id="sn5">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn5">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(5, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(6)" title="Bozza Gmail pronta">
@@ -487,7 +508,10 @@ body{
               <span class="pip-name">6 · Bozza</span>
               <span class="pip-date" id="sd6">—</span>
             </div>
-            <div class="pip-note empty" id="sn6">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn6">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(6, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(7)" title="Mail inviata">
@@ -500,7 +524,10 @@ body{
               <span class="pip-name">7 · Inviata</span>
               <span class="pip-date" id="sd7">—</span>
             </div>
-            <div class="pip-note empty" id="sn7">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn7">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(7, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(8)" title="Risposta ricevuta">
@@ -513,7 +540,10 @@ body{
               <span class="pip-name">8 · Risposta</span>
               <span class="pip-date" id="sd8">—</span>
             </div>
-            <div class="pip-note empty" id="sn8">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn8">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(8, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(9)" title="Risposta gestita">
@@ -526,7 +556,10 @@ body{
               <span class="pip-name">9 · Gestita</span>
               <span class="pip-date" id="sd9">—</span>
             </div>
-            <div class="pip-note empty" id="sn9">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn9">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(9, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(10)" title="In trattativa">
@@ -539,7 +572,10 @@ body{
               <span class="pip-name">10 · Trattativa</span>
               <span class="pip-date" id="sd10">—</span>
             </div>
-            <div class="pip-note empty" id="sn10">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn10">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(10, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(11)" title="Accordo raggiunto">
@@ -552,7 +588,10 @@ body{
               <span class="pip-name">11 · Accordo</span>
               <span class="pip-date" id="sd11">—</span>
             </div>
-            <div class="pip-note empty" id="sn11">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn11">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(11, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(12)" title="Contratto firmato">
@@ -565,7 +604,10 @@ body{
               <span class="pip-name">12 · Contratto</span>
               <span class="pip-date" id="sd12">—</span>
             </div>
-            <div class="pip-note empty" id="sn12">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn12">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(12, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(13)" title="Rifiutato">
@@ -578,7 +620,10 @@ body{
               <span class="pip-name">13 · Rifiutato</span>
               <span class="pip-date" id="sd13">—</span>
             </div>
-            <div class="pip-note empty" id="sn13">Nessuna nota</div>
+            <div class="pip-note-row">
+              <div class="pip-note empty" id="sn13">Nessuna nota</div>
+              <button class="pip-note-edit" onclick="openNoteEditor(13, event)" title="Modifica nota">&#9998;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -650,6 +695,19 @@ body{
     <div class="popup-actions">
       <button class="popup-skip"    onclick="closePopup(false)">Salta</button>
       <button class="popup-confirm" onclick="closePopup(true)">Salva e procedi</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP MODIFICA NOTA STEP -->
+<div class="popup-overlay" id="notePopup">
+  <div class="popup-card">
+    <div class="popup-title">Modifica nota — Step <span id="noteStepLabel"></span></div>
+    <div class="popup-sub">Salvando, la data mostrata per questo step si aggiorna a oggi.</div>
+    <textarea class="popup-textarea" id="noteEditText" placeholder="Scrivi una nota per questo step…"></textarea>
+    <div class="popup-actions">
+      <button class="popup-skip"    onclick="closeNotePopup(false)">Annulla</button>
+      <button class="popup-confirm" onclick="closeNotePopup(true)">Salva</button>
     </div>
   </div>
 </div>
@@ -726,7 +784,7 @@ function populatePage(co) {
     fuEl.style.display = 'none';
   }
 
-  // Pipeline step dots + data/nota per step (Fase 1 Supabase: step_N_date + step_notes JSONB — fallback a placeholder finché non implementata)
+  // Pipeline step dots + data/nota per step (step_N_date + step_notes JSONB, scritti dagli agenti o modificati a mano — vedi openNoteEditor/saveStepNote)
   for (let i = 1; i <= 13; i++) {
     const dot = document.getElementById('s' + i);
     if (!dot) continue;
@@ -877,6 +935,65 @@ function closePopup(save){
 document.getElementById('popup').addEventListener('click', function(e){
   if(e.target === this) closePopup(false);
 });
+
+/* ── Popup modifica nota di uno step (manuale, da webapp) ──
+   A differenza di step_attuale/step_N (booleani), qui la data non
+   segue più la logica "prima volta" (COALESCE) usata dagli agenti:
+   ogni salvataggio manuale aggiorna step_N_date a ORA, perché la data
+   mostrata rappresenta l'ultimo aggiornamento della nota, non il primo
+   raggiungimento dello step. */
+let _editingStepNote = null;
+
+function openNoteEditor(stepIndex, event){
+  if (event) event.stopPropagation(); // non deve attivare anche setStep() sulla riga
+  if (!currentCompanyId) return;
+  _editingStepNote = stepIndex;
+  document.getElementById('noteStepLabel').textContent = stepIndex;
+  const current = (currentCompanyData && currentCompanyData.step_notes && currentCompanyData.step_notes[stepIndex]) || '';
+  document.getElementById('noteEditText').value = current;
+  document.getElementById('notePopup').classList.add('open');
+}
+
+function closeNotePopup(save){
+  const text = document.getElementById('noteEditText').value.trim();
+  document.getElementById('notePopup').classList.remove('open');
+  if (save && _editingStepNote) saveStepNote(_editingStepNote, text);
+  _editingStepNote = null;
+}
+
+document.getElementById('notePopup').addEventListener('click', function(e){
+  if (e.target === this) closeNotePopup(false);
+});
+
+async function saveStepNote(stepIndex, text){
+  if (!currentCompanyId) return;
+  const notes = Object.assign({}, (currentCompanyData && currentCompanyData.step_notes) || {});
+  if (text) notes[stepIndex] = text; else delete notes[stepIndex];
+  const nowIso = new Date().toISOString();
+  const body = { step_notes: notes };
+  body['step_' + stepIndex + '_date'] = nowIso;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+                 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    if (currentCompanyData) {
+      currentCompanyData.step_notes = notes;
+      currentCompanyData['step_' + stepIndex + '_date'] = nowIso;
+    }
+    const noteEl = document.getElementById('sn' + stepIndex);
+    if (noteEl) {
+      if (text) { noteEl.textContent = text; noteEl.classList.remove('empty'); }
+      else { noteEl.textContent = 'Nessuna nota'; noteEl.classList.add('empty'); }
+    }
+    const dateEl = document.getElementById('sd' + stepIndex);
+    if (dateEl) {
+      dateEl.textContent = new Date(nowIso).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' });
+    }
+  } catch(e) { console.error('saveStepNote error:', e); }
+}
 
 function execAction(action, note){
   if(action === 'openA62'){
