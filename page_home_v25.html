@@ -548,6 +548,36 @@ function buildMsgA3(calBpt){
 
 const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+
+/* ── AUTH GUARD (fix RLS — Fase A) ──
+   Il token vero ottenuto al login (page_login_v6.html) viene usato per
+   autenticare le chiamate a Supabase invece di rimandare la anon key come
+   Bearer. Necessario perché le policy RLS su companies/agent_states sono
+   ora ristrette al ruolo 'authenticated'. */
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token');
+  sessionStorage.removeItem('gdc_uid');
+  let banner = document.getElementById('gdcSessionBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'gdcSessionBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent = 'Sessione scaduta — reindirizzamento al login...';
+  setTimeout(function(){ window.location.href = 'page_login_v6.html'; }, 1600);
+}
+
+async function sbFetch(url, options){
+  options = options || {};
+  const headers = Object.assign({ 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + gdcToken() }, options.headers || {});
+  const res = await fetch(url, Object.assign({}, options, { headers: headers }));
+  if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
 const THREE_DAYS=3*24*60*60*1000;
 
 function mapState(row){
@@ -633,9 +663,9 @@ async function setStatoRaw(agentId, newStato){
   const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
   try{
     await Promise.all(ids.map(aid=>
-      fetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
+      sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
         method:'PATCH',
-        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        headers:{'Content-Type':'application/json','Prefer':'return=minimal'},
         body:JSON.stringify({stato:newStato,updated_at:new Date().toISOString()})
       })
     ));
@@ -653,9 +683,9 @@ async function setStato(agentId,currentSt){
   const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
   try{
     await Promise.all(ids.map(aid=>
-      fetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
+      sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
         method:'PATCH',
-        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        headers:{'Content-Type':'application/json','Prefer':'return=minimal'},
         body:JSON.stringify({stato:nextSupabase,updated_at:new Date().toISOString()})
       })
     ));
@@ -679,7 +709,7 @@ function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]
 
 async function loadStates(){
   try{
-    const res=await fetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
@@ -882,9 +912,8 @@ const GH_WORKFLOW = 'a7_gmail_drafter.yml';
 async function loadA7Companies() {
   const sel = document.getElementById('a7CompanySelect');
   try {
-    const r = await fetch(
-      SUPA_URL + '/rest/v1/companies?select=nome,a7_status&order=nome.asc',
-      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    const r = await sbFetch(
+      SUPA_URL + '/rest/v1/companies?select=nome,a7_status&order=nome.asc'
     );
     const data = await r.json();
     if (!data || !data.length) {
@@ -975,7 +1004,11 @@ async function launchA7() {
   }
 }
 
-loadStates();
+if (!gdcToken()) {
+  window.location.href = 'page_login_v6.html';
+} else {
+  loadStates();
+}
 </script>
 </body>
 </html>
