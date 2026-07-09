@@ -288,10 +288,13 @@ def update_company_a7(company_name, status, draft_id=None, file_id=None):
 
 
 # ── PIPELINE STEP 6 — Bozza Gmail ───────────────────────────────────
-# NOTA: la REST API di PostgREST non supporta il merge jsonb '||' o
-# COALESCE lato server in un singolo PATCH come fa il connector SQL
-# usato dagli agenti Claude. Qui serve prima una GET per leggere lo
-# stato attuale, poi calcolare il merge in Python, poi il PATCH.
+# NOTA: la REST API di PostgREST non supporta il merge jsonb '||' in un
+# singolo PATCH come fa il connector SQL usato dagli agenti Claude. Qui
+# serve prima una GET per leggere lo stato attuale, poi calcolare il
+# merge di step_notes in Python, poi il PATCH.
+# step_6_date viene sempre scritta a now() (nessun COALESCE): riflette
+# l'ultimo aggiornamento, non il primo — allineato alla stessa filosofia
+# già adottata dalla webapp e dagli altri agenti (decisione Step 26/27).
 
 def update_pipeline_step_6(company_name, draft_id):
     """
@@ -306,7 +309,7 @@ def update_pipeline_step_6(company_name, draft_id):
         return
 
     current_step = row.get('step_attuale') or 0
-    step_6_date = row.get('step_6_date') or datetime.now(timezone.utc).isoformat()
+    step_6_date = datetime.now(timezone.utc).isoformat()
     notes = row.get('step_notes') or {}
     notes['6'] = f"Bozza Gmail creata (draft_id={draft_id})."
 
