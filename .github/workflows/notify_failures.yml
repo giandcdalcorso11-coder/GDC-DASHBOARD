@@ -18,6 +18,7 @@ on:
       - "IG Token Refresh"
       - "A7 — Gmail Drafter"
       - "Pipeline Watcher"
+      - "Pipeline Notify"
     types:
       - completed
 
