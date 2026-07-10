@@ -1,0 +1,50 @@
+name: Notify Failures
+
+# Rete di sicurezza per crash silenziosi. Ascolta il completamento dei
+# workflow elencati sotto (per nome esatto — campo `name:` di ciascun
+# file) e, solo se sono falliti, scrive su activity_log e invia una
+# push. Nessuna riga aggiunta ai workflow sorvegliati stessi.
+#
+# Per aggiungere un nuovo workflow alla sorveglianza in futuro: basta
+# aggiungerne il nome esatto alla lista qui sotto — nessun'altra
+# modifica necessaria, né qui né nel workflow da sorvegliare.
+
+on:
+  workflow_run:
+    workflows:
+      - "A1 Monthly — Instagram Analytics + BPT Calendar"
+      - "A1 Stories Daily — Archivio Stories"
+      - "A1 MBS Watcher"
+      - "IG Token Refresh"
+      - "A7 — Gmail Drafter"
+      - "Pipeline Watcher"
+    types:
+      - completed
+
+jobs:
+  notify:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pywebpush
+
+      - name: Notifica fallimento
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY:    ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:          ${{ secrets.VAPID_EMAIL }}
+          WORKFLOW_NAME:        ${{ github.event.workflow_run.name }}
+          RUN_URL:              ${{ github.event.workflow_run.html_url }}
+        run: python scripts/notify_failures.py
