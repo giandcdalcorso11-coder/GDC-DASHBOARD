@@ -1,0 +1,39 @@
+name: Pipeline Notify
+
+# Riceve il repository_dispatch inviato dal trigger Postgres su
+# companies (notify_company_step_change) ogni volta che step_attuale
+# cambia. Nessun agente né script esistente modificato per questo:
+# il trigger vive in Supabase, non in GitHub.
+
+on:
+  repository_dispatch:
+    types: [company-step-changed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pywebpush
+
+      - name: Notifica avanzamento pipeline
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY:    ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:          ${{ secrets.VAPID_EMAIL }}
+          COMPANY_ID:        ${{ github.event.client_payload.company_id }}
+          COMPANY_NOME:      ${{ github.event.client_payload.nome }}
+          STEP_PRECEDENTE:   ${{ github.event.client_payload.step_precedente }}
+          STEP_NUOVO:        ${{ github.event.client_payload.step_nuovo }}
+        run: python scripts/pipeline_notify.py
