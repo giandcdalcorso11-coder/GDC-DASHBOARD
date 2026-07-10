@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GDC WORKSPACE — Home</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GDC WORKSPACE">
+<meta name="theme-color" content="#1C1C1C">
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;--athlete:#2B5C8A;--athlete-bg:#D9E6F3;--athlete-mid:#4A86C6;--life:#C2193A;--life-bg:#F5E0E6;--life-mid:#E9415A;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
@@ -292,7 +298,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="sys-meta" id="sysMeta"></div>
   </div>
 </div>
-<div style="width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:flex-end;">
+<div style="width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:space-between;align-items:center;">
+  <button id="pushBtn" onclick="togglePushNotifications()" style="display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);background:none;border:none;cursor:pointer;padding:0;transition:color .15s;" onmouseover="this.style.color='var(--nero)'" onmouseout="this.style.color='var(--grigio)'">
+    <svg id="pushBtnIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span id="pushBtnLabel">Attiva notifiche</span>
+  </button>
   <a href="page_hub_v1.html" style="display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='var(--nero)'" onmouseout="this.style.color='var(--grigio)'">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     Hub
@@ -577,6 +587,109 @@ async function sbFetch(url, options){
   if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
 }
+
+/* ── PUSH NOTIFICATIONS ──
+   Registra il service worker, gestisce l'iscrizione/disiscrizione e la
+   sincronizzazione con la tabella push_subscriptions su Supabase.
+   Chiave pubblica VAPID — la privata resta solo lato server (GitHub
+   Secrets), usata dagli script che inviano le push. */
+const VAPID_PUBLIC_KEY = 'BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+function guessDeviceLabel() {
+  const ua = navigator.userAgent || '';
+  let device = 'Dispositivo';
+  if (/iPad/.test(ua)) device = 'iPad';
+  else if (/iPhone/.test(ua)) device = 'iPhone';
+  else if (/Android/.test(ua)) device = 'Android';
+  else if (/Macintosh/.test(ua)) device = 'Mac';
+  else if (/Windows/.test(ua)) device = 'PC Windows';
+  const d = new Date();
+  const data = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+  return device + ' — ' + data;
+}
+
+async function getExistingPushSubscription() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return null;
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return null;
+  return await reg.pushManager.getSubscription();
+}
+
+async function updatePushButtonUI() {
+  const label = document.getElementById('pushBtnLabel');
+  if (!label) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    label.textContent = 'Notifiche non supportate';
+    return;
+  }
+  const sub = await getExistingPushSubscription();
+  label.textContent = sub ? 'Notifiche attive' : 'Attiva notifiche';
+}
+
+async function togglePushNotifications() {
+  const label = document.getElementById('pushBtnLabel');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
+    return;
+  }
+
+  const existing = await getExistingPushSubscription();
+
+  if (existing) {
+    // Disattiva: rimuove sia lato browser che da Supabase
+    try {
+      await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions?endpoint=eq.' + encodeURIComponent(existing.endpoint), { method: 'DELETE' });
+    } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
+    await existing.unsubscribe();
+    if (label) label.textContent = 'Attiva notifiche';
+    return;
+  }
+
+  // Attiva: permesso browser -> registra SW -> subscribe -> salva su Supabase
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      alert('Permesso notifiche negato. Puoi riattivarlo dalle impostazioni del browser/dispositivo.');
+      return;
+    }
+
+    const reg = await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    const subJson = sub.toJSON();
+    await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        endpoint: subJson.endpoint,
+        p256dh: subJson.keys.p256dh,
+        auth: subJson.keys.auth,
+        device_label: guessDeviceLabel()
+      })
+    });
+
+    if (label) label.textContent = 'Notifiche attive';
+  } catch (e) {
+    console.error('Errore attivazione notifiche:', e);
+    alert('Errore durante l\'attivazione delle notifiche. Riprova, o controlla la console per dettagli.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', updatePushButtonUI);
 
 const THREE_DAYS=3*24*60*60*1000;
 
