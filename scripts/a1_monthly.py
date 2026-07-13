@@ -17,9 +17,14 @@ Secrets GitHub richiesti:
   DRIVE_FOLDER_A1       — ID cartella Drive A1.2
   SUPABASE_URL          — URL progetto Supabase
   SUPABASE_SERVICE_KEY  — service_role key Supabase (bypassa la RLS; NON l'anon key)
-  PUSH_SUBSCRIPTION     — JSON subscription Web Push (base64)
   VAPID_PRIVATE_KEY     — chiave privata VAPID
   VAPID_EMAIL           — email per VAPID
+
+Nota (Step 29): la push non usa piu' un singolo PUSH_SUBSCRIPTION (env var,
+un solo dispositivo) — legge invece tutti i dispositivi registrati dalla
+tabella Supabase push_subscriptions, stesso pattern multi-device di
+pipeline_notify.py. Il secret PUSH_SUBSCRIPTION non serve piu' (puo'
+restare su GitHub, inutilizzato, o essere rimosso).
 """
 
 import os
@@ -57,6 +62,8 @@ SUPA_URL     = os.environ["SUPABASE_URL"]
 SUPA_KEY     = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 VAPID_PRIV   = os.environ["VAPID_PRIVATE_KEY"]
 VAPID_EMAIL  = os.environ["VAPID_EMAIL"]
+
+WEBAPP_BASE = "https://giandcdalcorso11-coder.github.io/GDC-DASHBOARD"
 
 # Gmail — invio email reale (non bozza) per notifica MBS mancante (step 20, 3.9)
 # Facoltative: se assenti, send_email() fa solo un print e non blocca la run
@@ -322,6 +329,9 @@ def fetch_mbs_reposts(drive_service):
 
     if not file_id:
         print(f"    ⚠ CSV MBS non trovato per {MESE_LABEL} — repost vuoti per questo run")
+        was_missing, missing_mese = supabase_get_mbs_flag()
+        gia_segnalato_questo_mese = was_missing and missing_mese == MESE_LABEL
+
         send_email(
             f"⚠ A1: file MBS mancante — {MESE_LABEL}",
             f"Il file MBS repost per {MESE_LABEL} non è ancora su Drive "
@@ -333,6 +343,20 @@ def fetch_mbs_reposts(drive_service):
             f"di rilanciare nulla a mano (fino al giorno 10 del mese)."
         )
         supabase_set_mbs_flag(True, MESE_LABEL)
+
+        # Push/activity_log solo alla PRIMA attivazione del flag per questo mese —
+        # non ad ogni controllo di a1_mbs_watcher.py (eviterebbe spam, decisione Step 29).
+        if not gia_segnalato_questo_mese:
+            log_activity(
+                "A1", f"MBS mancante — {MESE_LABEL}",
+                "Il file MBS repost non è ancora su Drive. Repost esclusi da questo giro.",
+                f"{WEBAPP_BASE}/page_home_v25.html"
+            )
+            send_push(
+                f"⚠ A1: MBS mancante — {MESE_LABEL}",
+                "Repost esclusi da questo giro. Carica il CSV quando puoi.",
+                f"{WEBAPP_BASE}/page_home_v25.html"
+            )
         return []
 
     # File trovato: se il flag era attivo per QUESTO mese, vuol dire che
@@ -345,6 +369,16 @@ def fetch_mbs_reposts(drive_service):
             f"I repost sono stati inseriti nel foglio Instagram_Analytics_GDC."
         )
         supabase_set_mbs_flag(False, None)
+        log_activity(
+            "A1", f"MBS recuperato — {MESE_LABEL}",
+            "File trovato ed elaborato. Repost inseriti nel foglio.",
+            f"{WEBAPP_BASE}/page_home_v25.html"
+        )
+        send_push(
+            f"✅ A1: MBS recuperato — {MESE_LABEL}",
+            "Repost trovati ed elaborati.",
+            f"{WEBAPP_BASE}/page_home_v25.html"
+        )
 
     from googleapiclient.http import MediaIoBaseDownload
     request = drive_service.files().get_media(fileId=file_id)
@@ -904,25 +938,81 @@ def supabase_update_state(agent_id, stato, extra={}):
     print(f"    Supabase: {agent_id} → {stato}")
 
 
-# ─── 5. WEB PUSH ─────────────────────────────────────────────────────────────────
+# ─── 5. ACTIVITY LOG + WEB PUSH (multi-device) ────────────────────────────────────
+# Stesso pattern di pipeline_notify.py (Step 28): legge tutti i dispositivi da
+# push_subscriptions, invia a ciascuno, rimuove le subscription scadute (404/410).
+# Sostituisce il vecchio send_push() a singolo dispositivo (PUSH_SUBSCRIPTION env
+# var), superato dalla tabella multi-device introdotta allo Step 27.
 
-def send_push(title, body):
-    """Invia Web Push notification via VAPID."""
-    sub_b64 = os.environ.get("PUSH_SUBSCRIPTION", "")
-    if not sub_b64:
-        print("    Push: nessuna subscription configurata, skip")
+def supabase_headers():
+    return {
+        "apikey": SUPA_KEY,
+        "Authorization": f"Bearer {SUPA_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+    }
+
+
+def log_activity(agent_id, titolo, descrizione, link=None):
+    payload = {
+        "agent_id": agent_id,
+        "tipo": "step",
+        "titolo": titolo,
+        "descrizione": descrizione,
+        "link": link,
+    }
+    r = requests.post(
+        f"{SUPA_URL}/rest/v1/activity_log",
+        json=payload, headers=supabase_headers(), timeout=10
+    )
+    if r.status_code not in (200, 201, 204):
+        print(f"    ⚠ Errore scrittura activity_log: {r.status_code} {r.text}")
+    else:
+        print(f"    ✅ Scritto su activity_log: {titolo}")
+
+
+def get_push_subscriptions():
+    r = requests.get(
+        f"{SUPA_URL}/rest/v1/push_subscriptions?select=endpoint,p256dh,auth,device_label",
+        headers=supabase_headers(), timeout=10
+    )
+    if r.status_code != 200:
+        print(f"    ⚠ Errore lettura push_subscriptions: {r.status_code} {r.text}")
+        return []
+    return r.json()
+
+
+def delete_push_subscription(endpoint):
+    url = f"{SUPA_URL}/rest/v1/push_subscriptions?endpoint=eq.{endpoint}"
+    requests.delete(url, headers=supabase_headers(), timeout=10)
+
+
+def send_push(title, body, link=None):
+    """Invia Web Push a tutti i dispositivi registrati (push_subscriptions)."""
+    subs = get_push_subscriptions()
+    if not subs:
+        print("    Push: nessun dispositivo registrato — skip.")
         return
-    try:
-        subscription = json.loads(base64.b64decode(sub_b64))
-        webpush(
-            subscription_info=subscription,
-            data=json.dumps({"title": title, "body": body}),
-            vapid_private_key=VAPID_PRIV,
-            vapid_claims={"sub": f"mailto:{VAPID_EMAIL}"}
-        )
-        print(f"    Push inviata: {title}")
-    except WebPushException as e:
-        print(f"    Push ERRORE: {e}")
+    for sub in subs:
+        label = sub.get("device_label") or sub["endpoint"][:40]
+        subscription_info = {
+            "endpoint": sub["endpoint"],
+            "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]}
+        }
+        try:
+            webpush(
+                subscription_info=subscription_info,
+                data=json.dumps({"title": title, "body": body, "url": link}),
+                vapid_private_key=VAPID_PRIV,
+                vapid_claims={"sub": f"mailto:{VAPID_EMAIL}"}
+            )
+            print(f"    ✅ Push inviata a '{label}'")
+        except WebPushException as e:
+            status = getattr(e.response, "status_code", None)
+            print(f"    ⚠ Push fallita per '{label}' (status {status}): {e}")
+            if status in (404, 410):
+                delete_push_subscription(sub["endpoint"])
+                print(f"      Subscription scaduta rimossa da Supabase ('{label}').")
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────────
@@ -976,11 +1066,17 @@ def main():
         "drive_folder": DRIVE_FOLDER
     })
 
-    # 11. Push notification → sblocca A2
+    # 11. Activity log + Push notification → sblocca A2
     supabase_update_state("a2", "ready")
+    log_activity(
+        "A1", "A1 completato",
+        f"Analytics {MESE_LABEL} pronti. Apri A2 per generare il report.",
+        f"{WEBAPP_BASE}/page_home_v25.html"
+    )
     send_push(
         "✅ A1 completato",
-        f"Analytics {MESE_LABEL} pronti. Apri A2 per generare il report."
+        f"Analytics {MESE_LABEL} pronti. Apri A2 per generare il report.",
+        f"{WEBAPP_BASE}/page_home_v25.html"
     )
 
     print(f"\n✅ A1 Monthly completato — {MESE_LABEL}")
