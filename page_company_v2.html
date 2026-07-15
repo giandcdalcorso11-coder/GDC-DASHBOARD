@@ -99,6 +99,18 @@ body{
   display:flex; align-items:center; gap:5px;
 }
 .fu-14{ background:#FFF0E6; color:var(--fu-14); border:1.5px solid var(--fu-14); }
+.fu-7{ background:#FFF9EC; color:var(--fu-7); border:1.5px solid var(--fu-7); }
+.fu-30{ background:var(--life-bg); color:var(--fu-30); border:1.5px solid var(--fu-30); }
+.fu-urgent{ background:var(--life); color:#fff; border:1.5px solid var(--life); font-weight:800; animation:fuPulse 1.4s ease-in-out infinite; }
+.fu-silence{ background:#EAEAEA; color:#6B6B6B; border:1.5px solid #B8B8B8; font-weight:700; }
+@keyframes fuPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+.fu-toggle-btn{
+  display:none; align-items:center; margin-left:8px;
+  border:1.5px solid var(--bordo); background:var(--bianco); color:var(--grigio);
+  border-radius:999px; padding:4px 11px; font-size:.65rem; font-weight:700;
+  cursor:pointer; font-family:'Jost',sans-serif; transition:all .15s;
+}
+.fu-toggle-btn:hover{ border-color:var(--maker); color:var(--maker); }
 .fu-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
 
 /* ── SECTION WRAPPER ── */
@@ -402,11 +414,12 @@ body{
           <div class="step-sub">In attesa di gestione</div>
         </div>
       </div>
-      <!-- Follow-up badge: 14 giorni da "Mail inviata" -->
+      <!-- Follow-up badge: calcolato in JS da step_7_date/step_8_date (vedi renderFollowUp) -->
       <div class="fu-badge fu-14">
         <div class="fu-dot"></div>
         14gg fa
       </div>
+      <button class="fu-toggle-btn" id="fuToggleBtn" onclick="toggleAzioneRichiesta()"></button>
     </div>
   </div>
 
@@ -800,17 +813,8 @@ function populatePage(co) {
   const scoreBadge = document.querySelector('.topbar-badge.tag-score');
   if (scoreBadge) scoreBadge.textContent = 'Score ' + (co.score || '—');
 
-  // Follow-up badge
-  const fuEl = document.querySelector('.fu-badge');
-  if (fuEl && co.data_mail_inviata && step >= 7 && step <= 9) {
-    const days = Math.floor((Date.now() - new Date(co.data_mail_inviata).getTime()) / 86400000);
-    if (days > 0) {
-      fuEl.textContent = '+' + days + 'gg';
-      fuEl.className = 'fu-badge ' + (days <= 7 ? 'fu-7' : days <= 14 ? 'fu-14' : 'fu-30');
-    }
-  } else if (fuEl) {
-    fuEl.style.display = 'none';
-  }
+  // Follow-up badge + toggle "serve risposta" (vedi renderFollowUp)
+  renderFollowUp(co);
 
   // Pipeline step dots + data/nota per step (step_N_date + step_notes JSONB, scritti dagli agenti o modificati a mano — vedi openNoteEditor/saveStepNote)
   for (let i = 1; i <= 13; i++) {
@@ -906,6 +910,81 @@ function flagEmoji(lingua) {
   return map[lingua] || '🌐';
 }
 
+// Follow-up:
+// - step 7 (mail inviata, aspetti loro): giorni da step_7_date. Da 21gg+ diventa "silenzio".
+// - step 8 (loro hanno risposto): se step8_azione_richiesta è true (default) = badge urgente "tocca a te".
+//   Se è stato disattivato a mano (risposta automatica/form) = torna al conteggio in attesa/silenzio.
+// - step 9+ : nessun badge.
+const SILENCE_THRESHOLD_DAYS = 21;
+
+function renderFollowUp(co) {
+  const step = co.step_attuale || 1;
+  const fuEl = document.querySelector('.fu-badge');
+  const toggleBtn = document.getElementById('fuToggleBtn');
+  let fu = null;
+
+  if (step === 8 && co.step_8_date) {
+    const days = Math.floor((Date.now() - new Date(co.step_8_date).getTime()) / 86400000);
+    if (days >= 0) {
+      const azioneRichiesta = co.step8_azione_richiesta !== false; // default true
+      fu = azioneRichiesta
+        ? { type: 'urgent', days }
+        : { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    }
+  } else if (step === 7 && co.step_7_date) {
+    const days = Math.floor((Date.now() - new Date(co.step_7_date).getTime()) / 86400000);
+    if (days > 0) fu = { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+  }
+
+  if (fuEl) {
+    if (fu) {
+      fuEl.style.display = 'flex';
+      if (fu.type === 'urgent') {
+        fuEl.className = 'fu-badge fu-urgent';
+        fuEl.innerHTML = '⚡ Tocca a te · ' + fu.days + 'gg';
+      } else if (fu.type === 'silence') {
+        fuEl.className = 'fu-badge fu-silence';
+        fuEl.innerHTML = 'Silenzio ' + fu.days + 'gg';
+      } else {
+        const cls = fu.days <= 7 ? 'fu-7' : 'fu-14';
+        fuEl.className = 'fu-badge ' + cls;
+        fuEl.innerHTML = '<div class="fu-dot"></div>+' + fu.days + 'gg';
+      }
+    } else {
+      fuEl.style.display = 'none';
+    }
+  }
+
+  if (toggleBtn) {
+    if (step === 8) {
+      const azioneRichiesta = co.step8_azione_richiesta !== false;
+      toggleBtn.style.display = 'inline-flex';
+      toggleBtn.textContent = azioneRichiesta ? 'Non serve risposta mia' : 'Serve risposta mia';
+      toggleBtn.title = azioneRichiesta
+        ? 'Risposta automatica o che non richiede una tua azione? Clicca per disattivare il badge urgente.'
+        : 'Serve davvero una tua risposta? Clicca per riattivare il badge urgente.';
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
+}
+
+/* ── Toggle manuale: serve una mia risposta a questa azienda (step 8) ── */
+async function toggleAzioneRichiesta() {
+  if (!currentCompanyId || !currentCompanyData) return;
+  const current = currentCompanyData.step8_azione_richiesta !== false;
+  const newValue = !current;
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ step8_azione_richiesta: newValue })
+    });
+    currentCompanyData.step8_azione_richiesta = newValue;
+    renderFollowUp(currentCompanyData);
+  } catch(e) { console.error('toggleAzioneRichiesta error:', e); }
+}
+
 /* ── ID azienda corrente ── */
 let currentCompanyId = null;
 let currentCompanyData = null;
@@ -917,7 +996,7 @@ async function updateStep(n) {
   const stepFields = {};
   for (let i = 1; i <= 13; i++) stepFields['step_' + i] = (i <= n);
   const body = { step_attuale: n, updated_at: new Date().toISOString(), ...stepFields };
-  if (n >= 7) body.data_mail_inviata = body.data_mail_inviata || new Date().toISOString().split('T')[0];
+  body['step_' + n + '_date'] = new Date().toISOString();
   try {
     await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
       method: 'PATCH',
@@ -943,6 +1022,12 @@ function setStep(n){
   if (stepSub) stepSub.textContent = n === 13 ? 'Chiusa' : 'Step ' + n + ' di 12';
   // Salva su Supabase + aggiorna azioni
   updateStep(n);
+  if (currentCompanyData) {
+    currentCompanyData.step_attuale = n;
+    currentCompanyData['step_' + n + '_date'] = new Date().toISOString();
+    if (n === 8) currentCompanyData.step8_azione_richiesta = true; // default: nuova risposta, si presume serva un'azione
+  }
+  renderFollowUp(currentCompanyData || {});
   renderAzioni(n);
 }
 
