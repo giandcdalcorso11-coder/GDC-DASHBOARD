@@ -127,6 +127,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .fu-7{background:#FFF9EC;color:var(--sabbia-dk);border:1.5px solid var(--sabbia);}
 .fu-14{background:#FFF0E6;color:#C4621A;border:1.5px solid #D4701A;}
 .fu-30{background:var(--life-bg);color:var(--life);border:1.5px solid var(--life);}
+.fu-urgent{background:var(--life);color:#fff;border:1.5px solid var(--life);font-weight:800;animation:fuPulse 1.4s ease-in-out infinite;}
+.fu-silence{background:#EAEAEA;color:#6B6B6B;border:1.5px solid #B8B8B8;font-weight:700;}
+@keyframes fuPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
 .co-arrow{color:var(--border);font-size:.9rem;margin-top:2px;}
 
 /* ══ EMPTY STATE ══ */
@@ -333,7 +336,7 @@ async function loadCompanies() {
   document.getElementById('coList').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Caricamento aziende…</div></div>';
   try {
     const res = await sbFetch(
-      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,data_mail_inviata,note,a7_status&order=step_attuale.desc'
+      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,step_7_date,step_8_date,step8_azione_richiesta,note,a7_status&order=step_attuale.desc'
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
@@ -346,8 +349,8 @@ async function loadCompanies() {
       score:         c.score   || 0,
       tag:           c.tag     || '',
       step:          c.step_attuale || 1,
-      followup_days: calcFollowup(c.data_mail_inviata, c.step_attuale),
-      contact_date:  c.data_mail_inviata || null,
+      followup:      calcFollowup(c.step_attuale, c.step_7_date, c.step_8_date, c.step8_azione_richiesta),
+      contact_date:  c.step_7_date || null,
       note:          c.note    || '',
       a7_status:     c.a7_status || ''
     }));
@@ -359,11 +362,29 @@ async function loadCompanies() {
   }
 }
 
-// Calcola giorni di follow-up da data_mail_inviata (solo se step 7-9)
-function calcFollowup(data_mail, step) {
-  if (!data_mail || step < 7 || step > 9) return null;
-  const days = Math.floor((Date.now() - new Date(data_mail).getTime()) / 86400000);
-  return days > 0 ? days : null;
+// Follow-up:
+// - step 7 (mail inviata, aspetti loro): giorni da step_7_date. Da 21gg+ diventa "silenzio".
+// - step 8 (loro hanno risposto): se azioneRichiesta è true (default) = badge urgente "tocca a te" da step_8_date.
+//   Se azioneRichiesta è false (flag manuale, es. risposta automatica/form) = torna al conteggio normale
+//   in attesa/silenzio, contando comunque da step_8_date (ultimo evento noto).
+// - step 9+ : nessun badge, gestione conclusa.
+const SILENCE_THRESHOLD_DAYS = 21;
+
+function calcFollowup(step, step7date, step8date, azioneRichiesta) {
+  if (step === 8 && step8date) {
+    const days = Math.floor((Date.now() - new Date(step8date).getTime()) / 86400000);
+    if (days < 0) return null;
+    if (azioneRichiesta === false) {
+      return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    }
+    return { type: 'urgent', days };
+  }
+  if (step === 7 && step7date) {
+    const days = Math.floor((Date.now() - new Date(step7date).getTime()) / 86400000);
+    if (days <= 0) return null;
+    return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+  }
+  return null;
 }
 
 // ─── FILTRI ──────────────────────────────────────────────────────────────────
@@ -459,7 +480,7 @@ function applyFilters(){
     }
     let av, bv;
     if(sortBy === 'score')        { av = a.score;               bv = b.score; }
-    else if(sortBy === 'followup'){ av = a.followup_days || 0;   bv = b.followup_days || 0; }
+    else if(sortBy === 'followup'){ av = (a.followup && a.followup.days) || 0;   bv = (b.followup && b.followup.days) || 0; }
     else if(sortBy === 'nome')    { av = a.name.toLowerCase();   bv = b.name.toLowerCase(); }
     else                          { av = a.step;                 bv = b.step; } // step (default)
     if(av < bv) return sortAsc ? -1 : 1;
@@ -484,10 +505,16 @@ function scoreTagClass(score){
   return 'tag-score-lo';                  // 1-4: basso fit
 }
 
-function fuHtml(days){
-  if(!days) return '';
-  var cls = days <= 7 ? 'fu-7' : days <= 14 ? 'fu-14' : 'fu-30';
-  return '<div class="fu-badge '+cls+'"><div class="fu-dot"></div>+'+days+'gg</div>';
+function fuHtml(fu){
+  if(!fu) return '';
+  if(fu.type === 'urgent'){
+    return '<div class="fu-badge fu-urgent">⚡ Tocca a te · '+fu.days+'gg</div>';
+  }
+  if(fu.type === 'silence'){
+    return '<div class="fu-badge fu-silence">Silenzio '+fu.days+'gg</div>';
+  }
+  var cls = fu.days <= 7 ? 'fu-7' : 'fu-14';
+  return '<div class="fu-badge '+cls+'"><div class="fu-dot"></div>+'+fu.days+'gg</div>';
 }
 
 function renderList(list){
@@ -514,7 +541,7 @@ function renderList(list){
         '<div class="co-step-name">Step '+c.step+' — '+STEP_NAMES[c.step]+(c.note?' · '+c.note:'')+'</div>' +
       '</div>' +
       '<div class="co-right">' +
-        fuHtml(c.followup_days) +
+        fuHtml(c.followup) +
         '<span class="co-arrow">›</span>' +
       '</div>' +
     '</a>';
