@@ -124,8 +124,15 @@ body{
 .badge-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .badge-done{ color:var(--maker); border-color:var(--maker-bg); }
 .badge-done .badge-dot{ background:var(--maker); }
+.badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
+.badge-queued{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-queued .badge-dot{ background:var(--athlete); }
+.badge-sleep{ color:var(--grigio); border-color:var(--border); } .badge-sleep .badge-dot{ background:var(--grigio); }
 .type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:4px 9px; }
 .last-run-lbl{ font-size:.65rem; color:var(--grigio); }
+.push-row{ width:100%; max-width:540px; padding:0 16px 6px; display:flex; justify-content:flex-end; }
+.push-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; color:var(--grigio); background:none; border:none; cursor:pointer; padding:0; transition:color .15s; }
+.push-btn:hover{ color:var(--nero); }
+.empty-note{ font-size:.72rem; color:var(--grigio); line-height:1.5; padding:6px 0; }
 
 /* ══ TABS ══ */
 .tabs-row{ display:flex; gap:5px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none; }
@@ -294,9 +301,15 @@ body{
   </div>
   <div class="system-bar">
     <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label">Tutti i sistemi attivi</div>
-    <div class="sys-meta">Notifiche push attive</div>
+    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
+    <div class="sys-meta" id="sysMeta"></div>
   </div>
+</div>
+<div class="push-row">
+  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span id="pushBtnLabel">Attiva notifiche</span>
+  </button>
 </div>
 
 <!-- ══ PAGE CONTENT ══ -->
@@ -342,7 +355,7 @@ body{
       </div>
     </div>
     <div class="hero-meta">
-      <span class="status-badge badge-done"><span class="badge-dot"></span>Completato</span>
+      <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
       <span class="type-tag">&#9729;&#65039; Claude.ai</span>
       <span class="last-run-lbl" id="lastRunLbl"></span>
     </div>
@@ -498,7 +511,7 @@ body{
         </div>
         <div class="work-step">
           <div class="work-num">4</div>
-          <div><div class="work-desc">Aggiungi il calendario impegni manualmente</div><div class="work-sub">Tornei BPT, allenamenti, eventi — script automatico in sviluppo</div></div>
+          <div><div class="work-desc">Il calendario impegni (tornei BPT, trasferte, riposo) è incluso in automatico nel messaggio</div><div class="work-sub">Letto da agent_states.bpt_calendar — stessa fonte usata dalla home</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">5</div>
@@ -515,42 +528,19 @@ body{
   <!-- TAB: RUN -->
   <div id="panel-run" class="panel">
     <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128200; Statistiche</span></div>
+      <div class="sc-head"><span class="sc-label">&#128200; Ultimo run registrato</span></div>
       <div class="sc-body">
         <div class="stat-grid">
-          <div><div class="stat-num" style="color:var(--maker);">6</div><div class="stat-lbl">Piani generati</div></div>
-          <div><div class="stat-num">100%</div><div class="stat-lbl">Successo</div></div>
-          <div><div class="stat-num">~12</div><div class="stat-lbl">Min. medio</div></div>
+          <div><div class="stat-num" style="color:var(--maker);" id="statMese">&#8212;</div><div class="stat-lbl">Mese</div></div>
+          <div><div class="stat-num" id="statTornei">&#8212;</div><div class="stat-lbl">Tornei BPT</div></div>
         </div>
+        <div class="empty-note" id="statMeta" style="margin-top:8px;"></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128337; Storico run</span></div>
       <div class="sc-body">
-        <div class="run-row">
-          <span class="run-icon">&#9989;</span>
-          <div class="run-info">
-            <div class="run-title" id="run1Lbl">Piano — [mese] [anno]</div>
-            <div class="run-meta">Run manuale · Claude.ai</div>
-          </div>
-          <span class="run-badge rb-ok">OK</span>
-        </div>
-        <div class="run-row">
-          <span class="run-icon">&#9989;</span>
-          <div class="run-info">
-            <div class="run-title" id="run2Lbl">Piano — [mese-1] [anno]</div>
-            <div class="run-meta">Run manuale · Claude.ai</div>
-          </div>
-          <span class="run-badge rb-ok">OK</span>
-        </div>
-        <div class="run-row">
-          <span class="run-icon">&#9989;</span>
-          <div class="run-info">
-            <div class="run-title">Piano — marzo 2026</div>
-            <div class="run-meta">Run manuale · Claude.ai</div>
-          </div>
-          <span class="run-badge rb-ok">OK</span>
-        </div>
+        <div class="empty-note">Non ancora tracciato — A3 non scrive su activity_log al momento. Qui sopra vedi solo l'ultimo stato noto da agent_states, non uno storico completo.</div>
       </div>
     </div>
   </div>
@@ -571,10 +561,10 @@ body{
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">A2 completato (report Mm1 su Drive)</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">Verificare</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm2 disponibile su Drive</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Piano A3 Mm1 disponibile su Drive</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Script BPT calendar (calendario auto)</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">In sviluppo</span></div>
+        <div class="config-row"><span class="cfg-dot" id="depA2Dot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">A2 completato (report Mm1 su Drive)</span><span style="font-size:.62rem;font-weight:700;" id="depA2Lbl">Caricamento...</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm2 disponibile su Drive</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Piano A3 Mm1 disponibile su Drive</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot" id="depBptDot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">Calendario BPT automatico nel messaggio</span><span style="font-size:.62rem;font-weight:700;" id="depBptLbl">Caricamento...</span></div>
       </div>
     </div>
     <div class="section-card">
@@ -623,12 +613,12 @@ document.getElementById('reportSubLbl').textContent=`report Mm1: ${Mm1} · Mm2: 
 document.getElementById('ioMm1Lbl').textContent=`${Mm1} ${Am1}`;
 document.getElementById('ioM0Lbl').textContent=`${M0}_${A0}`;
 document.getElementById('configMeseLbl').textContent=`M0 — ${M0} ${A0}`;
-document.getElementById('run1Lbl').textContent=`Piano — ${M0} ${A0}`;
-document.getElementById('run2Lbl').textContent=`Piano — ${Mm1} ${Am1}`;
 document.getElementById('msgSubLbl').textContent=`Launcher A3 — ${M0} ${A0}`;
 
-// Testo messaggio precompilato
-const MSG=`Ciao A3. È il momento del piano editoriale mensile.
+// Testo messaggio precompilato — costruito da buildMsg(), richiamato dopo il
+// caricamento del calendario BPT reale da Supabase (vedi loadA3() più sotto).
+function buildMsg(calText){
+  return `Ciao A3. È il momento del piano editoriale mensile.
 
 Trovi i file necessari nelle seguenti cartelle Drive:
 
@@ -648,15 +638,15 @@ https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK
 Mese da pianificare: ${M0} ${A0}
 
 CALENDARIO IMPEGNI ${M0} ${A0}:
-[aggiungi qui i tuoi impegni — es. tornei BPT, allenamenti, eventi]
+${calText}
 
 Genera il piano editoriale e offrilo in download via present_files.
 → nome file: piano_${M0}_${A0}.pptx
 
 (Dopo il download, carica tu il file nella cartella Drive A3:
 https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK )`;
-
-document.getElementById('msgText').value=MSG;
+}
+document.getElementById('msgText').value=buildMsg('[caricamento calendario BPT...]');
 
 function switchTab(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -731,6 +721,152 @@ function showEvs(key,evs){
   document.getElementById('calEventsPanel').innerHTML=
     `<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">${d}/${m}/${y}</div>`+
     evs.map(ev=>`<div class="cal-event-item"><div class="cal-event-dot" style="background:${ev.color}"></div><div><div class="cal-event-text">${ev.label}</div><div class="cal-event-agent">${ev.agent}</div></div></div>`).join('');
+}
+
+/* ══ SUPABASE — auth + fetch ══ */
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+  let banner=document.getElementById('gdcSessionBanner');
+  if(!banner){ banner=document.createElement('div'); banner.id='gdcSessionBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent='Sessione scaduta — reindirizzamento al login...';
+  setTimeout(()=>{ window.location.href='page_login_v6.html'; },1600);
+}
+async function sbFetch(url,options){
+  options=options||{};
+  const headers=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+gdcToken()},options.headers||{});
+  const res=await fetch(url,Object.assign({},options,{headers:headers}));
+  if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html) ══ */
+const VAPID_PUBLIC_KEY='BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=atob(base64); const outputArray=new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;i++) outputArray[i]=rawData.charCodeAt(i);
+  return outputArray;
+}
+function guessDeviceLabel(){
+  const ua=navigator.userAgent||''; let device='Dispositivo';
+  if(/iPad/.test(ua)) device='iPad'; else if(/iPhone/.test(ua)) device='iPhone';
+  else if(/Android/.test(ua)) device='Android'; else if(/Macintosh/.test(ua)) device='Mac';
+  else if(/Windows/.test(ua)) device='PC Windows';
+  const d=new Date(); return device+' — '+d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+}
+async function getExistingPushSubscription(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return null;
+  const reg=await navigator.serviceWorker.getRegistration(); if(!reg) return null;
+  return await reg.pushManager.getSubscription();
+}
+async function updatePushButtonUI(){
+  const label=document.getElementById('pushBtnLabel'); if(!label) return;
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
+  const sub=await getExistingPushSubscription();
+  label.textContent=sub?'Notifiche attive':'Attiva notifiche';
+}
+async function togglePushNotifications(){
+  const label=document.getElementById('pushBtnLabel');
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.'); return;
+  }
+  const existing=await getExistingPushSubscription();
+  if(existing){
+    try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
+    await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+  }
+  try{
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
+    const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+    const subJson=sub.toJSON();
+    await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
+    if(label) label.textContent='Notifiche attive';
+  }catch(e){ alert('Errore durante l\'attivazione delle notifiche.'); }
+}
+document.addEventListener('DOMContentLoaded',updatePushButtonUI);
+
+/* ══ DATI REALI — agent_states (a2 + a3 + bpt_calendar) ══ */
+function timeAgo(iso){
+  if(!iso) return '';
+  const diff=Date.now()-new Date(iso).getTime();
+  const mins=Math.floor(diff/60000);
+  if(mins<1) return 'proprio ora';
+  if(mins<60) return mins+' min fa';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return hrs+' or'+(hrs===1?'a':'e')+' fa';
+  const days=Math.floor(hrs/24);
+  return days+' giorn'+(days===1?'o':'i')+' fa';
+}
+async function loadA3(){
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a2,a3,bpt_calendar)&select=agent_id,stato,updated_at,mese,calendario_bpt,n_tornei');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    const a2=rows.find(r=>r.agent_id==='a2');
+    const a3=rows.find(r=>r.agent_id==='a3');
+    const bpt=rows.find(r=>r.agent_id==='bpt_calendar');
+
+    document.getElementById('sysLabel').textContent='Connesso a Supabase';
+    document.getElementById('sysLabel').style.color='var(--maker)';
+    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+
+    // Badge stato A3
+    const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
+    const st=a3?a3.stato:null;
+    const age=a3&&a3.updated_at?Date.now()-new Date(a3.updated_at).getTime():Infinity;
+    const THREE_DAYS=3*24*60*60*1000;
+    if(st==='working'){ badge.className='status-badge badge-active'; lbl.textContent='In corso'; }
+    else if(st==='queued'||st==='ready'){ badge.className='status-badge badge-queued'; lbl.textContent='In coda'; }
+    else if(st==='done'&&age<THREE_DAYS){ badge.className='status-badge badge-done'; lbl.textContent='Completato'; }
+    else { badge.className='status-badge badge-sleep'; lbl.textContent='Inattivo'; }
+    document.getElementById('lastRunLbl').textContent=a3&&a3.updated_at?('Ultimo aggiornamento: '+timeAgo(a3.updated_at)):'';
+
+    // Tab Run — dati reali
+    document.getElementById('statMese').textContent=a3&&a3.mese?a3.mese:'—';
+    document.getElementById('statTornei').textContent=(bpt&&bpt.n_tornei!=null)?bpt.n_tornei:'—';
+    document.getElementById('statMeta').textContent=a3&&a3.updated_at?('Da agent_states — aggiornato '+timeAgo(a3.updated_at)):'Nessun dato ancora registrato.';
+
+    // Dipendenza A2 — check reale
+    const dotA2=document.getElementById('depA2Dot'), lblA2=document.getElementById('depA2Lbl');
+    const a2Age=a2&&a2.updated_at?Date.now()-new Date(a2.updated_at).getTime():Infinity;
+    if(a2&&a2.stato==='done'&&a2Age<THREE_DAYS){
+      dotA2.style.background='var(--maker)'; lblA2.style.color='var(--maker)'; lblA2.textContent='OK — completato';
+    } else {
+      dotA2.style.background='var(--sabbia)'; lblA2.style.color='var(--sabbia-dk)'; lblA2.textContent='Non risulta completato di recente';
+    }
+
+    // Dipendenza calendario BPT — reale, e messaggio precompilato aggiornato
+    const dotBpt=document.getElementById('depBptDot'), lblBpt=document.getElementById('depBptLbl');
+    if(bpt&&bpt.calendario_bpt){
+      dotBpt.style.background='var(--maker)'; lblBpt.style.color='var(--maker)'; lblBpt.textContent='OK — inserito nel messaggio';
+      document.getElementById('msgText').value=buildMsg(bpt.calendario_bpt);
+    } else {
+      dotBpt.style.background='var(--sabbia)'; lblBpt.style.color='var(--sabbia-dk)'; lblBpt.textContent='Nessun calendario trovato';
+      document.getElementById('msgText').value=buildMsg('[nessun calendario BPT trovato su Supabase — aggiungi qui i tuoi impegni a mano]');
+    }
+  }catch(e){
+    console.error('Errore caricamento A3:',e);
+    document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
+    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('statusBadgeLbl').textContent='Non disponibile';
+    document.getElementById('msgText').value=buildMsg('[impossibile caricare il calendario — aggiungi qui i tuoi impegni a mano]');
+  }
+}
+
+if(!gdcToken()){
+  window.location.href='page_login_v6.html';
+} else {
+  loadA3();
 }
 </script>
 </body>
