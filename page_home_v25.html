@@ -761,13 +761,17 @@ const STATO_PILLS=[
   {key:'sleep',   supaKey:'sleep',   label:'Inattivo',  cls:'sp-sleep'},
 ];
 
-function renderStatoRow(id, supaStato){
-  const row=document.getElementById('stato-row-'+id.toLowerCase());
-  if(!row) return;
-  // supaStato è il valore raw da Supabase (queued/working/done/riposo/sleep)
-  const cur=supaStato||'sleep';
-  row.innerHTML=STATO_PILLS.map(p=>{
-    const isActive=(p.supaKey===cur)||(p.supaKey==='sleep'&&(cur==='sleep'||cur===''||!cur));
+// Categoria (active/queued/done/rest/sleep, la stessa usata dal logo) ->
+// quale pillola va evidenziata. Riceve la categoria già calcolata (da
+// mapState() per i singoli agenti, da worstState() per A5/A6) così logo
+// e pillola condividono sempre lo stesso identico valore di partenza.
+const CATEGORY_TO_PILL={active:'working',queued:'queued',done:'done',rest:'riposo',sleep:'sleep'};
+function renderStatoRow(id, cat){
+  const rowEl=document.getElementById('stato-row-'+id.toLowerCase());
+  if(!rowEl) return;
+  const activeKey=CATEGORY_TO_PILL[cat]||'sleep';
+  rowEl.innerHTML=STATO_PILLS.map(p=>{
+    const isActive=(p.supaKey===activeKey);
     return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
   }).join('');
 }
@@ -834,7 +838,7 @@ async function loadStates(){
       const st=mapState(row);
       setLogoState(id,st);
       if(['a2','a3','a4'].includes(id)) renderActions(id.toUpperCase(),st);
-      renderStatoRow(id.toUpperCase(), row?row.stato:'sleep');
+      renderStatoRow(id.toUpperCase(), st);
     });
     const st5=worstState([byId['a5_1'],byId['a5_2']]);
     const st6=worstState([byId['a6_1'],byId['a6_2']]);
@@ -842,11 +846,9 @@ async function loadStates(){
     setLogoState('a6',st6);
     renderActionsSimple('A5',st5);
     renderActionsSimple('A6',st6);
-    // stato-row A5/A6 usa il valore del sub-agente principale
-    const raw5=(byId['a5_1']||byId['a5_2']);
-    const raw6=(byId['a6_1']||byId['a6_2']);
-    renderStatoRow('A5', raw5?raw5.stato:'sleep');
-    renderStatoRow('A6', raw6?raw6.stato:'sleep');
+    // stato-row A5/A6 usa la stessa categoria "peggiore" già calcolata per il logo
+    renderStatoRow('A5', st5);
+    renderStatoRow('A6', st6);
     document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
     document.getElementById('sysLabel').style.color='var(--maker)';
     document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
