@@ -635,57 +635,80 @@ async function updatePushButtonUI() {
   label.textContent = sub ? 'Notifiche attive' : 'Attiva notifiche';
 }
 
+let pushToggleInProgress = false;
 async function togglePushNotifications() {
+  if (pushToggleInProgress) return; // evita il doppio tap che causava falsi errori
+  pushToggleInProgress = true;
   const label = document.getElementById('pushBtnLabel');
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
-    return;
-  }
+  const btn = document.getElementById('pushBtn');
+  if (btn) btn.disabled = true;
+  const prevLabel = label ? label.textContent : '';
+  if (label) label.textContent = 'Attivazione in corso...';
 
-  const existing = await getExistingPushSubscription();
-
-  if (existing) {
-    // Disattiva: rimuove sia lato browser che da Supabase
-    try {
-      await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions?endpoint=eq.' + encodeURIComponent(existing.endpoint), { method: 'DELETE' });
-    } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
-    await existing.unsubscribe();
-    if (label) label.textContent = 'Attiva notifiche';
-    return;
-  }
-
-  // Attiva: permesso browser -> registra SW -> subscribe -> salva su Supabase
   try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      alert('Permesso notifiche negato. Puoi riattivarlo dalle impostazioni del browser/dispositivo.');
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
+      if (label) label.textContent = prevLabel;
       return;
     }
 
-    const reg = await navigator.serviceWorker.register('sw.js');
-    await navigator.serviceWorker.ready;
+    const existing = await getExistingPushSubscription();
 
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    });
+    if (existing) {
+      // Disattiva: rimuove sia lato browser che da Supabase
+      try {
+        await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions?endpoint=eq.' + encodeURIComponent(existing.endpoint), { method: 'DELETE' });
+      } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
+      await existing.unsubscribe();
+      if (label) label.textContent = 'Attiva notifiche';
+      return;
+    }
 
-    const subJson = sub.toJSON();
-    await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({
-        endpoint: subJson.endpoint,
-        p256dh: subJson.keys.p256dh,
-        auth: subJson.keys.auth,
-        device_label: guessDeviceLabel()
-      })
-    });
+    // Attiva: permesso browser -> registra SW -> subscribe -> salva su Supabase
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        alert('Permesso notifiche negato. Puoi riattivarlo dalle impostazioni del browser/dispositivo.');
+        return;
+      }
 
-    if (label) label.textContent = 'Notifiche attive';
-  } catch (e) {
-    console.error('Errore attivazione notifiche:', e);
-    alert('Errore durante l\'attivazione delle notifiche. Riprova, o controlla la console per dettagli.');
+      const reg = await navigator.serviceWorker.register('sw.js');
+      await navigator.serviceWorker.ready;
+
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+
+      const subJson = sub.toJSON();
+      await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({
+          endpoint: subJson.endpoint,
+          p256dh: subJson.keys.p256dh,
+          auth: subJson.keys.auth,
+          device_label: guessDeviceLabel()
+        })
+      });
+
+      if (label) label.textContent = 'Notifiche attive';
+    } catch (e) {
+      console.error('Errore attivazione notifiche:', e);
+      // Prima di dichiarare un errore, verifichiamo lo stato REALE: la
+      // sottoscrizione potrebbe essere andata a buon fine comunque (es. un
+      // tap concorrente ha fatto fallire solo questa chiamata).
+      const realSub = await getExistingPushSubscription();
+      if (realSub) {
+        if (label) label.textContent = 'Notifiche attive';
+      } else {
+        if (label) label.textContent = prevLabel;
+        alert('Errore durante l\'attivazione delle notifiche: ' + (e && e.message ? e.message : e) + '\n\nRiprova tra qualche secondo.');
+      }
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+    pushToggleInProgress = false;
   }
 }
 

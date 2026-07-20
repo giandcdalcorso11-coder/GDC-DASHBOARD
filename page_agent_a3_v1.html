@@ -114,7 +114,12 @@ body{
 /* ══ HERO ══ */
 .hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; }
 .hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
-.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; background:var(--maker-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; background:var(--athlete-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
+.logo-active{ background:var(--sabbia-bg) !important; }
+.logo-queued{ background:var(--life-bg) !important; }
+.logo-done{ background:var(--maker-bg) !important; }
+.logo-sleep{ background:var(--athlete-bg) !important; }
+.logo-rest{ background:var(--carta) !important; }
 .hero-text{ flex:1; min-width:0; }
 .agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
 .agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
@@ -331,7 +336,7 @@ body{
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero">
+      <div class="logo-box-hero" id="logoBoxHero">
         <!-- A3 grid 8 riquadri — colori done hardcoded -->
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible">
           <g stroke-width="5">
@@ -772,26 +777,44 @@ async function updatePushButtonUI(){
   const sub=await getExistingPushSubscription();
   label.textContent=sub?'Notifiche attive':'Attiva notifiche';
 }
+let pushToggleInProgress=false;
 async function togglePushNotifications(){
+  if(pushToggleInProgress) return; // evita il doppio tap che causava falsi errori
+  pushToggleInProgress=true;
   const label=document.getElementById('pushBtnLabel');
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-    alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.'); return;
-  }
-  const existing=await getExistingPushSubscription();
-  if(existing){
-    try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
-    await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
-  }
+  const btn=document.getElementById('pushBtn');
+  if(btn) btn.disabled=true;
+  const prevLabel=label?label.textContent:'';
+  if(label) label.textContent='Attivazione in corso...';
   try{
-    const permission=await Notification.requestPermission();
-    if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
-    const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
-    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
-    const subJson=sub.toJSON();
-    await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-      body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
-    if(label) label.textContent='Notifiche attive';
-  }catch(e){ alert('Errore durante l\'attivazione delle notifiche.'); }
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
+      if(label) label.textContent=prevLabel; return;
+    }
+    const existing=await getExistingPushSubscription();
+    if(existing){
+      try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
+      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+    }
+    try{
+      const permission=await Notification.requestPermission();
+      if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
+      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+      const subJson=sub.toJSON();
+      await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+        body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
+      if(label) label.textContent='Notifiche attive';
+    }catch(e){
+      console.error('Errore attivazione notifiche:',e);
+      const realSub=await getExistingPushSubscription();
+      if(realSub){ if(label) label.textContent='Notifiche attive'; }
+      else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
+    }
+  } finally {
+    if(btn) btn.disabled=false;
+    pushToggleInProgress=false;
+  }
 }
 document.addEventListener('DOMContentLoaded',updatePushButtonUI);
 
@@ -807,6 +830,25 @@ function timeAgo(iso){
   const days=Math.floor(hrs/24);
   return days+' giorn'+(days===1?'o':'i')+' fa';
 }
+// Stessa identica logica di page_home_v25.html — stato raw -> categoria UI
+const THREE_DAYS=3*24*60*60*1000;
+function mapState(row){
+  if(!row) return 'sleep';
+  const st=row.stato||'';
+  const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='working') return 'active';
+  if(st==='ready'||st==='queued') return 'queued';
+  if(st==='done') return age<THREE_DAYS?'done':'sleep';
+  if(st==='riposo') return age<THREE_DAYS?'rest':'sleep';
+  return 'sleep';
+}
+const STATE_CFG={
+  active:{badge:'badge-active',logo:'logo-active',lbl:'In corso'},
+  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda'},
+  done:{badge:'badge-done',logo:'logo-done',lbl:'Completato'},
+  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
+  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
+};
 async function loadA3(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a2,a3,bpt_calendar)&select=agent_id,stato,updated_at,mese,calendario_bpt,n_tornei');
@@ -820,15 +862,12 @@ async function loadA3(){
     document.getElementById('sysLabel').style.color='var(--maker)';
     document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 
-    // Badge stato A3
+    // Badge + logo — stessa categoria di stato, stessa palette della home
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
-    const st=a3?a3.stato:null;
-    const age=a3&&a3.updated_at?Date.now()-new Date(a3.updated_at).getTime():Infinity;
-    const THREE_DAYS=3*24*60*60*1000;
-    if(st==='working'){ badge.className='status-badge badge-active'; lbl.textContent='In corso'; }
-    else if(st==='queued'||st==='ready'){ badge.className='status-badge badge-queued'; lbl.textContent='In coda'; }
-    else if(st==='done'&&age<THREE_DAYS){ badge.className='status-badge badge-done'; lbl.textContent='Completato'; }
-    else { badge.className='status-badge badge-sleep'; lbl.textContent='Inattivo'; }
+    const logoBox=document.getElementById('logoBoxHero');
+    const stCat=mapState(a3), c=STATE_CFG[stCat];
+    badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
+    if(logoBox) logoBox.className='logo-box-hero '+c.logo;
     document.getElementById('lastRunLbl').textContent=a3&&a3.updated_at?('Ultimo aggiornamento: '+timeAgo(a3.updated_at)):'';
 
     // Tab Run — dati reali
