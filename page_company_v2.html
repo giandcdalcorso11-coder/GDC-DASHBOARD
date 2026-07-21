@@ -295,6 +295,29 @@ body{
   padding:10px 12px; background:var(--carta); border-radius:10px;
   border-left:3px solid var(--bordo);
 }
+.note-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:3px; }
+.note-actions{ display:flex; gap:10px; flex-shrink:0; }
+.note-action-btn{
+  font-family:'Jost',sans-serif; font-size:.64rem; font-weight:700; background:none; border:none;
+  color:var(--grigio); cursor:pointer; padding:0; transition:color .15s;
+}
+.note-action-btn:hover{ color:var(--nero); }
+.note-action-btn.danger:hover{ color:var(--life); }
+.note-edit-area{
+  width:100%; min-height:60px; margin-top:4px;
+  font-family:'Jost',sans-serif; font-size:.78rem; line-height:1.5;
+  background:var(--bianco); border:1.5px solid var(--maker); border-radius:8px;
+  padding:8px; color:var(--nero); resize:vertical; outline:none;
+}
+.note-edit-row{ display:flex; gap:8px; margin-top:6px; }
+.note-edit-save,.note-edit-cancel{
+  font-family:'Jost',sans-serif; font-size:.68rem; font-weight:700; padding:5px 12px;
+  border-radius:8px; cursor:pointer; border:1.5px solid var(--bordo); background:transparent;
+}
+.note-edit-save{ border-color:var(--maker); color:var(--maker); }
+.note-edit-save:hover{ background:var(--maker-bg); }
+.note-edit-cancel{ color:var(--grigio); }
+.note-edit-cancel:hover{ background:var(--carta); }
 .note-date{ font-size:.62rem; color:var(--grigio); margin-bottom:3px; font-weight:600; letter-spacing:.04em; }
 .note-text{ font-size:.78rem; line-height:1.5; color:var(--nero); }
 .note-new{
@@ -875,26 +898,91 @@ function populatePage(co) {
   buildA7Btn(co);
 
   // Note da Supabase
+  noteEntries = parseNoteBlob(co.note || '');
+  renderNoteEntries();
+}
+
+// ── NOTE GENERALE: modello dati + rendering (supporta modifica/eliminazione) ──
+let noteEntries = []; // [{dateLabel: string|null, text: string}], indice 0 = più recente
+
+function parseNoteBlob(blob){
+  if (!blob) return [];
+  return blob.split('\n---\n').filter(l => l.trim()).map(line => {
+    const match = line.match(/^\[([^\]]+)\]\s*(.*)/s);
+    return match ? { dateLabel: match[1], text: match[2].trim() } : { dateLabel: null, text: line.trim() };
+  });
+}
+
+function serializeNoteBlob(){
+  return noteEntries.map(n => n.dateLabel ? `[${n.dateLabel}] ${n.text}` : n.text).join('\n---\n');
+}
+
+function renderNoteEntries(){
   const noteList = document.getElementById('noteList');
-  if (noteList && co.note) {
-    noteList.innerHTML = '';
-    const lines = co.note.split('\n---\n');
-    lines.forEach(line => {
-      if (!line.trim()) return;
-      // Formato: [DD/MM/YYYY, HH:MM] testo
-      const match = line.match(/^\[([^\]]+)\]\s*(.*)/s);
-      const el = document.createElement('div');
-      el.className = 'note-item';
-      if (match) {
-        el.innerHTML = `<div class="note-date">${match[1]}</div><div class="note-text">${match[2].trim()}</div>`;
-      } else {
-        el.innerHTML = `<div class="note-text">${line.trim()}</div>`;
-      }
-      noteList.appendChild(el);
-    });
-  } else if (noteList) {
+  if (!noteList) return;
+  if (noteEntries.length === 0){
     noteList.innerHTML = '<div style="font-size:.72rem;color:var(--grigio);padding:4px 0;">Nessuna nota.</div>';
+    return;
   }
+  noteList.innerHTML = '';
+  noteEntries.forEach((entry, idx) => {
+    const el = document.createElement('div');
+    el.className = 'note-item';
+    el.id = 'note-item-' + idx;
+    el.innerHTML =
+      '<div class="note-head">' +
+        (entry.dateLabel ? '<div class="note-date">' + entry.dateLabel + '</div>' : '<div></div>') +
+        '<div class="note-actions">' +
+          '<button class="note-action-btn" onclick="startEditNote(' + idx + ')">Modifica</button>' +
+          '<button class="note-action-btn danger" onclick="deleteNoteEntry(' + idx + ')">Elimina</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="note-text" id="note-text-' + idx + '">' + entry.text + '</div>';
+    noteList.appendChild(el);
+  });
+}
+
+function startEditNote(idx){
+  const textEl = document.getElementById('note-text-' + idx);
+  if (!textEl) return;
+  const current = noteEntries[idx].text;
+  textEl.outerHTML =
+    '<textarea class="note-edit-area" id="note-text-' + idx + '">' + current + '</textarea>' +
+    '<div class="note-edit-row">' +
+      '<button class="note-edit-save" onclick="saveEditNote(' + idx + ')">Salva</button>' +
+      '<button class="note-edit-cancel" onclick="renderNoteEntries()">Annulla</button>' +
+    '</div>';
+  document.getElementById('note-text-' + idx).focus();
+}
+
+async function saveEditNote(idx){
+  const area = document.getElementById('note-text-' + idx);
+  if (!area) return;
+  const newText = area.value.trim();
+  if (!newText) { deleteNoteEntry(idx); return; }
+  noteEntries[idx].text = newText;
+  await persistNoteEntries();
+  renderNoteEntries();
+}
+
+async function deleteNoteEntry(idx){
+  if (!confirm('Eliminare questa nota? L\'azione non è reversibile.')) return;
+  noteEntries.splice(idx, 1);
+  await persistNoteEntries();
+  renderNoteEntries();
+}
+
+async function persistNoteEntries(){
+  if (!currentCompanyId) return;
+  const merged = serializeNoteBlob();
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ note: merged, updated_at: new Date().toISOString() })
+    });
+    if (currentCompanyData) currentCompanyData.note = merged;
+  } catch(e){ console.error('Errore salvataggio note:', e); alert('Errore durante il salvataggio della nota.'); }
 }
 
 function updateConnectors(step) {
@@ -910,31 +998,39 @@ function flagEmoji(lingua) {
   return map[lingua] || '🌐';
 }
 
-// Follow-up:
-// - step 7 (mail inviata, aspetti loro): giorni da step_7_date. Da 21gg+ diventa "silenzio".
-// - step 8 (loro hanno risposto): se step8_azione_richiesta è true (default) = badge urgente "tocca a te".
-//   Se è stato disattivato a mano (risposta automatica/form) = torna al conteggio in attesa/silenzio.
-// - step 9+ : nessun badge.
+// Follow-up — "chi ha la palla e da quanti giorni":
+// - step 7 (mail inviata): oggettivo, palla sempre a loro, conta da step_7_date.
+// - step 8-12: default palla a te ("tocca a te"); il flag stepN_azione_richiesta
+//   (impostato da A6.2 in base al contenuto reale dell'ultima mail, o a mano da qui)
+//   se false riporta al conteggio normale attesa/silenzio, contando da step_N_date.
+// - step 13: nessun badge, gestione conclusa (rifiutato).
 const SILENCE_THRESHOLD_DAYS = 21;
+
+function calcFollowupForStep(co, step) {
+  if (step === 7) {
+    if (!co.step_7_date) return null;
+    const days = Math.floor((Date.now() - new Date(co.step_7_date).getTime()) / 86400000);
+    if (days <= 0) return null;
+    return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+  }
+  if (step >= 8 && step <= 12) {
+    const stepDate = co['step_' + step + '_date'];
+    if (!stepDate) return null;
+    const days = Math.floor((Date.now() - new Date(stepDate).getTime()) / 86400000);
+    if (days < 0) return null;
+    const azioneRichiesta = co['step' + step + '_azione_richiesta'] !== false; // default true
+    return azioneRichiesta
+      ? { type: 'urgent', days }
+      : { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+  }
+  return null;
+}
 
 function renderFollowUp(co) {
   const step = co.step_attuale || 1;
   const fuEl = document.querySelector('.fu-badge');
   const toggleBtn = document.getElementById('fuToggleBtn');
-  let fu = null;
-
-  if (step === 8 && co.step_8_date) {
-    const days = Math.floor((Date.now() - new Date(co.step_8_date).getTime()) / 86400000);
-    if (days >= 0) {
-      const azioneRichiesta = co.step8_azione_richiesta !== false; // default true
-      fu = azioneRichiesta
-        ? { type: 'urgent', days }
-        : { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
-    }
-  } else if (step === 7 && co.step_7_date) {
-    const days = Math.floor((Date.now() - new Date(co.step_7_date).getTime()) / 86400000);
-    if (days > 0) fu = { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
-  }
+  const fu = calcFollowupForStep(co, step);
 
   if (fuEl) {
     if (fu) {
@@ -956,8 +1052,8 @@ function renderFollowUp(co) {
   }
 
   if (toggleBtn) {
-    if (step === 8) {
-      const azioneRichiesta = co.step8_azione_richiesta !== false;
+    if (step >= 8 && step <= 12) {
+      const azioneRichiesta = co['step' + step + '_azione_richiesta'] !== false;
       toggleBtn.style.display = 'inline-flex';
       toggleBtn.textContent = azioneRichiesta ? 'Non serve risposta mia' : 'Serve risposta mia';
       toggleBtn.title = azioneRichiesta
@@ -969,18 +1065,21 @@ function renderFollowUp(co) {
   }
 }
 
-/* ── Toggle manuale: serve una mia risposta a questa azienda (step 8) ── */
+/* ── Toggle manuale: serve una mia risposta a questa azienda (step corrente, 8-12) ── */
 async function toggleAzioneRichiesta() {
   if (!currentCompanyId || !currentCompanyData) return;
-  const current = currentCompanyData.step8_azione_richiesta !== false;
+  const step = currentCompanyData.step_attuale || 1;
+  if (step < 8 || step > 12) return;
+  const field = 'step' + step + '_azione_richiesta';
+  const current = currentCompanyData[field] !== false;
   const newValue = !current;
   try {
     await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ step8_azione_richiesta: newValue })
+      body: JSON.stringify({ [field]: newValue })
     });
-    currentCompanyData.step8_azione_richiesta = newValue;
+    currentCompanyData[field] = newValue;
     renderFollowUp(currentCompanyData);
   } catch(e) { console.error('toggleAzioneRichiesta error:', e); }
 }
@@ -997,6 +1096,9 @@ async function updateStep(n) {
   for (let i = 1; i <= 13; i++) stepFields['step_' + i] = (i <= n);
   const body = { step_attuale: n, updated_at: new Date().toISOString(), ...stepFields };
   body['step_' + n + '_date'] = new Date().toISOString();
+  // Nuovo step 8-12: si presume serva un'azione finché non viene detto il contrario
+  // (da A6.2, in base al contenuto della mail, o a mano col bottone qui sopra).
+  if (n >= 8 && n <= 12) body['step' + n + '_azione_richiesta'] = true;
   try {
     await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
       method: 'PATCH',
@@ -1025,7 +1127,7 @@ function setStep(n){
   if (currentCompanyData) {
     currentCompanyData.step_attuale = n;
     currentCompanyData['step_' + n + '_date'] = new Date().toISOString();
-    if (n === 8) currentCompanyData.step8_azione_richiesta = true; // default: nuova risposta, si presume serva un'azione
+    if (n >= 8 && n <= 12) currentCompanyData['step' + n + '_azione_richiesta'] = true; // default: nuovo step, si presume serva un'azione
   }
   renderFollowUp(currentCompanyData || {});
   renderAzioni(n);
@@ -1240,37 +1342,12 @@ function execAction(action, note){
 }
 
 /* ── Note ── */
-function renderNote(text, isoDate){
-  const now = isoDate ? new Date(isoDate) : new Date();
-  const date = now.toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}).toUpperCase()
-             + ' · ' + now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-  const el = document.createElement('div');
-  el.className = 'note-item';
-  el.innerHTML = `<div class="note-date">${date}</div><div class="note-text">${text}</div>`;
-  return el;
-}
 async function saveNoteText(text){
   if (!text || !currentCompanyId) return;
-  // Leggo la nota esistente, aggiungo in cima
   const ts = new Date().toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const newLine = '[' + ts + '] ' + text;
-  // Fetch nota attuale
-  let current = '';
-  try {
-    const r = await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId + '&select=note');
-    const d = await r.json();
-    current = (d[0] && d[0].note) ? d[0].note : '';
-  } catch(e){}
-  const merged = newLine + (current ? '\n---\n' + current : '');
-  try {
-    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ note: merged, updated_at: new Date().toISOString() })
-    });
-  } catch(e){ console.error('saveNote error:', e); }
-  // Mostra subito nella UI
-  document.getElementById('noteList').prepend(renderNote(text));
+  noteEntries.unshift({ dateLabel: ts, text: text });
+  await persistNoteEntries();
+  renderNoteEntries();
 }
 function saveNote(){
   const text = document.getElementById('newNote').value.trim();
