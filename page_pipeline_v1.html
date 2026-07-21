@@ -336,7 +336,7 @@ async function loadCompanies() {
   document.getElementById('coList').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Caricamento aziende…</div></div>';
   try {
     const res = await sbFetch(
-      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,step_7_date,step_8_date,step8_azione_richiesta,note,a7_status&order=step_attuale.desc'
+      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,note,a7_status&order=step_attuale.desc'
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
@@ -349,7 +349,7 @@ async function loadCompanies() {
       score:         c.score   || 0,
       tag:           c.tag     || '',
       step:          c.step_attuale || 1,
-      followup:      calcFollowup(c.step_attuale, c.step_7_date, c.step_8_date, c.step8_azione_richiesta),
+      followup:      calcFollowup(c),
       contact_date:  c.step_7_date || null,
       note:          c.note    || '',
       a7_status:     c.a7_status || ''
@@ -362,28 +362,45 @@ async function loadCompanies() {
   }
 }
 
-// Follow-up:
-// - step 7 (mail inviata, aspetti loro): giorni da step_7_date. Da 21gg+ diventa "silenzio".
-// - step 8 (loro hanno risposto): se azioneRichiesta è true (default) = badge urgente "tocca a te" da step_8_date.
-//   Se azioneRichiesta è false (flag manuale, es. risposta automatica/form) = torna al conteggio normale
-//   in attesa/silenzio, contando comunque da step_8_date (ultimo evento noto).
-// - step 9+ : nessun badge, gestione conclusa.
+// Follow-up — "chi ha la palla e da quanti giorni":
+// - step 7 (mail inviata): oggettivo, palla sempre a loro, conta da step_7_date.
+// - step 8 (risposta ricevuta): default palla a te ("tocca a te"); se step8_azione_richiesta
+//   è false (flag manuale, es. risposta automatica/form) torna al conteggio normale attesa/silenzio.
+// - step 9-12 (Gestita/Trattativa/Accordo/Contratto): stesso meccanismo dello step 8,
+//   generalizzato. Il flag stepN_azione_richiesta lo imposta A6.2 quando sposta l'azienda
+//   su quello step, in base a cosa ha letto nell'ultima mail dello scambio:
+//     true  = tocca a Gianluca agire  -> badge urgente "tocca a te"
+//     false = palla in mano a loro    -> conteggio normale attesa/silenzio
+// - step 13: nessun badge, gestione conclusa (rifiutato).
 const SILENCE_THRESHOLD_DAYS = 21;
 
-function calcFollowup(step, step7date, step8date, azioneRichiesta) {
-  if (step === 8 && step8date) {
-    const days = Math.floor((Date.now() - new Date(step8date).getTime()) / 86400000);
-    if (days < 0) return null;
-    if (azioneRichiesta === false) {
-      return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
-    }
-    return { type: 'urgent', days };
-  }
-  if (step === 7 && step7date) {
-    const days = Math.floor((Date.now() - new Date(step7date).getTime()) / 86400000);
+function calcFollowup(c) {
+  const step = c.step_attuale;
+
+  if (step === 7) {
+    if (!c.step_7_date) return null;
+    const days = Math.floor((Date.now() - new Date(c.step_7_date).getTime()) / 86400000);
     if (days <= 0) return null;
     return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
   }
+
+  if (step >= 8 && step <= 12) {
+    const dateField = 'step_' + step + '_date';
+    const flagField = 'step' + step + '_azione_richiesta';
+    const stepDate = c[dateField];
+    if (!stepDate) return null;
+    const days = Math.floor((Date.now() - new Date(stepDate).getTime()) / 86400000);
+    if (days < 0) return null;
+    // Default true se il flag non è ancora stato impostato (nuova azienda, nessuna
+    // decisione manuale di A6.2 registrata) — meglio segnalare "tocca a te" per errore
+    // che lasciare un follow-up reale silenzioso.
+    const azioneRichiesta = c[flagField] !== false;
+    if (azioneRichiesta) {
+      return { type: 'urgent', days };
+    }
+    return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+  }
+
   return null;
 }
 
