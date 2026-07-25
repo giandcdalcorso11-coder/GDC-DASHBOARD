@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC Reset Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:#F5F0E8;color:#1C1C1C;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px 60px;}
+h1{font-size:1.15rem;font-weight:800;margin-bottom:4px;}
+.sub{font-size:.75rem;color:#6B6B6B;margin-bottom:24px;text-align:center;max-width:480px;line-height:1.5;}
+.card{background:#FAFAF5;border:1.5px solid #ddd6cb;border-radius:16px;padding:18px;width:100%;max-width:480px;margin-bottom:14px;}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.card-icon{font-size:1.05rem;}
+.card-title{font-weight:700;font-size:.85rem;}
+.card-caption{font-size:.72rem;line-height:1.55;color:#6B6B6B;margin-bottom:12px;}
+.card-caption b{color:#1C1C1C;}
+.status-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #ddd6cb;border-radius:10px;background:#F5F0E8;margin-bottom:10px;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-ok{background:#4A7C59;}
+.dot-empty{background:#C4A865;}
+.status-text{flex:1;font-size:.72rem;}
+.status-text .k{font-weight:700;display:block;}
+.status-text .v{color:#6B6B6B;font-size:.68rem;word-break:break-all;}
+.key-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px;border:1px solid #ddd6cb;border-radius:10px;background:#F5F0E8;}
+.key-name{font-size:.72rem;font-weight:700;flex:1;word-break:break-all;}
+.key-val{font-size:.62rem;color:#6B6B6B;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn{padding:8px 14px;border-radius:8px;border:none;font-family:'Jost',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;}
+.btn-red{background:#C2193A;color:#fff;}
+.btn-green{background:#4A7C59;color:#fff;}
+.btn-gray{background:#ddd6cb;color:#1C1C1C;}
+.btn-full{width:100%;}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.log{background:#1C1C1C;color:#4A7C59;font-family:'Courier New',monospace;font-size:.68rem;border-radius:10px;padding:12px;min-height:60px;max-height:180px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-top:8px;}
+.empty{color:#6B6B6B;font-size:.75rem;font-style:italic;}
+.badge{font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:20px;background:#4A7C59;color:#fff;}
+.badge-empty{background:#ddd6cb;color:#6B6B6B;}
+.divider{border:none;border-top:1px solid #ddd6cb;margin:14px 0;}
+.warn-box{background:#fdf1e8;border:1px solid #e3c9a8;border-radius:10px;padding:10px 12px;font-size:.7rem;line-height:1.5;color:#7a5a2a;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<h1>🛠️ GDC Reset Tool</h1>
+<p class="sub">Gestione dati salvati nel browser (localStorage) per GDC WORKSPACE.<br>Usa le sezioni qui sotto quando la webapp si comporta in modo "bloccato" — es. non ti richiede più un campo che dovrebbe chiederti.</p>
+
+<!-- SEZIONE 1 — TOKEN GITHUB -->
+<div class="card">
+  <div class="card-head"><span class="card-icon">🔑</span><span class="card-title">Token GitHub (A7 — Genera bozza)</span></div>
+  <p class="card-caption">
+    Questo è il codice che la webapp usa per lanciare A7 e creare le bozze email su Gmail.<br>
+    <b>Quando usarlo:</b> se hai creato un nuovo token su GitHub ma la webapp continua a usare quello vecchio (o dà errore) e non ti ripropone più il campo per inserirlo.<br>
+    <b>Cosa succede dopo il reset:</b> alla prossima volta che premi "Genera bozza", la webapp ti richiederà di reinserire il token da capo.
+  </p>
+  <div id="tokenStatus"></div>
+  <div class="actions">
+    <button class="btn btn-red btn-full" onclick="resetToken()">↺ Resetta token GitHub</button>
+  </div>
+</div>
+
+<!-- SEZIONE 2 — SESSIONE LOGIN -->
+<div class="card">
+  <div class="card-head"><span class="card-icon">👤</span><span class="card-title">Sessione di accesso (login)</span></div>
+  <p class="card-caption">
+    È il codice che ti tiene collegato a GDC WORKSPACE senza dover rifare login ogni volta.<br>
+    <b>Quando usarlo:</b> solo se la webapp mostra errori strani legati ai dati (es. non carica le aziende) e sospetti sia un problema di sessione scaduta o corrotta.<br>
+    <b>Cosa succede dopo il reset:</b> vieni disconnesso e dovrai rifare il login con email e password al prossimo accesso.
+  </p>
+  <div class="warn-box">⚠️ Usa questa sezione solo se necessario: ti disconnette subito da GDC WORKSPACE.</div>
+  <div id="sessionStatus"></div>
+  <div class="actions">
+    <button class="btn btn-red btn-full" onclick="resetSession()">↺ Resetta sessione (logout)</button>
+  </div>
+</div>
+
+<!-- SEZIONE 3 — MESSAGGI PRECOMPILATI -->
+<div class="card">
+  <div class="card-head"><span class="card-icon">💬</span><span class="card-title">Messaggi precompilati per azienda</span></div>
+  <p class="card-caption">
+    Sono le bozze di testo che hai modificato a mano nei popup "Messaggio" (A5.1, A5.2, A6.1, A6.2) per le singole aziende.<br>
+    <b>Quando usarlo:</b> se un popup mostra un testo vecchio o sbagliato e vuoi tornare al messaggio standard generato dalla webapp.<br>
+    <b>Cosa succede dopo il reset:</b> la modifica salvata per quell'azienda viene persa; al prossimo apri del popup vedrai di nuovo il testo standard.
+  </p>
+  <div id="keyList"><span class="empty">Caricamento...</span></div>
+  <div class="actions">
+    <button class="btn btn-red" onclick="resetAllMsg()">↺ Resetta tutti i messaggi</button>
+    <button class="btn btn-gray" onclick="refresh()">⟳ Aggiorna elenco</button>
+  </div>
+</div>
+
+<!-- SEZIONE 4 — ALTRE CHIAVI (catch-all, per non nascondere nulla) -->
+<div class="card" id="otherCard" style="display:none;">
+  <div class="card-head"><span class="card-icon">📦</span><span class="card-title">Altri dati trovati</span></div>
+  <p class="card-caption">
+    Dati salvati da GDC WORKSPACE non compresi nelle categorie sopra. Prima di resettare qualcosa qui, se non sei sicuro di cosa sia, evita — non è indispensabile per il normale funzionamento.
+  </p>
+  <div id="otherList"></div>
+</div>
+
+<!-- SEZIONE 5 — RESET TOTALE -->
+<div class="card">
+  <div class="card-head"><span class="card-icon">🧹</span><span class="card-title">Reset completo</span></div>
+  <p class="card-caption">
+    Cancella <b>tutti</b> i dati salvati da GDC WORKSPACE su questo dispositivo/browser: token GitHub, sessione di login e messaggi precompilati.<br>
+    <b>Quando usarlo:</b> come ultima risorsa, se la webapp si comporta in modo anomalo e non sai quale delle sezioni sopra sia la causa.<br>
+    <b>Cosa succede dopo:</b> dovrai rifare login, reinserire il token GitHub e i messaggi torneranno tutti al testo standard.
+  </p>
+  <div class="actions">
+    <button class="btn btn-red btn-full" onclick="resetEverything()">↺ Ripristina TUTTO</button>
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="card">
+  <div class="card-head"><span class="card-icon">📋</span><span class="card-title">Registro operazioni</span></div>
+  <p class="card-caption">Qui vedi in tempo reale cosa hai cancellato, con orario — utile se in seguito serve capire cosa è stato fatto.</p>
+  <div class="log" id="log">Pronto.</div>
+</div>
+
+<!-- ISTRUZIONI D'USO -->
+<div class="card">
+  <div class="card-head"><span class="card-icon">ℹ️</span><span class="card-title">Come funziona questo tool</span></div>
+  <p class="card-caption">
+    1. Funziona solo se aperto dallo <b>stesso dominio</b> di GDC WORKSPACE (<code>giandcdalcorso11-coder.github.io</code>) — i dati sono legati al dominio, non si vedono da un altro sito.<br><br>
+    2. Ogni sezione sopra è indipendente: resetta solo quella che ti serve, non serve mai fare il reset completo per un problema piccolo.<br><br>
+    3. "0 elementi trovati" in una sezione è normale: significa che quel dato non è (ancora) salvato su questo dispositivo — se un problema persiste, la causa è altrove (es. connessione, permessi del token su GitHub).<br><br>
+    4. Dopo un reset, torna semplicemente su GDC WORKSPACE e ripeti l'azione che stavi facendo (login, generazione bozza, apertura messaggio) — la webapp ti riproporrà il campo da compilare.
+  </p>
+</div>
+
+<script>
+const MSG_PREFIX = 'gdc_msg_';
+const TOKEN_KEY = 'gdc_gh_token';
+const SESSION_KEYS = ['gdc_token','gdc_uid']; // gdc_token vive in sessionStorage; gdc_uid può essere in entrambi
+
+function log(msg) {
+  const el = document.getElementById('log');
+  const ts = new Date().toLocaleTimeString('it-IT');
+  el.textContent = '[' + ts + '] ' + msg + '\n' + el.textContent;
+}
+
+function maskToken(val) {
+  if (!val) return '';
+  if (val.length <= 10) return '•'.repeat(val.length);
+  return val.substring(0,6) + '…' + val.substring(val.length-4);
+}
+
+/* ── SEZIONE 1 — TOKEN GITHUB ── */
+function renderTokenStatus() {
+  const val = localStorage.getItem(TOKEN_KEY);
+  const el = document.getElementById('tokenStatus');
+  if (val) {
+    el.innerHTML = `<div class="status-row">
+      <span class="status-dot dot-ok"></span>
+      <div class="status-text"><span class="k">Token presente</span><span class="v">${maskToken(val)}</span></div>
+      <span class="badge">salvato</span>
+    </div>`;
+  } else {
+    el.innerHTML = `<div class="status-row">
+      <span class="status-dot dot-empty"></span>
+      <div class="status-text"><span class="k">Nessun token salvato</span><span class="v">la webapp lo richiederà al prossimo utilizzo di A7</span></div>
+      <span class="badge badge-empty">vuoto</span>
+    </div>`;
+  }
+}
+function resetToken() {
+  const had = !!localStorage.getItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY);
+  log(had ? 'Token GitHub rimosso.' : 'Nessun token GitHub da rimuovere (era già vuoto).');
+  renderTokenStatus();
+}
+
+/* ── SEZIONE 2 — SESSIONE LOGIN ── */
+function renderSessionStatus() {
+  const hasSession = !!sessionStorage.getItem('gdc_token') || !!localStorage.getItem('gdc_token');
+  const el = document.getElementById('sessionStatus');
+  if (hasSession) {
+    el.innerHTML = `<div class="status-row">
+      <span class="status-dot dot-ok"></span>
+      <div class="status-text"><span class="k">Sessione attiva</span><span class="v">sei attualmente collegato</span></div>
+      <span class="badge">attiva</span>
+    </div>`;
+  } else {
+    el.innerHTML = `<div class="status-row">
+      <span class="status-dot dot-empty"></span>
+      <div class="status-text"><span class="k">Nessuna sessione trovata</span><span class="v">probabilmente sei già disconnesso</span></div>
+      <span class="badge badge-empty">vuoto</span>
+    </div>`;
+  }
+}
+function resetSession() {
+  if (!confirm('Confermi? Verrai disconnesso da GDC WORKSPACE e dovrai rifare il login.')) return;
+  let removed = 0;
+  ['gdc_token','gdc_uid'].forEach(k => {
+    if (sessionStorage.getItem(k)) { sessionStorage.removeItem(k); removed++; }
+    if (localStorage.getItem(k)) { localStorage.removeItem(k); removed++; }
+  });
+  log(removed > 0 ? 'Sessione di login rimossa (' + removed + ' elemento/i) — logout effettuato.' : 'Nessuna sessione da rimuovere.');
+  renderSessionStatus();
+}
+
+/* ── SEZIONE 3 — MESSAGGI PRECOMPILATI ── */
+function getMsgKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(MSG_PREFIX)) keys.push(k);
+  }
+  return keys;
+}
+function refresh() {
+  const keys = getMsgKeys();
+  const el = document.getElementById('keyList');
+  if (keys.length === 0) {
+    el.innerHTML = '<span class="empty">0 messaggi modificati trovati — nulla da resettare.</span>';
+  } else {
+    el.innerHTML = keys.map(k => {
+      const val = localStorage.getItem(k) || '';
+      const preview = val.substring(0, 60).replace(/\n/g, ' ');
+      return `<div class="key-row">
+        <div>
+          <div class="key-name">${k}</div>
+          <div class="key-val">${preview}${val.length > 60 ? '…' : ''}</div>
+        </div>
+        <button class="btn btn-red" onclick="resetKey('${k}')">Reset</button>
+      </div>`;
+    }).join('');
+  }
+  renderOtherKeys();
+}
+function resetKey(key) {
+  localStorage.removeItem(key);
+  log('Messaggio rimosso: ' + key);
+  refresh();
+}
+function resetAllMsg() {
+  const keys = getMsgKeys();
+  if (keys.length === 0) { log('Nessun messaggio da rimuovere.'); return; }
+  if (!confirm('Confermi il reset di ' + keys.length + ' messaggio/i precompilato/i?')) return;
+  keys.forEach(k => localStorage.removeItem(k));
+  log('Rimossi ' + keys.length + ' messaggio/i: ' + keys.join(', '));
+  refresh();
+}
+
+/* ── SEZIONE 4 — ALTRE CHIAVI (tutto ciò che inizia per gdc_ e non rientra sopra) ── */
+function renderOtherKeys() {
+  const known = new Set([TOKEN_KEY, ...SESSION_KEYS]);
+  const others = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('gdc_') && !k.startsWith(MSG_PREFIX) && !known.has(k)) others.push(k);
+  }
+  const card = document.getElementById('otherCard');
+  const el = document.getElementById('otherList');
+  if (others.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  el.innerHTML = others.map(k => {
+    const val = localStorage.getItem(k) || '';
+    const preview = val.substring(0, 60).replace(/\n/g, ' ');
+    return `<div class="key-row">
+      <div>
+        <div class="key-name">${k}</div>
+        <div class="key-val">${preview}${val.length > 60 ? '…' : ''}</div>
+      </div>
+      <button class="btn btn-red" onclick="resetOtherKey('${k}')">Reset</button>
+    </div>`;
+  }).join('');
+}
+function resetOtherKey(key) {
+  localStorage.removeItem(key);
+  log('Rimosso: ' + key);
+  refresh();
+}
+
+/* ── SEZIONE 5 — RESET TOTALE ── */
+function resetEverything() {
+  if (!confirm('Confermi il reset COMPLETO? Verrai disconnesso, il token GitHub sarà rimosso e tutti i messaggi precompilati torneranno standard.')) return;
+  let removed = 0;
+  localStorage.removeItem(TOKEN_KEY); removed++;
+  SESSION_KEYS.forEach(k => { if (sessionStorage.getItem(k)) { sessionStorage.removeItem(k); removed++; } if (localStorage.getItem(k)) { localStorage.removeItem(k); removed++; } });
+  getMsgKeys().forEach(k => { localStorage.removeItem(k); removed++; });
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('gdc_')) { localStorage.removeItem(k); removed++; }
+  }
+  log('Reset completo eseguito — ' + removed + ' elemento/i rimosso/i in totale.');
+  renderTokenStatus();
+  renderSessionStatus();
+  refresh();
+}
+
+/* ── INIT ── */
+renderTokenStatus();
+renderSessionStatus();
+refresh();
+</script>
+</body>
+</html>
