@@ -136,6 +136,38 @@ body{
 }
 .agent-strip::-webkit-scrollbar{ display:none; }
 
+/* ══ FOOTER — link discreti (reset dati / logout) ══ */
+.hub-footer{
+  margin-top:22px;
+  font-size:.68rem;
+  color:var(--grigio);
+  text-align:center;
+  letter-spacing:.02em;
+}
+.hub-footer-links{
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+.hub-footer-link{
+  font-family:'Jost',sans-serif;
+  font-size:.68rem;
+  font-weight:600;
+  letter-spacing:.02em;
+  color:var(--grigio);
+  background:none;
+  border:none;
+  text-decoration:underline;
+  text-underline-offset:2px;
+  cursor:pointer;
+  padding:4px 2px;
+  opacity:.75;
+}
+.hub-footer-link:active{ opacity:1; }
+.hub-footer-sep{ color:var(--border); font-size:.68rem; }
+
 .agent-icon{
   flex-shrink:0;
   width:46px; height:46px; border-radius:11px;
@@ -454,9 +486,24 @@ body{
 
 </div>
 
-<div class="hub-footer">GDC WORKSPACE &nbsp;·&nbsp; uso privato</div>
+<div class="hub-footer">
+  GDC WORKSPACE &nbsp;·&nbsp; uso privato
+  <div class="hub-footer-links">
+    <a class="hub-footer-link" href="gdc_reset_tool.html">Reset dati</a>
+    <span class="hub-footer-sep">·</span>
+    <button class="hub-footer-link" onclick="hubLogout()" type="button">Logout</button>
+  </div>
+</div>
 
 <script>
+/* ══ LOGOUT — pulisce la sessione reale e torna al login ══ */
+function hubLogout(){
+  if (!confirm('Vuoi disconnetterti da GDC WORKSPACE?')) return;
+  sessionStorage.removeItem('gdc_token');
+  sessionStorage.removeItem('gdc_uid');
+  window.location.href = 'page_login_v6.html';
+}
+
 /* ══ GDC LOGO HEADER: sequenza G→D→C→STUFF→linee ══ */
 (function(){
   const svg   = document.getElementById('hub-master-svg');
