@@ -5,15 +5,27 @@ Trigger: workflow_dispatch da home webapp con parametro company_name.
 
 Flusso:
   1. Riceve company_name come parametro
-  2. Cerca TXT (mail_*.txt) e PDF nella cartella Drive A6/Aziende/[NOME AZIENDA]/
-  3. Se PDF assente: stop con errore
-  4. Se entrambi presenti: crea bozza Gmail con PDF allegato
-  5. Aggiorna Supabase companies (a7_status, a7_processed_at, a7_draft_id, a7_processed_file_id)
-  6. Aggiorna Supabase companies — pipeline step 6 "Bozza Gmail" (step_6, step_6_date, step_notes,
+  2. Trova la cartella azienda in Drive A6/Aziende/ — PRIMA prova a leggere
+     drive_folder_azienda da Supabase e usare l'ID diretto; solo se assente
+     o non piu' valido, ripiega sulla vecchia ricerca per nome esatto
+     cartella == company_name (v4, Luglio 2026 — vedi nota sotto)
+  3. Cerca TUTTI i file mail_*.txt nella cartella (non solo il piu' recente)
+     e il/i PDF presenti
+  4. Se nessun PDF: stop con errore
+  5. Per OGNI TXT trovato: crea una bozza Gmail separata (stesso PDF
+     allegato a tutte, salvo match specifico per nome — vedi sotto).
+     Dopo la creazione riuscita, il TXT viene rinominato su Drive con
+     prefisso "OK_" cosi' un rilancio successivo non lo rielabora e non
+     duplica bozze gia' create (v4, Luglio 2026)
+  6. Aggiorna Supabase companies (a7_status, a7_processed_at, a7_draft_id,
+     a7_processed_file_id — questi ultimi due come lista comma-separata
+     se sono state create piu' bozze nello stesso run)
+  7. Aggiorna Supabase companies — pipeline step 6 "Bozza Gmail" (step_6, step_6_date, step_notes,
      step_attuale se non gia' avanzato oltre da Gianluca) — v2, Luglio 2026
-  7. Aggiorna Supabase agent_states (stato a7)
+  8. Aggiorna Supabase agent_states (stato a7)
 
-Formato TXT (mail_[AZIENDA]_YYYY-MM-DD.txt):
+Formato TXT (mail_[AZIENDA]_YYYY-MM-DD.txt, o mail_[AZIENDA]_[qualsiasi].txt
+per distinguere piu' destinatari della stessa azienda):
   TO: email@azienda.com
   SUBJECT: Oggetto della mail
   ATTACHMENT: media_kit_[AZIENDA].pdf
@@ -22,6 +34,24 @@ Formato TXT (mail_[AZIENDA]_YYYY-MM-DD.txt):
   Corpo della mail qui.
   Tutto il testo.
   Firma inclusa.
+
+Nota sulla ricerca cartella Drive (v4, Luglio 2026):
+  In precedenza la cartella azienda veniva cercata SOLO per nome esatto
+  (name == company_name) dentro A6/Aziende/. Se il nome della cartella su
+  Drive non coincideva esattamente col nome azienda in Supabase (es.
+  cartella creata a mano con un nome abbreviato), A7 falliva anche se la
+  cartella esisteva ed era correttamente linkata in drive_folder_azienda.
+  Ora lo script legge prima quel campo e usa l'ID diretto: il nome
+  cartella puo' divergere da quello Supabase senza causare errori.
+
+Nota su piu' TXT nella stessa cartella (v4, Luglio 2026):
+  Caso reale: due tentativi con due destinatari diversi per la stessa
+  azienda (es. De Cecco) salvati come due file mail_*.txt distinti. Prima
+  A7 processava solo il piu' recente e ignorava l'altro in silenzio. Ora
+  crea una bozza per ciascuno e rinomina i TXT processati con prefisso
+  "OK_" cosi' restano nella cartella come storico ma non vengono
+  ripescati da un rilancio successivo (che processerebbe solo eventuali
+  NUOVI TXT aggiunti dopo).
 
 Nota sulla ricerca azienda su Supabase (v3, Luglio 2026):
   La corrispondenza col nome e' parziale (ilike '%company_name%'), non piu'
@@ -90,8 +120,54 @@ def get_gmail_service():
 
 
 # ── DRIVE HELPERS ────────────────────────────────────────────────────
-def find_company_folder(drive, aziende_folder_id, company_name):
-    """Trova la sottocartella [NOME AZIENDA] dentro A6/Aziende/."""
+def extract_drive_folder_id(url_or_id):
+    """
+    Estrae l'ID cartella da un URL tipo
+    'https://drive.google.com/drive/folders/XXXX' oppure, se la stringa
+    e' gia' un ID nudo (nessuno slash), la ritorna cosi' com'e'.
+    Ritorna None se url_or_id e' vuoto/assente.
+    """
+    if not url_or_id:
+        return None
+    url_or_id = url_or_id.strip()
+    if '/folders/' in url_or_id:
+        tail = url_or_id.split('/folders/', 1)[1]
+        return tail.split('?')[0].split('/')[0]
+    if '/' not in url_or_id:
+        return url_or_id
+    return None
+
+
+def resolve_company_folder_id(drive, drive_folder_azienda):
+    """
+    Verifica che l'ID estratto da drive_folder_azienda punti davvero a
+    una cartella Drive esistente e non cestinata. Ritorna l'ID se valido,
+    altrimenti None (per far ripiegare il chiamante sulla ricerca per nome).
+    """
+    folder_id = extract_drive_folder_id(drive_folder_azienda)
+    if not folder_id:
+        return None
+    try:
+        meta = drive.files().get(
+            fileId=folder_id,
+            fields='id,name,mimeType,trashed'
+        ).execute()
+    except Exception as e:
+        print(f"[A7] drive_folder_azienda presente ma non risolvibile ({folder_id}): {e}")
+        return None
+    if meta.get('trashed'):
+        print(f"[A7] Cartella da drive_folder_azienda risulta cestinata ({folder_id})")
+        return None
+    if meta.get('mimeType') != 'application/vnd.google-apps.folder':
+        print(f"[A7] drive_folder_azienda non punta a una cartella ({folder_id})")
+        return None
+    print(f"[A7] Cartella azienda risolta via drive_folder_azienda: '{meta.get('name')}' ({folder_id})")
+    return folder_id
+
+
+def find_company_folder_by_name(drive, aziende_folder_id, company_name):
+    """Fallback: trova la sottocartella [NOME AZIENDA] dentro A6/Aziende/
+    cercando per nome esatto (comportamento storico, pre-v4)."""
     res = drive.files().list(
         q=(
             f"name='{company_name}' "
@@ -116,23 +192,66 @@ def list_files_in_folder(drive, folder_id):
     return res.get('files', [])
 
 
-def find_txt_in_files(files):
-    """Trova il file mail_*.txt più recente tra i file listati."""
+def find_all_txt_in_files(files):
+    """
+    Trova TUTTI i file mail_*.txt tra i file listati (non solo il più
+    recente) — caso reale: più tentativi con destinatari diversi per la
+    stessa azienda. Un file già processato viene rinominato con prefisso
+    "OK_" (vedi mark_txt_processed) e quindi non compare più qui, perché
+    "OK_mail_..." non soddisfa più startswith('mail_').
+    Ordinati per data creazione crescente (il più vecchio per primo),
+    così le bozze vengono create nell'ordine in cui i tentativi sono
+    stati scritti.
+    """
     txts = [f for f in files if f['name'].startswith('mail_') and f['name'].endswith('.txt')]
-    if not txts:
-        return None
-    # Ordina per data creazione decrescente, prende il più recente
-    txts.sort(key=lambda f: f.get('createdTime', ''), reverse=True)
-    return txts[0]
+    txts.sort(key=lambda f: f.get('createdTime', ''))
+    return txts
 
 
 def find_pdf_in_files(files):
-    """Trova il file PDF tra i file listati."""
+    """Trova il file PDF più recente tra i file listati (fallback quando
+    non c'è un match per nome con l'header ATTACHMENT)."""
     pdfs = [f for f in files if f['mimeType'] == 'application/pdf']
     if not pdfs:
         return None
     pdfs.sort(key=lambda f: f.get('createdTime', ''), reverse=True)
     return pdfs[0]
+
+
+def find_pdf_for_attachment(files, attachment_name):
+    """
+    Cerca tra i PDF della cartella quello il cui nome combacia con
+    l'header ATTACHMENT del TXT (utile quando ci sono più PDF, es. media
+    kit in lingue diverse). Se non c'è match, ripiega sul PDF più
+    recente — stesso comportamento di prima per il caso comune di un
+    solo PDF in cartella.
+    """
+    pdfs = [f for f in files if f['mimeType'] == 'application/pdf']
+    if not pdfs:
+        return None
+    if attachment_name:
+        for f in pdfs:
+            if f['name'] == attachment_name.strip():
+                return f
+    pdfs.sort(key=lambda f: f.get('createdTime', ''), reverse=True)
+    return pdfs[0]
+
+
+def mark_txt_processed(drive, file_id, current_name):
+    """
+    Rinomina il TXT appena processato con prefisso 'OK_' così un
+    rilancio successivo di A7 sulla stessa azienda non lo rielabora
+    (find_all_txt_in_files cerca solo nomi che iniziano per 'mail_').
+    Il file resta in cartella come storico, solo rinominato.
+    """
+    if current_name.startswith('OK_'):
+        return
+    new_name = 'OK_' + current_name
+    try:
+        drive.files().update(fileId=file_id, body={'name': new_name}).execute()
+        print(f"[A7] TXT rinominato per evitare riprocessamento: {current_name} → {new_name}")
+    except Exception as e:
+        print(f"[A7] Warning: impossibile rinominare {current_name} dopo il processamento: {e}")
 
 
 def download_file_text(drive, file_id):
@@ -263,8 +382,19 @@ def find_company_row(company_name, select='id'):
     return rows[0], None
 
 
+def _joined(value):
+    """Se value è una lista, la unisce in stringa comma-separata (per
+    salvare più draft_id/file_id in una singola colonna text); se è già
+    una stringa, la ritorna invariata."""
+    if isinstance(value, (list, tuple)):
+        return ','.join(str(v) for v in value)
+    return value
+
+
 def update_company_a7(company_name, status, draft_id=None, file_id=None):
-    """Aggiorna le colonne a7_* nella tabella companies per questa azienda."""
+    """Aggiorna le colonne a7_* nella tabella companies per questa azienda.
+    draft_id e file_id accettano sia una stringa singola sia una lista
+    (caso multi-TXT: più bozze create nello stesso run)."""
     row, err = find_company_row(company_name, select='id,nome')
     if err:
         print(f"[A7] Nessun aggiornamento a7_status per '{company_name}' ({err})")
@@ -275,9 +405,9 @@ def update_company_a7(company_name, status, draft_id=None, file_id=None):
         'a7_processed_at': datetime.now(timezone.utc).isoformat(),
     }
     if draft_id:
-        payload['a7_draft_id'] = draft_id
+        payload['a7_draft_id'] = _joined(draft_id)
     if file_id:
-        payload['a7_processed_file_id'] = file_id
+        payload['a7_processed_file_id'] = _joined(file_id)
 
     url = f"{SUPABASE_URL}/rest/v1/companies?id=eq.{row['id']}"
     r = requests.patch(url, json=payload, headers=supabase_headers(), timeout=10)
@@ -296,12 +426,15 @@ def update_company_a7(company_name, status, draft_id=None, file_id=None):
 # l'ultimo aggiornamento, non il primo — allineato alla stessa filosofia
 # già adottata dalla webapp e dagli altri agenti (decisione Step 26/27).
 
-def update_pipeline_step_6(company_name, draft_id):
+def update_pipeline_step_6(company_name, draft_ids):
     """
     Avanza la pipeline a step 6 (Bozza Gmail) dopo la creazione della bozza.
     Non retrocede mai: se step_attuale e' gia' >= 6 (Gianluca ha avanzato
     oltre a mano), lascia step_attuale invariato ma aggiorna comunque
     step_6 / step_6_date / step_notes per coerenza della timeline.
+    draft_ids: lista di draft_id creati in questo run (anche di un solo
+    elemento) — la nota riporta quante bozze sono state generate quando
+    sono più di una (caso multi-TXT / più destinatari).
     """
     row, err = find_company_row(company_name, select='id,nome,step_attuale,step_6_date,step_notes')
     if err:
@@ -311,7 +444,10 @@ def update_pipeline_step_6(company_name, draft_id):
     current_step = row.get('step_attuale') or 0
     step_6_date = datetime.now(timezone.utc).isoformat()
     notes = row.get('step_notes') or {}
-    notes['6'] = f"Bozza Gmail creata (draft_id={draft_id})."
+    if len(draft_ids) > 1:
+        notes['6'] = f"{len(draft_ids)} bozze Gmail create (draft_id={','.join(draft_ids)})."
+    else:
+        notes['6'] = f"Bozza Gmail creata (draft_id={draft_ids[0]})."
 
     payload = {
         'step_1': True, 'step_2': True, 'step_3': True,
@@ -342,83 +478,133 @@ def main():
         gmail = get_gmail_service()
 
         # 1. Trova sottocartella azienda in A6/Aziende/
-        company_folder_id = find_company_folder(drive, DRIVE_FOLDER_A6_AZIENDE, COMPANY_NAME)
+        #    v4: prima prova l'ID diretto da drive_folder_azienda (Supabase),
+        #    poi ripiega sulla vecchia ricerca per nome esatto.
+        company_folder_id = None
+        row, row_err = find_company_row(COMPANY_NAME, select='id,nome,drive_folder_azienda')
+        if row_err == 'ambiguous':
+            print(f"[A7] ERRORE: nome azienda ambiguo, impossibile procedere in sicurezza.")
+            update_agent_state('idle')
+            sys.exit(1)
+        if row and not row_err:
+            company_folder_id = resolve_company_folder_id(drive, row.get('drive_folder_azienda'))
+
         if not company_folder_id:
-            msg = f"Cartella '{COMPANY_NAME}' non trovata in Drive A6/Aziende/"
+            print(f"[A7] Nessuna cartella risolta via drive_folder_azienda, provo ricerca per nome...")
+            company_folder_id = find_company_folder_by_name(drive, DRIVE_FOLDER_A6_AZIENDE, COMPANY_NAME)
+
+        if not company_folder_id:
+            msg = f"Cartella '{COMPANY_NAME}' non trovata né via drive_folder_azienda né per nome in Drive A6/Aziende/"
             print(f"[A7] ERRORE: {msg}")
             update_agent_state('idle')
             update_company_a7(COMPANY_NAME, 'error')
             sys.exit(1)
 
-        print(f"[A7] Cartella azienda trovata: {company_folder_id}")
+        print(f"[A7] Cartella azienda: {company_folder_id}")
 
         # 2. Lista file nella cartella
         files = list_files_in_folder(drive, company_folder_id)
         print(f"[A7] File trovati nella cartella: {[f['name'] for f in files]}")
 
-        # 3. Trova TXT
-        txt_file = find_txt_in_files(files)
-        if not txt_file:
+        # 3. Trova TUTTI i TXT (mail_*.txt) — caso multi-destinatario
+        txt_files = find_all_txt_in_files(files)
+        if not txt_files:
             print(f"[A7] ERRORE: nessun file mail_*.txt trovato in A6/Aziende/{COMPANY_NAME}/")
             update_agent_state('idle')
             update_company_a7(COMPANY_NAME, 'error')
             sys.exit(1)
 
-        print(f"[A7] TXT trovato: {txt_file['name']}")
+        print(f"[A7] TXT da processare ({len(txt_files)}): {[f['name'] for f in txt_files]}")
 
-        # 4. Trova PDF — se assente: stop
-        pdf_file = find_pdf_in_files(files)
-        if not pdf_file:
+        # 4. Serve almeno un PDF — se assente: stop (nessuna bozza può
+        #    essere creata senza allegato)
+        if not any(f['mimeType'] == 'application/pdf' for f in files):
             print(f"[A7] ERRORE: nessun PDF trovato in A6/Aziende/{COMPANY_NAME}/")
             print(f"[A7] Caricare il PDF prima di lanciare A7.")
             update_agent_state('idle')
             update_company_a7(COMPANY_NAME, 'error')
             sys.exit(1)
 
-        print(f"[A7] PDF trovato: {pdf_file['name']}")
+        # 5. Loop: una bozza per ogni TXT trovato
+        created_draft_ids = []
+        processed_file_ids = []
+        failed_txts = []
+        pdf_cache = {}  # file_id -> bytes, per non riscaricare lo stesso PDF più volte
 
-        # 5. Scarica e parsa il TXT
-        txt_content = download_file_text(drive, txt_file['id'])
-        headers, body = parse_mail_txt(txt_content)
+        for txt_file in txt_files:
+            print(f"[A7] — Processando: {txt_file['name']}")
+            try:
+                txt_content = download_file_text(drive, txt_file['id'])
+                headers, body = parse_mail_txt(txt_content)
 
-        to_addr = headers.get('TO', '').strip()
-        subject  = headers.get('SUBJECT', '(nessun oggetto)').strip()
+                to_addr = headers.get('TO', '').strip()
+                subject = headers.get('SUBJECT', '(nessun oggetto)').strip()
+                attachment_name = headers.get('ATTACHMENT', '').strip()
 
-        if not to_addr:
-            print(f"[A7] ERRORE: campo TO mancante nel TXT")
-            update_agent_state('idle')
-            update_company_a7(COMPANY_NAME, 'error')
-            sys.exit(1)
+                if not to_addr:
+                    print(f"[A7]   ERRORE: campo TO mancante in {txt_file['name']}, salto questo file.")
+                    failed_txts.append(txt_file['name'])
+                    continue
 
-        print(f"[A7] TO: {to_addr}")
-        print(f"[A7] SUBJECT: {subject}")
+                pdf_file = find_pdf_for_attachment(files, attachment_name)
+                if not pdf_file:
+                    print(f"[A7]   ERRORE: nessun PDF disponibile per {txt_file['name']}, salto questo file.")
+                    failed_txts.append(txt_file['name'])
+                    continue
 
-        # 6. Scarica PDF
-        pdf_bytes = download_file_bytes(drive, pdf_file['id'])
-        print(f"[A7] PDF scaricato: {len(pdf_bytes) // 1024} KB")
+                if pdf_file['id'] not in pdf_cache:
+                    pdf_cache[pdf_file['id']] = download_file_bytes(drive, pdf_file['id'])
+                pdf_bytes = pdf_cache[pdf_file['id']]
 
-        # 7. Crea bozza Gmail
-        draft_id = create_gmail_draft(
-            gmail,
-            to_addr=to_addr,
-            subject=subject,
-            body_text=body,
-            pdf_bytes=pdf_bytes,
-            pdf_filename=pdf_file['name']
-        )
-        print(f"[A7] Bozza Gmail creata: {draft_id}")
+                print(f"[A7]   TO: {to_addr} | SUBJECT: {subject} | PDF: {pdf_file['name']} ({len(pdf_bytes)//1024} KB)")
 
-        # 8. Aggiorna Supabase
+                draft_id = create_gmail_draft(
+                    gmail,
+                    to_addr=to_addr,
+                    subject=subject,
+                    body_text=body,
+                    pdf_bytes=pdf_bytes,
+                    pdf_filename=pdf_file['name']
+                )
+                print(f"[A7]   Bozza Gmail creata: {draft_id}")
+
+                mark_txt_processed(drive, txt_file['id'], txt_file['name'])
+
+                created_draft_ids.append(draft_id)
+                processed_file_ids.append(txt_file['id'])
+
+            except Exception as e:
+                print(f"[A7]   ERRORE imprevisto su {txt_file['name']}: {e}")
+                failed_txts.append(txt_file['name'])
+                continue
+
+        # 6. Aggiorna Supabase in base all'esito complessivo
+        if created_draft_ids and not failed_txts:
+            status = 'drafted'
+        elif created_draft_ids and failed_txts:
+            status = 'drafted'  # parziale: almeno una bozza creata, ma segnalato in console
+            print(f"[A7] ATTENZIONE: {len(failed_txts)} TXT non processati: {failed_txts}")
+        else:
+            status = 'error'
+
         update_company_a7(
             COMPANY_NAME,
-            status='drafted',
-            draft_id=draft_id,
-            file_id=txt_file['id']
+            status=status,
+            draft_id=created_draft_ids if created_draft_ids else None,
+            file_id=processed_file_ids if processed_file_ids else None
         )
-        update_pipeline_step_6(COMPANY_NAME, draft_id)
-        update_agent_state('done')
 
-        print(f"[A7] Fine — bozza creata con successo per {COMPANY_NAME}")
+        if created_draft_ids:
+            update_pipeline_step_6(COMPANY_NAME, created_draft_ids)
+
+        update_agent_state('done' if created_draft_ids else 'idle')
+
+        if not created_draft_ids:
+            print(f"[A7] Fine — NESSUNA bozza creata per {COMPANY_NAME} (tutti i TXT falliti)")
+            sys.exit(1)
+
+        print(f"[A7] Fine — {len(created_draft_ids)} bozza/e creata/e per {COMPANY_NAME}"
+              + (f" ({len(failed_txts)} falliti: {failed_txts})" if failed_txts else ""))
 
     except Exception as e:
         print(f"[A7] ERRORE imprevisto: {e}")
