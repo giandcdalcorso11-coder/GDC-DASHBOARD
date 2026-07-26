@@ -1297,7 +1297,7 @@ function buildA7Btn(co){
     if(a7at){
       try{ dateStr = new Date(a7at).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'}); } catch(e){}
     }
-    genBtn = '<span class="agent-mini-btn" style="opacity:.55;cursor:default;">✓ Bozza creata' + (dateStr ? ' (' + dateStr + ')' : '') + '</span>';
+    genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" onclick="onGeneraBozza()">🔄 Rigenera bozza' + (dateStr ? ' (' + dateStr + ')' : '') + '</button>';
   } else {
     genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" onclick="onGeneraBozza()">📨 Genera bozza</button>';
   }
@@ -1322,6 +1322,10 @@ async function onGeneraBozza(){
   const btn = document.getElementById('btn-genera-bozza');
   const statusEl = document.getElementById('a7StatusMsg');
   const ghToken = localStorage.getItem('gdc_gh_token') || '';
+
+  if (currentCompanyData.a7_status === 'drafted') {
+    if (!confirm('Hai già generato una bozza per ' + nome + '. Rilanciare A7 creerà una nuova bozza solo per eventuali NUOVI file mail_*.txt presenti in cartella (i vecchi già processati non vengono ripescati). Procedere?')) return;
+  }
 
   if (!ghToken) {
     document.getElementById('a7TokenSection').style.display = 'block';
