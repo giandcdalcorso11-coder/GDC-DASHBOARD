@@ -29,7 +29,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,0.12);}
   .lg-sabbia{background:rgba(196,168,101,.18);border-color:rgba(196,168,101,.35);color:var(--sabbia);}
   .lg-cta{background:var(--nero);color:var(--carta);border-color:var(--nero);}
-  .cal-popup{background:#242424;border-color:var(--border);}
+  .cal-popup,.msg-popup{background:#242424;border-color:var(--border);}
   .cal-day.has-event{background:#2E2E2E;}.cal-day.has-event:hover{background:#3A3A3A;}
   .cal-events-panel,.cal-event-item{border-color:var(--border);}
   #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
@@ -192,6 +192,55 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .cfg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .cfg-ok{background:var(--maker);}
 .cfg-warn{background:var(--sabbia);}
+
+/* ══ STATO DINAMICO (badge + logo) ══ */
+.logo-box-hero{transition:background .4s ease;}
+.logo-active{background:var(--sabbia-bg) !important;}
+.logo-queued{background:var(--athlete-bg) !important;}
+.logo-done{background:var(--maker-bg) !important;}
+.logo-sleep{background:var(--athlete-bg) !important;}
+.logo-rest{background:var(--carta) !important;}
+.badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
+.badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
+.badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
+
+/* ══ MINI-STATO SUB-AGENTI ══ */
+.sub-status{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;margin-top:5px;}
+.sub-status .sd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* ══ PUSH ══ */
+.push-row{width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:flex-end;}
+.push-btn{display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);background:none;border:none;cursor:pointer;padding:0;transition:color .15s;}
+.push-btn:hover{color:var(--nero);}
+
+/* ══ ATTIVITÀ ══ */
+.run-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.run-row:last-child{border-bottom:none;}
+.run-icon{font-size:1rem;flex-shrink:0;width:22px;text-align:center;}
+.run-info{flex:1;min-width:0;}
+.run-title{font-size:.72rem;font-weight:700;}
+.run-meta{font-size:.62rem;color:var(--grigio);margin-top:1px;}
+.run-badge{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:999px;flex-shrink:0;}
+.rb-ok{background:var(--maker-bg);color:var(--maker);}
+.empty-note{font-size:.72rem;color:var(--grigio);line-height:1.5;padding:6px 0;}
+.pipe-count-row{display:flex;gap:8px;margin-top:10px;}
+.pipe-count-box{flex:1;background:var(--carta);border-radius:10px;padding:8px 10px;text-align:center;}
+.pipe-count-num{font-size:1.1rem;font-weight:800;color:var(--sabbia-dk);}
+.pipe-count-lbl{font-size:.58rem;color:var(--grigio);margin-top:1px;}
+
+/* ══ POPUP MESSAGGIO ══ */
+.msg-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+.msg-overlay.open{display:flex;}
+.msg-popup{background:var(--bianco);border:1.5px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:20px 16px 32px;box-shadow:0 -4px 32px rgba(28,28,28,.16);}
+.msg-popup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.msg-popup-title{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sabbia-dk);}
+.msg-popup-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
+.msg-popup-close:hover{background:var(--border);}
+.msg-textarea{width:100%;background:var(--carta);border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:.72rem;color:var(--nero);padding:12px 13px;resize:none;outline:none;min-height:180px;line-height:1.6;}
+.msg-actions{display:flex;gap:8px;margin-top:10px;}
+.msg-copy-btn{flex:1;background:var(--nero);color:var(--carta);border:none;border-radius:12px;padding:13px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s;}
+.msg-copy-btn:hover{background:#333;}
+.msg-open-btn{background:rgba(196,168,101,.12);color:var(--sabbia-dk);border:1.5px solid rgba(196,168,101,.3);border-radius:12px;padding:13px 16px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;}
 </style>
 </head>
 <body>
@@ -236,9 +285,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
   <div class="system-bar">
     <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label">Tutti i sistemi attivi</div>
-    <div class="sys-meta">Notifiche push attive</div>
+    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
+    <div class="sys-meta" id="sysMeta"></div>
   </div>
+</div>
+<div class="push-row">
+  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span id="pushBtnLabel">Attiva notifiche</span>
+  </button>
 </div>
 
 <!-- ══ PAGE CONTENT ══ -->
@@ -266,8 +321,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero">
-        <!-- A6 documento con fold — done state hardcoded -->
+      <div class="logo-box-hero" id="logoBoxHero">
+        <!-- A6 documento con fold — colori done hardcoded per l'icona statica -->
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible" font-family="Jost,sans-serif">
           <path d="M21 9 H85 L104 28 V107 H21 Z" fill="none" stroke="#497B58" stroke-width="6.5" stroke-linejoin="round"/>
           <path d="M85 9 V28 H104" fill="none" stroke="#497B58" stroke-width="6.5" stroke-linejoin="round"/>
@@ -284,9 +339,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       </div>
     </div>
     <div class="hero-meta">
-      <span class="status-badge badge-done"><span class="badge-dot"></span>Completato</span>
+      <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
       <span class="type-tag">&#9729;&#65039; Claude.ai</span>
-      <span class="last-run-lbl">On-demand — continuo</span>
+      <span class="last-run-lbl" id="lastRunLbl">On-demand — continuo</span>
     </div>
   </div>
 
@@ -296,11 +351,13 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sub-id">A6.1</div>
       <div class="sub-name">Media Kit</div>
       <div class="sub-desc">Genera media kit PPTX 8 slide personalizzato per ogni azienda, partendo dalla scheda A5.2.</div>
+      <div class="sub-status" id="statA61"><span class="sd" style="background:var(--grigio);"></span><span>Caricamento...</span></div>
     </div>
     <div class="sub-card">
       <div class="sub-id">A6.2</div>
       <div class="sub-name">Relazioni Commerciali</div>
       <div class="sub-desc">Gestisce la comunicazione con le aziende: mail iniziale, follow-up, proposte e trattativa.</div>
+      <div class="sub-status" id="statA62"><span class="sd" style="background:var(--grigio);"></span><span>Caricamento...</span></div>
     </div>
   </div>
 
@@ -310,6 +367,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
     <button class="tab-btn" onclick="switchTab('modalita',this)">Modalità</button>
+    <button class="tab-btn" onclick="switchTab('run',this)">Attività</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
@@ -317,16 +375,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div id="panel-azioni" class="panel active">
     <div class="action-row">
 
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank">
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
         <span class="btn-icon">&#128193;</span>
         <div class="btn-text">
-          <div class="btn-title">Cartella Drive A6</div>
-          <div class="btn-sub">Media kit generati — output A6.1</div>
+          <div class="btn-title">Cartella Drive A6 — Aziende</div>
+          <div class="btn-sub">Sottocartella per azienda: media kit, PDF, TXT mail</div>
         </div>
         <span class="btn-arr">&#8594;</span>
       </a>
 
-      <a class="lg-btn lg-cta" href="https://claude.ai" target="_blank">
+      <a class="lg-btn lg-cta" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">
         <span class="btn-icon">&#9889;</span>
         <div class="btn-text">
           <div class="btn-title">Apri A6.1 — Media Kit</div>
@@ -335,7 +393,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <span class="btn-arr">&#8594;</span>
       </a>
 
-      <a class="lg-btn lg-sabbia" href="https://claude.ai" target="_blank">
+      <button class="lg-btn lg-sabbia" onclick="openMsg('A6_1')">
+        <span class="btn-icon">&#128203;</span>
+        <div class="btn-text">
+          <div class="btn-title">Copia messaggio A6.1</div>
+          <div class="btn-sub">Launcher — produzione media kit</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </button>
+
+      <a class="lg-btn lg-sabbia" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank">
         <span class="btn-icon">&#128140;</span>
         <div class="btn-text">
           <div class="btn-title">Apri A6.2 — Relazioni Commerciali</div>
@@ -344,11 +411,20 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <span class="btn-arr">&#8594;</span>
       </a>
 
-      <a class="lg-btn" href="page_company_v2.html">
-        <span class="btn-icon">&#127970;</span>
+      <button class="lg-btn lg-sabbia" onclick="openMsg('A6_2')">
+        <span class="btn-icon">&#128203;</span>
         <div class="btn-text">
-          <div class="btn-title">Apri Company Page</div>
-          <div class="btn-sub">Vista aziende — schede, stati, contatti</div>
+          <div class="btn-title">Copia messaggio A6.2</div>
+          <div class="btn-sub">Launcher — mail di proposta iniziale</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </button>
+
+      <a class="lg-btn" href="page_pipeline_v1.html">
+        <span class="btn-icon">&#128200;</span>
+        <div class="btn-text">
+          <div class="btn-title">Apri Pipeline aziende</div>
+          <div class="btn-sub">Lista completa — tutti gli step 1-13 — apri la scheda di ognuna</div>
         </div>
         <span class="btn-arr">&#8594;</span>
       </a>
@@ -356,19 +432,42 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 
+  <!-- POPUP MESSAGGIO -->
+  <div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
+    <div class="msg-popup">
+      <div class="msg-popup-head">
+        <span class="msg-popup-title" id="msgPopupTitle">&#128203; Messaggio A6.1 — Media Kit</span>
+        <button class="msg-popup-close" onclick="closeMsg()">&#10005;</button>
+      </div>
+      <textarea class="msg-textarea" id="msgText" readonly></textarea>
+      <div class="msg-actions">
+        <button class="msg-copy-btn" id="copyBtn" onclick="copyMsg()">Copia messaggio</button>
+        <a class="msg-open-btn" id="msgOpenLink" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">&#128279; Apri A6.1</a>
+      </div>
+    </div>
+  </div>
+
   <!-- TAB: DOCUMENTI -->
   <div id="panel-file" class="panel">
     <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128196; Output — Drive A6</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank">Apri &#8599;</a>
+        <span class="sc-label">&#128196; Output — Drive A6 · Aziende</span>
+        <a class="sc-link" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">Apri &#8599;</a>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank">
+        <a class="file-item" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
           <div class="file-icon fi-pptx">&#127775;</div>
           <div class="file-info">
-            <div class="file-name">media_kit_[azienda].pptx</div>
-            <div class="file-sub">A6.1 — 8 slide personalizzate · output</div>
+            <div class="file-name">[azienda]/media_kit_[azienda].pptx + .pdf</div>
+            <div class="file-sub">A6.1 — 8 slide, poi PDF dopo tua revisione manuale</div>
+          </div>
+          <span class="file-arr">&#8599;</span>
+        </a>
+        <a class="file-item" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
+          <div class="file-icon fi-doc">&#128196;</div>
+          <div class="file-info">
+            <div class="file-name">[azienda]/mail_[azienda]_YYYY-MM-DD.txt</div>
+            <div class="file-sub">A6.2 — testo mail approvato, pronto per A7</div>
           </div>
           <span class="file-arr">&#8599;</span>
         </a>
@@ -376,14 +475,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128196; Input — Schede A5.2</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr" target="_blank">Apri Drive A5 &#8599;</a>
+        <span class="sc-label">&#128196; Input — Schede aziendali (A5.2)</span>
+        <a class="sc-link" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">Apri &#8599;</a>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr" target="_blank">
+        <a class="file-item" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">
           <div class="file-icon fi-doc">&#128196;</div>
           <div class="file-info">
-            <div class="file-name">scheda_[azienda].docx</div>
+            <div class="file-name">[azienda]/scheda_[azienda].docx</div>
             <div class="file-sub">A5.2 — 4 sezioni: Profilo · Fit · Fiscale · Brief A6.1</div>
           </div>
           <span class="file-arr">&#8599;</span>
@@ -431,23 +530,36 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-body">
         <div class="work-step">
           <div class="work-num" style="background:var(--sabbia-dk);">1</div>
-          <div><div class="work-desc">A5.1 inserisce l'azienda in pipeline</div><div class="work-sub">Stato: ANALIZZATA — pronta per la scheda</div></div>
+          <div><div class="work-desc">A5.1 inserisce l'azienda in pipeline</div><div class="work-sub">Step 1 — Trovata: pronta per la scheda</div></div>
         </div>
         <div class="work-step">
           <div class="work-num" style="background:var(--sabbia-dk);">2</div>
-          <div><div class="work-desc">A5.2 produce la scheda approfondita</div><div class="work-sub">4 sezioni: Profilo · Fit · Contesto Fiscale · Brief per A6.1</div></div>
+          <div><div class="work-desc">A5.2 produce la scheda approfondita</div><div class="work-sub">Step 2 — Scheda prodotta: 4 sezioni Profilo · Fit · Contesto Fiscale · Brief per A6.1</div></div>
         </div>
         <div class="work-step">
           <div class="work-num s1">3</div>
-          <div><div class="work-desc">A6.1 genera il media kit .pptx</div><div class="work-sub">Input: scheda A5.2 → Output: 8 slide personalizzate · scarica e carica su Drive A6</div></div>
+          <div><div class="work-desc">A6.1 genera il media kit .pptx</div><div class="work-sub">Step 3 — Media kit prodotto: scarica, rivedi e carica il PDF su Drive Aziende</div></div>
         </div>
         <div class="work-step">
-          <div class="work-num s2">4</div>
-          <div><div class="work-desc">A6.2 scrive la mail iniziale (Mod. A)</div><div class="work-sub">Input: scheda A5.2 → Output: mail pronta da inviare · allega media kit</div></div>
+          <div class="work-num s1">4</div>
+          <div><div class="work-desc">Tu approvi il media kit (PDF in cartella Aziende)</div><div class="work-sub">Step 4 — Approvato: rilevato automaticamente da pipeline_watcher</div></div>
         </div>
         <div class="work-step">
           <div class="work-num s2">5</div>
-          <div><div class="work-desc">Gestisci la trattativa con A6.2 (Mod. B/C/D)</div><div class="work-sub">Risposta azienda → follow-up → proposta commerciale completa</div></div>
+          <div><div class="work-desc">A6.2 scrive la mail iniziale (Mod. A)</div><div class="work-sub">Step 5 — Testo mail pronto: salva il TXT in cartella Aziende, poi A7 crea la bozza Gmail</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num s2">6</div>
+          <div><div class="work-desc">Gestisci la trattativa con A6.2 (Mod. B/C/D)</div><div class="work-sub">Step 8-13 — Risposta ricevuta → follow-up → proposta → trattativa → accordo/rifiuto</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128200; Pipeline — stato in tempo reale</span></div>
+      <div class="sc-body">
+        <div class="pipe-count-row">
+          <div class="pipe-count-box"><div class="pipe-count-num" id="pcStep3">&#8212;</div><div class="pipe-count-lbl">Step 3 — media kit in attesa di approvazione</div></div>
+          <div class="pipe-count-box"><div class="pipe-count-num" id="pcStep8">&#8212;</div><div class="pipe-count-lbl">Step 8 — risposte ricevute da gestire</div></div>
         </div>
       </div>
     </div>
@@ -494,6 +606,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 
+  <!-- TAB: ATTIVITÀ -->
+  <div id="panel-run" class="panel">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#8987; Attività recente (activity_log)</span></div>
+      <div class="sc-body" id="runList">
+        <div class="empty-note">Caricamento...</div>
+      </div>
+    </div>
+  </div>
+
   <!-- TAB: CONFIG -->
   <div id="panel-config" class="panel">
     <div class="section-card">
@@ -502,8 +624,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai — progetto dedicato</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">On-demand — per ogni azienda</span></div>
         <div class="config-row"><span class="config-key">Output</span><span class="config-val">media_kit_[azienda].pptx → Google Slides</span></div>
-        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4</span></div>
-        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">[da aggiungere]</span></div>
+        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_</span></div>
+        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019ddb94-e44c-73e3-97bf-926763d56159</span></div>
         <div class="config-row"><span class="config-key">⚠️ Nota</span><span class="config-val" style="color:var(--sabbia-dk);">Prompt A6.1 ha disallineamento noto su formato input/output — revisione in backlog</span></div>
       </div>
     </div>
@@ -513,15 +635,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai — progetto dedicato</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">On-demand — continuo per ogni azienda</span></div>
         <div class="config-row"><span class="config-key">Output</span><span class="config-val">Testo mail / proposta — pronto da inviare</span></div>
-        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">[da aggiungere]</span></div>
+        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_</span></div>
+        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019ddbb2-e37f-7194-8cc9-5516500a89d0</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Scheda A5.2 disponibile (azienda selezionata)</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">Verificare</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm1 + Mm2 (KPI già in scheda A5.2)</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Drive A6 accessibile per upload media kit</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok" id="depSupaDot"></span><span style="flex:1;font-size:.7rem;">Connessione Supabase (tabella companies)</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;" id="depSupaLbl">Verifica in corso...</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Scheda A5.2 disponibile (azienda selezionata)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm1 + Mm2 (KPI già in scheda A5.2)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
       </div>
     </div>
   </div>
@@ -541,11 +664,69 @@ const Mm1=MESI[mm1d.getMonth()]; const Am1=mm1d.getFullYear();
 document.getElementById('dateChipText').textContent=`${DD}/${MM}/${YY}`;
 document.getElementById('repMm1Lbl').textContent=`report_GDC_${Mm1}_${Am1}`;
 
+/* ══ MESSAGGI — stessi testi reali usati in page_home_v25.html ══ */
+const MSGS={
+  A6_1:`Ciao A6.1.
+Produci il Media Kit per: [NOME AZIENDA]
+
+Scheda azienda (A5.2) in Drive A5:
+Entra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),
+cerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.
+
+Report A2 (ultimi 2 mesi) in Drive:
+https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC
+-> lista la cartella e identifica autonomamente i 2 report più recenti.
+
+Cartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):
+Cerca se esiste già la cartella [NOME AZIENDA]:
+- Se esiste: non fare nulla, indicami il link.
+- Se non esiste: creala e indicami il link.
+
+Produci il PPTX Media Kit e presentamelo via present_files.
+
+Nota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sarà il PDF ad essere allegato da A7 alla mail.`,
+  A6_2:`Ciao A6.2.
+Produci la mail di proposta sponsorizzazione per: [NOME AZIENDA]
+
+Scheda azienda (A5.2) in Drive A5:
+Entra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),
+cerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.
+
+Media Kit (A6.1) in Drive A6 — opzionale ma consigliato:
+Cerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].
+Se trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.
+
+Dopo approvazione, salva il TXT nella sottocartella specifica dell'azienda:
+Cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella [NOME AZIENDA] -> salva lì il file
+-> mail_[NOME AZIENDA]_YYYY-MM-DD.txt
+Non salvare nella radice di Aziende né in altre cartelle.`
+};
+const MSG_META={
+  A6_1:{title:'&#128203; Messaggio A6.1 — Media Kit',link:'https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159',lbl:'Apri A6.1'},
+  A6_2:{title:'&#128203; Messaggio A6.2 — Relazioni Commerciali',link:'https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0',lbl:'Apri A6.2'}
+};
+
 function switchTab(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
+}
+function openMsg(id){
+  document.getElementById('msgText').value=MSGS[id];
+  document.getElementById('msgPopupTitle').innerHTML=MSG_META[id].title;
+  const link=document.getElementById('msgOpenLink');
+  link.href=MSG_META[id].link; link.textContent='🔗 '+MSG_META[id].lbl;
+  document.getElementById('msgOverlay').classList.add('open');
+}
+function closeMsg(){ document.getElementById('msgOverlay').classList.remove('open'); }
+function closeMsgIfBg(e){ if(e.target===document.getElementById('msgOverlay')) closeMsg(); }
+function copyMsg(){
+  navigator.clipboard.writeText(document.getElementById('msgText').value).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='✓ Copiato!';
+    setTimeout(()=>{ btn.textContent='Copia messaggio'; },2000);
+  }).catch(()=>{ document.getElementById('msgText').select(); document.execCommand('copy'); });
 }
 
 (function(){
@@ -582,6 +763,213 @@ function renderCal(){
     grid.appendChild(el);
   }
   document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">A6 è on-demand — nessun evento fisso</span>';
+}
+
+/* ══ SUPABASE — auth + fetch (stesso pattern condiviso delle altre pagine) ══ */
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+  let banner=document.getElementById('gdcSessionBanner');
+  if(!banner){ banner=document.createElement('div'); banner.id='gdcSessionBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent='Sessione scaduta — reindirizzamento al login...';
+  setTimeout(()=>{ window.location.href='page_login_v6.html'; },1600);
+}
+async function sbFetch(url,options){
+  options=options||{};
+  const headers=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+gdcToken()},options.headers||{});
+  const res=await fetch(url,Object.assign({},options,{headers:headers}));
+  if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html) ══ */
+const VAPID_PUBLIC_KEY='BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=atob(base64); const outputArray=new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;i++) outputArray[i]=rawData.charCodeAt(i);
+  return outputArray;
+}
+function guessDeviceLabel(){
+  const ua=navigator.userAgent||''; let device='Dispositivo';
+  if(/iPad/.test(ua)) device='iPad'; else if(/iPhone/.test(ua)) device='iPhone';
+  else if(/Android/.test(ua)) device='Android'; else if(/Macintosh/.test(ua)) device='Mac';
+  else if(/Windows/.test(ua)) device='PC Windows';
+  const d=new Date(); return device+' — '+d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+}
+async function getExistingPushSubscription(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return null;
+  const reg=await navigator.serviceWorker.getRegistration(); if(!reg) return null;
+  return await reg.pushManager.getSubscription();
+}
+async function updatePushButtonUI(){
+  const label=document.getElementById('pushBtnLabel'); if(!label) return;
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
+  const sub=await getExistingPushSubscription();
+  label.textContent=sub?'Notifiche attive':'Attiva notifiche';
+}
+let pushToggleInProgress=false;
+async function togglePushNotifications(){
+  if(pushToggleInProgress) return;
+  pushToggleInProgress=true;
+  const label=document.getElementById('pushBtnLabel');
+  const btn=document.getElementById('pushBtn');
+  if(btn) btn.disabled=true;
+  const prevLabel=label?label.textContent:'';
+  if(label) label.textContent='Attivazione in corso...';
+  try{
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
+      if(label) label.textContent=prevLabel; return;
+    }
+    const existing=await getExistingPushSubscription();
+    if(existing){
+      try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
+      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+    }
+    try{
+      const permission=await Notification.requestPermission();
+      if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
+      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+      const subJson=sub.toJSON();
+      await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+        body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
+      if(label) label.textContent='Notifiche attive';
+    }catch(e){
+      console.error('Errore attivazione notifiche:',e);
+      const realSub=await getExistingPushSubscription();
+      if(realSub){ if(label) label.textContent='Notifiche attive'; }
+      else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
+    }
+  } finally {
+    if(btn) btn.disabled=false;
+    pushToggleInProgress=false;
+  }
+}
+document.addEventListener('DOMContentLoaded',updatePushButtonUI);
+
+/* ══ DATI REALI — agent_states (a6_1 + a6_2) + conteggi pipeline ══ */
+function timeAgo(iso){
+  if(!iso) return '';
+  const diff=Date.now()-new Date(iso).getTime();
+  const mins=Math.floor(diff/60000);
+  if(mins<1) return 'proprio ora';
+  if(mins<60) return mins+' min fa';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return hrs+' or'+(hrs===1?'a':'e')+' fa';
+  const days=Math.floor(hrs/24);
+  return days+' giorn'+(days===1?'o':'i')+' fa';
+}
+function fmtDateTime(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+const THREE_DAYS=3*24*60*60*1000;
+const PRI={active:5,queued:4,done:3,rest:2,sleep:1};
+function mapState(row){
+  if(!row) return 'sleep';
+  const st=row.stato||'';
+  const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='working') return 'active';
+  if(st==='ready'||st==='queued') return 'queued';
+  if(st==='done') return age<THREE_DAYS?'done':'sleep';
+  if(st==='riposo') return age<THREE_DAYS?'rest':'sleep';
+  return 'sleep';
+}
+function worstState(rows){ let b='sleep'; rows.forEach(r=>{ if(!r) return; const s=mapState(r); if((PRI[s]||0)>(PRI[b]||0)) b=s; }); return b; }
+const STATE_CFG={
+  active:{badge:'badge-active',logo:'logo-active',lbl:'In corso',dot:'var(--sabbia-dk)'},
+  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda',dot:'var(--athlete)'},
+  done:{badge:'badge-done',logo:'logo-done',lbl:'Completato',dot:'var(--maker)'},
+  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo',dot:'var(--grigio)'},
+  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo',dot:'var(--grigio)'},
+};
+async function loadA6(){
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a6_1,a6_2)&select=agent_id,stato,updated_at');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    const a61=rows.find(r=>r.agent_id==='a6_1');
+    const a62=rows.find(r=>r.agent_id==='a6_2');
+
+    document.getElementById('sysLabel').textContent='Connesso a Supabase';
+    document.getElementById('sysLabel').style.color='var(--maker)';
+    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('depSupaDot').style.background='var(--maker)';
+    document.getElementById('depSupaLbl').textContent='OK — connessione riuscita';
+    document.getElementById('depSupaLbl').style.color='var(--maker)';
+
+    const st=worstState([a61,a62]), c=STATE_CFG[st];
+    const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
+    const logoBox=document.getElementById('logoBoxHero');
+    badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
+    if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    const latest=[a61,a62].filter(Boolean).sort((x,y)=>new Date(y.updated_at)-new Date(x.updated_at))[0];
+    document.getElementById('lastRunLbl').textContent=latest?('Ultimo aggiornamento: '+timeAgo(latest.updated_at)):'Nessun dato ancora';
+
+    const cA61=STATE_CFG[mapState(a61)], cA62=STATE_CFG[mapState(a62)];
+    document.getElementById('statA61').innerHTML=`<span class="sd" style="background:${cA61.dot};"></span><span style="color:${cA61.dot};">${cA61.lbl}${a61&&a61.updated_at?' · '+timeAgo(a61.updated_at):''}</span>`;
+    document.getElementById('statA62').innerHTML=`<span class="sd" style="background:${cA62.dot};"></span><span style="color:${cA62.dot};">${cA62.lbl}${a62&&a62.updated_at?' · '+timeAgo(a62.updated_at):''}</span>`;
+  }catch(e){
+    console.error('Errore caricamento A6:',e);
+    document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
+    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('statusBadgeLbl').textContent='Non disponibile';
+    document.getElementById('depSupaDot').style.background='var(--life)';
+    document.getElementById('depSupaLbl').textContent='Errore connessione';
+    document.getElementById('depSupaLbl').style.color='var(--life)';
+  }
+}
+
+async function loadPipelineCounts(){
+  try{
+    const res3=await sbFetch(SUPA_URL+'/rest/v1/companies?step_attuale=eq.3&select=id',{headers:{'Prefer':'count=exact'}});
+    const c3=res3.headers.get('content-range');
+    document.getElementById('pcStep3').textContent=c3?c3.split('/')[1]:'—';
+    const res8=await sbFetch(SUPA_URL+'/rest/v1/companies?step_attuale=eq.8&select=id',{headers:{'Prefer':'count=exact'}});
+    const c8=res8.headers.get('content-range');
+    document.getElementById('pcStep8').textContent=c8?c8.split('/')[1]:'—';
+  }catch(e){
+    console.error('Errore conteggio pipeline:',e);
+  }
+}
+
+async function loadActivity(){
+  const box=document.getElementById('runList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/activity_log?agent_id=in.(A6.1,A6.2)&order=created_at.desc&limit=15');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){
+      box.innerHTML='<div class="empty-note">Nessuna attività ancora registrata per A6.1/A6.2.</div>';
+      return;
+    }
+    box.innerHTML=rows.map(r=>{
+      const agLbl=r.agent_id==='A6.1'?'A6.1':'A6.2';
+      return '<div class="run-row"><span class="run-icon">&#9989;</span><div class="run-info">'+
+        '<div class="run-title">'+(r.titolo||'')+'</div>'+
+        '<div class="run-meta">'+fmtDateTime(r.created_at)+(r.descrizione?(' · '+r.descrizione):'')+'</div>'+
+        '</div><span class="run-badge rb-ok">'+agLbl+'</span></div>';
+    }).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare activity_log al momento.</div>';
+  }
+}
+
+if(!gdcToken()){
+  window.location.href='page_login_v6.html';
+} else {
+  loadA6();
+  loadPipelineCounts();
+  loadActivity();
 }
 </script>
 </body>
