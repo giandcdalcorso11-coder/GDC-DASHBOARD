@@ -117,17 +117,13 @@ body{
 .logo-sleep{ background:var(--athlete-bg) !important; }
 .logo-rest{ background:var(--carta) !important; }
 
-/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
-.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
-.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
-.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
-.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
-.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
-.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
-.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
-.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
-.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
-.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
+/* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
+.doc-rect,.bar,.cur-el,.lbl{transition:fill .6s,stroke .6s;}
+.a4-wrap.s-rest .doc-rect{stroke:#FFF!important;}.a4-wrap.s-rest .bar{fill:#9A9A9A!important;}.a4-wrap.s-rest .cur-el{fill:#9A9A9A!important;}.a4-wrap.s-rest .lbl{fill:#FFF!important;}
+.a4-wrap.s-queued .doc-rect{stroke:#C2193A!important;}.a4-wrap.s-queued .bar{fill:#E9415A!important;}.a4-wrap.s-queued .cur-el{fill:#E9415A!important;}.a4-wrap.s-queued .lbl{fill:#C2193A!important;}
+.a4-wrap.s-active .doc-rect{stroke:#8A6D3B!important;}.a4-wrap.s-active .bar{fill:#C4A865!important;}.a4-wrap.s-active .cur-el{fill:#C4A865!important;}.a4-wrap.s-active .lbl{fill:transparent!important;}
+.a4-wrap.s-done .doc-rect{stroke:#497B58!important;}.a4-wrap.s-done .bar{fill:#5D9C71!important;}.a4-wrap.s-done .cur-el{fill:#5D9C71!important;}.a4-wrap.s-done .lbl{fill:#497B58!important;}
+.a4-wrap.s-sleep .doc-rect{stroke:#2B5C8A!important;}.a4-wrap.s-sleep .bar{fill:#4A86C6!important;}.a4-wrap.s-sleep .cur-el{fill:#2B5C8A!important;}.a4-wrap.s-sleep .lbl{fill:#2B5C8A!important;}
 .hero-text{ flex:1; min-width:0; }
 .agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
 .agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
@@ -344,18 +340,17 @@ body{
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero">
-        <!-- A4 documento — colori done hardcoded -->
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible">
-          <rect x="16" y="8" width="88" height="104" rx="12" fill="none" class="icon-main" stroke="#497B58" stroke-width="6.5"/>
-          <rect x="30" y="29" width="60" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
-          <rect x="30" y="46" width="60" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
-          <rect x="30" y="63" width="60" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
-          <rect x="30" y="85" width="20" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
-          <rect x="57" y="79" width="6" height="18" rx="3" class="icon-accent" fill="#5D9C71"/>
-          <text x="66" y="95" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1" class="icon-main" fill="#497B58">A4</text>
+      <div class="logo-box-hero" id="logoBoxHero"><div id="logoWrap" class="a4-wrap s-sleep" style="width:100%;height:100%">
+        <svg id="svg-a4" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible">
+          <rect id="c-doc" class="doc-rect" x="16" y="8" width="88" height="104" rx="12" fill="none" stroke="#2B5C8A" stroke-width="6.5" style="stroke-dasharray:390;stroke-dashoffset:0"/>
+          <rect id="c-r0" class="bar" x="30" y="29" width="60" height="6" rx="3" fill="#4A86C6" style="transform-origin:30px 32px;transform:scaleX(1)"/>
+          <rect id="c-r1" class="bar" x="30" y="46" width="60" height="6" rx="3" fill="#4A86C6" style="transform-origin:30px 49px;transform:scaleX(1)"/>
+          <rect id="c-r2" class="bar" x="30" y="63" width="60" height="6" rx="3" fill="#4A86C6" style="transform-origin:30px 66px;transform:scaleX(1)"/>
+          <rect id="c-r3" class="bar" x="30" y="85" width="20" height="6" rx="3" fill="#4A86C6" style="transform-origin:30px 88px;transform:scaleX(1)"/>
+          <rect id="c-cur" class="cur-el" x="57" y="79" width="6" height="18" rx="3" fill="#4A86C6"/>
+          <text class="lbl" x="66" y="95" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1" fill="#2B5C8A">A4</text>
         </svg>
-      </div>
+      </div></div>
       <div class="hero-text">
         <div class="agent-id-lbl">Agente 4</div>
         <div class="agent-name-big">Brief &amp; Script</div>
@@ -855,6 +850,37 @@ const STATE_CFG={
   rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
 };
+/* ══ ANIMAZIONE ICONA — esatta dalla home ══ */
+var a4RAF=null;
+function stopA4Anim(){
+  if(a4RAF){cancelAnimationFrame(a4RAF);a4RAF=null;}
+  const d=document.getElementById('c-doc');if(d)d.style.strokeDashoffset='0';
+  ['c-r0','c-r1','c-r2','c-r3'].forEach(r=>{const el=document.getElementById(r);if(el)el.style.transform='scaleX(1)';});
+  const cur=document.getElementById('c-cur');if(cur){cur.style.opacity='1';cur.setAttribute('x','57');cur.setAttribute('y','79');}
+}
+function startA4Anim(){
+  if(a4RAF) cancelAnimationFrame(a4RAF);
+  const doc=document.getElementById('c-doc'),cur=document.getElementById('c-cur');
+  const rows=['c-r0','c-r1','c-r2','c-r3'].map(id=>document.getElementById(id));
+  if(!doc||!cur||rows.some(r=>!r)) return;
+  const X0=30,X1=[84,84,84,44],CY=[32,49,66,88],CH=18,T_DOC=450,T_ROW=680,T_SNAP=100,T_BLINK=300,T_PAUSE=700;
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const setCur=(x,cy,v)=>{cur.setAttribute('x',x);cur.setAttribute('y',cy-CH/2);cur.style.opacity=v?1:0;};
+  const setRow=(i,s)=>{rows[i].style.transform='scaleX('+s+')';};
+  let ph='doc',phT=0;
+  const reset=()=>{doc.style.strokeDashoffset=390;rows.forEach((_,i)=>setRow(i,0));setCur(X0,CY[0],true);ph='doc';cur.setAttribute('x','57');cur.setAttribute('y','79');};
+  const tick=ts=>{
+    if(!phT) phT=ts; const dt=ts-phT;
+    if(ph==='doc'){const p=Math.min(dt/T_DOC,1);doc.style.strokeDashoffset=390*(1-ease(p));if(p>=1){ph='row0';phT=ts;setCur(X0,CY[0],true);}}
+    else if(ph.startsWith('row')){const ri=+ph[3],p=Math.min(dt/T_ROW,1),ep=ease(p);setCur(X0+ep*(X1[ri]-X0),CY[ri],true);setRow(ri,Math.max(0,(p-.08)/.92));if(p>=1){setRow(ri,1);setCur(X1[ri],CY[ri],false);ph=ri<3?'snap'+ri:'blink';phT=ts;}}
+    else if(ph.startsWith('snap')){if(dt>=T_SNAP){const ri=+ph[4];setCur(X0,CY[ri+1],true);ph='row'+(ri+1);phT=ts;}}
+    else if(ph==='blink'){const c=Math.floor(dt/T_BLINK);setCur(X1[3],CY[3],c%2===0);if(c>=6){setCur(X1[3],CY[3],false);ph='pause';phT=ts;}}
+    else if(ph==='pause'){if(dt>=T_PAUSE){reset();phT=ts;}}
+    a4RAF=requestAnimationFrame(tick);
+  };
+  reset(); a4RAF=requestAnimationFrame(tick);
+}
+
 async function loadA4(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a3,a4)&select=agent_id,stato,updated_at,mese');
@@ -870,9 +896,12 @@ async function loadA4(){
     // Badge + logo — stessa categoria di stato, stessa palette della home
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
+    const logoWrap=document.getElementById('logoWrap');
     const stCat=mapState(a4), c=STATE_CFG[stCat];
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    if(logoWrap) logoWrap.className='a4-wrap s-'+stCat;
+    if(stCat==='active') startA4Anim(); else stopA4Anim();
     document.getElementById('lastRunLbl').textContent=a4&&a4.updated_at?('Ultimo aggiornamento: '+timeAgo(a4.updated_at)):'';
 
     // Tab Run

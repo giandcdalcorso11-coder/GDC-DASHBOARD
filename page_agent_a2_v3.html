@@ -136,17 +136,21 @@ body{
 .logo-sleep{ background:var(--athlete-bg) !important; }
 .logo-rest{ background:var(--carta) !important; }
 
-/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
-.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
-.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
-.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
-.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
-.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
-.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
-.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
-.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
-.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
-.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
+/* ══ ICONA — esatta dalla home, per-forma + animazioni ══ */
+.logo-wrap svg #a2-bar1,.logo-wrap svg #a2-bar2,.logo-wrap svg #a2-bar3,.logo-wrap svg #a2-bar4,.logo-wrap svg #a2-label{transition:fill .6s,stroke .6s;}
+.s-rest svg #a2-bar1{fill:#FFF;}.s-rest svg #a2-bar2{fill:#9A9A9A;}.s-rest svg #a2-bar3{fill:#FFF;}.s-rest svg #a2-bar4{fill:none;stroke:#9A9A9A;}.s-rest svg #a2-label{fill:#FFF;}
+.s-queued svg #a2-bar1{fill:#C2193A;}.s-queued svg #a2-bar2{fill:#E9415A;}.s-queued svg #a2-bar3{fill:#C2193A;}.s-queued svg #a2-bar4{fill:none;stroke:#E9415A;}.s-queued svg #a2-label{fill:#C2193A;}
+.s-active svg #a2-bar1{fill:#8A6D3B;}.s-active svg #a2-bar2{fill:#C4A865;}.s-active svg #a2-bar3{fill:#8A6D3B;}.s-active svg #a2-bar4{fill:none;stroke:#C4A865;}.s-active svg #a2-label{fill:transparent;}
+.s-active svg #a2-bar1{transform-origin:23px 104px;animation:bF1 3.6s ease-in-out infinite;}
+.s-active svg #a2-bar2{transform-origin:49px 104px;animation:bF2 3.6s ease-in-out infinite;}
+.s-active svg #a2-bar3{transform-origin:75px 104px;animation:bF3 3.6s ease-in-out infinite;}
+.s-active svg #a2-bar4{animation:bF4 3.6s ease-in-out infinite;}
+.s-done svg #a2-bar1{fill:#497B58;}.s-done svg #a2-bar2{fill:#5D9C71;}.s-done svg #a2-bar3{fill:#497B58;}.s-done svg #a2-bar4{fill:none;stroke:#5D9C71;}.s-done svg #a2-label{fill:#497B58;}
+.s-sleep svg #a2-bar1{fill:#2B5C8A;}.s-sleep svg #a2-bar2{fill:#4A86C6;}.s-sleep svg #a2-bar3{fill:#2B5C8A;}.s-sleep svg #a2-bar4{fill:none;stroke:#4A86C6;}.s-sleep svg #a2-label{fill:#2B5C8A;}
+@keyframes bF1{0%{transform:scaleY(0) translateX(0);opacity:0}4%{transform:scaleY(0);opacity:0}12.5%{transform:scaleY(1) translateX(0);opacity:1}55%{transform:scaleY(1) translateX(0);opacity:1}72%{transform:scaleY(1) translateX(60px);opacity:0}73%{transform:scaleY(0) translateX(0);opacity:0}100%{transform:scaleY(0) translateX(0);opacity:0}}
+@keyframes bF2{0%{transform:scaleY(0);opacity:0}12.5%{transform:scaleY(0);opacity:0}25%{transform:scaleY(1) translateX(0);opacity:1}55%{transform:scaleY(1) translateX(0);opacity:1}77%{transform:scaleY(1) translateX(60px);opacity:0}78%{transform:scaleY(0) translateX(0);opacity:0}100%{transform:scaleY(0) translateX(0);opacity:0}}
+@keyframes bF3{0%{transform:scaleY(0);opacity:0}25%{transform:scaleY(0);opacity:0}37.5%{transform:scaleY(1) translateX(0);opacity:1}55%{transform:scaleY(1) translateX(0);opacity:1}82%{transform:scaleY(1) translateX(60px);opacity:0}83%{transform:scaleY(0) translateX(0);opacity:0}100%{transform:scaleY(0) translateX(0);opacity:0}}
+@keyframes bF4{0%{transform:translateX(0);opacity:0}37.5%{transform:translateX(0);opacity:0}50%{transform:translateX(0);opacity:1}87%{transform:translateX(60px);opacity:0}88%{transform:translateX(0);opacity:0}100%{transform:translateX(0);opacity:0}}
 .hero-text{ flex:1; min-width:0; }
 .agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
 .agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
@@ -370,16 +374,15 @@ body{
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero">
-        <!-- A2 bar chart — colori done hardcoded -->
+      <div class="logo-box-hero" id="logoBoxHero"><div class="logo-wrap s-sleep" id="logoWrap">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible">
-          <rect x="14" y="76" width="18" height="28" rx="4" class="icon-main" fill="#497B58"/>
-          <rect x="40" y="56" width="18" height="48" rx="4" class="icon-accent" fill="#5D9C71"/>
-          <rect x="66" y="34" width="18" height="70" rx="4" class="icon-main" fill="#497B58"/>
-          <rect x="92" y="20" width="18" height="84" rx="4" class="icon-accent" fill="none" stroke="#5D9C71" stroke-width="5" stroke-dasharray="9 7"/>
-          <text x="11" y="34" font-family="Jost,sans-serif" font-weight="800" font-size="30" class="icon-main" fill="#497B58" letter-spacing="-1">A2</text>
+          <rect id="a2-bar1" x="14" y="76" width="18" height="28" rx="4" fill="#2B5C8A"/>
+          <rect id="a2-bar2" x="40" y="56" width="18" height="48" rx="4" fill="#4A86C6"/>
+          <rect id="a2-bar3" x="66" y="34" width="18" height="70" rx="4" fill="#2B5C8A"/>
+          <rect id="a2-bar4" x="92" y="20" width="18" height="84" rx="4" fill="none" stroke="#4A86C6" stroke-width="5" stroke-dasharray="9 7"/>
+          <text id="a2-label" x="11" y="34" font-family="Jost,sans-serif" font-weight="800" font-size="30" fill="#2B5C8A" letter-spacing="-1">A2</text>
         </svg>
-      </div>
+      </div></div>
       <div class="hero-text">
         <div class="agent-id-lbl">Agente 2</div>
         <div class="agent-name-big">Analyst</div>
@@ -862,9 +865,11 @@ async function loadA2(){
     // Badge + logo — stessa categoria di stato, stessa palette della home
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
+    const logoWrap=document.getElementById('logoWrap');
     const stCat=mapState(a2), c=STATE_CFG[stCat];
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    if(logoWrap) logoWrap.className='logo-wrap s-'+stCat;
     document.getElementById('lastRunLbl').textContent=a2&&a2.updated_at?('Ultimo aggiornamento: '+timeAgo(a2.updated_at)):'';
 
     // Tab Run — dati reali

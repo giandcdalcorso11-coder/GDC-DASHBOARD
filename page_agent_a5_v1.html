@@ -220,17 +220,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .logo-sleep{background:var(--athlete-bg) !important;}
 .logo-rest{background:var(--carta) !important;}
 
-/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
-.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
-.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
-.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
-.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
-.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
-.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
-.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
-.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
-.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
-.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
+/* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
+.arc-outer,.circ-mid,.dot-cent,.dash-line,.badge{transition:fill .6s,stroke .6s;}
+.s-rest .arc-outer{stroke:#9A9A9A;}.s-rest .circ-mid{stroke:#FFF;}.s-rest .dot-cent{fill:#FFF;}.s-rest .dash-line{stroke:#9A9A9A;}.s-rest .badge{fill:#9A9A9A;}.s-rest .a5-lbl{fill:#FFF;}
+.s-queued .arc-outer{stroke:#C2193A;}.s-queued .circ-mid{stroke:#E9415A;}.s-queued .dot-cent{fill:#C2193A;}.s-queued .dash-line{stroke:#E9415A;}.s-queued .badge{fill:#E9415A;}.s-queued .a5-lbl{fill:#C2193A;}
+.s-active .arc-outer{stroke:#8A6D3B;}.s-active .circ-mid{stroke:#C4A865;}.s-active .dot-cent{fill:#8A6D3B;}.s-active .dash-line{stroke:#C4A865;}.s-active .badge{fill:#C4A865;}.s-active .a5-lbl{fill:transparent;}
+.s-done .arc-outer{stroke:#497B58;}.s-done .circ-mid{stroke:#5D9C71;}.s-done .dot-cent{fill:#497B58;}.s-done .dash-line{stroke:#5D9C71;}.s-done .badge{fill:#5D9C71;}.s-done .a5-lbl{fill:#497B58;}
+.s-sleep .arc-outer{stroke:#2B5C8A;}.s-sleep .circ-mid{stroke:#4A86C6;}.s-sleep .dot-cent{fill:#2B5C8A;}.s-sleep .dash-line{stroke:#4A86C6;}.s-sleep .badge{fill:#4A86C6;}.s-sleep .a5-lbl{fill:#2B5C8A;}
+.a5-lbl{transition:fill .6s;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
 .badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
 .badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
@@ -351,17 +348,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </a>
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero">
-        <!-- A5 pipeline — colori done hardcoded per l'icona statica -->
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible" font-family="Jost,sans-serif">
-          <path d="M18.8 70 A44 44 0 1 1 97.2 70" fill="none" class="icon-main" stroke="#497B58" stroke-width="6.5" stroke-linecap="round"/>
-          <circle cx="58" cy="50" r="27" fill="none" class="icon-accent" stroke="#5D9C71" stroke-width="5.5"/>
-          <circle cx="58" cy="50" r="12" class="icon-main" fill="#497B58"/>
-          <path d="M65 60 L82 84" fill="none" class="icon-accent" stroke="#5D9C71" stroke-width="5" stroke-dasharray="6 6" stroke-linecap="round"/>
-          <circle cx="87" cy="91" r="9" class="icon-accent" fill="#5D9C71"/>
-          <text x="24" y="102" font-weight="800" font-size="22" letter-spacing="-1" class="icon-main" fill="#497B58">A5</text>
+      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap" style="width:100%;height:100%">
+        <svg id="svg-a5" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible" font-family="Jost,sans-serif">
+          <path id="c-arc" class="arc-outer" d="M18.8 70 A44 44 0 1 1 97.2 70" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linecap="round" style="stroke-dasharray:192 84;stroke-dashoffset:0"/>
+          <circle class="circ-mid" cx="58" cy="50" r="27" fill="none" stroke="#4A86C6" stroke-width="5.5"/>
+          <circle class="dot-cent" cx="58" cy="50" r="12" fill="#2B5C8A"/>
+          <line id="c-dash-line" class="dash-line" x1="65" y1="60" x2="82" y2="84" stroke="#4A86C6" stroke-width="5" stroke-dasharray="6 6" stroke-linecap="round"/>
+          <circle id="c-badge" class="badge" cx="87" cy="91" r="9" fill="#4A86C6"/>
+          <text class="a5-lbl" x="24" y="102" font-weight="800" font-size="22" letter-spacing="-1" fill="#2B5C8A">A5</text>
         </svg>
-      </div>
+      </div></div>
       <div class="hero-text">
         <div class="agent-id-lbl">Agente 5</div>
         <div class="agent-name-big">Pipeline Manager</div>
@@ -888,6 +884,32 @@ const STATE_CFG={
   rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo',dot:'var(--grigio)'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo',dot:'var(--grigio)'},
 };
+/* ══ ANIMAZIONE ICONA — esatta dalla home ══ */
+var a5RAF=null;
+function stopA5Anim(){
+  if(a5RAF){cancelAnimationFrame(a5RAF);a5RAF=null;
+    const arc=document.getElementById('c-arc');if(arc)arc.style.strokeDashoffset='0';
+    const badge=document.getElementById('c-badge');if(badge){badge.setAttribute('cx','87');badge.setAttribute('cy','91');}
+    const dash=document.getElementById('c-dash-line');if(dash){dash.setAttribute('x1','65');dash.setAttribute('y1','60');dash.setAttribute('x2','82');dash.setAttribute('y2','84');}
+  }
+}
+function startA5Anim(){
+  if(a5RAF){cancelAnimationFrame(a5RAF);a5RAF=null;}
+  const arc=document.getElementById('c-arc'),badge=document.getElementById('c-badge'),dash=document.getElementById('c-dash-line');
+  if(!arc||!badge||!dash) return;
+  const OCX=58,OCY=50,R=50.22,A0s=54.73*Math.PI/180,AD=80*Math.PI/180,AL=192;
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const setBadge=a=>{const bx=OCX+R*Math.cos(a),by=OCY+R*Math.sin(a);badge.setAttribute('cx',bx.toFixed(2));badge.setAttribute('cy',by.toFixed(2));const d=Math.atan2(by-OCY,bx-OCX);dash.setAttribute('x1',(OCX+13*Math.cos(d)).toFixed(2));dash.setAttribute('y1',(OCY+13*Math.sin(d)).toFixed(2));dash.setAttribute('x2',(OCX+(R-10)*Math.cos(d)).toFixed(2));dash.setAttribute('y2',(OCY+(R-10)*Math.sin(d)).toFixed(2));};
+  let ph='go',phT=0;
+  const tick=ts=>{if(!a5RAF) return;if(!phT)phT=ts;const dt=ts-phT;
+    if(ph==='go'){const p=Math.min(dt/1400,1),ep=ease(p);setBadge(A0s+ep*AD);arc.style.strokeDashoffset=ep*AL;if(p>=1){ph='h1';phT=ts;}}
+    else if(ph==='h1'){if(dt>=300){ph='back';phT=ts;}}
+    else if(ph==='back'){const p=Math.min(dt/1300,1),ep=ease(p);setBadge(A0s+(1-ep)*AD);arc.style.strokeDashoffset=(1-ep)*AL;if(p>=1){ph='h2';phT=ts;}}
+    else if(ph==='h2'){if(dt>=400){ph='go';phT=ts;setBadge(A0s);arc.style.strokeDashoffset=0;}}
+    a5RAF=requestAnimationFrame(tick);};
+  setBadge(A0s); a5RAF=requestAnimationFrame(tick);
+}
+
 async function loadA5(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a5_1,a5_2)&select=agent_id,stato,updated_at');
@@ -907,8 +929,11 @@ async function loadA5(){
     const st=worstState([a51,a52]), c=STATE_CFG[st];
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
+    const logoWrap=document.getElementById('logoWrap');
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    if(logoWrap) logoWrap.className='s-'+st;
+    if(st==='active') startA5Anim(); else stopA5Anim();
     const latest=[a51,a52].filter(Boolean).sort((x,y)=>new Date(y.updated_at)-new Date(x.updated_at))[0];
     document.getElementById('lastRunLbl').textContent=latest?('Ultimo aggiornamento: '+timeAgo(latest.updated_at)):'Nessun dato ancora';
 

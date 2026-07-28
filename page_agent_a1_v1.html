@@ -111,17 +111,19 @@ body{
 .logo-rest{ background:var(--carta) !important; }
 .logo-warn{ background:var(--life-bg) !important; }
 
-/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
-.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
-.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
-.logo-queued .icon-main,.logo-warn .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
-.logo-queued .icon-accent,.logo-warn .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
-.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
-.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
-.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
-.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
-.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
-.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
+/* ══ ICONA — esatta dalla home, per-forma + animazioni ══ */
+.logo-wrap svg #a1-outer,.logo-wrap svg #a1-inner,.logo-wrap svg #a1-dot,.logo-wrap svg #a1-label{transition:fill .6s;}
+.s-rest svg #a1-outer{fill:#FFF;}.s-rest svg #a1-inner{fill:#9A9A9A;}.s-rest svg #a1-dot{fill:#FFF;}.s-rest svg #a1-label{fill:#9A9A9A;}
+.s-queued svg #a1-outer{fill:#C2193A;}.s-queued svg #a1-inner{fill:#E9415A;}.s-queued svg #a1-dot{fill:#C2193A;}.s-queued svg #a1-label{fill:#E9415A;}
+.s-active svg #a1-outer{fill:#8A6D3B;animation:spinCW1 6s linear infinite;transform-origin:307.72px 403.14px;}
+.s-active svg #a1-inner{fill:#C4A865;animation:spinCCW1 4s linear infinite;transform-origin:307.72px 403.14px;}
+.s-active svg #a1-dot{fill:#8A6D3B;animation:a1DP 1.4s ease-in-out infinite;transform-origin:307.72px 403.14px;}
+.s-active svg #a1-label{fill:transparent;}
+.s-done svg #a1-outer{fill:#497B58;}.s-done svg #a1-inner{fill:#5D9C71;}.s-done svg #a1-dot{fill:#497B58;}.s-done svg #a1-label{fill:#5D9C71;}
+.s-sleep svg #a1-outer{fill:#2B5C8A;}.s-sleep svg #a1-inner{fill:#4A86C6;}.s-sleep svg #a1-dot{fill:#2B5C8A;}.s-sleep svg #a1-label{fill:#4A86C6;}
+@keyframes spinCW1{to{transform:rotate(360deg)}}
+@keyframes spinCCW1{to{transform:rotate(-360deg)}}
+@keyframes a1DP{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
 .hero-text{ flex:1; min-width:0; }
 .agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
 .agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
@@ -291,13 +293,14 @@ body{
 
   <div class="hero-card" id="heroCard">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero">
+      <div class="logo-box-hero" id="logoBoxHero"><div class="logo-wrap s-sleep" id="logoWrap">
         <svg viewBox="30 150 560 530" xmlns="http://www.w3.org/2000/svg" width="52" height="52">
-          <circle cx="307.72" cy="403.14" r="45.04" class="icon-main" fill="var(--maker)"/>
-          <path class="icon-main" fill="var(--maker)" d="M577.03,380.6c-1.04-12.39-11.93-21.6-24.32-20.56c-0.68,0.06-1.36,0.14-2.03,0.26c-11.47,2.02-19.5,12.45-18.53,24.06c9.06,108.27-60.47,207.58-165.32,236.1C246.81,653.1,123.05,582.27,90.41,462.25s38.19-243.78,158.21-276.42c11.24-3.06,18.29-14.17,16.27-25.64c-2.16-12.25-13.84-20.43-26.09-18.27c-0.67,0.12-1.34,0.27-2,0.45C92.77,181.54,7.77,330.05,46.94,474.07s187.68,229.02,331.71,189.85C504.46,629.7,587.9,510.53,577.03,380.6z"/>
-          <path class="icon-accent" d="M254.85,254.62C172.83,283.82,130,373.99,159.2,456.01s119.36,124.85,201.39,95.65c63.21-22.5,105.25-82.54,104.78-149.63c-0.09-12.44-10.24-22.45-22.68-22.36c-1.26,0.01-2.51,0.12-3.75,0.34c-10.82,1.91-18.69,11.35-18.61,22.34c0.34,47.92-29.69,90.81-74.84,106.88c-58.59,20.86-122.99-9.73-143.85-68.32s9.73-122.99,68.32-143.85c10.35-3.69,16.53-14.3,14.63-25.13c-2.16-12.25-13.84-20.43-26.09-18.27C257.26,253.88,256.04,254.2,254.85,254.62z" fill="var(--maker-mid)"/>
+          <circle id="a1-dot" cx="307.72" cy="403.14" r="45.04" fill="#2B5C8A"/>
+          <path id="a1-outer" fill="#2B5C8A" d="M577.03,380.6c-1.04-12.39-11.93-21.6-24.32-20.56c-0.68,0.06-1.36,0.14-2.03,0.26c-11.47,2.02-19.5,12.45-18.53,24.06c9.06,108.27-60.47,207.58-165.32,236.1C246.81,653.1,123.05,582.27,90.41,462.25s38.19-243.78,158.21-276.42c11.24-3.06,18.29-14.17,16.27-25.64c-2.16-12.25-13.84-20.43-26.09-18.27c-0.67,0.12-1.34,0.27-2,0.45C92.77,181.54,7.77,330.05,46.94,474.07s187.68,229.02,331.71,189.85C504.46,629.7,587.9,510.53,577.03,380.6z"/>
+          <path id="a1-inner" d="M254.85,254.62C172.83,283.82,130,373.99,159.2,456.01s119.36,124.85,201.39,95.65c63.21-22.5,105.25-82.54,104.78-149.63c-0.09-12.44-10.24-22.45-22.68-22.36c-1.26,0.01-2.51,0.12-3.75,0.34c-10.82,1.91-18.69,11.35-18.61,22.34c0.34,47.92-29.69,90.81-74.84,106.88c-58.59,20.86-122.99-9.73-143.85-68.32s9.73-122.99,68.32-143.85c10.35-3.69,16.53-14.3,14.63-25.13c-2.16-12.25-13.84-20.43-26.09-18.27C257.26,253.88,256.04,254.2,254.85,254.62z" fill="#4A86C6"/>
+          <text id="a1-label" x="423.5" y="285" font-family="Jost,sans-serif" font-weight="800" font-size="115" text-anchor="middle" fill="#4A86C6" letter-spacing="-3">A1</text>
         </svg>
-      </div>
+      </div></div>
       <div class="hero-text">
         <div class="agent-id-lbl">Agente 1</div>
         <div class="agent-name-big">Data Collector</div>
@@ -680,6 +683,7 @@ async function loadA1(){
     // Badge + logo stato
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
+    const logoWrap=document.getElementById('logoWrap');
     const heroCard=document.getElementById('heroCard');
     const st=a1?a1.stato:null;
     const age=a1&&a1.updated_at?Date.now()-new Date(a1.updated_at).getTime():Infinity;
@@ -687,18 +691,22 @@ async function loadA1(){
     if(a1&&a1.mbs_missing){
       badge.className='status-badge badge-warn'; lbl.textContent='MBS mancante — '+(a1.mbs_missing_mese||'');
       if(logoBox) logoBox.className='logo-box-hero logo-warn';
+      if(logoWrap) logoWrap.className='logo-wrap s-queued';
       heroCard.classList.add('st-warn');
       document.getElementById('mbsBanner').classList.add('show');
       document.getElementById('mbsBannerText').textContent='Il file MBS Content Insights per '+(a1.mbs_missing_mese||'questo mese')+' non è ancora su Drive. a1_mbs_watcher.py lo rileverà da solo (giorno 2–10, ogni 30 min) — nessuna azione richiesta a meno che tu non voglia caricarlo prima.';
     } else if(st==='working'){
       badge.className='status-badge badge-active'; lbl.textContent='In corso';
       if(logoBox) logoBox.className='logo-box-hero logo-active';
+      if(logoWrap) logoWrap.className='logo-wrap s-active';
     } else if(st==='done'&&age<THREE_DAYS){
       badge.className='status-badge badge-done'; lbl.textContent='Completato di recente';
       if(logoBox) logoBox.className='logo-box-hero logo-done';
+      if(logoWrap) logoWrap.className='logo-wrap s-done';
     } else {
       badge.className='status-badge badge-sleep'; lbl.textContent='Inattivo — prossimo run automatico';
       if(logoBox) logoBox.className='logo-box-hero logo-sleep';
+      if(logoWrap) logoWrap.className='logo-wrap s-sleep';
     }
     document.getElementById('lastRunLbl').textContent=a1&&a1.updated_at?('Ultimo aggiornamento: '+timeAgo(a1.updated_at)):'';
 

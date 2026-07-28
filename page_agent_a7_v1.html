@@ -188,17 +188,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .logo-sleep{background:var(--athlete-bg) !important;}
 .logo-rest{background:var(--carta) !important;}
 
-/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
-.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
-.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
-.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
-.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
-.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
-.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
-.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
-.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
-.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
-.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
+/* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
+.env-rect,.env-v,.env-dot{transition:fill .6s,stroke .6s;}
+.s-rest .env-rect{stroke:#FFF;}.s-rest .env-v{stroke:#9A9A9A;}.s-rest .env-dot{fill:#FFF;}.s-rest .a7-lbl{fill:#FFF;}
+.s-queued .env-rect{stroke:#C2193A;}.s-queued .env-v{stroke:#E9415A;}.s-queued .env-dot{fill:#C2193A;}.s-queued .a7-lbl{fill:#C2193A;}
+.s-active .env-rect{stroke:#8A6D3B;}.s-active .env-v{stroke:#C4A865;}.s-active .env-dot{fill:#8A6D3B;}.s-active .a7-lbl{fill:transparent;}
+.s-done .env-rect{stroke:#497B58;}.s-done .env-v{stroke:#5D9C71;}.s-done .env-dot{fill:#497B58;}.s-done .a7-lbl{fill:#497B58;}
+.s-sleep .env-rect{stroke:#2B5C8A;}.s-sleep .env-v{stroke:#4A86C6;}.s-sleep .env-dot{fill:#2B5C8A;}.s-sleep .a7-lbl{fill:#2B5C8A;}
+.a7-lbl{transition:fill .6s;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
 .badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
 .badge-done{color:var(--maker);border-color:var(--maker-bg);}.badge-done .badge-dot{background:var(--maker);}
@@ -345,15 +342,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero">
-        <!-- A7 busta — colori done hardcoded per l'icona statica -->
+      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap" style="width:100%;height:100%">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible" font-family="Jost,sans-serif">
-          <path d="M18 24 L60 46 L102 24" fill="none" class="icon-accent" stroke="#5D9C71" stroke-width="5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="14" y="20" width="92" height="62" rx="11" fill="none" class="icon-main" stroke="#497B58" stroke-width="7"/>
-          <circle cx="60" cy="46" r="7" class="icon-main" fill="#497B58"/>
-          <text x="60" y="74" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1" class="icon-main" fill="#497B58">A7</text>
+          <path id="c-v" class="env-v" d="M18 24 L60 46 L102 24" fill="none" stroke="#4A86C6" stroke-width="5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect class="env-rect" x="14" y="20" width="92" height="62" rx="11" fill="none" stroke="#2B5C8A" stroke-width="7"/>
+          <circle id="c-dot" class="env-dot" cx="60" cy="46" r="7" fill="#2B5C8A"/>
+          <text class="a7-lbl" x="60" y="74" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1" fill="#2B5C8A">A7</text>
         </svg>
-      </div>
+      </div></div>
       <div class="hero-text">
         <div class="agent-id-lbl">Agente 7</div>
         <div class="agent-name-big">Mail Generator</div>
@@ -783,6 +779,28 @@ const STATE_CFG={
   rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
 };
+/* ══ ANIMAZIONE ICONA — esatta dalla home ══ */
+var a7RAF=null;
+function stopA7Anim(){
+  if(a7RAF){cancelAnimationFrame(a7RAF);a7RAF=null;
+    const v=document.getElementById('c-v');if(v)v.setAttribute('d','M18 24 L60 46 L102 24');
+    const dot=document.getElementById('c-dot');if(dot)dot.setAttribute('cy','46');
+  }
+}
+function startA7Anim(){
+  if(a7RAF){cancelAnimationFrame(a7RAF);a7RAF=null;}
+  const v=document.getElementById('c-v'),dot=document.getElementById('c-dot');
+  if(!v||!dot) return;
+  const ease=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+  const T_O=900,T_H1=400,T_C=800,T_H2=500,CYCLE=T_O+T_H1+T_C+T_H2;
+  const setEnv=p=>{const cy=46+p*(20-46);dot.setAttribute('cy',cy.toFixed(2));v.setAttribute('d','M18 24 L60 '+cy.toFixed(2)+' L102 24');};
+  let st=null;
+  const tick=ts=>{if(!a7RAF) return;if(st===null)st=ts;const t=ts-st;
+    if(t<T_O)setEnv(ease(t/T_O));else if(t<T_O+T_H1)setEnv(1);else if(t<T_O+T_H1+T_C)setEnv(1-ease((t-T_O-T_H1)/T_C));else if(t<CYCLE)setEnv(0);else st=null;
+    a7RAF=requestAnimationFrame(tick);};
+  setEnv(0); a7RAF=requestAnimationFrame(tick);
+}
+
 async function loadA7(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.a7&select=agent_id,stato,updated_at');
@@ -797,8 +815,11 @@ async function loadA7(){
     const st=mapState(a7), c=STATE_CFG[st];
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
+    const logoWrap=document.getElementById('logoWrap');
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    if(logoWrap) logoWrap.className='s-'+st;
+    if(st==='active') startA7Anim(); else stopA7Anim();
     document.getElementById('lastRunLbl').textContent=a7&&a7.updated_at?('Ultimo aggiornamento: '+timeAgo(a7.updated_at)):'Nessun dato ancora';
 
     const body=document.getElementById('a7StateBody');
