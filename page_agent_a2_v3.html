@@ -135,6 +135,18 @@ body{
 .logo-done{ background:var(--maker-bg) !important; }
 .logo-sleep{ background:var(--athlete-bg) !important; }
 .logo-rest{ background:var(--carta) !important; }
+
+/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
+.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
+.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
+.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
+.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
+.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
+.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
+.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
+.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
+.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
+.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
 .hero-text{ flex:1; min-width:0; }
 .agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
 .agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
@@ -361,11 +373,11 @@ body{
       <div class="logo-box-hero" id="logoBoxHero">
         <!-- A2 bar chart — colori done hardcoded -->
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible">
-          <rect x="14" y="76" width="18" height="28" rx="4" fill="#497B58"/>
-          <rect x="40" y="56" width="18" height="48" rx="4" fill="#5D9C71"/>
-          <rect x="66" y="34" width="18" height="70" rx="4" fill="#497B58"/>
-          <rect x="92" y="20" width="18" height="84" rx="4" fill="none" stroke="#5D9C71" stroke-width="5" stroke-dasharray="9 7"/>
-          <text x="11" y="34" font-family="Jost,sans-serif" font-weight="800" font-size="30" fill="#497B58" letter-spacing="-1">A2</text>
+          <rect x="14" y="76" width="18" height="28" rx="4" class="icon-main" fill="#497B58"/>
+          <rect x="40" y="56" width="18" height="48" rx="4" class="icon-accent" fill="#5D9C71"/>
+          <rect x="66" y="34" width="18" height="70" rx="4" class="icon-main" fill="#497B58"/>
+          <rect x="92" y="20" width="18" height="84" rx="4" class="icon-accent" fill="none" stroke="#5D9C71" stroke-width="5" stroke-dasharray="9 7"/>
+          <text x="11" y="34" font-family="Jost,sans-serif" font-weight="800" font-size="30" class="icon-main" fill="#497B58" letter-spacing="-1">A2</text>
         </svg>
       </div>
       <div class="hero-text">

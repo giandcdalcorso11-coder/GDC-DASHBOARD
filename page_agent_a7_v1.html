@@ -179,6 +179,64 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .setup-info{flex:1;}
 .setup-title{font-size:.73rem;font-weight:700;}
 .setup-meta{font-size:.62rem;color:var(--grigio);margin-top:1px;}
+
+/* ══ STATO DINAMICO ══ */
+.logo-box-hero{transition:background .4s ease;}
+.logo-active{background:var(--sabbia-bg) !important;}
+.logo-queued{background:var(--life-bg) !important;}
+.logo-done{background:var(--maker-bg) !important;}
+.logo-sleep{background:var(--athlete-bg) !important;}
+.logo-rest{background:var(--carta) !important;}
+
+/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
+.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
+.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
+.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
+.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
+.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
+.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
+.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
+.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
+.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
+.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
+.badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
+.badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
+.badge-done{color:var(--maker);border-color:var(--maker-bg);}.badge-done .badge-dot{background:var(--maker);}
+.badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
+
+/* ══ PUSH ══ */
+.push-row{width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:flex-end;}
+.push-btn{display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);background:none;border:none;cursor:pointer;padding:0;transition:color .15s;}
+.push-btn:hover{color:var(--nero);}
+
+/* ══ ATTIVITÀ ══ */
+.run-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.run-row:last-child{border-bottom:none;}
+.run-icon{font-size:1rem;flex-shrink:0;width:22px;text-align:center;}
+.run-info{flex:1;min-width:0;}
+.run-title{font-size:.72rem;font-weight:700;}
+.run-meta{font-size:.62rem;color:var(--grigio);margin-top:1px;}
+.run-badge{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:999px;flex-shrink:0;}
+.rb-ok{background:var(--maker-bg);color:var(--maker);}
+.empty-note{font-size:.72rem;color:var(--grigio);line-height:1.5;padding:6px 0;}
+
+/* ══ A7 PICKER (stesso pattern della home) ══ */
+.a7-picker-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;padding-bottom:24px;}
+.a7-picker-overlay.open{display:flex;}
+.a7-picker{background:var(--bianco);border:1.5px solid var(--border);border-radius:20px;width:calc(100% - 32px);max-width:480px;overflow:hidden;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.a7-picker-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.a7-picker-title{font-weight:800;font-size:.88rem;}
+.a7-picker-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--grigio);padding:4px 8px;border-radius:6px;}
+.a7-picker-close:hover{background:var(--border);}
+.a7-picker-body{padding:14px 16px;}
+.a7-picker-label{font-size:.72rem;font-weight:700;color:var(--grigio);margin-bottom:8px;}
+.a7-select{width:100%;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:600;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;cursor:pointer;margin-bottom:14px;}
+.a7-select:focus{border-color:var(--sabbia);}
+.a7-launch-btn{width:100%;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:800;padding:12px;border:none;border-radius:12px;background:var(--sabbia);color:#fff;cursor:pointer;transition:opacity .15s;}
+.a7-launch-btn:hover{opacity:.88;}
+.a7-launch-btn:disabled{background:#ccc;cursor:not-allowed;opacity:.6;}
+.a7-status-msg{font-size:.72rem;color:var(--grigio);text-align:center;margin-top:10px;min-height:18px;}
+@media(prefers-color-scheme:dark){.a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}
 </style>
 </head>
 <body>
@@ -199,12 +257,34 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="cal-days" id="calDays"></div>
     </div>
     <div class="cal-events-panel" id="calEventsPanel">
-      <span style="color:var(--grigio);font-size:.72rem;">A7 è automatico — nessun evento fisso</span>
+      <span style="color:var(--grigio);font-size:.72rem;">A7 è on-demand — nessun evento fisso</span>
     </div>
   </div>
 </div>
 
-<!-- ══ HEADER ══ -->
+<!-- ══ A7 PICKER ══ -->
+<div class="a7-picker-overlay" id="a7PickerOverlay" onclick="closeA7PickerIfBg(event)">
+  <div class="a7-picker">
+    <div class="a7-picker-head">
+      <span class="a7-picker-title">Crea Bozza Gmail — A7</span>
+      <button class="a7-picker-close" onclick="closeA7Picker()">&#10005;</button>
+    </div>
+    <div class="a7-picker-body">
+      <div class="a7-picker-label">Seleziona azienda</div>
+      <select class="a7-select" id="a7CompanySelect">
+        <option value="">Caricamento aziende...</option>
+      </select>
+      <button class="a7-launch-btn" id="a7LaunchBtn" onclick="launchA7()" disabled>&#9654; Lancia A7</button>
+      <div class="a7-status-msg" id="a7StatusMsg"></div>
+      <div id="a7TokenSection" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+        <div class="a7-picker-label" style="margin-bottom:6px;">&#9888; GitHub Token mancante</div>
+        <input type="password" id="a7TokenInput" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;font-family:'Jost',sans-serif;font-size:.78rem;padding:9px 12px;border:1.5px solid var(--sabbia);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;margin-bottom:8px;">
+        <button onclick="saveGhToken()" style="width:100%;font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;padding:9px;border:none;border-radius:10px;background:var(--sabbia-bg);color:var(--sabbia-dk);cursor:pointer;">Salva token</button>
+        <div style="font-size:.62rem;color:var(--grigio);margin-top:6px;line-height:1.5;">Token GitHub con scope <strong>workflow</strong>. Salvato solo nel tuo browser.</div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="header">
   <div class="header-top">
     <div class="gdc-logo-wrap">
@@ -223,9 +303,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
   <div class="system-bar">
     <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label">Tutti i sistemi attivi</div>
-    <div class="sys-meta">Notifiche push attive</div>
+    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
+    <div class="sys-meta" id="sysMeta"></div>
   </div>
+</div>
+<div class="push-row">
+  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <span id="pushBtnLabel">Attiva notifiche</span>
+  </button>
 </div>
 
 <!-- ══ PAGE CONTENT ══ -->
@@ -250,34 +336,34 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     Pipeline
   </a>
 
-  <!-- WARNING BANNER -->
+  <!-- INFO BANNER -->
   <div class="warn-banner" style="background:rgba(74,124,89,.08);border-color:rgba(74,124,89,.3);">
     <span class="warn-icon">&#9989;</span>
-    <div class="warn-text"><strong style="color:var(--maker);">OAuth 2.0 configurato</strong> — Gmail API attiva con refresh token permanente. App in stato Production. Cron disabilitato in attesa del test end-to-end.</div>
+    <div class="warn-text"><strong style="color:var(--maker);">Operativo in produzione</strong> — nessun cron: A7 si lancia sempre on-demand per una singola azienda (da qui o dalla home), sia da GitHub Actions che dal bottone "Lancia A7". Gmail OAuth in stato Production, scope gmail.compose (crea solo bozze, non invia mai).</div>
   </div>
 
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero">
-        <!-- A7 busta — done state hardcoded -->
+      <div class="logo-box-hero" id="logoBoxHero">
+        <!-- A7 busta — colori done hardcoded per l'icona statica -->
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible" font-family="Jost,sans-serif">
-          <path d="M18 24 L60 46 L102 24" fill="none" stroke="#5D9C71" stroke-width="5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="14" y="20" width="92" height="62" rx="11" fill="none" stroke="#497B58" stroke-width="7"/>
-          <circle cx="60" cy="46" r="7" fill="#497B58"/>
-          <text x="60" y="74" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1" fill="#497B58">A7</text>
+          <path d="M18 24 L60 46 L102 24" fill="none" class="icon-accent" stroke="#5D9C71" stroke-width="5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="14" y="20" width="92" height="62" rx="11" fill="none" class="icon-main" stroke="#497B58" stroke-width="7"/>
+          <circle cx="60" cy="46" r="7" class="icon-main" fill="#497B58"/>
+          <text x="60" y="74" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1" class="icon-main" fill="#497B58">A7</text>
         </svg>
       </div>
       <div class="hero-text">
         <div class="agent-id-lbl">Agente 7</div>
         <div class="agent-name-big">Mail Generator</div>
-        <div class="agent-desc-big">Genera automaticamente bozze Gmail da file TXT e PDF in Drive. Polling ogni 15 minuti via GitHub Actions.</div>
+        <div class="agent-desc-big">Crea bozze Gmail (mai invii diretti) per una singola azienda alla volta, on-demand: legge TXT + PDF media kit da Drive Aziende.</div>
       </div>
     </div>
     <div class="hero-meta">
-      <span class="status-badge badge-ok"><span class="badge-dot"></span>Pronto</span>
+      <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
       <span class="type-tag type-tag-auto">&#9889; GitHub Actions</span>
-      <span class="type-tag">&#9729;&#65039; Claude.ai</span>
+      <span class="last-run-lbl" id="lastRunLbl">On-demand — nessun cron</span>
     </div>
   </div>
 
@@ -287,6 +373,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <button class="tab-btn" onclick="switchTab('stato',this)">Stato</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
     <button class="tab-btn" onclick="switchTab('setup',this)">Setup</button>
+    <button class="tab-btn" onclick="switchTab('run',this)">Attività</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
@@ -294,38 +381,38 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div id="panel-azioni" class="panel active">
     <div class="action-row">
 
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank">
+      <a class="lg-btn" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
         <span class="btn-icon">&#128193;</span>
         <div class="btn-text">
-          <div class="btn-title">Cartella Drive A6 — watch folder</div>
-          <div class="btn-sub">A7 monitora questa cartella per TXT + PDF</div>
+          <div class="btn-title">Cartella Drive A6 — Aziende</div>
+          <div class="btn-sub">Qui A7 cerca TXT + PDF per l'azienda scelta</div>
         </div>
         <span class="btn-arr">&#8594;</span>
       </a>
 
-      <a class="lg-btn lg-cta" href="https://github.com" target="_blank">
-        <span class="btn-icon">&#9889;</span>
-        <div class="btn-text">
-          <div class="btn-title">GitHub Actions — dispatch manuale</div>
-          <div class="btn-sub">Avvia A7 manualmente dal repo GDC-DASHBOARD</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-disabled">
+      <button class="lg-btn lg-cta" onclick="openA7Picker()">
         <span class="btn-icon">&#128140;</span>
         <div class="btn-text">
-          <div class="btn-title">Genera bozza Gmail</div>
-          <div class="btn-sub">Webapp button — in sviluppo (richiede Gmail Delegation)</div>
+          <div class="btn-title">Crea Bozza Gmail</div>
+          <div class="btn-sub">Scegli l'azienda e lancia A7 direttamente da qui</div>
         </div>
         <span class="btn-arr">&#8594;</span>
       </button>
+
+      <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions/workflows/a7_gmail_drafter.yml" target="_blank">
+        <span class="btn-icon">&#9889;</span>
+        <div class="btn-text">
+          <div class="btn-title">GitHub Actions — dispatch manuale</div>
+          <div class="btn-sub">Alternativa: avvia A7 direttamente dal repo</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </a>
 
       <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank">
         <span class="btn-icon">&#128140;</span>
         <div class="btn-text">
           <div class="btn-title">Apri bozze Gmail</div>
-          <div class="btn-sub">Verifica le bozze generate da A7</div>
+          <div class="btn-sub">Verifica, rifinisci e invia manualmente le bozze generate</div>
         </div>
         <span class="btn-arr">&#8594;</span>
       </a>
@@ -340,13 +427,13 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-body">
         <div class="status-row">
           <span class="sr-dot sr-ok"></span>
-          <div class="sr-info"><div class="sr-label">GitHub Actions — workflow</div><div class="sr-meta">Workflow presente nel repo GDC-DASHBOARD</div></div>
+          <div class="sr-info"><div class="sr-label">GitHub Actions — workflow</div><div class="sr-meta">a7_gmail_drafter.yml — solo workflow_dispatch, nessun cron</div></div>
           <span class="sr-badge srb-ok">OK</span>
         </div>
         <div class="status-row">
-          <span class="sr-dot sr-warn"></span>
-          <div class="sr-info"><div class="sr-label">Cron automatico (ogni 15 min)</div><div class="sr-meta">Disabilitato — solo dispatch manuale attivo</div></div>
-          <span class="sr-badge srb-warn">Disabilitato</span>
+          <span class="sr-dot sr-ok"></span>
+          <div class="sr-info"><div class="sr-label">Trigger</div><div class="sr-meta">On-demand, un'azienda alla volta — da qui, dalla home o da GitHub</div></div>
+          <span class="sr-badge srb-ok">Manuale</span>
         </div>
         <div class="status-row">
           <span class="sr-dot sr-ok"></span>
@@ -355,20 +442,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </div>
         <div class="status-row">
           <span class="sr-dot sr-ok"></span>
-          <div class="sr-info"><div class="sr-label">Drive watch folder (A6)</div><div class="sr-meta">Cartella monitorata accessibile</div></div>
-          <span class="sr-badge srb-ok">OK</span>
-        </div>
-        <div class="status-row">
-          <span class="sr-dot sr-ok"></span>
-          <div class="sr-info"><div class="sr-label">Claude.ai — prompt A7 configurato</div><div class="sr-meta">Agente di generazione bozza pronto</div></div>
+          <div class="sr-info"><div class="sr-label">Drive Aziende (A6)</div><div class="sr-meta">Cartella per azienda risolta via drive_folder_azienda, fallback per nome</div></div>
           <span class="sr-badge srb-ok">OK</span>
         </div>
       </div>
     </div>
     <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128337; Ultima attività</span></div>
-      <div class="sc-body">
-        <div style="font-size:.72rem;color:var(--grigio);text-align:center;padding:12px 0;">Nessuna run registrata — in attesa del test end-to-end</div>
+      <div class="sc-head"><span class="sc-label">&#128994; Stato agente (in tempo reale)</span></div>
+      <div class="sc-body" id="a7StateBody">
+        <div class="empty-note">Caricamento...</div>
       </div>
     </div>
   </div>
@@ -380,23 +462,35 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-body">
         <div class="work-step">
           <div class="work-num">1</div>
-          <div><div class="work-desc">A6.2 completa la mail di una azienda</div><div class="work-sub">Salva il testo finale come TXT nella cartella Drive A6</div></div>
+          <div><div class="work-desc">A6.2 completa mail per un'azienda</div><div class="work-sub">Salva mail_[azienda]_data.txt + PDF media kit nella cartella Aziende</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">2</div>
-          <div><div class="work-desc">A7 detecta il file TXT in Drive</div><div class="work-sub">Polling ogni 15 min via GitHub Actions cron — o dispatch manuale</div></div>
+          <div><div class="work-desc">Tu lanci A7 per QUELL'azienda</div><div class="work-sub">Da questa pagina, dalla home o da GitHub Actions — nessun cron, nessun polling</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">3</div>
-          <div><div class="work-desc">Legge TXT + PDF media kit allegato</div><div class="work-sub">Costruisce la bozza Gmail con corpo mail, oggetto e allegato</div></div>
+          <div><div class="work-desc">A7 trova la cartella azienda</div><div class="work-sub">Prima via drive_folder_azienda su Supabase, poi fallback per nome esatto</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">4</div>
-          <div><div class="work-desc">Crea la bozza Gmail via API</div><div class="work-sub">Draft salvato in Gmail — NON inviato automaticamente</div></div>
+          <div><div class="work-desc">Legge TUTTI i mail_*.txt trovati + PDF</div><div class="work-sub">Più TXT = più destinatari: una bozza per ciascuno, stesso o diverso PDF per header ATTACHMENT</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">5</div>
-          <div><div class="work-desc">Tu reviisoni e invii dalla bozza Gmail</div><div class="work-sub">Controllo finale umano prima dell'invio reale all'azienda</div></div>
+          <div><div class="work-desc">Crea le bozze Gmail via API</div><div class="work-sub">Salvate come draft — MAI inviate automaticamente (scope gmail.compose)</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">6</div>
+          <div><div class="work-desc">Rinomina i TXT processati con prefisso OK_</div><div class="work-sub">Un rilancio successivo non li rielabora né duplica le bozze</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">7</div>
+          <div><div class="work-desc">Aggiorna Supabase companies</div><div class="work-sub">a7_status, a7_draft_id, e pipeline: step_attuale → 6 (mai retrocede se già avanzato a mano)</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num">8</div>
+          <div><div class="work-desc">Tu revisioni e invii dalla bozza Gmail</div><div class="work-sub">Controllo finale umano prima dell'invio reale all'azienda</div></div>
         </div>
       </div>
     </div>
@@ -406,15 +500,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div style="background:var(--carta);border-radius:10px;padding:10px 12px;">
             <div style="font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--athlete);margin-bottom:7px;">&#9660; Input</div>
-            <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--athlete);margin-top:4px;"></span>TXT con testo mail (A6.2)</div>
-            <div style="display:flex;align-items:flex-start;gap:6px;font-size:.68px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--athlete);margin-top:4px;"></span>PDF media kit (A6.1)</div>
+            <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--athlete);margin-top:4px;"></span>mail_[azienda]_*.txt (A6.2, uno o più)</div>
+            <div style="display:flex;align-items:flex-start;gap:6px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--athlete);margin-top:4px;"></span>PDF media kit (A6.1)</div>
           </div>
           <div style="background:var(--carta);border-radius:10px;padding:10px 12px;">
             <div style="font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sabbia-dk);margin-bottom:7px;">&#9650; Output</div>
-            <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--sabbia);margin-top:4px;"></span>Bozza Gmail</div>
-            <div style="display:flex;align-items:flex-start;gap:6px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--sabbia);margin-top:4px;"></span>NON inviata — solo draft</div>
+            <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--sabbia);margin-top:4px;"></span>1 bozza Gmail per ogni TXT</div>
+            <div style="display:flex;align-items:flex-start;gap:6px;font-size:.68rem;"><span style="flex-shrink:0;width:5px;height:5px;border-radius:50%;background:var(--sabbia);margin-top:4px;"></span>NON inviate — solo draft</div>
           </div>
         </div>
+        <div style="margin-top:10px;font-size:.63rem;color:var(--grigio);line-height:1.5;">&#9888;&#65039; Limite noto: se manca il PDF o il TXT, A7 si ferma pulito senza scrivere nulla su Supabase (nessuna notifica di questo fallimento "soft") — segnalato in console GitHub Actions, non ancora in webapp.</div>
       </div>
     </div>
   </div>
@@ -434,29 +529,51 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </div>
         <div class="setup-step">
           <div class="setup-num sn-done">&#10003;</div>
-          <div class="setup-info"><div class="setup-title">Prompt A7 configurato su Claude.ai</div><div class="setup-meta">Agente di generazione bozze pronto</div></div>
-        </div>
-        <div class="setup-step">
-          <div class="setup-num sn-done">&#10003;</div>
           <div class="setup-info">
             <div class="setup-title">Gmail API — OAuth 2.0 configurato</div>
             <div class="setup-meta">Refresh token permanente generato. App in stato Production (non Testing). Scope gmail.compose attivo. Account: giandcdalcorso11@gmail.com</div>
           </div>
         </div>
         <div class="setup-step">
-          <div class="setup-num sn-todo">5</div>
+          <div class="setup-num sn-done">&#10003;</div>
+          <div class="setup-info"><div class="setup-title">Test end-to-end completato</div><div class="setup-meta">Test su "Barbuscia": bug di corrispondenza nome scoperto e corretto (ricerca ilike + guardia ambiguità). Confermato funzionante anche dal bottone "Lancia A7" della webapp.</div></div>
+        </div>
+        <div class="setup-step">
+          <div class="setup-num sn-done">&#10003;</div>
+          <div class="setup-info"><div class="setup-title">Webapp "Crea Bozza" — completato</div><div class="setup-meta">Selettore azienda + lancio diretto via GitHub Actions dispatch, qui e nella home</div></div>
+        </div>
+        <div class="setup-step">
+          <div class="setup-num sn-done">&#10003;</div>
+          <div class="setup-info"><div class="setup-title">Scrittura pipeline (step 6) su Supabase</div><div class="setup-meta">step_attuale, step_6_date, step_notes — non retrocede mai se già avanzato a mano</div></div>
+        </div>
+        <div class="setup-step">
+          <div class="setup-num sn-done">&#10003;</div>
+          <div class="setup-info"><div class="setup-title">Multi-TXT + rinomina OK_</div><div class="setup-meta">Più destinatari per la stessa azienda gestiti in un solo run, nessuna duplicazione bozze su rilancio</div></div>
+        </div>
+        <div class="setup-step">
+          <div class="setup-num sn-todo">&#9888;&#65039;</div>
           <div class="setup-info">
-            <div class="setup-title" style="color:var(--sabbia-dk);">&#9888;&#65039; Test end-to-end</div>
-            <div class="setup-meta">Creare TXT di prova in Drive A6 → verificare creazione bozza Gmail → verificare spostamento in processed/. Solo dopo: riabilitare cron nel YAML.</div>
+            <div class="setup-title" style="color:var(--sabbia-dk);">Pattern "Invia come" (alias)</div>
+            <div class="setup-meta">Rimandato esplicitamente da te — resta autenticazione diretta come giandcdalcorso11@gmail.com</div>
           </div>
         </div>
         <div class="setup-step">
-          <div class="setup-num sn-todo">6</div>
+          <div class="setup-num sn-todo">&#9888;&#65039;</div>
           <div class="setup-info">
-            <div class="setup-title" style="color:var(--sabbia-dk);">&#9888;&#65039; Webapp "Genera bozza" button</div>
-            <div class="setup-meta">Implementare il bottone nella dashboard che triggera A7 direttamente dalla webapp. In sviluppo.</div>
+            <div class="setup-title" style="color:var(--sabbia-dk);">Notifica su fallimento "soft"</div>
+            <div class="setup-meta">Se manca PDF/TXT, A7 si ferma pulito senza scrivere nulla — nessun avviso in webapp, solo log GitHub Actions. Lasciato per una sessione futura.</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ATTIVITÀ -->
+  <div id="panel-run" class="panel">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#8987; Attività recente (activity_log)</span></div>
+      <div class="sc-body" id="runList">
+        <div class="empty-note">Caricamento...</div>
       </div>
     </div>
   </div>
@@ -466,21 +583,22 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#9881; Configurazione agente</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9889; GitHub Actions + &#9729;&#65039; Claude.ai</span></div>
-        <div class="config-row"><span class="config-key">Cron</span><span class="config-val" style="color:var(--sabbia-dk);">ogni 15 min — <strong>DISABILITATO</strong></span></div>
-        <div class="config-row"><span class="config-key">Dispatch</span><span class="config-val" style="color:var(--maker);">Manuale — attivo</span></div>
-        <div class="config-row"><span class="config-key">Watch folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4</span></div>
+        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9889; GitHub Actions — script Python</span></div>
+        <div class="config-row"><span class="config-key">Trigger</span><span class="config-val" style="color:var(--maker);">Manuale — workflow_dispatch (company_name)</span></div>
+        <div class="config-row"><span class="config-key">Cron</span><span class="config-val">Nessuno — non è mai stato un polling</span></div>
+        <div class="config-row"><span class="config-key">Cartella aziende</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_</span></div>
+        <div class="config-row"><span class="config-key">Secret cartella</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">DRIVE_FOLDER_A6_AZIENDE</span></div>
         <div class="config-row"><span class="config-key">Service account</span><span class="config-val" style="font-family:monospace;font-size:.58rem;">gdc-scripts@gdc-ia-team-dashboard.iam.gserviceaccount.com</span></div>
         <div class="config-row"><span class="config-key">Gmail auth</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">OAuth 2.0 — refresh token permanente</span></div>
-        <div class="config-row"><span class="config-key">Gmail scope</span><span class="config-val" style="font-family:monospace;font-size:.6rem;color:var(--maker);">gmail.compose ✓</span></div>
+        <div class="config-row"><span class="config-key">Gmail scope</span><span class="config-val" style="font-family:monospace;font-size:.6rem;color:var(--maker);">gmail.compose ✓ (solo bozze)</span></div>
         <div class="config-row"><span class="config-key">Repo</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">GDC-DASHBOARD (GitHub)</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">TXT mail da A6.2 in Drive A6</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">Verificare</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">PDF media kit da A6.1 in Drive A6</span><span style="font-size:.62rem;color:var(--sabbia-dk);font-weight:700;">Verificare</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">TXT mail_*.txt da A6.2 in Drive Aziende</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">PDF media kit da A6.1 in Drive Aziende</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
         <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Gmail API — OAuth 2.0 + refresh token</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
         <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;font-size:.7rem;">Google Drive API — service account</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;">OK</span></div>
       </div>
@@ -537,7 +655,266 @@ function renderCal(){
     el.innerHTML=`<span class="day-num">${d}</span>`;
     grid.appendChild(el);
   }
-  document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">A7 è automatico — nessun evento fisso</span>';
+  document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">A7 è on-demand — nessun evento fisso</span>';
+}
+
+/* ══ SUPABASE — auth + fetch (stesso pattern condiviso delle altre pagine) ══ */
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+  let banner=document.getElementById('gdcSessionBanner');
+  if(!banner){ banner=document.createElement('div'); banner.id='gdcSessionBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent='Sessione scaduta — reindirizzamento al login...';
+  setTimeout(()=>{ window.location.href='page_login_v6.html'; },1600);
+}
+async function sbFetch(url,options){
+  options=options||{};
+  const headers=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+gdcToken()},options.headers||{});
+  const res=await fetch(url,Object.assign({},options,{headers:headers}));
+  if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html) ══ */
+const VAPID_PUBLIC_KEY='BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=atob(base64); const outputArray=new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;i++) outputArray[i]=rawData.charCodeAt(i);
+  return outputArray;
+}
+function guessDeviceLabel(){
+  const ua=navigator.userAgent||''; let device='Dispositivo';
+  if(/iPad/.test(ua)) device='iPad'; else if(/iPhone/.test(ua)) device='iPhone';
+  else if(/Android/.test(ua)) device='Android'; else if(/Macintosh/.test(ua)) device='Mac';
+  else if(/Windows/.test(ua)) device='PC Windows';
+  const d=new Date(); return device+' — '+d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+}
+async function getExistingPushSubscription(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return null;
+  const reg=await navigator.serviceWorker.getRegistration(); if(!reg) return null;
+  return await reg.pushManager.getSubscription();
+}
+async function updatePushButtonUI(){
+  const label=document.getElementById('pushBtnLabel'); if(!label) return;
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
+  const sub=await getExistingPushSubscription();
+  label.textContent=sub?'Notifiche attive':'Attiva notifiche';
+}
+let pushToggleInProgress=false;
+async function togglePushNotifications(){
+  if(pushToggleInProgress) return;
+  pushToggleInProgress=true;
+  const label=document.getElementById('pushBtnLabel');
+  const btn=document.getElementById('pushBtn');
+  if(btn) btn.disabled=true;
+  const prevLabel=label?label.textContent:'';
+  if(label) label.textContent='Attivazione in corso...';
+  try{
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
+      if(label) label.textContent=prevLabel; return;
+    }
+    const existing=await getExistingPushSubscription();
+    if(existing){
+      try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
+      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+    }
+    try{
+      const permission=await Notification.requestPermission();
+      if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
+      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+      const subJson=sub.toJSON();
+      await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+        body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
+      if(label) label.textContent='Notifiche attive';
+    }catch(e){
+      console.error('Errore attivazione notifiche:',e);
+      const realSub=await getExistingPushSubscription();
+      if(realSub){ if(label) label.textContent='Notifiche attive'; }
+      else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
+    }
+  } finally {
+    if(btn) btn.disabled=false;
+    pushToggleInProgress=false;
+  }
+}
+document.addEventListener('DOMContentLoaded',updatePushButtonUI);
+
+/* ══ DATI REALI — agent_states (a7) ══ */
+function timeAgo(iso){
+  if(!iso) return '';
+  const diff=Date.now()-new Date(iso).getTime();
+  const mins=Math.floor(diff/60000);
+  if(mins<1) return 'proprio ora';
+  if(mins<60) return mins+' min fa';
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return hrs+' or'+(hrs===1?'a':'e')+' fa';
+  const days=Math.floor(hrs/24);
+  return days+' giorn'+(days===1?'o':'i')+' fa';
+}
+function fmtDateTime(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+const THREE_DAYS=3*24*60*60*1000;
+function mapState(row){
+  if(!row) return 'sleep';
+  const st=row.stato||'';
+  const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='working') return 'active';
+  if(st==='ready'||st==='queued') return 'queued';
+  if(st==='done') return age<THREE_DAYS?'done':'sleep';
+  if(st==='riposo') return age<THREE_DAYS?'rest':'sleep';
+  return 'sleep'; // copre anche 'idle', lo stato di riposo proprio di A7
+}
+const STATE_CFG={
+  active:{badge:'badge-active',logo:'logo-active',lbl:'In corso'},
+  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda'},
+  done:{badge:'badge-done',logo:'logo-done',lbl:'Completato'},
+  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
+  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
+};
+async function loadA7(){
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.a7&select=agent_id,stato,updated_at');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    const a7=rows[0];
+
+    document.getElementById('sysLabel').textContent='Connesso a Supabase';
+    document.getElementById('sysLabel').style.color='var(--maker)';
+    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+
+    const st=mapState(a7), c=STATE_CFG[st];
+    const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
+    const logoBox=document.getElementById('logoBoxHero');
+    badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
+    if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    document.getElementById('lastRunLbl').textContent=a7&&a7.updated_at?('Ultimo aggiornamento: '+timeAgo(a7.updated_at)):'Nessun dato ancora';
+
+    const body=document.getElementById('a7StateBody');
+    body.innerHTML=
+      '<div class="config-row"><span class="config-key">Stato grezzo</span><span class="config-val">'+(a7?a7.stato:'—')+'</span></div>'+
+      '<div class="config-row"><span class="config-key">Ultimo aggiornamento</span><span class="config-val">'+(a7?fmtDateTime(a7.updated_at):'—')+'</span></div>';
+  }catch(e){
+    console.error('Errore caricamento A7:',e);
+    document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
+    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('statusBadgeLbl').textContent='Non disponibile';
+    const body=document.getElementById('a7StateBody');
+    if(body) body.innerHTML='<div class="empty-note">Impossibile caricare lo stato al momento.</div>';
+  }
+}
+
+async function loadActivity(){
+  const box=document.getElementById('runList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/activity_log?agent_id=eq.A7&order=created_at.desc&limit=15');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){
+      box.innerHTML='<div class="empty-note">Nessuna attività ancora registrata per A7.</div>';
+      return;
+    }
+    box.innerHTML=rows.map(r=>
+      '<div class="run-row"><span class="run-icon">&#9989;</span><div class="run-info">'+
+      '<div class="run-title">'+(r.titolo||'')+'</div>'+
+      '<div class="run-meta">'+fmtDateTime(r.created_at)+(r.descrizione?(' · '+r.descrizione):'')+'</div>'+
+      '</div><span class="run-badge rb-ok">A7</span></div>'
+    ).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare activity_log al momento.</div>';
+  }
+}
+
+/* ══ A7 PICKER — crea bozza per azienda (stesso pattern della home) ══ */
+const GH_OWNER='giandcdalcorso11-coder';
+const GH_REPO='GDC-DASHBOARD';
+const GH_WORKFLOW='a7_gmail_drafter.yml';
+
+async function loadA7Companies(){
+  const sel=document.getElementById('a7CompanySelect');
+  try{
+    const r=await sbFetch(SUPA_URL+'/rest/v1/companies?select=nome,a7_status&order=nome.asc');
+    const data=await r.json();
+    if(!data||!data.length){ sel.innerHTML='<option value="">Nessuna azienda in pipeline</option>'; return; }
+    sel.innerHTML='<option value="">— Seleziona azienda —</option>'+
+      data.map(c=>{
+        const badge=c.a7_status==='drafted'?' ✓':c.a7_status==='error'?' ⚠':'';
+        return `<option value="${c.nome}">${c.nome}${badge}</option>`;
+      }).join('');
+    sel.onchange=()=>{
+      document.getElementById('a7LaunchBtn').disabled=!sel.value;
+      document.getElementById('a7StatusMsg').textContent='';
+    };
+  }catch(e){
+    sel.innerHTML='<option value="">Errore caricamento aziende</option>';
+  }
+}
+function openA7Picker(){
+  document.getElementById('a7PickerOverlay').classList.add('open');
+  document.getElementById('a7StatusMsg').textContent='';
+  document.getElementById('a7LaunchBtn').disabled=true;
+  const ghToken=localStorage.getItem('gdc_gh_token')||'';
+  document.getElementById('a7TokenSection').style.display=ghToken?'none':'block';
+  loadA7Companies();
+}
+function closeA7Picker(){ document.getElementById('a7PickerOverlay').classList.remove('open'); }
+function closeA7PickerIfBg(e){ if(e.target===document.getElementById('a7PickerOverlay')) closeA7Picker(); }
+function saveGhToken(){
+  const val=document.getElementById('a7TokenInput').value.trim();
+  if(!val) return;
+  localStorage.setItem('gdc_gh_token',val);
+  document.getElementById('a7TokenSection').style.display='none';
+  document.getElementById('a7StatusMsg').textContent='✓ Token salvato.';
+  document.getElementById('a7TokenInput').value='';
+}
+async function launchA7(){
+  const sel=document.getElementById('a7CompanySelect');
+  const company=sel.value;
+  if(!company) return;
+  const btn=document.getElementById('a7LaunchBtn');
+  const statusEl=document.getElementById('a7StatusMsg');
+  btn.disabled=true; btn.textContent='Avvio in corso...'; statusEl.textContent='';
+  const ghToken=localStorage.getItem('gdc_gh_token')||'';
+  if(!ghToken){
+    document.getElementById('a7TokenSection').style.display='block';
+    statusEl.textContent=''; btn.disabled=false; btn.textContent='▶ Lancia A7'; return;
+  }
+  try{
+    const r=await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/${GH_WORKFLOW}/dispatches`,
+      {method:'POST',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+       body:JSON.stringify({ref:'main',inputs:{company_name:company}})}
+    );
+    if(r.status===204){
+      statusEl.textContent='✓ A7 avviato per '+company+'. Controlla GitHub Actions.';
+      btn.textContent='✓ Avviato';
+    } else {
+      const err=await r.text();
+      statusEl.textContent='Errore GitHub: '+r.status+' — '+err.substring(0,80);
+      btn.disabled=false; btn.textContent='▶ Lancia A7';
+    }
+  }catch(e){
+    statusEl.textContent='Errore di rete: '+e.message;
+    btn.disabled=false; btn.textContent='▶ Lancia A7';
+  }
+}
+
+if(!gdcToken()){
+  window.location.href='page_login_v6.html';
+} else {
+  loadA7();
+  loadActivity();
 }
 </script>
 </body>

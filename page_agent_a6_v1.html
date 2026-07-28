@@ -196,10 +196,22 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* ══ STATO DINAMICO (badge + logo) ══ */
 .logo-box-hero{transition:background .4s ease;}
 .logo-active{background:var(--sabbia-bg) !important;}
-.logo-queued{background:var(--athlete-bg) !important;}
+.logo-queued{background:var(--life-bg) !important;}
 .logo-done{background:var(--maker-bg) !important;}
 .logo-sleep{background:var(--athlete-bg) !important;}
 .logo-rest{background:var(--carta) !important;}
+
+/* ══ ICONA — ricolorata in base allo stato (allineata alla home) ══ */
+.logo-rest .icon-main{fill:#9A9A9A !important;stroke:#9A9A9A !important;}
+.logo-rest .icon-accent{fill:#FFF !important;stroke:#FFF !important;}
+.logo-queued .icon-main{fill:#C2193A !important;stroke:#C2193A !important;}
+.logo-queued .icon-accent{fill:#E9415A !important;stroke:#E9415A !important;}
+.logo-active .icon-main{fill:#8A6D3B !important;stroke:#8A6D3B !important;}
+.logo-active .icon-accent{fill:#C4A865 !important;stroke:#C4A865 !important;}
+.logo-done .icon-main{fill:#497B58 !important;stroke:#497B58 !important;}
+.logo-done .icon-accent{fill:#5D9C71 !important;stroke:#5D9C71 !important;}
+.logo-sleep .icon-main{fill:#2B5C8A !important;stroke:#2B5C8A !important;}
+.logo-sleep .icon-accent{fill:#4A86C6 !important;stroke:#4A86C6 !important;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
 .badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
 .badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
@@ -324,12 +336,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="logo-box-hero" id="logoBoxHero">
         <!-- A6 documento con fold — colori done hardcoded per l'icona statica -->
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible" font-family="Jost,sans-serif">
-          <path d="M21 9 H85 L104 28 V107 H21 Z" fill="none" stroke="#497B58" stroke-width="6.5" stroke-linejoin="round"/>
-          <path d="M85 9 V28 H104" fill="none" stroke="#497B58" stroke-width="6.5" stroke-linejoin="round"/>
-          <text x="34" y="40" font-weight="800" font-size="27" letter-spacing="-1.5" fill="#497B58">A6</text>
-          <rect x="34" y="52" width="52" height="6" rx="3" fill="#5D9C71"/>
-          <rect x="34" y="70" width="52" height="6" rx="3" fill="#5D9C71"/>
-          <rect x="34" y="88" width="52" height="6" rx="3" fill="#5D9C71"/>
+          <path d="M21 9 H85 L104 28 V107 H21 Z" fill="none" class="icon-main" stroke="#497B58" stroke-width="6.5" stroke-linejoin="round"/>
+          <path d="M85 9 V28 H104" fill="none" class="icon-main" stroke="#497B58" stroke-width="6.5" stroke-linejoin="round"/>
+          <text x="34" y="40" font-weight="800" font-size="27" letter-spacing="-1.5" class="icon-main" fill="#497B58">A6</text>
+          <rect x="34" y="52" width="52" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
+          <rect x="34" y="70" width="52" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
+          <rect x="34" y="88" width="52" height="6" rx="3" class="icon-accent" fill="#5D9C71"/>
         </svg>
       </div>
       <div class="hero-text">
@@ -626,7 +638,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <div class="config-row"><span class="config-key">Output</span><span class="config-val">media_kit_[azienda].pptx → Google Slides</span></div>
         <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_</span></div>
         <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019ddb94-e44c-73e3-97bf-926763d56159</span></div>
-        <div class="config-row"><span class="config-key">⚠️ Nota</span><span class="config-val" style="color:var(--sabbia-dk);">Prompt A6.1 ha disallineamento noto su formato input/output — revisione in backlog</span></div>
       </div>
     </div>
     <div class="section-card">
