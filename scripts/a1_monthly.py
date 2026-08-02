@@ -253,14 +253,23 @@ def supabase_get_mbs_flag():
 
 
 def supabase_set_mbs_flag(missing, mese=None):
-    """Scrive/aggiorna il flag mbs_missing per l'agente A1 (usato anche da a1_mbs_watcher.py)."""
+    """Scrive/aggiorna il flag mbs_missing per l'agente A1 (usato anche da a1_mbs_watcher.py).
+
+    NOTA (2/8/2026): prima usava upsert(on_conflict="agent_id"), ma "stato"
+    e' NOT NULL senza default sulla tabella agent_states — Postgres valuta
+    il vincolo NOT NULL sulla riga candidata PRIMA di applicare ON CONFLICT
+    DO UPDATE, quindi qualsiasi upsert che non includa "stato" falliva
+    sempre con errore 23502, anche quando la riga 'a1' esisteva gia' (causa
+    del crash di A1 Monthly del 2/8/2026). La riga 'a1' e' sempre presente
+    in agent_states, quindi un update() mirato e' corretto e piu' sicuro:
+    non tocca "stato" e non puo' violare il vincolo NOT NULL.
+    """
     supabase = create_client(SUPA_URL, SUPA_KEY)
-    supabase.table("agent_states").upsert({
-        "agent_id": "a1",
+    supabase.table("agent_states").update({
         "mbs_missing": missing,
         "mbs_missing_mese": mese,
         "updated_at": datetime.utcnow().isoformat()
-    }, on_conflict="agent_id").execute()
+    }).eq("agent_id", "a1").execute()
 
 
 MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS" — struttura flat
@@ -284,8 +293,20 @@ def find_mbs_csv(drive_service):
     (es. Jun-01-2026_Jun-30-2026_3909528329355109.csv) — non serve
     rinominare il file caricato. Se piu' file corrispondono allo stesso
     mese, usa quello caricato piu' di recente (vedi step 20, 3.7).
+
+    NOTA (2/8/2026): prima la query Drive filtrava anche per
+    mimeType='text/csv'. I file caricati da iPhone non vengono sempre
+    taggati da Drive con quel mimeType esatto (es. 'text/comma-separated-
+    values', 'application/vnd.ms-excel', 'application/octet-stream' a
+    seconda del percorso di upload), quindi il filtro escludeva a monte
+    file altrimenti corretti — causa del CSV di Luglio 2026 non rilevato
+    nonostante fosse nella cartella giusta col nome giusto. Ora il filtro
+    Drive prende TUTTI i file non-cartella nella cartella, e il tipo si
+    verifica sull'estensione del nome (piu' affidabile per questo caso
+    d'uso, dato che il nome file e' comunque gia' vincolato al suffisso
+    fisso MBS_FILE_SUFFIX subito sotto).
     """
-    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType='text/csv'"
+    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
     results = drive_service.files().list(
         q=query, fields="files(id, name, createdTime)"
     ).execute()
@@ -293,6 +314,8 @@ def find_mbs_csv(drive_service):
     candidates = []
     for f in results.get("files", []):
         name = f["name"]
+        if not name.lower().endswith(".csv"):
+            continue
         if not name.endswith(MBS_FILE_SUFFIX):
             continue
         m = re.match(r"^([A-Za-z]{3})-(\d{2})-(\d{4})_", name)
