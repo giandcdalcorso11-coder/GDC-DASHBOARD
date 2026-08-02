@@ -308,8 +308,18 @@ def find_mbs_csv(drive_service):
     """
     query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
     results = drive_service.files().list(
-        q=query, fields="files(id, name, createdTime)"
+        q=query, fields="files(id, name, createdTime, mimeType)",
+        supportsAllDrives=True, includeItemsFromAllDrives=True
     ).execute()
+
+    # DEBUG TEMPORANEO (2/8/2026) — da rimuovere una volta risolto il mistero
+    # del CSV di Luglio non rilevato nonostante permessi/nome corretti.
+    # Stampa TUTTO quello che il service account vede nella cartella, senza
+    # ancora applicare nessun filtro, cosi' vediamo nei log di GitHub Actions
+    # esattamente cosa risponde l'API.
+    print(f"    [DEBUG MBS] file grezzi visti nella cartella ({len(results.get('files', []))}):")
+    for f in results.get("files", []):
+        print(f"    [DEBUG MBS]   name={f['name']!r} mimeType={f.get('mimeType')!r} id={f['id']}")
 
     candidates = []
     for f in results.get("files", []):
@@ -467,7 +477,10 @@ def get_drive_service():
 def drive_find_file(service, name, folder_id):
     """Trova un file per nome in una cartella Drive. Ritorna (id, mimeType) o (None, None)."""
     query = f"name='{name}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
+    results = service.files().list(
+        q=query, fields="files(id, name, mimeType)",
+        supportsAllDrives=True, includeItemsFromAllDrives=True
+    ).execute()
     files = results.get("files", [])
     if files:
         return files[0]["id"], files[0]["mimeType"]
@@ -475,7 +488,10 @@ def drive_find_file(service, name, folder_id):
     name_no_ext = name.rsplit(".", 1)[0] if "." in name else None
     if name_no_ext and name_no_ext != name:
         query2 = f"name='{name_no_ext}' and '{folder_id}' in parents and trashed=false"
-        results2 = service.files().list(q=query2, fields="files(id, name, mimeType)").execute()
+        results2 = service.files().list(
+            q=query2, fields="files(id, name, mimeType)",
+            supportsAllDrives=True, includeItemsFromAllDrives=True
+        ).execute()
         files2 = results2.get("files", [])
         if files2:
             return files2[0]["id"], files2[0]["mimeType"]
