@@ -273,7 +273,9 @@ def supabase_set_mbs_flag(missing, mese=None):
 
 
 MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS" — struttura flat
-MBS_FILE_SUFFIX = "_3909528329355109.csv"              # File Content/Post — unico che importiamo
+# NB (2/8/2026): rimosso MBS_FILE_SUFFIX hardcoded (ID Meta non stabile,
+# vedi nota in find_mbs_csv). Il riconoscimento ora usa solo il pattern
+# delle date nel nome + estensione .csv.
 
 # Mappa "Tipo di post" (etichette MBS) -> valori media_type stile API,
 # cosi' compile_sheet_post puo' riusare media_type_to_gdc() senza differenze
@@ -289,22 +291,20 @@ MBS_TIPO_MAP = {
 def find_mbs_csv(drive_service):
     """
     Cerca in 'Archivio docs MBS' il CSV Content/Post del mese target.
-    Riconosce il file dal suffisso fisso nel nome + dalle date embedded
-    (es. Jun-01-2026_Jun-30-2026_3909528329355109.csv) — non serve
+    Riconosce il file dalle date embedded nel nome
+    (es. Jul-01-2026_Jul-31-2026_977239325349001.csv) — non serve
     rinominare il file caricato. Se piu' file corrispondono allo stesso
     mese, usa quello caricato piu' di recente (vedi step 20, 3.7).
 
-    NOTA (2/8/2026): prima la query Drive filtrava anche per
-    mimeType='text/csv'. I file caricati da iPhone non vengono sempre
-    taggati da Drive con quel mimeType esatto (es. 'text/comma-separated-
-    values', 'application/vnd.ms-excel', 'application/octet-stream' a
-    seconda del percorso di upload), quindi il filtro escludeva a monte
-    file altrimenti corretti — causa del CSV di Luglio 2026 non rilevato
-    nonostante fosse nella cartella giusta col nome giusto. Ora il filtro
-    Drive prende TUTTI i file non-cartella nella cartella, e il tipo si
-    verifica sull'estensione del nome (piu' affidabile per questo caso
-    d'uso, dato che il nome file e' comunque gia' vincolato al suffisso
-    fisso MBS_FILE_SUFFIX subito sotto).
+    NOTA (2/8/2026): fino a giugno il nome finiva sempre con lo stesso
+    ID Meta Business Suite (account/pagina), hardcoded come
+    MBS_FILE_SUFFIX. A luglio quell'ID e' cambiato lato Meta
+    (3909528329355109 -> 977239325349001) e lo script ha smesso di
+    trovare il file — causa del mancato rilevamento del CSV di Luglio
+    2026, nonostante cartella/permessi/mimeType tutti corretti (vedi
+    debug del 2/8/2026). L'ID Meta non e' garantito stabile nel tempo,
+    quindi ora il riconoscimento si basa solo sul pattern delle date
+    nel nome + estensione .csv, senza piu' dipendere da quel numero.
     """
     query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
     results = drive_service.files().list(
@@ -312,21 +312,10 @@ def find_mbs_csv(drive_service):
         supportsAllDrives=True, includeItemsFromAllDrives=True
     ).execute()
 
-    # DEBUG TEMPORANEO (2/8/2026) — da rimuovere una volta risolto il mistero
-    # del CSV di Luglio non rilevato nonostante permessi/nome corretti.
-    # Stampa TUTTO quello che il service account vede nella cartella, senza
-    # ancora applicare nessun filtro, cosi' vediamo nei log di GitHub Actions
-    # esattamente cosa risponde l'API.
-    print(f"    [DEBUG MBS] file grezzi visti nella cartella ({len(results.get('files', []))}):")
-    for f in results.get("files", []):
-        print(f"    [DEBUG MBS]   name={f['name']!r} mimeType={f.get('mimeType')!r} id={f['id']}")
-
     candidates = []
     for f in results.get("files", []):
         name = f["name"]
         if not name.lower().endswith(".csv"):
-            continue
-        if not name.endswith(MBS_FILE_SUFFIX):
             continue
         m = re.match(r"^([A-Za-z]{3})-(\d{2})-(\d{4})_", name)
         if not m:

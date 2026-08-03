@@ -46,7 +46,10 @@ GH_REPO  = "GDC-DASHBOARD"
 # Stessi valori usati in a1_monthly.py (find_mbs_csv) — tenerli allineati
 # se in futuro cambia la cartella o il suffisso del file MBS
 MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS"
-MBS_FILE_SUFFIX = "_3909528329355109.csv"
+# NB (2/8/2026): rimosso MBS_FILE_SUFFIX hardcoded — l'ID Meta account/pagina
+# nel nome file non e' stabile nel tempo (cambiato tra giugno e luglio 2026,
+# causa mancato rilevamento). Riconoscimento ora solo su pattern data + .csv,
+# stessa logica di find_mbs_csv() in a1_monthly.py.
 
 MESE_IT = [
     "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -79,15 +82,16 @@ def find_mbs_csv(drive_service, mese_num, anno):
     parametrizzata su mese/anno invece che sul mese target implicito
     (qui il "mese target" arriva dal flag Supabase, non da oggi-1mese).
     """
-    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType='text/csv'"
+    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
     results = drive_service.files().list(
-        q=query, fields="files(id, name, createdTime)"
+        q=query, fields="files(id, name, createdTime)",
+        supportsAllDrives=True, includeItemsFromAllDrives=True
     ).execute()
 
     candidates = []
     for f in results.get("files", []):
         name = f["name"]
-        if not name.endswith(MBS_FILE_SUFFIX):
+        if not name.lower().endswith(".csv"):
             continue
         m = re.match(r"^([A-Za-z]{3})-(\d{2})-(\d{4})_", name)
         if not m:
