@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 6 2 * *'
   workflow_dispatch:
+    inputs:
+      bpt_target_month:
+        description: 'Override mese calendario BPT (formato YYYY-MM, es. 2026-08) — lascia vuoto per il default automatico (mese corrente + 1)'
+        required: false
+        type: string
 
 jobs:
 
@@ -93,6 +98,7 @@ jobs:
           DRIVE_FOLDER_A3:    ${{ secrets.DRIVE_FOLDER_A3 }}
           SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          BPT_TARGET_MONTH:   ${{ inputs.bpt_target_month }}
         run: python scripts/bpt_calendar.py
 
       - name: Notifica fallimento BPT
