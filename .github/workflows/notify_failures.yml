@@ -12,7 +12,8 @@ name: Notify Failures
 on:
   workflow_run:
     workflows:
-      - "A1 Monthly — Instagram Analytics + BPT Calendar"
+      - "A1 Monthly — Instagram Analytics"
+      - "BPT Calendar"
       - "A1 Stories Daily — Archivio Stories"
       - "A1 MBS Watcher"
       - "IG Token Refresh"
