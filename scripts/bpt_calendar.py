@@ -40,9 +40,18 @@ DRIVE_FOLDER_A3 = os.environ.get("DRIVE_FOLDER_A3", "")  # opzionale
 SUPA_URL        = os.environ["SUPABASE_URL"]
 SUPA_KEY        = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 
-# Mese da pianificare = mese corrente + 1
+# Mese da pianificare = mese corrente + 1, salvo override manuale
+# (2/8/2026: aggiunto override — la riga calendario_bpt su Supabase e'
+# unica e viene sempre sovrascritta dal prossimo run automatico; se A3
+# viene lanciato in ritardo rispetto al ciclo normale, il mese giusto
+# puo' risultare gia' sovrascritto da quello successivo. BPT_TARGET_MONTH
+# (formato YYYY-MM) permette di rigenerare un mese specifico su richiesta.)
 today           = date.today()
-target          = today + relativedelta(months=1)
+override        = os.environ.get("BPT_TARGET_MONTH", "").strip()
+if override:
+    target = date.fromisoformat(override + "-01")
+else:
+    target = today + relativedelta(months=1)
 MESE_NUM        = target.month
 ANNO            = target.year
 MESI_IT         = ["", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
