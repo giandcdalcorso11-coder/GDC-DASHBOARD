@@ -531,6 +531,10 @@ const MESI_S=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov',
 const nm=(o=0)=>{const d=new Date();d.setMonth(d.getMonth()+o);return MESI[d.getMonth()];};
 const an=(o=0)=>{const d=new Date();d.setMonth(d.getMonth()+o);return d.getFullYear();};
 const M0=nm(),A0=an(),Mm1=nm(-1),Am1=an(-1),Mm2=nm(-2),Am2=an(-2);
+// Mese/anno NUMERICI del mese che A3 sta pianificando (stesso offset 0 di M0/A0)
+// — servono per interrogare bpt_calendars sul mese esatto, invece di leggere
+// "l'ultimo calendario disponibile" (bug Step 32/33).
+const M0_NUM=new Date().getMonth()+1, A0_NUM=an();
 const now=new Date();
 const DD=String(now.getDate()).padStart(2,'0'),MM=String(now.getMonth()+1).padStart(2,'0'),YY=now.getFullYear();
 document.getElementById('dateChipText').textContent=DD+'/'+MM+'/'+YY;
@@ -552,7 +556,10 @@ const MSGS={
 };
 
 function buildMsgA3(calBpt){
-  const cal=calBpt||'[calendario BPT non disponibile — esegui bpt_calendar.py]';
+  // calBpt=null/undefined -> nessuna riga trovata per QUESTO mese in bpt_calendars
+  // (non più "ultimo calendario disponibile" di qualunque mese, per evitare
+  // di mostrare in silenzio il dato del mese sbagliato — vedi Step 32/33)
+  const cal=(calBpt!=null&&calBpt!=='')?calBpt:('[calendario BPT non ancora generato per '+M0+' '+A0+' — esegui bpt_calendar.py con BPT_TARGET_MONTH oppure aggiungi qui gli impegni a mano]');
   MSGS.A3="Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nCALENDARIO IMPEGNI:\n"+cal+"\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0;
 }
 
@@ -849,13 +856,21 @@ function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]
 
 async function loadStates(){
   try{
-    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt');
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
-    // Costruisce MSGS.A3 con calendario BPT reale
-    const bptRow=byId['bpt_calendar'];
-    buildMsgA3(bptRow?bptRow.calendario_bpt:null);
+    // Costruisce MSGS.A3 con calendario BPT del mese ESATTO che A3 sta
+    // pianificando (M0_NUM/A0_NUM) — query dedicata su bpt_calendars,
+    // non più "l'ultimo calendario disponibile" (bug Step 32/33).
+    try{
+      const bptRes=await sbFetch(SUPA_URL+'/rest/v1/bpt_calendars?select=testo&mese_num=eq.'+M0_NUM+'&anno=eq.'+A0_NUM+'&limit=1');
+      const bptRows=bptRes.ok?await bptRes.json():[];
+      buildMsgA3(bptRows[0]?bptRows[0].testo:null);
+    }catch(eBpt){
+      console.error('Errore caricamento bpt_calendars:',eBpt);
+      buildMsgA3(null);
+    }
     ['a1','a2','a3','a4','a7'].forEach(id=>{
       const row=byId[id];
       const st=mapState(row);

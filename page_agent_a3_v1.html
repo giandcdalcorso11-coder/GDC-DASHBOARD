@@ -612,6 +612,8 @@ const MM=String(now.getMonth()+1).padStart(2,'0');
 const YY=now.getFullYear();
 const M0=MESI[now.getMonth()];
 const A0=YY;
+// Numerici, per interrogare bpt_calendars sul mese esatto (stesso mese di M0/A0)
+const M0_NUM=now.getMonth()+1, A0_NUM=YY;
 
 const mm1d=new Date(now.getFullYear(),now.getMonth()-1,1);
 const Mm1=MESI[mm1d.getMonth()]; const Am1=mm1d.getFullYear();
@@ -863,12 +865,23 @@ const STATE_CFG={
 };
 async function loadA3(){
   try{
-    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a2,a3,bpt_calendar)&select=agent_id,stato,updated_at,mese,calendario_bpt,n_tornei');
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a2,a3)&select=agent_id,stato,updated_at,mese');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const a2=rows.find(r=>r.agent_id==='a2');
     const a3=rows.find(r=>r.agent_id==='a3');
-    const bpt=rows.find(r=>r.agent_id==='bpt_calendar');
+
+    // Calendario BPT del mese ESATTO che A3 sta pianificando (M0_NUM/A0_NUM),
+    // non più "l'ultimo calendario disponibile" (bug Step 32/33, gemello di
+    // quello già corretto in page_home_v25.html).
+    let bpt=null;
+    try{
+      const bptRes=await sbFetch(SUPA_URL+'/rest/v1/bpt_calendars?select=testo,n_tornei,updated_at&mese_num=eq.'+M0_NUM+'&anno=eq.'+A0_NUM+'&limit=1');
+      const bptRows=bptRes.ok?await bptRes.json():[];
+      bpt=bptRows[0]||null;
+    }catch(eBpt){
+      console.error('Errore caricamento bpt_calendars:',eBpt);
+    }
 
     document.getElementById('sysLabel').textContent='Connesso a Supabase';
     document.getElementById('sysLabel').style.color='var(--maker)';
@@ -898,14 +911,14 @@ async function loadA3(){
       dotA2.style.background='var(--sabbia)'; lblA2.style.color='var(--sabbia-dk)'; lblA2.textContent='Non risulta completato di recente';
     }
 
-    // Dipendenza calendario BPT — reale, e messaggio precompilato aggiornato
+    // Dipendenza calendario BPT — reale, per il mese M0/A0 esatto, e messaggio precompilato aggiornato
     const dotBpt=document.getElementById('depBptDot'), lblBpt=document.getElementById('depBptLbl');
-    if(bpt&&bpt.calendario_bpt){
+    if(bpt&&bpt.testo){
       dotBpt.style.background='var(--maker)'; lblBpt.style.color='var(--maker)'; lblBpt.textContent='OK — inserito nel messaggio';
-      document.getElementById('msgText').value=buildMsg(bpt.calendario_bpt);
+      document.getElementById('msgText').value=buildMsg(bpt.testo);
     } else {
-      dotBpt.style.background='var(--sabbia)'; lblBpt.style.color='var(--sabbia-dk)'; lblBpt.textContent='Nessun calendario trovato';
-      document.getElementById('msgText').value=buildMsg('[nessun calendario BPT trovato su Supabase — aggiungi qui i tuoi impegni a mano]');
+      dotBpt.style.background='var(--sabbia)'; lblBpt.style.color='var(--sabbia-dk)'; lblBpt.textContent='Nessun calendario trovato per '+M0+' '+A0;
+      document.getElementById('msgText').value=buildMsg('[nessun calendario BPT trovato in bpt_calendars per '+M0+' '+A0+' — esegui bpt_calendar.py con BPT_TARGET_MONTH oppure aggiungi qui gli impegni a mano]');
     }
   }catch(e){
     console.error('Errore caricamento A3:',e);
