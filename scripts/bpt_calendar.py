@@ -10,7 +10,11 @@ Flusso:
    → Se trovato → calcola partenza/rientro/riposo
 3. Genera testo calendario formattato per A3
 4. Salva bpt_[mese]_[anno].txt su Drive (cartella A3)
-5. Aggiorna Supabase → calendario_bpt in agent_states
+5. Aggiorna Supabase:
+   - bpt_calendars (upsert per mese_num+anno) → fonte usata da A3/home
+     per costruire il messaggio del mese effettivamente pianificato
+   - agent_states.bpt_calendar → solo per i pannelli informativi
+     "ultimo ciclo generato" (es. pagina A1), non usare per il messaggio A3
 
 Secrets GitHub richiesti:
   GOOGLE_CREDENTIALS  — JSON service account Google (base64)
@@ -670,8 +674,32 @@ def drive_save_txt(service, content: str, filename: str, folder_id: str):
 # ─── SUPABASE ────────────────────────────────────────────────────────────────────
 
 def supabase_update_bpt(testo: str, n_tornei: int):
-    """Salva il testo calendario BPT in Supabase per la webapp."""
+    """
+    Salva il testo calendario BPT in Supabase.
+
+    Scrive in DUE posti, con scopi distinti:
+    1. bpt_calendars — riga STORICIZZATA per mese+anno (upsert su chiave
+       mese_num+anno). E' la fonte usata da page_home_v25.html e
+       page_agent_a3_v1.html per costruire il messaggio di A3: interrogano
+       esplicitamente il mese che stanno pianificando, quindi non c'e' più
+       un'unica riga che puo' essere sovrascritta dal ciclo successivo.
+    2. agent_states (riga agent_id='bpt_calendar') — mantenuta SOLO per i
+       pannelli informativi "ultimo ciclo generato" (es. page_agent_a1_v1.html),
+       che mostrano volutamente l'ultimo dato disponibile, non un mese
+       specifico. Non usare mai questa riga per costruire il messaggio A3.
+    """
     supabase = create_client(SUPA_URL, SUPA_KEY)
+
+    supabase.table("bpt_calendars").upsert({
+        "mese_num":   MESE_NUM,
+        "anno":       ANNO,
+        "mese_label": MESE_LABEL,
+        "testo":      testo,
+        "n_tornei":   n_tornei,
+        "updated_at": date.today().isoformat(),
+    }, on_conflict="mese_num,anno").execute()
+    print(f"    Supabase: bpt_calendars[{MESE_NUM:02d}/{ANNO}] → salvato ({n_tornei} tornei)")
+
     supabase.table("agent_states").upsert({
         "agent_id":        "bpt_calendar",
         "stato":           "done",
@@ -680,7 +708,7 @@ def supabase_update_bpt(testo: str, n_tornei: int):
         "calendario_bpt":  testo,
         "n_tornei":        n_tornei,
     }, on_conflict="agent_id").execute()
-    print(f"    Supabase: bpt_calendar → done ({n_tornei} tornei)")
+    print(f"    Supabase: agent_states.bpt_calendar → done (solo per pannelli 'ultimo ciclo')")
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────────
