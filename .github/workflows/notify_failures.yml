@@ -18,6 +18,7 @@ on:
       - "A1 MBS Watcher"
       - "IG Token Refresh"
       - "A7 — Gmail Drafter"
+      - "A7 Follow-up"
       - "Pipeline Watcher"
       - "Pipeline Notify"
     types:

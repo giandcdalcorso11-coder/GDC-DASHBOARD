@@ -1,0 +1,50 @@
+name: A7 Follow-up
+
+# Cron giornaliero indipendente. Nessun 'concurrency group' condiviso con
+# "A7 — Gmail Drafter" (che resta solo workflow_dispatch): i due workflow
+# non si mettono mai in coda l'uno dietro l'altro, né condividono trigger.
+#
+# workflow_dispatch aggiunto solo per poter testare manualmente senza
+# aspettare l'orario del cron (es. con FOLLOWUP_CADENZA_GIORNI=0 per un
+# test one-off).
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 08:00 UTC ogni giorno
+  workflow_dispatch:
+    inputs:
+      cadenza_giorni:
+        description: 'Override cadenza in giorni (vuoto = usa il default 5)'
+        required: false
+        type: string
+
+jobs:
+  run-a7-followup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements_a7_followup.txt
+
+      - name: Run A7 Follow-up
+        env:
+          DRIVE_FOLDER_A6_AZIENDE: ${{ secrets.DRIVE_FOLDER_A6_AZIENDE }}
+          GMAIL_CLIENT_ID:         ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET:     ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN:     ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          GOOGLE_CREDENTIALS:      ${{ secrets.GOOGLE_CREDENTIALS }}
+          SUPABASE_URL:            ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY:    ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY:       ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:             ${{ secrets.VAPID_EMAIL }}
+          FOLLOWUP_CADENZA_GIORNI: ${{ github.event.inputs.cadenza_giorni }}
+        run: python scripts/a7_followup.py
