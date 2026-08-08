@@ -111,6 +111,8 @@ body{
   cursor:pointer; font-family:'Jost',sans-serif; transition:all .15s;
 }
 .fu-toggle-btn:hover{ border-color:var(--maker); color:var(--maker); }
+.fu-toggle-btn.fu-stopped-active{ border-color:#B8B8B8; background:#EAEAEA; color:#6B6B6B; }
+.fu-toggle-btn.fu-stopped-active:hover{ border-color:var(--life); color:var(--life); }
 .fu-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
 
 /* ── SECTION WRAPPER ── */
@@ -420,6 +422,7 @@ body{
         14gg fa
       </div>
       <button class="fu-toggle-btn" id="fuToggleBtn" onclick="toggleAzioneRichiesta()"></button>
+      <button class="fu-toggle-btn" id="fuStopBtn" onclick="toggleFollowUpStop()"></button>
     </div>
   </div>
 
@@ -921,6 +924,7 @@ function renderFollowUp(co) {
   const step = co.step_attuale || 1;
   const fuEl = document.querySelector('.fu-badge');
   const toggleBtn = document.getElementById('fuToggleBtn');
+  const stopBtn = document.getElementById('fuStopBtn');
   let fu = null;
 
   if (step === 8 && co.step_8_date) {
@@ -933,7 +937,14 @@ function renderFollowUp(co) {
     }
   } else if (step === 7 && co.step_7_date) {
     const days = Math.floor((Date.now() - new Date(co.step_7_date).getTime()) / 86400000);
-    if (days > 0) fu = { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    const fuCount = co.followup_count || 0;
+    const fuMax = co.followup_max || 3;
+    const fuSuffix = ' · FU ' + fuCount + '/' + fuMax;
+    if (co.followup_stopped) {
+      fu = { type: 'stopped', days, suffix: fuSuffix };
+    } else if (days > 0) {
+      fu = { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days, suffix: fuSuffix };
+    }
   }
 
   if (fuEl) {
@@ -942,13 +953,16 @@ function renderFollowUp(co) {
       if (fu.type === 'urgent') {
         fuEl.className = 'fu-badge fu-urgent';
         fuEl.innerHTML = '⚡ Tocca a te · ' + fu.days + 'gg';
+      } else if (fu.type === 'stopped') {
+        fuEl.className = 'fu-badge fu-silence';
+        fuEl.innerHTML = 'Follow-up fermati' + (fu.suffix || '');
       } else if (fu.type === 'silence') {
         fuEl.className = 'fu-badge fu-silence';
-        fuEl.innerHTML = 'Silenzio ' + fu.days + 'gg';
+        fuEl.innerHTML = 'Silenzio ' + fu.days + 'gg' + (fu.suffix || '');
       } else {
         const cls = fu.days <= 7 ? 'fu-7' : 'fu-14';
         fuEl.className = 'fu-badge ' + cls;
-        fuEl.innerHTML = '<div class="fu-dot"></div>+' + fu.days + 'gg';
+        fuEl.innerHTML = '<div class="fu-dot"></div>+' + fu.days + 'gg' + (fu.suffix || '');
       }
     } else {
       fuEl.style.display = 'none';
@@ -967,9 +981,36 @@ function renderFollowUp(co) {
       toggleBtn.style.display = 'none';
     }
   }
+
+  if (stopBtn) {
+    if (step === 7) {
+      const stopped = !!co.followup_stopped;
+      stopBtn.style.display = 'inline-flex';
+      stopBtn.classList.toggle('fu-stopped-active', stopped);
+      stopBtn.textContent = stopped ? 'Riattiva follow-up' : 'Ferma follow-up';
+      stopBtn.title = stopped
+        ? 'I follow-up automatici sono fermi. Clicca per riattivarli.'
+        : 'Ferma la sequenza di follow-up automatici per questa azienda (es. dopo troppi tentativi senza risposta).';
+    } else {
+      stopBtn.style.display = 'none';
+    }
+  }
 }
 
-/* ── Toggle manuale: serve una mia risposta a questa azienda (step 8) ── */
+/* ── Toggle manuale: ferma/riattiva i follow-up automatici (step 7) ── */
+async function toggleFollowUpStop() {
+  if (!currentCompanyId || !currentCompanyData) return;
+  const newValue = !currentCompanyData.followup_stopped;
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ followup_stopped: newValue })
+    });
+    currentCompanyData.followup_stopped = newValue;
+    renderFollowUp(currentCompanyData);
+  } catch(e) { console.error('toggleFollowUpStop error:', e); }
+}
 async function toggleAzioneRichiesta() {
   if (!currentCompanyId || !currentCompanyData) return;
   const current = currentCompanyData.step8_azione_richiesta !== false;
