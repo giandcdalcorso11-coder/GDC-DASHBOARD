@@ -157,6 +157,30 @@ body{
 .pip-note{ font-size:.68rem; color:var(--grigio); line-height:1.35; flex:1; min-width:0; }
 .pip-note.empty{ opacity:.5; font-style:italic; }
 .pip-note-row{ display:flex; align-items:flex-start; gap:6px; margin-top:3px; }
+/* ── Canali multicanale (LinkedIn/Instagram) — sotto-passi dello step 7 ── */
+.chan-wrap{ margin:8px 0 4px; padding-left:2px; }
+.chan-row{ display:flex; gap:10px; align-items:flex-start; cursor:pointer; border-radius:8px; padding:5px 4px; transition:background .15s; }
+.chan-row:hover{ background:var(--carta); }
+.chan-rail{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:20px; position:relative; }
+.chan-rail::before{ content:''; position:absolute; left:-8px; top:-9px; width:8px; height:19px; border-left:2px solid var(--bordo); border-bottom:2px solid var(--bordo); border-radius:0 0 0 8px; }
+.chan-dot{ width:18px; height:18px; border-radius:50%; border:2px solid var(--bordo); background:var(--carta); display:flex; align-items:center; justify-content:center; font-size:.55rem; font-weight:800; color:#AAA; flex-shrink:0; }
+.chan-dot.linkedin.attesa   { background:var(--ath-bg);  border-color:var(--athlete); color:var(--athlete); }
+.chan-dot.linkedin.tocca    { background:var(--athlete); border-color:#1E4676; color:#fff; box-shadow:0 0 0 3px var(--ath-bg); }
+.chan-dot.linkedin.gestito  { background:var(--ath-bg);  border-color:var(--bordo); color:var(--athlete); opacity:.55; }
+.chan-dot.instagram.attesa  { background:var(--life-bg); border-color:var(--life);    color:var(--life); }
+.chan-dot.instagram.tocca   { background:var(--life);    border-color:#8E1440; color:#fff; box-shadow:0 0 0 3px var(--life-bg); }
+.chan-dot.instagram.gestito { background:var(--life-bg); border-color:var(--bordo); color:var(--life); opacity:.55; }
+.chan-content{ flex:1; min-width:0; padding-top:1px; }
+.chan-top-row{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.chan-name{ font-size:.72rem; font-weight:700; color:var(--nero); }
+.chan-badge{ font-size:.6rem; font-weight:700; padding:1px 7px; border-radius:999px; white-space:nowrap; }
+.chan-badge.none{ color:#AAA; font-weight:600; font-style:italic; }
+.chan-badge.attesa{ background:var(--sab-bg); color:#8A6D3B; }
+.chan-badge.tocca{ background:var(--sabbia); color:var(--nero); }
+.chan-badge.gestito{ background:var(--bordo); color:var(--grigio); }
+.chan-note{ font-size:.64rem; color:var(--grigio); line-height:1.35; margin-top:2px; }
+.chan-note.empty{ opacity:.5; font-style:italic; }
+
 .pip-note-edit{
   flex-shrink:0; border:none; background:none; cursor:pointer;
   font-size:.68rem; color:var(--grigio); opacity:.5; padding:0 2px; line-height:1.35;
@@ -338,6 +362,11 @@ body{
 }
 .popup-textarea:focus{ border-color:var(--maker); }
 .popup-actions{ display:flex; gap:8px; }
+.chan-state-picker{ display:flex; gap:6px; margin-bottom:12px; }
+.chan-state-opt{ flex:1; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; padding:8px 4px; border-radius:9px; border:1.5px solid var(--bordo); background:var(--carta); color:var(--grigio); cursor:pointer; transition:border-color .15s,background .15s,color .15s; }
+.chan-state-opt.sel[data-state="in_attesa"]{ background:var(--ath-bg); border-color:var(--athlete); color:var(--athlete); }
+.chan-state-opt.sel[data-state="tocca_a_te"]{ background:var(--sabbia); border-color:#9A7835; color:var(--nero); }
+.chan-state-opt.sel[data-state="gestito"]{ background:var(--bordo); border-color:var(--grigio); color:var(--nero); }
 .popup-skip{
   flex:1; padding:10px; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:600;
   background:transparent; border:1.5px solid var(--bordo); color:var(--grigio); border-radius:10px; cursor:pointer;
@@ -544,6 +573,29 @@ body{
               <div class="pip-note empty" id="sn7">Nessuna nota</div>
               <button class="pip-note-edit" onclick="openNoteEditor(7, event)" title="Modifica nota">&#9998;</button>
             </div>
+            <!-- Sotto-passi: contatto multicanale, indipendente dalla mail — vedi renderChannels() -->
+            <div class="chan-wrap">
+              <div class="chan-row" onclick="openChannelEditor('linkedin', event)" title="Contatto LinkedIn">
+                <div class="chan-rail"><div class="chan-dot linkedin" id="chdot-linkedin">in</div></div>
+                <div class="chan-content">
+                  <div class="chan-top-row">
+                    <span class="chan-name">LinkedIn</span>
+                    <span class="chan-badge none" id="chbadge-linkedin">Non contattato</span>
+                  </div>
+                  <div class="chan-note empty" id="channote-linkedin">Nessuna nota</div>
+                </div>
+              </div>
+              <div class="chan-row" onclick="openChannelEditor('instagram', event)" title="Contatto Instagram">
+                <div class="chan-rail"><div class="chan-dot instagram" id="chdot-instagram">IG</div></div>
+                <div class="chan-content">
+                  <div class="chan-top-row">
+                    <span class="chan-name">Instagram</span>
+                    <span class="chan-badge none" id="chbadge-instagram">Non contattato</span>
+                  </div>
+                  <div class="chan-note empty" id="channote-instagram">Nessuna nota</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="pip-row" onclick="setStep(8)" title="Risposta ricevuta">
@@ -715,6 +767,24 @@ body{
   </div>
 </div>
 
+<!-- POPUP MODIFICA CANALE (LinkedIn/Instagram) -->
+<div class="popup-overlay" id="channelPopup">
+  <div class="popup-card">
+    <div class="popup-title">Contatto <span id="chanPopupLabel"></span></div>
+    <div class="popup-sub" id="chanPopupSub">Ultimo contatto: —</div>
+    <div class="chan-state-picker" id="chanStatePicker">
+      <button type="button" class="chan-state-opt" data-state="in_attesa" onclick="selectChannelState('in_attesa')">In attesa</button>
+      <button type="button" class="chan-state-opt" data-state="tocca_a_te" onclick="selectChannelState('tocca_a_te')">Tocca a te</button>
+      <button type="button" class="chan-state-opt" data-state="gestito" onclick="selectChannelState('gestito')">Gestito</button>
+    </div>
+    <textarea class="popup-textarea" id="chanEditText" placeholder="Nota sul contatto (cosa hai scritto, quando ha risposto...)"></textarea>
+    <div class="popup-actions">
+      <button class="popup-skip"    onclick="closeChannelPopup(false)">Annulla</button>
+      <button class="popup-confirm" onclick="closeChannelPopup(true)">Salva</button>
+    </div>
+  </div>
+</div>
+
 <!-- POPUP MODIFICA NOTA STEP -->
 <div class="popup-overlay" id="notePopup">
   <div class="popup-card">
@@ -818,6 +888,9 @@ function populatePage(co) {
 
   // Follow-up badge + toggle "serve risposta" (vedi renderFollowUp)
   renderFollowUp(co);
+
+  // Sotto-passi canale — LinkedIn/Instagram, indipendenti dallo step mail (vedi renderChannels)
+  renderChannels(co);
 
   // Pipeline step dots + data/nota per step (step_N_date + step_notes JSONB, scritti dagli agenti o modificati a mano — vedi openNoteEditor/saveStepNote)
   for (let i = 1; i <= 13; i++) {
@@ -1145,6 +1218,109 @@ async function saveStepNote(stepIndex, text){
       dateEl.textContent = new Date(nowIso).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' });
     }
   } catch(e) { console.error('saveStepNote error:', e); }
+}
+
+/* ── Sotto-passi canale (LinkedIn/Instagram) — sotto-insiemi indipendenti dello step 7 ──
+   Stessa filosofia degli step: 3 stati (in_attesa/tocca_a_te/gestito), data sempre now()
+   all'ultimo salvataggio (no COALESCE), nota nel campo step_notes condiviso con chiave
+   "linkedin"/"instagram" invece del numero step. Nessuna automazione di invio — è solo
+   traccia manuale di ciò che Gianluca ha già fatto a mano su questi canali. */
+const CHAN_LABELS = { linkedin: 'LinkedIn', instagram: 'Instagram' };
+const CHAN_STATE_LABELS = { in_attesa: 'In attesa', tocca_a_te: 'Tocca a te', gestito: 'Gestito' };
+
+function renderChannels(co){
+  ['linkedin', 'instagram'].forEach(function(canale){
+    const stato = co[canale + '_stato'] || null;
+    const dateRaw = co[canale + '_contattato_date'] || null;
+    const note = (co.step_notes && co.step_notes[canale]) || '';
+
+    const dot = document.getElementById('chdot-' + canale);
+    const badge = document.getElementById('chbadge-' + canale);
+    const noteEl = document.getElementById('channote-' + canale);
+
+    if (dot) dot.className = 'chan-dot ' + canale + (stato ? ' ' + (stato === 'in_attesa' ? 'attesa' : stato === 'tocca_a_te' ? 'tocca' : 'gestito') : '');
+
+    if (badge) {
+      if (!stato || !dateRaw) {
+        badge.className = 'chan-badge none';
+        badge.textContent = 'Non contattato';
+      } else {
+        const days = Math.floor((Date.now() - new Date(dateRaw).getTime()) / 86400000);
+        const cls = stato === 'in_attesa' ? 'attesa' : stato === 'tocca_a_te' ? 'tocca' : 'gestito';
+        const label = CHAN_STATE_LABELS[stato] || stato;
+        badge.className = 'chan-badge ' + cls;
+        badge.textContent = stato === 'gestito' ? label : label + ' · ' + days + 'gg';
+      }
+    }
+
+    if (noteEl) {
+      if (note) { noteEl.textContent = note; noteEl.classList.remove('empty'); }
+      else { noteEl.textContent = 'Nessuna nota'; noteEl.classList.add('empty'); }
+    }
+  });
+}
+
+let _editingChannel = null;
+let _channelPendingState = null;
+
+function openChannelEditor(canale, event){
+  if (event) event.stopPropagation(); // non deve attivare setStep(7) sulla riga sopra
+  if (!currentCompanyId) return;
+  _editingChannel = canale;
+  const co = currentCompanyData || {};
+  const existingStato = co[canale + '_stato'] || 'in_attesa';
+  const dateRaw = co[canale + '_contattato_date'];
+
+  document.getElementById('chanPopupLabel').textContent = CHAN_LABELS[canale] || canale;
+  document.getElementById('chanPopupSub').textContent = dateRaw
+    ? 'Ultimo contatto: ' + new Date(dateRaw).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' })
+    : 'Non ancora contattato';
+  document.getElementById('chanEditText').value = (co.step_notes && co.step_notes[canale]) || '';
+
+  selectChannelState(existingStato);
+  document.getElementById('channelPopup').classList.add('open');
+}
+
+function selectChannelState(state){
+  _channelPendingState = state;
+  document.querySelectorAll('#chanStatePicker .chan-state-opt').forEach(function(btn){
+    btn.classList.toggle('sel', btn.dataset.state === state);
+  });
+}
+
+function closeChannelPopup(save){
+  const text = document.getElementById('chanEditText').value.trim();
+  document.getElementById('channelPopup').classList.remove('open');
+  if (save && _editingChannel) saveChannelNote(_editingChannel, text, _channelPendingState || 'in_attesa');
+  _editingChannel = null;
+  _channelPendingState = null;
+}
+
+document.getElementById('channelPopup').addEventListener('click', function(e){
+  if (e.target === this) closeChannelPopup(false);
+});
+
+async function saveChannelNote(canale, text, state){
+  if (!currentCompanyId) return;
+  const notes = Object.assign({}, (currentCompanyData && currentCompanyData.step_notes) || {});
+  if (text) notes[canale] = text; else delete notes[canale];
+  const nowIso = new Date().toISOString();
+  const body = { step_notes: notes };
+  body[canale + '_stato'] = state;
+  body[canale + '_contattato_date'] = nowIso;
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    if (currentCompanyData) {
+      currentCompanyData.step_notes = notes;
+      currentCompanyData[canale + '_stato'] = state;
+      currentCompanyData[canale + '_contattato_date'] = nowIso;
+    }
+    renderChannels(currentCompanyData || {});
+  } catch(e) { console.error('saveChannelNote error:', e); }
 }
 
 function execAction(action, note){

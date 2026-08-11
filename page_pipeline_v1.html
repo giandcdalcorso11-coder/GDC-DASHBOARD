@@ -110,6 +110,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .step-badge.refused .step-num{color:var(--life);}
 .step-badge.hot .step-num{color:var(--sabbia-dk);}
 
+/* Puntini canale (LinkedIn/Instagram) — sotto-passi dello step 7, vedi chanDotsHtml() */
+.chan-dots{display:flex;align-items:center;gap:4px;margin-top:1px;}
+.chan-mini{width:8px;height:8px;border-radius:50%;background:transparent;border:1.5px solid var(--border);flex-shrink:0;}
+.chan-mini.attesa.li{background:var(--athlete);border-color:var(--athlete);}
+.chan-mini.tocca.li{background:var(--athlete);border-color:var(--athlete);box-shadow:0 0 0 2px var(--athlete-bg);}
+.chan-mini.gestito.li{background:var(--athlete);border-color:var(--athlete);opacity:.4;}
+.chan-mini.attesa.ig{background:var(--life);border-color:var(--life);}
+.chan-mini.tocca.ig{background:var(--life);border-color:var(--life);box-shadow:0 0 0 2px var(--life-bg);}
+.chan-mini.gestito.ig{background:var(--life);border-color:var(--life);opacity:.4;}
+
 .co-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .co-name{font-size:.88rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .co-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
@@ -336,7 +346,7 @@ async function loadCompanies() {
   document.getElementById('coList').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Caricamento aziende…</div></div>';
   try {
     const res = await sbFetch(
-      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,note,a7_status&order=step_attuale.desc'
+      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,linkedin_stato,instagram_stato,note,a7_status&order=step_attuale.desc'
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
@@ -352,7 +362,9 @@ async function loadCompanies() {
       followup:      calcFollowup(c),
       contact_date:  c.step_7_date || null,
       note:          c.note    || '',
-      a7_status:     c.a7_status || ''
+      a7_status:     c.a7_status || '',
+      linkedinStato:  c.linkedin_stato  || null,
+      instagramStato: c.instagram_stato || null
     }));
     renderStats();
     applyFilters();
@@ -534,6 +546,22 @@ function fuHtml(fu){
   return '<div class="fu-badge '+cls+'"><div class="fu-dot"></div>+'+fu.days+'gg</div>';
 }
 
+// Puntini canale — visibili solo da step 7 in su (mail già inviata), riflettono
+// linkedin_stato/instagram_stato scritti a mano dalla company page (vedi renderChannels lì).
+function chanClass(stato){
+  if(!stato) return '';
+  if(stato === 'in_attesa') return 'attesa';
+  if(stato === 'tocca_a_te') return 'tocca';
+  return 'gestito';
+}
+function chanDotsHtml(c){
+  if(c.step < 7) return '';
+  return '<div class="chan-dots">' +
+    '<div class="chan-mini li ' + chanClass(c.linkedinStato) + '" title="LinkedIn"></div>' +
+    '<div class="chan-mini ig ' + chanClass(c.instagramStato) + '" title="Instagram"></div>' +
+  '</div>';
+}
+
 function renderList(list){
   const el = document.getElementById('coList');
   if(!list.length){
@@ -556,6 +584,7 @@ function renderList(list){
           '<span class="tag '+sc+'">'+c.score+'</span>' +
         '</div>' +
         '<div class="co-step-name">Step '+c.step+' — '+STEP_NAMES[c.step]+(c.note?' · '+c.note:'')+'</div>' +
+        chanDotsHtml(c) +
       '</div>' +
       '<div class="co-right">' +
         fuHtml(c.followup) +
