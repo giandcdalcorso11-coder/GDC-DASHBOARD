@@ -531,10 +531,6 @@ const MESI_S=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov',
 const nm=(o=0)=>{const d=new Date();d.setMonth(d.getMonth()+o);return MESI[d.getMonth()];};
 const an=(o=0)=>{const d=new Date();d.setMonth(d.getMonth()+o);return d.getFullYear();};
 const M0=nm(),A0=an(),Mm1=nm(-1),Am1=an(-1),Mm2=nm(-2),Am2=an(-2);
-// Mese/anno NUMERICI del mese che A3 sta pianificando (stesso offset 0 di M0/A0)
-// — servono per interrogare bpt_calendars sul mese esatto, invece di leggere
-// "l'ultimo calendario disponibile" (bug Step 32/33).
-const M0_NUM=new Date().getMonth()+1, A0_NUM=an();
 const now=new Date();
 const DD=String(now.getDate()).padStart(2,'0'),MM=String(now.getMonth()+1).padStart(2,'0'),YY=now.getFullYear();
 document.getElementById('dateChipText').textContent=DD+'/'+MM+'/'+YY;
@@ -556,10 +552,7 @@ const MSGS={
 };
 
 function buildMsgA3(calBpt){
-  // calBpt=null/undefined -> nessuna riga trovata per QUESTO mese in bpt_calendars
-  // (non più "ultimo calendario disponibile" di qualunque mese, per evitare
-  // di mostrare in silenzio il dato del mese sbagliato — vedi Step 32/33)
-  const cal=(calBpt!=null&&calBpt!=='')?calBpt:('[calendario BPT non ancora generato per '+M0+' '+A0+' — esegui bpt_calendar.py con BPT_TARGET_MONTH oppure aggiungi qui gli impegni a mano]');
+  const cal=calBpt||'[calendario BPT non disponibile — esegui bpt_calendar.py]';
   MSGS.A3="Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nCALENDARIO IMPEGNI:\n"+cal+"\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0;
 }
 
@@ -642,80 +635,57 @@ async function updatePushButtonUI() {
   label.textContent = sub ? 'Notifiche attive' : 'Attiva notifiche';
 }
 
-let pushToggleInProgress = false;
 async function togglePushNotifications() {
-  if (pushToggleInProgress) return; // evita il doppio tap che causava falsi errori
-  pushToggleInProgress = true;
   const label = document.getElementById('pushBtnLabel');
-  const btn = document.getElementById('pushBtn');
-  if (btn) btn.disabled = true;
-  const prevLabel = label ? label.textContent : '';
-  if (label) label.textContent = 'Attivazione in corso...';
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
+    return;
+  }
 
-  try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
-      if (label) label.textContent = prevLabel;
-      return;
-    }
+  const existing = await getExistingPushSubscription();
 
-    const existing = await getExistingPushSubscription();
-
-    if (existing) {
-      // Disattiva: rimuove sia lato browser che da Supabase
-      try {
-        await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions?endpoint=eq.' + encodeURIComponent(existing.endpoint), { method: 'DELETE' });
-      } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
-      await existing.unsubscribe();
-      if (label) label.textContent = 'Attiva notifiche';
-      return;
-    }
-
-    // Attiva: permesso browser -> registra SW -> subscribe -> salva su Supabase
+  if (existing) {
+    // Disattiva: rimuove sia lato browser che da Supabase
     try {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        alert('Permesso notifiche negato. Puoi riattivarlo dalle impostazioni del browser/dispositivo.');
-        return;
-      }
+      await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions?endpoint=eq.' + encodeURIComponent(existing.endpoint), { method: 'DELETE' });
+    } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
+    await existing.unsubscribe();
+    if (label) label.textContent = 'Attiva notifiche';
+    return;
+  }
 
-      const reg = await navigator.serviceWorker.register('sw.js');
-      await navigator.serviceWorker.ready;
-
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
-
-      const subJson = sub.toJSON();
-      await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({
-          endpoint: subJson.endpoint,
-          p256dh: subJson.keys.p256dh,
-          auth: subJson.keys.auth,
-          device_label: guessDeviceLabel()
-        })
-      });
-
-      if (label) label.textContent = 'Notifiche attive';
-    } catch (e) {
-      console.error('Errore attivazione notifiche:', e);
-      // Prima di dichiarare un errore, verifichiamo lo stato REALE: la
-      // sottoscrizione potrebbe essere andata a buon fine comunque (es. un
-      // tap concorrente ha fatto fallire solo questa chiamata).
-      const realSub = await getExistingPushSubscription();
-      if (realSub) {
-        if (label) label.textContent = 'Notifiche attive';
-      } else {
-        if (label) label.textContent = prevLabel;
-        alert('Errore durante l\'attivazione delle notifiche: ' + (e && e.message ? e.message : e) + '\n\nRiprova tra qualche secondo.');
-      }
+  // Attiva: permesso browser -> registra SW -> subscribe -> salva su Supabase
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      alert('Permesso notifiche negato. Puoi riattivarlo dalle impostazioni del browser/dispositivo.');
+      return;
     }
-  } finally {
-    if (btn) btn.disabled = false;
-    pushToggleInProgress = false;
+
+    const reg = await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    const subJson = sub.toJSON();
+    await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        endpoint: subJson.endpoint,
+        p256dh: subJson.keys.p256dh,
+        auth: subJson.keys.auth,
+        device_label: guessDeviceLabel()
+      })
+    });
+
+    if (label) label.textContent = 'Notifiche attive';
+  } catch (e) {
+    console.error('Errore attivazione notifiche:', e);
+    alert('Errore durante l\'attivazione delle notifiche. Riprova, o controlla la console per dettagli.');
   }
 }
 
@@ -791,17 +761,13 @@ const STATO_PILLS=[
   {key:'sleep',   supaKey:'sleep',   label:'Inattivo',  cls:'sp-sleep'},
 ];
 
-// Categoria (active/queued/done/rest/sleep, la stessa usata dal logo) ->
-// quale pillola va evidenziata. Riceve la categoria già calcolata (da
-// mapState() per i singoli agenti, da worstState() per A5/A6) così logo
-// e pillola condividono sempre lo stesso identico valore di partenza.
-const CATEGORY_TO_PILL={active:'working',queued:'queued',done:'done',rest:'riposo',sleep:'sleep'};
-function renderStatoRow(id, cat){
-  const rowEl=document.getElementById('stato-row-'+id.toLowerCase());
-  if(!rowEl) return;
-  const activeKey=CATEGORY_TO_PILL[cat]||'sleep';
-  rowEl.innerHTML=STATO_PILLS.map(p=>{
-    const isActive=(p.supaKey===activeKey);
+function renderStatoRow(id, supaStato){
+  const row=document.getElementById('stato-row-'+id.toLowerCase());
+  if(!row) return;
+  // supaStato è il valore raw da Supabase (queued/working/done/riposo/sleep)
+  const cur=supaStato||'sleep';
+  row.innerHTML=STATO_PILLS.map(p=>{
+    const isActive=(p.supaKey===cur)||(p.supaKey==='sleep'&&(cur==='sleep'||cur===''||!cur));
     return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
   }).join('');
 }
@@ -856,27 +822,19 @@ function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]
 
 async function loadStates(){
   try{
-    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at');
+    const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?select=agent_id,stato,updated_at,calendario_bpt');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
-    // Costruisce MSGS.A3 con calendario BPT del mese ESATTO che A3 sta
-    // pianificando (M0_NUM/A0_NUM) — query dedicata su bpt_calendars,
-    // non più "l'ultimo calendario disponibile" (bug Step 32/33).
-    try{
-      const bptRes=await sbFetch(SUPA_URL+'/rest/v1/bpt_calendars?select=testo&mese_num=eq.'+M0_NUM+'&anno=eq.'+A0_NUM+'&limit=1');
-      const bptRows=bptRes.ok?await bptRes.json():[];
-      buildMsgA3(bptRows[0]?bptRows[0].testo:null);
-    }catch(eBpt){
-      console.error('Errore caricamento bpt_calendars:',eBpt);
-      buildMsgA3(null);
-    }
+    // Costruisce MSGS.A3 con calendario BPT reale
+    const bptRow=byId['bpt_calendar'];
+    buildMsgA3(bptRow?bptRow.calendario_bpt:null);
     ['a1','a2','a3','a4','a7'].forEach(id=>{
       const row=byId[id];
       const st=mapState(row);
       setLogoState(id,st);
       if(['a2','a3','a4'].includes(id)) renderActions(id.toUpperCase(),st);
-      renderStatoRow(id.toUpperCase(), st);
+      renderStatoRow(id.toUpperCase(), row?row.stato:'sleep');
     });
     const st5=worstState([byId['a5_1'],byId['a5_2']]);
     const st6=worstState([byId['a6_1'],byId['a6_2']]);
@@ -884,9 +842,11 @@ async function loadStates(){
     setLogoState('a6',st6);
     renderActionsSimple('A5',st5);
     renderActionsSimple('A6',st6);
-    // stato-row A5/A6 usa la stessa categoria "peggiore" già calcolata per il logo
-    renderStatoRow('A5', st5);
-    renderStatoRow('A6', st6);
+    // stato-row A5/A6 usa il valore del sub-agente principale
+    const raw5=(byId['a5_1']||byId['a5_2']);
+    const raw6=(byId['a6_1']||byId['a6_2']);
+    renderStatoRow('A5', raw5?raw5.stato:'sleep');
+    renderStatoRow('A6', raw6?raw6.stato:'sleep');
     document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
     document.getElementById('sysLabel').style.color='var(--maker)';
     document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
@@ -1026,25 +986,76 @@ function startA7Anim(){
   setTimeout(()=>G.style.opacity='1',200);setTimeout(()=>D.style.opacity='1',460);setTimeout(()=>C.style.opacity='1',720);setTimeout(()=>STUFF.style.opacity='1',980);setTimeout(()=>linee.style.opacity='1',1240);
 })();
 
-const CAL_EVENTS={
-  [YY+'-'+MM+'-01']:[{label:'A1 — Sync dati Instagram completato',agent:'A1',color:'#4A7C59'}],
-  [YY+'-'+MM+'-'+DD]:[{label:'A1 — BPT Calendar aggiornato',agent:'A1',color:'#4A7C59'}],
+// ── CALENDARIO — eventi live da activity_log (Supabase) ────────────────
+// Palette: gruppo editoriale A1-A4 in blu (chiaro→scuro), gruppo
+// sponsorship A5-A7 in giallo/ambra, sistema/errori in rosso.
+const AGENT_COLORS={
+  A1:'#6FA8D8', A2:'#4A86C6', A3:'#2B5C8A', A4:'#1D4A7A',
+  A5:'#E0B040', 'A5.1':'#E0B040', 'A5.2':'#E0B040',
+  A6:'#C4A865', 'A6.1':'#C4A865', 'A6.2':'#C4A865',
+  A7:'#8A6D3B',
+  'Pipeline Watcher':'#8A6D3B'
 };
+const AGENT_COLOR_DEFAULT='#C2193A'; // sistema/errori/agente non mappato
+
+function colorForAgent(agentId){
+  return AGENT_COLORS[agentId]||AGENT_COLOR_DEFAULT;
+}
+
 let calY=parseInt(YY),calM=parseInt(MM)-1,selDay=null;
+let calEventsCache={}; // { 'YYYY-MM': { 'YYYY-MM-DD':[{titolo,descrizione,link,agent}] } }
+
 function openCal(){calY=parseInt(YY);calM=parseInt(MM)-1;document.getElementById('calOverlay').classList.add('open');renderCal();}
 function closeCal(){document.getElementById('calOverlay').classList.remove('open');}
 function closeCalIfBg(e){if(e.target===document.getElementById('calOverlay'))closeCal();}
-function calNav(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
-function renderCal(){
+function calNav(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}selDay=null;renderCal();}
+
+async function fetchMonthEvents(y,m){
+  const cacheKey=y+'-'+String(m+1).padStart(2,'0');
+  if(calEventsCache[cacheKey]) return calEventsCache[cacheKey];
+  const start=new Date(Date.UTC(y,m,1)).toISOString();
+  const end=new Date(Date.UTC(y,m+1,1)).toISOString();
+  const byDay={};
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/activity_log?select=agent_id,titolo,descrizione,link,created_at'
+      +'&created_at=gte.'+encodeURIComponent(start)
+      +'&created_at=lt.'+encodeURIComponent(end)
+      +'&order=created_at.asc&limit=300');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    rows.forEach(r=>{
+      const key=r.created_at.slice(0,10);
+      if(!byDay[key]) byDay[key]=[];
+      byDay[key].push({
+        label:r.titolo||'(senza titolo)',
+        descrizione:r.descrizione||'',
+        link:r.link||null,
+        agent:r.agent_id||'?',
+        color:colorForAgent(r.agent_id)
+      });
+    });
+  }catch(e){
+    console.error('Errore caricamento activity_log per calendario:',e);
+    calEventsCache[cacheKey]='error';
+    return 'error';
+  }
+  calEventsCache[cacheKey]=byDay;
+  return byDay;
+}
+
+async function renderCal(){
   document.getElementById('calMonthLabel').textContent=MESI_S[calM]+' '+calY;
   const grid=document.getElementById('calDays');grid.innerHTML='';
+  document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Caricamento eventi…</span>';
   const fd=(new Date(calY,calM,1).getDay()+6)%7;
   const dim=new Date(calY,calM+1,0).getDate();
+  const monthEvents=await fetchMonthEvents(calY,calM);
+  const isOffline=monthEvents==='error';
   for(let i=0;i<fd;i++){const el=document.createElement('div');el.className='cal-day';grid.appendChild(el);}
   for(let d=1;d<=dim;d++){
     const ds=String(d).padStart(2,'0'),ms=String(calM+1).padStart(2,'0');
     const key=calY+'-'+ms+'-'+ds;
-    const evs=CAL_EVENTS[key]||[];
+    const evs=isOffline?[]:(monthEvents[key]||[]);
     const el=document.createElement('div');
     const isToday=key===YY+'-'+MM+'-'+DD;
     el.className='cal-day'+(isToday?' today':'')+(evs.length?' has-event':'');
@@ -1052,10 +1063,24 @@ function renderCal(){
     if(evs.length){const dots=document.createElement('div');dots.className='event-dots';evs.slice(0,3).forEach(ev=>{const dot=document.createElement('div');dot.className='event-dot';dot.style.background=ev.color;dots.appendChild(dot);});el.appendChild(dots);el.onclick=()=>showEvs(key,evs);}
     grid.appendChild(el);
   }
-  if(selDay&&CAL_EVENTS[selDay])showEvs(selDay,CAL_EVENTS[selDay]);
-  else document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>';
+  if(isOffline){
+    document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Impossibile caricare gli eventi al momento.</span>';
+  } else if(selDay&&monthEvents[selDay]){
+    showEvs(selDay,monthEvents[selDay]);
+  } else {
+    document.getElementById('calEventsPanel').innerHTML='<span style="color:var(--grigio);font-size:.72rem;">Seleziona un giorno per vedere gli eventi</span>';
+  }
 }
-function showEvs(key,evs){selDay=key;const p=key.split('-');document.getElementById('calEventsPanel').innerHTML='<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">'+p[2]+'/'+p[1]+'/'+p[0]+'</div>'+evs.map(ev=>'<div class="cal-event-item"><div class="cal-event-dot" style="background:'+ev.color+'"></div><div><div class="cal-event-text">'+ev.label+'</div><div class="cal-event-agent">'+ev.agent+'</div></div></div>').join('');}
+function showEvs(key,evs){
+  selDay=key;const p=key.split('-');
+  document.getElementById('calEventsPanel').innerHTML='<div style="font-size:.68rem;font-weight:700;color:var(--grigio);margin-bottom:6px;">'+p[2]+'/'+p[1]+'/'+p[0]+'</div>'+evs.map(ev=>{
+    const body='<div class="cal-event-text">'+ev.label+'</div>'+(ev.descrizione?'<div class="cal-event-agent" style="margin-top:1px;">'+ev.descrizione+'</div>':'')+'<div class="cal-event-agent">'+ev.agent+'</div>';
+    const inner='<div class="cal-event-dot" style="background:'+ev.color+'"></div><div>'+body+'</div>';
+    return ev.link
+      ? '<a href="'+ev.link+'" class="cal-event-item" style="text-decoration:none;color:inherit;display:flex;">'+inner+'</a>'
+      : '<div class="cal-event-item">'+inner+'</div>';
+  }).join('');
+}
 
 // ── A7 PICKER ────────────────────────────────────────────────────────
 const GH_OWNER = 'giandcdalcorso11-coder';
