@@ -73,6 +73,11 @@ body{
 .company-meta{
   display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;
 }
+.company-contact-row{
+  font-size:.76rem; font-weight:600; color:var(--nero); margin:-4px 0 12px; display:flex; align-items:center; gap:5px;
+}
+.company-contact-row.empty{ color:var(--grigio); font-weight:500; font-style:italic; }
+.company-contact-row .contact-icon{ width:14px; height:14px; flex-shrink:0; opacity:.7; }
 .tag{
   font-size:.68rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
   padding:3px 9px; border-radius:999px; border:1.5px solid;
@@ -438,6 +443,9 @@ body{
     <div class="company-meta">
       <span class="tag tag-settore">Abbigliamento sportivo</span>
       <span class="tag tag-lingua">🇮🇹 IT</span>
+    </div>
+    <div class="company-contact-row" id="contactRow">
+      <span id="contactLabel">—</span>
     </div>
     <div class="company-step-row">
       <div class="step-current">
@@ -876,6 +884,19 @@ function populatePage(co) {
     '<span class="tag tag-settore">' + (co.settore||'—') + '</span>' +
     '<span class="tag tag-lingua">'+flagEmoji(co.lingua)+' '+(co.lingua||'IT')+'</span>' +
     (co.tag ? '<span class="tag tag-settore">'+ co.tag +'</span>' : '');
+
+  // Contatto nominativo — trovato da A5.2 (sezione 2.3), o "non trovato" se assente
+  const contactRow = document.getElementById('contactRow');
+  const contactLabel = document.getElementById('contactLabel');
+  const nominativo = (co.contatto_nominativo || '').trim();
+  const personIcon = '<svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  if (nominativo && !/non\s*trovato/i.test(nominativo)) {
+    contactRow.classList.remove('empty');
+    contactLabel.innerHTML = personIcon + ' ' + nominativo;
+  } else {
+    contactRow.classList.add('empty');
+    contactLabel.innerHTML = personIcon + ' Contatto non trovato';
+  }
 
   // Step attuale
   const step = co.step_attuale || 1;
