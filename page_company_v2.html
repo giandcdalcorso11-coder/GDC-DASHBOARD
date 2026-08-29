@@ -462,6 +462,8 @@ body{
       </div>
       <button class="fu-toggle-btn" id="fuToggleBtn" onclick="toggleAzioneRichiesta()"></button>
       <button class="fu-toggle-btn" id="fuStopBtn" onclick="toggleFollowUpStop()"></button>
+      <button class="fu-toggle-btn" id="fuResetBtn" onclick="setManualContactToday()"></button>
+      <button class="fu-toggle-btn" id="fuClearBtn" onclick="clearManualContact()"></button>
     </div>
   </div>
 
@@ -1013,17 +1015,31 @@ function flagEmoji(lingua) {
 // - step 7 (mail inviata, aspetti loro): giorni da step_7_date. Da 21gg+ diventa "silenzio".
 // - step 8 (loro hanno risposto): se step8_azione_richiesta è true (default) = badge urgente "tocca a te".
 //   Se è stato disattivato a mano (risposta automatica/form) = torna al conteggio in attesa/silenzio.
-// - step 9+ : nessun badge.
+// - step 9-11: nessun badge di default.
+// - OVERRIDE MANUALE (step 7-11): se last_manual_contact_date è valorizzato (bottone "Ho scritto oggi"),
+//   ha SEMPRE priorità sulla logica di default dello step — usato per i casi di ricontatto fuori flusso
+//   automatico (es. risposta via DM/telefono con nuova mail inviata mentre l'azienda è già a step 9+).
 const SILENCE_THRESHOLD_DAYS = 21;
+const FU_RESET_MIN_STEP = 7;
+const FU_RESET_MAX_STEP = 11;
 
 function renderFollowUp(co) {
   const step = co.step_attuale || 1;
   const fuEl = document.querySelector('.fu-badge');
   const toggleBtn = document.getElementById('fuToggleBtn');
   const stopBtn = document.getElementById('fuStopBtn');
+  const resetBtn = document.getElementById('fuResetBtn');
+  const clearBtn = document.getElementById('fuClearBtn');
+  const stepInResetRange = step >= FU_RESET_MIN_STEP && step <= FU_RESET_MAX_STEP;
+  const manualDate = co.last_manual_contact_date;
   let fu = null;
 
-  if (step === 8 && co.step_8_date) {
+  if (stepInResetRange && manualDate) {
+    const days = Math.floor((Date.now() - new Date(manualDate).getTime()) / 86400000);
+    if (days >= 0) {
+      fu = { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days, manual: true };
+    }
+  } else if (step === 8 && co.step_8_date) {
     const days = Math.floor((Date.now() - new Date(co.step_8_date).getTime()) / 86400000);
     if (days >= 0) {
       const azioneRichiesta = co.step8_azione_richiesta !== false; // default true
@@ -1042,6 +1058,7 @@ function renderFollowUp(co) {
       fu = { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days, suffix: fuSuffix };
     }
   }
+  // step 9-11 senza override: fu resta null, nessun badge (comportamento invariato)
 
   if (fuEl) {
     if (fu) {
@@ -1091,6 +1108,56 @@ function renderFollowUp(co) {
       stopBtn.style.display = 'none';
     }
   }
+
+  if (resetBtn) {
+    if (stepInResetRange) {
+      resetBtn.style.display = 'inline-flex';
+      resetBtn.textContent = '✉️ Ho scritto oggi';
+      resetBtn.title = 'Hai ricontattato l\'azienda fuori dal flusso normale (es. nuova mail dopo una risposta via DM/telefono)? Clicca per riavviare il conteggio giorni da oggi.';
+    } else {
+      resetBtn.style.display = 'none';
+    }
+  }
+
+  if (clearBtn) {
+    if (stepInResetRange && manualDate) {
+      clearBtn.style.display = 'inline-flex';
+      clearBtn.textContent = '↺ Annulla reset';
+      clearBtn.title = 'Rimuove il reset manuale e torna al conteggio di default per questo step.';
+    } else {
+      clearBtn.style.display = 'none';
+    }
+  }
+}
+
+/* ── Reset manuale del conteggio giorni (step 7-11) ──
+   Usato quando arriva un ricontatto fuori dal flusso automatico standard
+   (es. l'azienda risponde via DM/telefono con una nuova mail, mentre lo
+   step_attuale è già avanzato oltre il normale step 7 "mail inviata"). */
+async function setManualContactToday() {
+  if (!currentCompanyId || !currentCompanyData) return;
+  const nowIso = new Date().toISOString();
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ last_manual_contact_date: nowIso })
+    });
+    currentCompanyData.last_manual_contact_date = nowIso;
+    renderFollowUp(currentCompanyData);
+  } catch(e) { console.error('setManualContactToday error:', e); }
+}
+async function clearManualContact() {
+  if (!currentCompanyId || !currentCompanyData) return;
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ last_manual_contact_date: null })
+    });
+    currentCompanyData.last_manual_contact_date = null;
+    renderFollowUp(currentCompanyData);
+  } catch(e) { console.error('clearManualContact error:', e); }
 }
 
 /* ── Toggle manuale: ferma/riattiva i follow-up automatici (step 7) ── */
