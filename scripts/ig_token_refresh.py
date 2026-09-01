@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
 GDC IA TEAM — Script rinnovo token Instagram Graph API
-Eseguito ogni ~50 giorni via GitHub Actions (cron), prima della scadenza
-del long-lived token (60 giorni).
+Eseguito ogni settimana via GitHub Actions (cron), ma rinnova il token solo
+quando mancano pochi giorni alla scadenza reale — letta da Supabase,
+non calcolata "a calendario". Questo evita il problema del 01/09/2026:
+un cron mensile che, in certi mesi, cade DOPO la scadenza dei 60 giorni
+del token, rendendolo impossibile da rinnovare via API (serve un token
+ancora valido per scambiarlo con uno nuovo).
 
 Flusso:
+  0. Legge da Supabase la scadenza dell'ultimo rinnovo noto (token_status.expires_at).
+     Se mancano più di REFRESH_THRESHOLD_DAYS giorni, esce subito senza fare nulla.
   1. Legge il token attuale (IG_ACCESS_TOKEN secret)
   2. Chiama l'endpoint Meta fb_exchange_token per ottenere un nuovo
      long-lived token (altri 60 giorni)
@@ -44,6 +50,57 @@ SUPABASE_URL      = os.environ["SUPABASE_URL"]
 SUPABASE_KEY      = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 
 GRAPH_API_VERSION = "v21.0"
+REFRESH_THRESHOLD_DAYS = 15  # rinnova solo se mancano meno di N giorni alla scadenza nota
+
+
+# ─── STEP 0 — SERVE DAVVERO RINNOVARE ORA? ──────────────────────────
+def get_known_expiry():
+    """
+    Legge da Supabase la scadenza nota dell'ultimo rinnovo riuscito.
+    Ritorna un datetime timezone-aware, o None se non c'è ancora nessun
+    record (prima esecuzione in assoluto, o ultimo tentativo andato in errore
+    senza una expires_at valida).
+    """
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+    }
+    url = f"{SUPABASE_URL}/rest/v1/token_status?id=eq.ig_token&select=expires_at,status"
+    r = requests.get(url, headers=headers, timeout=10)
+    if r.status_code != 200:
+        print(f"[IG-REFRESH] Warning: impossibile leggere token_status ({r.status_code}), procedo col rinnovo per sicurezza")
+        return None
+
+    rows = r.json()
+    if not rows or not rows[0].get("expires_at"):
+        return None
+
+    expires_at_str = rows[0]["expires_at"]
+    try:
+        return datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+    except ValueError:
+        print(f"[IG-REFRESH] Warning: expires_at non parsabile ({expires_at_str}), procedo col rinnovo per sicurezza")
+        return None
+
+
+def should_refresh_now():
+    """
+    True se: non abbiamo una scadenza nota affidabile, OPPURE mancano meno
+    di REFRESH_THRESHOLD_DAYS giorni alla scadenza nota, OPPURE l'ultimo
+    tentativo registrato è fallito (status='error' — vale la pena riprovare).
+    """
+    known_expiry = get_known_expiry()
+    if known_expiry is None:
+        print("[IG-REFRESH] Nessuna scadenza nota su Supabase — procedo col rinnovo.")
+        return True
+
+    days_left = (known_expiry - datetime.now(timezone.utc)).total_seconds() / 86400
+    if days_left <= REFRESH_THRESHOLD_DAYS:
+        print(f"[IG-REFRESH] Mancano {days_left:.1f} giorni alla scadenza nota — procedo col rinnovo.")
+        return True
+
+    print(f"[IG-REFRESH] Mancano ancora {days_left:.1f} giorni alla scadenza nota (soglia: {REFRESH_THRESHOLD_DAYS}gg) — nessuna azione necessaria.")
+    return False
 
 
 # ─── STEP 1 — RINNOVA IL TOKEN ──────────────────────────────────────
@@ -141,6 +198,10 @@ def update_supabase_token_status(expires_at_iso, success=True, error_msg=None):
 # ─── MAIN ────────────────────────────────────────────────────────────
 def main():
     print(f"[IG-REFRESH] Start — {datetime.now(timezone.utc).isoformat()}")
+
+    if not should_refresh_now():
+        print("[IG-REFRESH] Skip: non ancora necessario. Fine.")
+        return
 
     try:
         new_token, expires_in = refresh_long_lived_token(IG_TOKEN_CURRENT)
