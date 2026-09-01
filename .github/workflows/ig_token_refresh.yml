@@ -2,7 +2,7 @@ name: IG Token Refresh
 
 on:
   schedule:
-    - cron: '0 6 */50 * *'
+    - cron: '0 6 * * 1'   # ogni lunedì alle 06:00 UTC — lo script decide se è davvero il momento di rinnovare
   workflow_dispatch: {}
 
 jobs:
