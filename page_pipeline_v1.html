@@ -119,6 +119,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .chan-mini.attesa.ig{background:var(--life);border-color:var(--life);}
 .chan-mini.tocca.ig{background:var(--life);border-color:var(--life);box-shadow:0 0 0 2px var(--life-bg);}
 .chan-mini.gestito.ig{background:var(--life);border-color:var(--life);opacity:.4;}
+.chan-days{font-size:.58rem;font-weight:700;color:var(--grigio);margin-right:2px;}
 
 .co-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .co-name{font-size:.88rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -283,6 +284,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <button class="sort-pill active" data-sort="step" onclick="setSort('step',this)">Step <span class="sort-arrow">↓</span></button>
         <button class="sort-pill" data-sort="score" onclick="setSort('score',this)">Score</button>
         <button class="sort-pill" data-sort="followup" onclick="setSort('followup',this)">Follow-up</button>
+        <button class="sort-pill" data-sort="trovata" onclick="setSort('trovata',this)">Trovata</button>
         <button class="sort-pill" data-sort="contatto" onclick="setSort('contatto',this)">Data contatto</button>
         <button class="sort-pill" data-sort="nome" onclick="setSort('nome',this)">Nome</button>
       </div>
@@ -346,7 +348,7 @@ async function loadCompanies() {
   document.getElementById('coList').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Caricamento aziende…</div></div>';
   try {
     const res = await sbFetch(
-      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,linkedin_stato,instagram_stato,note,a7_status&order=step_attuale.desc'
+      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,created_at,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,followup_count,followup_max,followup_stopped,last_manual_contact_date,linkedin_stato,linkedin_contattato_date,instagram_stato,instagram_contattato_date,note,a7_status&order=step_attuale.desc'
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
@@ -361,10 +363,13 @@ async function loadCompanies() {
       step:          c.step_attuale || 1,
       followup:      calcFollowup(c),
       contact_date:  c.step_7_date || null,
+      foundDate:     c.created_at || null,
       note:          c.note    || '',
       a7_status:     c.a7_status || '',
-      linkedinStato:  c.linkedin_stato  || null,
-      instagramStato: c.instagram_stato || null
+      linkedinStato:         c.linkedin_stato  || null,
+      linkedinContattatoDate: c.linkedin_contattato_date || null,
+      instagramStato:         c.instagram_stato || null,
+      instagramContattatoDate: c.instagram_contattato_date || null
     }));
     renderStats();
     applyFilters();
@@ -374,43 +379,50 @@ async function loadCompanies() {
   }
 }
 
-// Follow-up — "chi ha la palla e da quanti giorni":
-// - step 7 (mail inviata): oggettivo, palla sempre a loro, conta da step_7_date.
-// - step 8 (risposta ricevuta): default palla a te ("tocca a te"); se step8_azione_richiesta
-//   è false (flag manuale, es. risposta automatica/form) torna al conteggio normale attesa/silenzio.
-// - step 9-12 (Gestita/Trattativa/Accordo/Contratto): stesso meccanismo dello step 8,
-//   generalizzato. Il flag stepN_azione_richiesta lo imposta A6.2 quando sposta l'azienda
-//   su quello step, in base a cosa ha letto nell'ultima mail dello scambio:
-//     true  = tocca a Gianluca agire  -> badge urgente "tocca a te"
-//     false = palla in mano a loro    -> conteggio normale attesa/silenzio
+// Follow-up (contatore MAIL/step) — "chi ha la palla e da quanti giorni":
+// Allineato 1:1 con renderFollowUp() in page_company_v2.html, stessa priorità:
+// - OVERRIDE MANUALE (step 7-11): se last_manual_contact_date è valorizzato (bottone
+//   "Ho scritto oggi" nella company page), ha SEMPRE priorità — usato per i ricontatti
+//   fuori flusso automatico (es. nuova mail dopo una risposta via DM/telefono).
+// - step 8 (risposta ricevuta) senza override: default palla a te ("tocca a te"); se
+//   step8_azione_richiesta è false (flag manuale) torna al conteggio normale attesa/silenzio.
+// - step 7 (mail inviata) senza override: oggettivo, palla sempre a loro, conta da step_7_date;
+//   se followup_stopped è true, follow-up fermati manualmente, badge dedicato.
+// - step 9-12 senza override: nessun badge di default (comportamento invariato, come in
+//   company page — evita badge urgenti "fantasma" su step dove non è previsto di default).
 // - step 13: nessun badge, gestione conclusa (rifiutato).
+// Questo è SOLO il contatore mail/step. Il contatto sui canali social (LinkedIn/Instagram)
+// ha un contatore separato e indipendente — vedi chanDotsHtml()/chanDaysLabel() più sotto.
 const SILENCE_THRESHOLD_DAYS = 21;
+const FU_RESET_MIN_STEP = 7;
+const FU_RESET_MAX_STEP = 11;
 
 function calcFollowup(c) {
   const step = c.step_attuale;
+  const stepInResetRange = step >= FU_RESET_MIN_STEP && step <= FU_RESET_MAX_STEP;
+  const manualDate = c.last_manual_contact_date;
 
-  if (step === 7) {
-    if (!c.step_7_date) return null;
-    const days = Math.floor((Date.now() - new Date(c.step_7_date).getTime()) / 86400000);
-    if (days <= 0) return null;
+  if (stepInResetRange && manualDate) {
+    const days = Math.floor((Date.now() - new Date(manualDate).getTime()) / 86400000);
+    if (days >= 0) {
+      return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    }
+    return null;
+  }
+
+  if (step === 8 && c.step_8_date) {
+    const days = Math.floor((Date.now() - new Date(c.step_8_date).getTime()) / 86400000);
+    if (days < 0) return null;
+    const azioneRichiesta = c.step8_azione_richiesta !== false;
+    if (azioneRichiesta) return { type: 'urgent', days };
     return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
   }
 
-  if (step >= 8 && step <= 12) {
-    const dateField = 'step_' + step + '_date';
-    const flagField = 'step' + step + '_azione_richiesta';
-    const stepDate = c[dateField];
-    if (!stepDate) return null;
-    const days = Math.floor((Date.now() - new Date(stepDate).getTime()) / 86400000);
-    if (days < 0) return null;
-    // Default true se il flag non è ancora stato impostato (nuova azienda, nessuna
-    // decisione manuale di A6.2 registrata) — meglio segnalare "tocca a te" per errore
-    // che lasciare un follow-up reale silenzioso.
-    const azioneRichiesta = c[flagField] !== false;
-    if (azioneRichiesta) {
-      return { type: 'urgent', days };
-    }
-    return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+  if (step === 7 && c.step_7_date) {
+    const days = Math.floor((Date.now() - new Date(c.step_7_date).getTime()) / 86400000);
+    if (c.followup_stopped) return { type: 'stopped', days };
+    if (days > 0) return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    return null;
   }
 
   return null;
@@ -507,6 +519,15 @@ function applyFilters(){
       if(bt === null) return -1;
       return sortAsc ? at - bt : bt - at; // asc = dal più vecchio, desc = dal più recente
     }
+    // Trovata: ordine cronologico di ricerca A5 (created_at, valorizzato sempre alla creazione riga)
+    if(sortBy === 'trovata'){
+      const at = a.foundDate ? new Date(a.foundDate).getTime() : null;
+      const bt = b.foundDate ? new Date(b.foundDate).getTime() : null;
+      if(at === null && bt === null) return 0;
+      if(at === null) return 1;
+      if(bt === null) return -1;
+      return sortAsc ? at - bt : bt - at; // asc = dal più vecchio, desc = dal più recente (ultima ricerca A5 in cima)
+    }
     let av, bv;
     if(sortBy === 'score')        { av = a.score;               bv = b.score; }
     else if(sortBy === 'followup'){ av = (a.followup && a.followup.days) || 0;   bv = (b.followup && b.followup.days) || 0; }
@@ -539,6 +560,9 @@ function fuHtml(fu){
   if(fu.type === 'urgent'){
     return '<div class="fu-badge fu-urgent">⚡ Tocca a te · '+fu.days+'gg</div>';
   }
+  if(fu.type === 'stopped'){
+    return '<div class="fu-badge fu-silence">Follow-up fermati</div>';
+  }
   if(fu.type === 'silence'){
     return '<div class="fu-badge fu-silence">Silenzio '+fu.days+'gg</div>';
   }
@@ -548,17 +572,29 @@ function fuHtml(fu){
 
 // Puntini canale — visibili solo da step 7 in su (mail già inviata), riflettono
 // linkedin_stato/instagram_stato scritti a mano dalla company page (vedi renderChannels lì).
+// Ogni canale ha il proprio contatore giorni, calcolato dalla propria data di contatto
+// (linkedin_contattato_date / instagram_contattato_date) — indipendente dal contatore
+// mail/step di fuHtml(). Se un'azienda è stata contattata sia via mail che via social,
+// i due contatori restano separati e ognuno riflette solo il proprio canale.
 function chanClass(stato){
   if(!stato) return '';
   if(stato === 'in_attesa') return 'attesa';
   if(stato === 'tocca_a_te') return 'tocca';
   return 'gestito';
 }
+function chanDaysLabel(stato, dateRaw){
+  if(!stato || !dateRaw) return '';
+  const days = Math.floor((Date.now() - new Date(dateRaw).getTime()) / 86400000);
+  if(days < 0) return '';
+  return '<span class="chan-days">'+days+'gg</span>';
+}
 function chanDotsHtml(c){
   if(c.step < 7) return '';
   return '<div class="chan-dots">' +
     '<div class="chan-mini li ' + chanClass(c.linkedinStato) + '" title="LinkedIn"></div>' +
+    chanDaysLabel(c.linkedinStato, c.linkedinContattatoDate) +
     '<div class="chan-mini ig ' + chanClass(c.instagramStato) + '" title="Instagram"></div>' +
+    chanDaysLabel(c.instagramStato, c.instagramContattatoDate) +
   '</div>';
 }
 
