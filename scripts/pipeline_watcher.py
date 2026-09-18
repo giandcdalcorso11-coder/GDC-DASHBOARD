@@ -15,17 +15,28 @@ dipendono da un evento che accade FUORI da qualunque sessione agente:
      un PDF nella cartella, per ogni azienda con step_attuale = 3.
 
   2) Step 6 -> 7 (Bozza Gmail -> Mail inviata)
-     Quando Gianluca invia la bozza creata da A7, la bozza smette di
-     esistere (drafts.get risponde 404). Per ogni azienda con
-     step_attuale = 6, controlliamo se a7_draft_id esiste ancora.
-     NOTA: usiamo drafts.get, che richiede solo lo scope gmail.compose
+     Quando Gianluca invia la bozza creata da A7, la bozza sparisce dalla
+     cartella Bozze. Per ogni azienda con step_attuale = 6, controlliamo
+     se il suo a7_draft_id compare ancora tra le bozze attualmente presenti
+     (drafts().list(), non drafts().get(id) — vedi nota Step 34 sotto).
+     NOTA: usiamo solo drafts.list/get, che richiedono lo scope gmail.compose
      (già posseduto da A7) — NON serve gmail.readonly, che è uno scope
-     "restricted" e richiederebbe un audit CASA a pagamento. Vedi
-     discussione Step 27: drafts.get/list/create/update/send accettano
-     tutti gmail.compose, quindi nessuna modifica OAuth necessaria.
+     "restricted" e richiederebbe un audit CASA a pagamento.
      Caso limite accettato: se Gianluca cancellasse manualmente una
      bozza senza inviarla, verrebbe interpretata come "inviata". Rischio
      trascurabile per un solo utente che controlla il proprio flusso.
+
+     CORREZIONE Step 34 (verificata su 3 casi reali: Anthros, Diablo
+     Chairs, Sparco — inviate il 17/09 ma mai avanzate a step 7):
+     l'assunzione originale "drafts.get(id) risponde 404 dopo l'invio" è
+     risultata falsa in pratica — drafts.get(id) può continuare a
+     risolvere l'id anche a bozza inviata, restituendo il messaggio con
+     label SENT invece di 404. Sostituito con drafts().list(): riflette
+     sempre lo stato reale della cartella Bozze ed è la fonte di verità
+     usata anche per la conferma manuale in chat. Gestisce anche il caso
+     multi-bozza (a7_draft_id come lista comma-separata, introdotto da
+     a7_gmail_drafter.py v4 il 26/07 — pipeline_watcher.py non era mai
+     stato aggiornato di conseguenza da quando è stato scritto, 10/07).
 
 Non retrocede mai step_attuale. Non tocca aziende con dati mancanti o
 ambigui (logga e salta). Pensato per girare ogni ora via cron
@@ -187,6 +198,31 @@ def check_step_3_to_4(drive):
 
 
 # ── CHECK 2 — Step 6 -> 7 (bozza Gmail inviata) ─────────────────────
+def list_current_draft_ids(gmail):
+    """
+    Elenco di TUTTI i draft_id attualmente presenti nella cartella Bozze.
+    Sostituisce il vecchio approccio drafts().get(id) + 404: verificato
+    (Step 34) che una volta inviata la bozza, drafts().get(id) NON risponde
+    sempre 404 come da assunzione originale — a volte continua a risolvere
+    l'id restituendo il messaggio ormai inviato (label SENT al posto di
+    DRAFT), quindi il 404 da solo non è un segnale affidabile. drafts().list()
+    invece riflette sempre lo stato reale della cartella Bozze: se un id non
+    ci compare più, la bozza è stata inviata (o cancellata a mano — stesso
+    caso limite accettato di prima, rischio trascurabile per un solo utente).
+    """
+    ids = set()
+    page_token = None
+    while True:
+        resp = gmail.users().drafts().list(
+            userId='me', maxResults=100, pageToken=page_token
+        ).execute()
+        ids.update(d['id'] for d in resp.get('drafts', []))
+        page_token = resp.get('nextPageToken')
+        if not page_token:
+            break
+    return ids
+
+
 def check_step_6_to_7(gmail):
     print("[WATCHER] Controllo step 6 -> 7 (bozza Gmail inviata)...")
     companies = fetch_companies_at_step(6, extra_select='a7_draft_id')
@@ -194,26 +230,32 @@ def check_step_6_to_7(gmail):
         print("    Nessuna azienda a step 6.")
         return
 
+    current_draft_ids = list_current_draft_ids(gmail)
+
     for c in companies:
         nome = c.get('nome', '?')
-        draft_id = c.get('a7_draft_id')
-        if not draft_id:
+        draft_id_raw = c.get('a7_draft_id')
+        if not draft_id_raw:
             print(f"    ⚠ '{nome}': a7_draft_id mancante — impossibile verificare, salto.")
             continue
 
-        try:
-            gmail.users().drafts().get(userId='me', id=draft_id).execute()
-            print(f"    '{nome}': bozza ancora presente — non ancora inviata.")
-        except HttpError as e:
-            if e.resp.status == 404:
-                print(f"    ✅ '{nome}': bozza non più trovata (draft_id={draft_id}) — presumo inviata, avanzo a step 7.")
-                advance_step(
-                    c['id'], nome, 7,
-                    f"Bozza Gmail non più presente (draft_id={draft_id}) — presunta inviata.",
-                    c.get('step_notes')
-                )
-            else:
-                print(f"    ⚠ '{nome}': errore Gmail imprevisto ({e}) — salto.")
+        # a7_gmail_drafter.py (v4, Luglio 2026) può creare più bozze per la
+        # stessa azienda (multi-destinatario) e salva a7_draft_id come lista
+        # comma-separata. Avanza solo quando NESSUNA delle bozze è più
+        # presente — se anche una sola è ancora in sospeso, l'azienda resta
+        # a step 6.
+        ids = [d.strip() for d in draft_id_raw.split(',') if d.strip()]
+        still_pending = [d for d in ids if d in current_draft_ids]
+        if still_pending:
+            print(f"    '{nome}': {len(still_pending)}/{len(ids)} bozza/e ancora presente/i — non ancora inviata/e.")
+            continue
+
+        print(f"    ✅ '{nome}': nessuna bozza più presente ({draft_id_raw}) — presumo inviata/e, avanzo a step 7.")
+        advance_step(
+            c['id'], nome, 7,
+            f"Bozza/e Gmail non più presente/i ({draft_id_raw}) — presunta/e inviata/e.",
+            c.get('step_notes')
+        )
 
 
 # ── MAIN ─────────────────────────────────────────────────────────────
