@@ -5,7 +5,8 @@ Ogni 2° del mese alle 08:00 ora italiana.
 Flusso:
 1. Instagram Graph API → metriche post + reel del mese precedente (originali)
 2. CSV Meta Business Suite (Drive "Archivio docs MBS") → repost/menzioni del mese precedente
-3. Compila Instagram_Analytics_GDC.xlsx (5 sheet)
+3. Compila Instagram_Analytics_GDC.xlsx (5 sheet) — inclusa la precompilazione
+   categorie + episodio della serie "Capiamo la Sabbia" (prompt v4, sez. 6.0)
 4. Carica su Google Drive (cartella A1.2)
 5. Aggiorna Supabase → stato A1 = done
 6. Invia Web Push notification
@@ -48,6 +49,7 @@ from googleapiclient.http import MediaFileUpload
 import openpyxl
 from openpyxl.styles import PatternFill, Font, Alignment
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.datavalidation import DataValidation
 
 from supabase import create_client
 from pywebpush import webpush, WebPushException
@@ -94,6 +96,17 @@ COLOR_GRAY_SEP = "D3D3D3"
 COLOR_YELLOW   = "FFD700"
 COLOR_HEADER   = "1C1C1C"
 COLOR_WHITE    = "FFFFFF"
+
+# Tassonomia categorie GDC (prompt v4, sez. 6.0) — unici valori ammessi
+CATEGORIE_GDC = ["SPORT", "RELATION", "GDC STUFF"]
+
+# Serie "Capiamo la Sabbia" (dal 28/09/2026, EP.0 + 18 episodi)
+# Nome fisso: "Capiamo la Sabbia - EP<x> - <titolo>" — accetta EP.0 / EP0 / EP 0
+SERIE_PREFISSO    = "capiamo la sabbia"
+SERIE_EPISODIO_RE = re.compile(r"^\s*Capiamo la Sabbia\s*[-–—]\s*EP\.?\s*(\d+)", re.IGNORECASE)
+SERIE_CAT_PRIMARIA   = "GDC STUFF"
+SERIE_CAT_SECONDARIA = "SPORT"
+SERIE_EP_MAX = 18
 
 print(f"▶ A1 Monthly — {MESE_LABEL}")
 print(f"  Periodo: {PRIMO_GIORNO} → {ULTIMO_GIORNO}")
@@ -422,6 +435,9 @@ def fetch_mbs_reposts(drive_service):
         account_id = (row.get("ID dell'account") or "").strip()
         if not account_id or account_id == IG_USER_ID:
             continue  # riga del proprio account — gia' coperta dall'API
+        username_mbs = (row.get("Nome utente dell'account") or "").strip().lower()
+        if username_mbs == "giandcdalcorso":
+            continue  # stessa regola per username (prompt v4, sez. 4) — evita duplicati
 
         try:
             pub = datetime.strptime(row.get("Orario di pubblicazione", "").strip(), "%m/%d/%Y %H:%M")
@@ -618,7 +634,8 @@ HEADERS = {
         "Permalink", "Visualizzazioni", "Reach", "Like", "Commenti",
         "Salvataggi", "Condivisioni", "Interazioni Totali",
         "Engagement Rate", "Tasso Viralità", "Sentiment Score",
-        "Follower Acquisiti", "Collaborazione Sì/No", "Note"
+        "Follower Acquisiti", "Collaborazione Sì/No", "Note",
+        "Episodio Serie"  # col. 23, nuova dalla v4 — in coda per non spostare gli indici
     ],
     "Insights Stories": [
         "Mese", "Data", "Ora", "Permalink",
@@ -685,16 +702,90 @@ def _style_header_row(ws, headers):
         ws.column_dimensions[get_column_letter(col)].width = 18
 
 
+def classifica_serie(caption):
+    """
+    Serie "Capiamo la Sabbia" (prompt v4, sez. 6.0).
+    Ritorna None se la caption non appartiene alla serie, altrimenti
+    (categoria_primaria, categoria_secondaria, episodio|"").
+    Episodio vuoto se il numero non e' leggibile.
+    """
+    cap = (caption or "").lstrip()
+    if not cap.lower().startswith(SERIE_PREFISSO):
+        return None
+    m = SERIE_EPISODIO_RE.match(cap)
+    episodio = int(m.group(1)) if m else ""
+    return SERIE_CAT_PRIMARIA, SERIE_CAT_SECONDARIA, episodio
+
+
+def _ensure_post_header_v4(ws, headers):
+    """
+    Workbook esistenti (creati con 22 colonne): aggiunge l'header
+    "Episodio Serie" in col. 23 con lo stesso stile degli altri header.
+    Estende anche il grigio ai separatori dei mesi precedenti.
+    """
+    col = len(headers)
+    if ws.cell(row=1, column=col).value == headers[-1]:
+        return
+    cell = ws.cell(row=1, column=col, value=headers[-1])
+    cell.fill = PatternFill("solid", fgColor=COLOR_HEADER)
+    cell.font = Font(color=COLOR_WHITE, bold=True)
+    cell.alignment = Alignment(horizontal="center")
+    ws.column_dimensions[get_column_letter(col)].width = 18
+    gray_fill = PatternFill("solid", fgColor=COLOR_GRAY_SEP)
+    for r in range(2, ws.max_row + 1):
+        first = ws.cell(row=r, column=1)
+        if first.value in (None, "") and first.fill is not None and \
+                (first.fill.fgColor.rgb or "").upper().endswith(COLOR_GRAY_SEP):
+            ws.cell(row=r, column=col).fill = gray_fill
+    print("    Sheet Post: aggiunta colonna 23 'Episodio Serie'")
+
+
+def _apply_post_validations(ws):
+    """
+    Convalide dati Insights Post (prompt v4, sez. 6):
+    - Categoria Primaria/Secondaria (col. G-H): elenco CATEGORIE_GDC
+    - Episodio Serie (col. W): intero 0-18
+    Rimuove e riapplica solo le convalide create da A1 (riconosciute
+    dall'errorTitle), cosi' resta idempotente dopo delete/insert_rows.
+    """
+    miei = {"A1 Categoria GDC", "A1 Episodio Serie"}
+    ws.data_validations.dataValidation = [
+        dv for dv in ws.data_validations.dataValidation if dv.errorTitle not in miei
+    ]
+    last = max(ws.max_row, 2) + 500  # margine per righe aggiunte a mano
+
+    dv_cat = DataValidation(
+        type="list", formula1='"' + ",".join(CATEGORIE_GDC) + '"',
+        allow_blank=True, showDropDown=False, showErrorMessage=True,
+        errorTitle="A1 Categoria GDC",
+        error="Valori ammessi: " + ", ".join(CATEGORIE_GDC),
+    )
+    dv_cat.add(f"G2:H{last}")
+
+    dv_ep = DataValidation(
+        type="whole", operator="between", formula1="0", formula2=str(SERIE_EP_MAX),
+        allow_blank=True, showErrorMessage=True,
+        errorTitle="A1 Episodio Serie",
+        error=f"Numero episodio intero tra 0 e {SERIE_EP_MAX}",
+    )
+    dv_ep.add(f"W2:W{last}")
+
+    ws.add_data_validation(dv_cat)
+    ws.add_data_validation(dv_ep)
+
+
 def compile_sheet_post(wb, posts):
     """
     Compila Sheet 2 — Insights Post.
     Riceve la lista unificata di originali + repost già mergiata.
     Per i repost: impressioni e reach vuoti (non disponibili via API per media altrui).
     Per gli originali: tutte le metriche da /insights.
-    Celle categoria gialle solo per ORIGINALE.
+    Celle categoria gialle solo per ORIGINALE — tranne i post della serie
+    "Capiamo la Sabbia", precompilati GDC STUFF / SPORT + Episodio Serie.
     """
     ws = wb["Insights Post"]
     headers = HEADERS["Insights Post"]
+    _ensure_post_header_v4(ws, headers)
 
     # Se il mese è già presente, cancella il blocco esistente (dati + riga
     # separatore grigia) e lo riscrive da zero. Idempotente: sicuro
@@ -761,16 +852,21 @@ def compile_sheet_post(wb, posts):
         collaborazione = "Sì" if tipo_autore == "REPOST" else "No"
         note = f"Repost di: {p.get('owner_name', '')}" if tipo_autore == "REPOST" and p.get("owner_name") else ""
 
+        # Serie "Capiamo la Sabbia": solo ORIGINALE (un repost della serie resta REPOST, senza categorie)
+        serie = classifica_serie(p.get("caption")) if tipo_autore == "ORIGINALE" else None
+        cat_primaria, cat_secondaria, episodio = serie if serie else ("", "", "")
+
         rows_to_insert.append([
             MESE_LABEL, data_str, ora_str, tipo_contenuto, tipo_autore,
             p.get("caption", "")[:500] if p.get("caption") else "",
-            "",  # Categoria Primaria — compila tu
-            "",  # Categoria Secondaria — compila tu
+            cat_primaria,    # vuota → compila tu (gialla); serie → GDC STUFF
+            cat_secondaria,  # vuota → compila tu (gialla); serie → SPORT
             p.get("permalink", ""),
             views, reach,
             likes, comments, saved, shares,
             interactions, er, viralita, sentiment,
-            follows, collaborazione, note
+            follows, collaborazione, note,
+            episodio         # col. 23 Episodio Serie — solo serie
         ])
 
     ws.insert_rows(insert_at, amount=len(rows_to_insert) + 1)
@@ -779,15 +875,18 @@ def compile_sheet_post(wb, posts):
         r = insert_at + i
         for j, val in enumerate(row_data, 1):
             cell = ws.cell(row=r, column=j, value=val)
-            if j in (7, 8) and row_data[4] == "ORIGINALE":
-                cell.fill = yellow_fill
+            if j in (7, 8) and row_data[4] == "ORIGINALE" and not val:
+                cell.fill = yellow_fill  # gialla solo se da compilare a mano
 
     gray_fill = PatternFill("solid", fgColor=COLOR_GRAY_SEP)
     sep_row_num = insert_at + len(rows_to_insert)
     for col in range(1, len(headers) + 1):
         ws.cell(row=sep_row_num, column=col).fill = gray_fill
 
-    print(f"    Sheet Post: {len(rows_to_insert)} righe inserite")
+    _apply_post_validations(ws)
+
+    n_serie = sum(1 for r in rows_to_insert if r[6] == SERIE_CAT_PRIMARIA and r[22] != "")
+    print(f"    Sheet Post: {len(rows_to_insert)} righe inserite ({n_serie} episodi 'Capiamo la Sabbia')")
     return rows_to_insert
 
 
