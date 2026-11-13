@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 5
-**Ultimo aggiornamento:** 2026-11-13 17:21
+**Versione:** 6
+**Ultimo aggiornamento:** 2026-11-13 17:34
 
 ## Vision
 
@@ -67,7 +67,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 3 — Tassonomia DIVULGAZIONE
 
-**Stato:** da fare
+**Stato:** completato
 
 **Obiettivo:** la serie "Capiamo la Sabbia" ha una categoria primaria propria (DIVULGAZIONE) coerente su tutti i documenti/script che la leggono.
 
@@ -77,10 +77,11 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Beneficio collaterale: A2 e A4 oggi isolano la serie leggendo il nome del post via regex sulla caption — con la categoria dedicata possono filtrare direttamente sul campo categoria, più robusto.
 - Vanno aggiornati: A1 (regola di classificazione automatica), A2 (sezioni che leggono/normalizzano categorie, slide/sezione serie), A4 (tabella categorie di riferimento). A3 non necessita modifiche.
 
-**Criterio di completamento:** tutti e 4 i documenti/script concordano su DIVULGAZIONE come quarta categoria primaria; il riconoscimento della serie non dipende più dal solo nome del post.
+**Criterio di completamento:** tutti e 4 i documenti/script concordano su DIVULGAZIONE come quarta categoria primaria; il riconoscimento della serie non dipende più dal solo nome del post. — Verificato su tutti e 4: `a1_monthly.py` (codice, commit `f224802`), `Agente1_auto_prompt` (docx, v4→v5), `Agente2_auto_prompt` (md, v14→v15), `Agente4_auto_prompt` (md, v6→v7); A3 confermato già corretto, non toccato.
 
 **Note (cronologia dello step):**
 - [2026-11-12] Decisione presa dopo discussione con Gianluca, inclusa correzione di un'inversione primaria/secondaria che Gianluca aveva scritto a parole ("Sport primaria, GDC Stuff secondaria") rispetto a quanto documentato in A1/A2/A4 (GDC STUFF primaria, SPORT secondaria) — chiarito che la documentazione corrente è quella corretta, resa comunque superata dalla nuova categoria dedicata.
+- [2026-11-13] Implementato ovunque. `a1_monthly.py`: `CATEGORIE_GDC` ora a 4 valori, la serie si auto-classifica DIVULGAZIONE/GDC STUFF invece di GDC STUFF/SPORT (si riflette automaticamente nella dropdown di convalida del foglio Excel). Documenti prompt aggiornati in place (non ancora nel repo — vivono come upload di questa conversazione, migreranno nel repo allo Step 6): A2 v15 — normalizzazione, placeholder colore DIVULGAZIONE=D9B77E (stesso hex della palette teal di A3, per coerenza), riconoscimento serie ora basato sulla categoria invece che solo sul nome, rimossa la logica di sotto-righe "di cui/esclusa serie" (non più necessaria: DIVULGAZIONE è una categoria a sé nella tabella per-categoria); A4 v7 — nuova riga DIVULGAZIONE in tabella categorie, aggiornata sez. 7; A1 (documento tecnico .docx) v5 — tabella 6.0 aggiornata, nota sulla convalida a 4 valori, aggiunta riga changelog v5. Le 3 copie aggiornate (A1 v5 docx, A2 v15 md, A4 v7 md) consegnate a Gianluca via file — da ricaricare lui stesso nei rispettivi Progetti Claude.ai al posto delle vecchie, dato che per ora non vivono nel repo.
 
 ### Step 4 — Schermata di categorizzazione post
 
@@ -184,9 +185,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-13 17:21] Step 1 e Step 2 completati — stati agenti robusti, token Instagram rinnovato e verificato
+### [2026-11-13 17:34] Step 1, 2 e 3 completati — stati agenti robusti, token Instagram rinnovato, tassonomia DIVULGAZIONE ovunque
 
-**Riepilogo:** Prima sessione di lavoro vero sul codice (le precedenti erano solo analisi/pianificazione): chiusa la robustezza degli stati agenti (Step 1); nello Step 2 scoperta — leggendo i log reali di più run — che il rinnovo automatico del token Instagram non ha mai funzionato davvero (un conto alla rovescia confermato ogni settimana verso una scadenza fissa, non un vero sposta-scadenza); Gianluca ha poi fatto il login manuale Meta e il rinnovo è stato verificato funzionante con due run reali lanciati da Claude Code.
+**Riepilogo:** Prima sessione di lavoro vero sul codice (le precedenti erano solo analisi/pianificazione): chiusa la robustezza degli stati agenti (Step 1); nello Step 2 scoperta — leggendo i log reali di più run — che il rinnovo automatico del token Instagram non ha mai funzionato davvero (un conto alla rovescia confermato ogni settimana verso una scadenza fissa, non un vero sposta-scadenza); Gianluca ha poi fatto il login manuale Meta e il rinnovo è stato verificato funzionante con due run reali lanciati da Claude Code; nello Step 3 la categoria DIVULGAZIONE è stata propagata in tutti e 4 i documenti/script della catena A1-A4.
 
 **Cosa è stato fatto:**
 - Step 1 implementato e pushato (commit `4fd6076`): `a1_monthly.py` — `main()` ora avvolge il corpo reale (rinominato `_run()`) in un try/except che scrive stato "error" su qualunque eccezione invece di lasciare "working" bloccato per sempre; `page_home_v25.html` — nuovo stato "error" reale in `mapState`/`CFG`/`PRI`/`STATO_PILLS`, scadenza di 3 ore sullo stato "working" (oltre la soglia passa a "error"), rimosso codice morto verificato via grep (`setStato`, `STATO_CYCLE`, `STATO_LABELS`).
@@ -205,8 +206,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   **Fix applicato:** rimosso il try/except — un errore reale ora fa fallire lo script in modo visibile; il caso legittimo di lista vuota (risposta 200 senza stories) resta gestito come prima. Commit `0f6863e`.
 - Gianluca ha fatto il login manuale su Meta (Graph API Explorer, app "GDC IA TEAM"): generato un nuovo token short-lived con i permessi necessari, scambiato per long-lived via `fb_exchange_token`, aggiornato a mano il secret `IG_ACCESS_TOKEN` su GitHub.
 - Verifica con due run reali lanciati da Claude Code via `workflow_dispatch`: `a1_stories_daily.yml` → successo, risposta IG reale "nessuna story attiva" (non più l'errore OAuth); `ig_token_refresh.yml` → successo, nuova scadenza **2027-01-12** (quasi 60 giorni da oggi) — conferma che il meccanismo di rinnovo funziona bene ripartendo da un login reale. La domanda "perché prima restituiva sempre la stessa scadenza fissa" resta senza una spiegazione certa, ma non più bloccante — da monitorare nelle prossime settimane.
+- Propagata DIVULGAZIONE come quarta categoria primaria (secondaria GDC STUFF) in tutti e 4 i documenti/script: `a1_monthly.py` (codice); documento tecnico A1 (.docx, v4→v5, editato via skill docx — unzip/merge_runs/edit XML/rezip/valida/rendering PDF di verifica); prompt A2 (md, v14→v15); prompt A4 (md, v6→v7). A3 confermato già corretto. Nei prompt A2/A4 colto anche il beneficio collaterale già previsto: il riconoscimento della serie "Capiamo la Sabbia" passa dal solo nome del post al campo categoria dedicato, più robusto. Le 3 copie aggiornate (A1 v5, A2 v15, A4 v7) consegnate a Gianluca come file — vivono ancora fuori dal repo (upload di conversazione), migreranno allo Step 6.
 
-**File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `docs/documento-sessione-gdc-ia-team.md`.
+**File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `.gitignore`, `docs/documento-sessione-gdc-ia-team.md`; fuori dal repo: `Agente1_auto_prompt_v5.docx`, `Agente2_auto_prompt_v15.md`, `Agente4_auto_prompt_v7.md` (consegnati a Gianluca).
 
 ---
 
