@@ -97,15 +97,19 @@ COLOR_YELLOW   = "FFD700"
 COLOR_HEADER   = "1C1C1C"
 COLOR_WHITE    = "FFFFFF"
 
-# Tassonomia categorie GDC (prompt v4, sez. 6.0) — unici valori ammessi
-CATEGORIE_GDC = ["SPORT", "RELATION", "GDC STUFF"]
+# Tassonomia categorie GDC — unici valori ammessi. DIVULGAZIONE aggiunta
+# come quarta categoria primaria (decisione Step 3, novembre 2026): prima
+# la serie "Capiamo la Sabbia" veniva classificata come GDC STUFF/SPORT,
+# ma A3 (prompt v12) assumeva già DIVULGAZIONE come categoria a sé —
+# allineati A1/A2/A4 a quanto A3 aveva già.
+CATEGORIE_GDC = ["SPORT", "RELATION", "GDC STUFF", "DIVULGAZIONE"]
 
 # Serie "Capiamo la Sabbia" (dal 28/09/2026, EP.0 + 18 episodi)
 # Nome fisso: "Capiamo la Sabbia - EP<x> - <titolo>" — accetta EP.0 / EP0 / EP 0
 SERIE_PREFISSO    = "capiamo la sabbia"
 SERIE_EPISODIO_RE = re.compile(r"^\s*Capiamo la Sabbia\s*[-–—]\s*EP\.?\s*(\d+)", re.IGNORECASE)
-SERIE_CAT_PRIMARIA   = "GDC STUFF"
-SERIE_CAT_SECONDARIA = "SPORT"
+SERIE_CAT_PRIMARIA   = "DIVULGAZIONE"
+SERIE_CAT_SECONDARIA = "GDC STUFF"
 SERIE_EP_MAX = 18
 
 print(f"▶ A1 Monthly — {MESE_LABEL}")
@@ -781,7 +785,7 @@ def compile_sheet_post(wb, posts):
     Per i repost: impressioni e reach vuoti (non disponibili via API per media altrui).
     Per gli originali: tutte le metriche da /insights.
     Celle categoria gialle solo per ORIGINALE — tranne i post della serie
-    "Capiamo la Sabbia", precompilati GDC STUFF / SPORT + Episodio Serie.
+    "Capiamo la Sabbia", precompilati DIVULGAZIONE / GDC STUFF + Episodio Serie.
     """
     ws = wb["Insights Post"]
     headers = HEADERS["Insights Post"]
@@ -859,8 +863,8 @@ def compile_sheet_post(wb, posts):
         rows_to_insert.append([
             MESE_LABEL, data_str, ora_str, tipo_contenuto, tipo_autore,
             p.get("caption", "")[:500] if p.get("caption") else "",
-            cat_primaria,    # vuota → compila tu (gialla); serie → GDC STUFF
-            cat_secondaria,  # vuota → compila tu (gialla); serie → SPORT
+            cat_primaria,    # vuota → compila tu (gialla); serie → DIVULGAZIONE
+            cat_secondaria,  # vuota → compila tu (gialla); serie → GDC STUFF
             p.get("permalink", ""),
             views, reach,
             likes, comments, saved, shares,
