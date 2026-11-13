@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GDC WORKSPACE — Home</title>
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GDC WORKSPACE">
@@ -319,7 +319,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </defs></svg>
   <!-- A1 -->
   <div class="acard" id="card-a1"><div class="acard-body">
-    <a class="logo-col" href="page_agent_a1_v1.html" title="Vai alla pagina A1">
+    <a class="logo-col" href="agenti/a1-analytics/page_agent_a1_v1.html" title="Vai alla pagina A1">
       <div class="logo-box bg-sleep" id="box-a1"><div class="logo-wrap s-sleep" id="wrap-a1">
         <svg viewBox="30 150 560 530" xmlns="http://www.w3.org/2000/svg">
           <circle id="a1-dot" cx="307.72" cy="403.14" r="45.04" fill="currentColor"/>
@@ -520,7 +520,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div class="leg"><div class="legdot" style="background:#D9E6F3;border-color:#2B5C8A"></div>Inattivo</div>
 </div>
 <div style="display:flex;justify-content:center;padding:12px 16px 4px;">
-  <a href="page_pipeline_v1.html" style="display:inline-flex;align-items:center;gap:7px;background:var(--bianco);border:1.5px solid var(--border);border-radius:10px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;color:var(--sabbia-dk);text-decoration:none;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='var(--sabbia)';this.style.boxShadow='0 4px 14px rgba(196,168,101,.18)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+  <a href="../page_pipeline_v1.html" style="display:inline-flex;align-items:center;gap:7px;background:var(--bianco);border:1.5px solid var(--border);border-radius:10px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;color:var(--sabbia-dk);text-decoration:none;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='var(--sabbia)';this.style.boxShadow='0 4px 14px rgba(196,168,101,.18)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/></svg>
     Pipeline Sponsorizzazioni
   </a>
@@ -577,7 +577,7 @@ function gdcSessionExpired(){
     document.body.prepend(banner);
   }
   banner.textContent = 'Sessione scaduta — reindirizzamento al login...';
-  setTimeout(function(){ window.location.href = 'page_login_v6.html'; }, 1600);
+  setTimeout(function(){ window.location.href = '../page_login_v6.html'; }, 1600);
 }
 
 async function sbFetch(url, options){
@@ -662,7 +662,7 @@ async function togglePushNotifications() {
       return;
     }
 
-    const reg = await navigator.serviceWorker.register('sw.js');
+    const reg = await navigator.serviceWorker.register('../sw.js');
     await navigator.serviceWorker.ready;
 
     const sub = await reg.pushManager.subscribe({
@@ -853,7 +853,7 @@ async function loadStates(){
 }
 
 function goToAgent(id){
-  const map={a2:'page_agent_a2_v3.html',a3:'page_agent_a3_v1.html',a4:'page_agent_a4_v1.html',a5:'page_agent_a5_v1.html',a6:'page_agent_a6_v1.html',a7:'page_agent_a7_v1.html'};
+  const map={a2:'agenti/a2-analyst/page_agent_a2_v3.html',a3:'agenti/a3-planner/page_agent_a3_v1.html',a4:'agenti/a4-brief/page_agent_a4_v1.html',a5:'../page_agent_a5_v1.html',a6:'../page_agent_a6_v1.html',a7:'../page_agent_a7_v1.html'};
   if(map[id]) window.location.href=map[id];
 }
 
@@ -1174,7 +1174,7 @@ async function launchA7() {
 }
 
 if (!gdcToken()) {
-  window.location.href = 'page_login_v6.html';
+  window.location.href = '../page_login_v6.html';
 } else {
   loadStates();
 }

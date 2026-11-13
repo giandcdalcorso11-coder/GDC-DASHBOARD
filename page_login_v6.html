@@ -311,7 +311,7 @@ async function doLogin() {
         sessionStorage.setItem('gdc_token', data.access_token);
         sessionStorage.setItem('gdc_uid', data.user.id);
       } catch(err){}
-      window.location.href = 'page_hub_v1.html';
+      window.location.href = 'app/page_hub_v1.html';
     } else {
       showError('Email o password non corretti.');
       btn.disabled = false;

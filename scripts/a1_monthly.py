@@ -389,12 +389,12 @@ def fetch_mbs_reposts(drive_service):
             log_activity(
                 "A1", f"MBS mancante — {MESE_LABEL}",
                 "Il file MBS repost non è ancora su Drive. Repost esclusi da questo giro.",
-                f"{WEBAPP_BASE}/page_home_v25.html"
+                f"{WEBAPP_BASE}/app/page_home_v25.html"
             )
             send_push(
                 f"⚠ A1: MBS mancante — {MESE_LABEL}",
                 "Repost esclusi da questo giro. Carica il CSV quando puoi.",
-                f"{WEBAPP_BASE}/page_home_v25.html"
+                f"{WEBAPP_BASE}/app/page_home_v25.html"
             )
         return []
 
@@ -411,12 +411,12 @@ def fetch_mbs_reposts(drive_service):
         log_activity(
             "A1", f"MBS recuperato — {MESE_LABEL}",
             "File trovato ed elaborato. Repost inseriti nel foglio.",
-            f"{WEBAPP_BASE}/page_home_v25.html"
+            f"{WEBAPP_BASE}/app/page_home_v25.html"
         )
         send_push(
             f"✅ A1: MBS recuperato — {MESE_LABEL}",
             "Repost trovati ed elaborati.",
-            f"{WEBAPP_BASE}/page_home_v25.html"
+            f"{WEBAPP_BASE}/app/page_home_v25.html"
         )
 
     from googleapiclient.http import MediaIoBaseDownload
@@ -1213,12 +1213,12 @@ def _run():
     log_activity(
         "A1", "A1 completato",
         f"Analytics {MESE_LABEL} pronti. Apri A2 per generare il report.",
-        f"{WEBAPP_BASE}/page_home_v25.html"
+        f"{WEBAPP_BASE}/app/page_home_v25.html"
     )
     send_push(
         "✅ A1 completato",
         f"Analytics {MESE_LABEL} pronti. Apri A2 per generare il report.",
-        f"{WEBAPP_BASE}/page_home_v25.html"
+        f"{WEBAPP_BASE}/app/page_home_v25.html"
     )
 
     print(f"\n✅ A1 Monthly completato — {MESE_LABEL}")

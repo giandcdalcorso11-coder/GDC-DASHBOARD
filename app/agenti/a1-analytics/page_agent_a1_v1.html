@@ -283,7 +283,7 @@ body{
 </div>
 
 <div class="page-content">
-  <a class="back-btn" href="page_home_v25.html">&#8592; Home</a>
+  <a class="back-btn" href="../../page_home_v25.html">&#8592; Home</a>
 
   <div class="mbs-banner" id="mbsBanner">
     <span style="font-size:1.1rem;">&#9888;&#65039;</span>
@@ -522,7 +522,7 @@ function gdcSessionExpired(){
     document.body.prepend(banner);
   }
   banner.textContent='Sessione scaduta — reindirizzamento al login...';
-  setTimeout(()=>{ window.location.href='page_login_v6.html'; },1600);
+  setTimeout(()=>{ window.location.href='../../../page_login_v6.html'; },1600);
 }
 async function sbFetch(url,options){
   options=options||{};
@@ -581,7 +581,7 @@ async function togglePushNotifications(){
     try{
       const permission=await Notification.requestPermission();
       if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
-      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+      const reg=await navigator.serviceWorker.register('../../../sw.js'); await navigator.serviceWorker.ready;
       const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
       const subJson=sub.toJSON();
       await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
@@ -761,7 +761,7 @@ async function loadActivity(){
 }
 
 if(!gdcToken()){
-  window.location.href='page_login_v6.html';
+  window.location.href='../../../page_login_v6.html';
 } else {
   loadA1();
   loadActivity();

@@ -358,13 +358,13 @@ body{
 <!-- ══ PAGE CONTENT ══ -->
 <div class="page-content">
 
-  <a class="back-btn" href="page_home_v25.html">
+  <a class="back-btn" href="../../page_home_v25.html">
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
       <path d="M8 2.5L4.5 6.5L8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     Home
   </a>
-  <a class="back-btn" href="page_hub_v1.html" style="margin-left:8px;">
+  <a class="back-btn" href="../../page_hub_v1.html" style="margin-left:8px;">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
@@ -741,7 +741,7 @@ function gdcSessionExpired(){
     document.body.prepend(banner);
   }
   banner.textContent='Sessione scaduta — reindirizzamento al login...';
-  setTimeout(()=>{ window.location.href='page_login_v6.html'; },1600);
+  setTimeout(()=>{ window.location.href='../../../page_login_v6.html'; },1600);
 }
 async function sbFetch(url,options){
   options=options||{};
@@ -800,7 +800,7 @@ async function togglePushNotifications(){
     try{
       const permission=await Notification.requestPermission();
       if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
-      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+      const reg=await navigator.serviceWorker.register('../../../sw.js'); await navigator.serviceWorker.ready;
       const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
       const subJson=sub.toJSON();
       await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
@@ -895,7 +895,7 @@ async function loadA2(){
 }
 
 if(!gdcToken()){
-  window.location.href='page_login_v6.html';
+  window.location.href='../../../page_login_v6.html';
 } else {
   loadA2();
 }

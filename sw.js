@@ -26,7 +26,7 @@ self.addEventListener('push', (event) => {
     body: data.body || '',
     icon: 'icons/icon-192.png',
     badge: 'icons/icon-192.png',
-    data: { url: data.url || 'page_home_v25.html' }
+    data: { url: data.url || 'app/page_home_v25.html' }
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -34,7 +34,7 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || 'page_home_v25.html';
+  const url = (event.notification.data && event.notification.data.url) || 'app/page_home_v25.html';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

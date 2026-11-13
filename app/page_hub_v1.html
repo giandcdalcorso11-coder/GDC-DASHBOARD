@@ -430,7 +430,7 @@ body{
   </a>
 
   <!-- ─── CARD GDC STUFF STUDIO ─── -->
-  <a class="hub-card card-studio" href="gdc_studio.html" id="card-studio">
+  <a class="hub-card card-studio" href="../gdc_studio.html" id="card-studio">
     <div class="card-top">
       <div class="card-title">GDC STUDIO</div>
       <div class="card-arrow">
@@ -489,7 +489,7 @@ body{
 <div class="hub-footer">
   GDC WORKSPACE &nbsp;·&nbsp; uso privato
   <div class="hub-footer-links">
-    <a class="hub-footer-link" href="gdc_reset_tool.html">Reset dati</a>
+    <a class="hub-footer-link" href="../gdc_reset_tool.html">Reset dati</a>
     <span class="hub-footer-sep">·</span>
     <button class="hub-footer-link" onclick="hubLogout()" type="button">Logout</button>
   </div>
@@ -501,7 +501,7 @@ function hubLogout(){
   if (!confirm('Vuoi disconnetterti da GDC WORKSPACE?')) return;
   sessionStorage.removeItem('gdc_token');
   sessionStorage.removeItem('gdc_uid');
-  window.location.href = 'page_login_v6.html';
+  window.location.href = '../page_login_v6.html';
 }
 
 /* ══ GDC LOGO HEADER: sequenza G→D→C→STUFF→linee ══ */
