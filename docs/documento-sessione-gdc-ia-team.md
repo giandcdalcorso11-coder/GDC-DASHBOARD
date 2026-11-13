@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 7
-**Ultimo aggiornamento:** 2026-11-13 17:41
+**Versione:** 8
+**Ultimo aggiornamento:** 2026-11-13 17:52
 
 ## Vision
 
@@ -120,7 +120,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 6 — Riorganizzazione cartelle GitHub
 
-**Stato:** da fare — da svolgere insieme allo Step 5, non separatamente
+**Stato:** in corso — avviata in anticipo rispetto allo Step 5 (vedi decisione sotto), parziale
 
 **Obiettivo:** la struttura del repo (oggi completamente piatta) rispecchia quella già ordinata di Drive, per agente.
 
@@ -135,6 +135,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 **Note (cronologia dello step):**
 - [2026-11-12] Audit completo struttura Drive vs GitHub eseguito. Confermato repo pubblico (verificato via fetch diretto). Cartella `docs/` creata in questa sessione per ospitare questo documento.
+- [2026-11-13] Gianluca ha chiesto di anticipare la riorganizzazione (invece di farla insieme allo Step 5) per far nascere le pagine nuove già nel posto giusto. Eseguita solo la parte a basso rischio: `page_home_v25.html` e `page_hub_v1.html` → `app/`; le quattro pagine agente → `app/agenti/a{1,2,3,4}-{analytics,analyst,planner,brief}/`. Lasciati deliberatamente in root (zero rischio di toccare automazioni fuori perimetro): `index.html`/`manifest.json`/`sw.js` (vincolo PWA), `page_login_v6.html` (bootstrap PWA — spostarlo avrebbe richiesto toccare il link di login/redirect in ogni singola pagina del repo, incluse quelle A5-A7 fuori perimetro, per un guadagno minimo), `page_agent_a5/a6/a7_v1.html`, `page_company_v2.html`, `page_pipeline_v1.html`, `gdc_studio.html`, `gdc_reset_tool.html` — i primi tre sono referenziati da `WEBAPP_BASE` dentro script Python di A5-A7 (`a7_followup.py`, `pipeline_notify.py`) che non si è voluto toccare in questo giro. Aggiornati tutti i link che puntano da/verso i file spostati (incluse le pagine rimaste in root). Scritto ed eseguito un verificatore automatico che risolve ogni link relativo contro il filesystem reale (50 link, 0 rotti) — ha anche scovato un errore reale fatto durante l'edit (profondità sbagliata nel link di login dalle pagine agente, 2 livelli invece di 3). Verificata anche sintassi Python/JS su tutti i file toccati. Push fatto sul branch di lavoro, non su main — il sito live su GitHub Pages non è impattato finché non c'è merge. Resta da fare: cartella `editoriale/` per gli output mensili (Step 5), eventuale riordino di A5-A7/company/pipeline/login (non ancora deciso se necessario).
 
 ### Step 7 — Trasporto dati storici da Drive
 
@@ -186,7 +187,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-13 17:34] Step 1, 2 e 3 completati — stati agenti robusti, token Instagram rinnovato, tassonomia DIVULGAZIONE ovunque
+### [2026-11-13 17:52] Step 1, 2, 3 completati e Step 6 avviato — stati agenti robusti, token Instagram rinnovato, tassonomia DIVULGAZIONE ovunque, prime pagine riorganizzate
 
 **Riepilogo:** Prima sessione di lavoro vero sul codice (le precedenti erano solo analisi/pianificazione): chiusa la robustezza degli stati agenti (Step 1); nello Step 2 scoperta — leggendo i log reali di più run — che il rinnovo automatico del token Instagram non ha mai funzionato davvero (un conto alla rovescia confermato ogni settimana verso una scadenza fissa, non un vero sposta-scadenza); Gianluca ha poi fatto il login manuale Meta e il rinnovo è stato verificato funzionante con due run reali lanciati da Claude Code; nello Step 3 la categoria DIVULGAZIONE è stata propagata in tutti e 4 i documenti/script della catena A1-A4.
 
@@ -207,7 +208,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   **Fix applicato:** rimosso il try/except — un errore reale ora fa fallire lo script in modo visibile; il caso legittimo di lista vuota (risposta 200 senza stories) resta gestito come prima. Commit `0f6863e`.
 - Gianluca ha fatto il login manuale su Meta (Graph API Explorer, app "GDC IA TEAM"): generato un nuovo token short-lived con i permessi necessari, scambiato per long-lived via `fb_exchange_token`, aggiornato a mano il secret `IG_ACCESS_TOKEN` su GitHub.
 - Verifica con due run reali lanciati da Claude Code via `workflow_dispatch`: `a1_stories_daily.yml` → successo, risposta IG reale "nessuna story attiva" (non più l'errore OAuth); `ig_token_refresh.yml` → successo, nuova scadenza **2027-01-12** (quasi 60 giorni da oggi) — conferma che il meccanismo di rinnovo funziona bene ripartendo da un login reale. La domanda "perché prima restituiva sempre la stessa scadenza fissa" resta senza una spiegazione certa, ma non più bloccante — da monitorare nelle prossime settimane.
-- Propagata DIVULGAZIONE come quarta categoria primaria (secondaria GDC STUFF) in tutti e 4 i documenti/script: `a1_monthly.py` (codice); documento tecnico A1 (.docx, v4→v5, editato via skill docx — unzip/merge_runs/edit XML/rezip/valida/rendering PDF di verifica); prompt A2 (md, v14→v15); prompt A4 (md, v6→v7). A3 confermato già corretto. Nei prompt A2/A4 colto anche il beneficio collaterale già previsto: il riconoscimento della serie "Capiamo la Sabbia" passa dal solo nome del post al campo categoria dedicato, più robusto. Le 3 copie aggiornate (A1 v5, A2 v15, A4 v7) consegnate a Gianluca come file — vivono ancora fuori dal repo (upload di conversazione), migreranno allo Step 6.
+- Propagata DIVULGAZIONE come quarta categoria primaria (secondaria GDC STUFF) in tutti e 4 i documenti/script: `a1_monthly.py` (codice); documento tecnico A1 (.docx, v4→v5, editato via skill docx — unzip/merge_runs/edit XML/rezip/valida/rendering PDF di verifica); prompt A2 (md, v14→v15); prompt A4 (md, v6→v7). A3 confermato già corretto. Nei prompt A2/A4 colto anche il beneficio collaterale già previsto: il riconoscimento della serie "Capiamo la Sabbia" passa dal solo nome del post al campo categoria dedicato, più robusto. Le 3 copie aggiornate (A1 v5, A2 v15, A4 v7) consegnate a Gianluca come file e tutti e 4 i prompt (incluso A3 invariato) committati su GitHub in `docs/prompts/` — Gianluca ha confermato che possono stare nel repo pubblico (nessun segreto vero, solo playbook operativo e link Drive).
+- Controllata la cartella sospetta `processed/` dentro AGENTE 6 su Drive (dall'audit precedente): confermata vuota (0 file, residuo del service account mai usato) — eliminata da Gianluca manualmente.
+- Anticipata la riorganizzazione cartelle GitHub (Step 6, prima prevista insieme allo Step 5) su richiesta di Gianluca: spostate in `app/` e `app/agenti/a{1,2,3,4}-xxx/` solo le pagine home/hub/A1-A4, lasciando deliberatamente fuori tutto il lato A5-A7/company/pipeline/login/GDC Studio per non dover toccare le loro automazioni Python. Aggiornati tutti i link interni di conseguenza, verificati con uno script scritto per l'occasione che risolve ogni link contro il filesystem reale (ha trovato un errore reale fatto durante l'edit, poi corretto).
 
 **Decisioni prese:**
 - Contesto: fino a quando dura la transizione (Step 8 non pronto), come gestire i cicli mensili reali di A2/A3/A4.
@@ -218,7 +221,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   Alternative scartate: repo privato, o un repo separato solo per i prompt — non valutate necessarie da Gianluca.
   Da rivedere se: in futuro uno dei prompt dovesse contenere dati davvero sensibili (es. credenziali, dati personali di terzi).
 
-**File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `.gitignore`, `docs/documento-sessione-gdc-ia-team.md`, `docs/prompts/Agente1_auto_prompt_v5.docx`, `docs/prompts/Agente2_auto_prompt_v15.md`, `docs/prompts/Agente3_auto_prompt_v12.md`, `docs/prompts/Agente4_auto_prompt_v7.md`; consegnati anche a Gianluca come file (A1 v5, A2 v15, A4 v7) per ricaricarli nei Progetti Claude.ai.
+**File consegnati/modificati:** `app/page_home_v25.html` (ex `page_home_v25.html`), `app/page_hub_v1.html` (ex `page_hub_v1.html`), `app/agenti/a1-analytics/page_agent_a1_v1.html`, `app/agenti/a2-analyst/page_agent_a2_v3.html`, `app/agenti/a3-planner/page_agent_a3_v1.html`, `app/agenti/a4-brief/page_agent_a4_v1.html` (tutte e quattro ex root), `page_agent_a5_v1.html`, `page_agent_a6_v1.html`, `page_agent_a7_v1.html`, `page_company_v2.html`, `page_pipeline_v1.html`, `page_login_v6.html`, `gdc_studio.html` (solo link aggiornati, restano in root), `sw.js`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `.gitignore`, `docs/documento-sessione-gdc-ia-team.md`, `docs/prompts/Agente1_auto_prompt_v5.docx`, `docs/prompts/Agente2_auto_prompt_v15.md`, `docs/prompts/Agente3_auto_prompt_v12.md`, `docs/prompts/Agente4_auto_prompt_v7.md`; consegnati anche a Gianluca come file (A1 v5, A2 v15, A4 v7) per ricaricarli nei Progetti Claude.ai.
 
 ---
 
