@@ -1146,7 +1146,18 @@ def send_push(title, body, link=None):
 
 def main():
     supabase_update_state("a1", "working")
+    try:
+        _run()
+    except Exception as e:
+        supabase_update_state("a1", "error", {"errore": str(e)[:500]})
+        log_activity(
+            "A1", "A1 fallito",
+            f"Errore durante l'analisi {MESE_LABEL}: {e}",
+        )
+        raise
 
+
+def _run():
     # 1. Fetch dati aggregati profilo (follower, following, media count)
     profile_data = fetch_profile_data()
 

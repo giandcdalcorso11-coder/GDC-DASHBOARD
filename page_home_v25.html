@@ -692,12 +692,18 @@ async function togglePushNotifications() {
 document.addEventListener('DOMContentLoaded', updatePushButtonUI);
 
 const THREE_DAYS=3*24*60*60*1000;
+// Un run reale (es. A1 Monthly) dura pochi minuti. Oltre questa soglia uno
+// stato "working" è quasi certamente orfano: crash senza except, o processo
+// ucciso dal runner prima di poter scrivere qualunque cosa. Lo trattiamo
+// come errore invece di lasciarlo bloccato per sempre su "in corso".
+const WORKING_STALE=3*60*60*1000;
 
 function mapState(row){
   if(!row) return 'sleep';
   const st=row.stato||'';
   const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
-  if(st==='working') return 'active';
+  if(st==='error') return 'error';
+  if(st==='working') return age<WORKING_STALE?'active':'error';
   if(st==='ready'||st==='queued') return 'queued';
   if(st==='done') return age<THREE_DAYS?'done':'sleep';
   if(st==='riposo') return age<THREE_DAYS?'rest':'sleep';
@@ -709,8 +715,9 @@ const CFG={
   active:{bg:'bg-active',css:'s-active',card:'st-working',lbl:'In corso',chip:'<span class="status-chip chip-working"><span class="spinner-dot"></span> Claude al lavoro...</span>'},
   done: {bg:'bg-done', css:'s-done', card:'st-done', lbl:'Completato',chip:'<span class="status-chip chip-done">&#x2713; Completato</span>'},
   sleep:{bg:'bg-sleep',css:'s-sleep',card:'st-sleep',lbl:'Inattivo',  chip:'<span class="status-chip chip-sleep">&#x25CB; Inattivo</span>'},
+  error:{bg:'bg-queued',css:'s-queued',card:'st-queued',lbl:'Errore', chip:'<span class="status-chip" style="background:var(--life-bg);color:var(--life)">&#x26A0; Errore</span>'},
 };
-const PRI={active:5,queued:4,done:3,rest:2,sleep:1};
+const PRI={error:6,active:5,queued:4,done:3,rest:2,sleep:1};
 function worstState(rows){let b='sleep';rows.forEach(r=>{if(!r)return;const s=mapState(r);if((PRI[s]||0)>(PRI[b]||0))b=s;});return b;}
 
 var a4RAF=null,a5RAF=null,a6RAF=null,a7RAF=null;
@@ -751,14 +758,13 @@ function setLogoState(id,st){
   if(id==='a6'&&st==='active') startA6Anim(); else if(id==='a6') stopAnim('a6');
   if(id==='a7'&&st==='active') startA7Anim(); else if(id==='a7') stopAnim('a7');
 }
-const STATO_CYCLE={sleep:'queued',queued:'working',working:'done',done:'riposo',riposo:'queued',rest:'queued'};
-const STATO_LABELS={queued:'In coda',working:'In corso',done:'Completato',riposo:'Riposo',sleep:'Inattivo'};
 const STATO_PILLS=[
   {key:'queued',  supaKey:'queued',  label:'In coda',   cls:'sp-queued'},
   {key:'working', supaKey:'working', label:'In corso',  cls:'sp-working'},
   {key:'done',    supaKey:'done',    label:'Fatto',     cls:'sp-done'},
   {key:'riposo',  supaKey:'riposo',  label:'Riposo',    cls:'sp-rest'},
   {key:'sleep',   supaKey:'sleep',   label:'Inattivo',  cls:'sp-sleep'},
+  {key:'error',   supaKey:'error',   label:'Errore',    cls:'sp-queued'},
 ];
 
 function renderStatoRow(id, supaStato){
@@ -789,21 +795,6 @@ async function setStatoRaw(agentId, newStato){
 function renderActionsSimple(id,st){
   // per A5/A6 i bottoni sono hardcodati nell'HTML, non serve riscriverli
   // aggiorna solo la stato-row
-}
-
-async function setStato(agentId,currentSt){
-  const nextSupabase=STATO_CYCLE[currentSt]||'queued';
-  const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
-  try{
-    await Promise.all(ids.map(aid=>
-      sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=eq.'+aid,{
-        method:'PATCH',
-        headers:{'Content-Type':'application/json','Prefer':'return=minimal'},
-        body:JSON.stringify({stato:nextSupabase,updated_at:new Date().toISOString()})
-      })
-    ));
-    await loadStates();
-  }catch(e){console.error('setStato error:',e);}
 }
 
 function renderActions(id,st){
