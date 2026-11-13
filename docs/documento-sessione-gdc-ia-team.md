@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 4
-**Ultimo aggiornamento:** 2026-11-13 15:53
+**Versione:** 5
+**Ultimo aggiornamento:** 2026-11-13 17:21
 
 ## Vision
 
@@ -46,7 +46,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 2 — Token Instagram scaduto + bug silenzioso A1 Stories Daily
 
-**Stato:** in corso — bloccato in attesa del login manuale Meta di Gianluca
+**Stato:** completato
 
 **Obiettivo:** il rinnovo del token Instagram torna a funzionare prima della scadenza reale (non dopo), e A1 Stories Daily non segnala più "successo" quando in realtà non ha salvato nulla.
 
@@ -56,11 +56,14 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - `a1_stories_daily.py`: un errore OAuth 400 veniva interpretato come "nessuna story attiva" e lo script usciva con successo — da inizio novembre non venivano salvate stories, senza nessun alert perché il workflow risultava verde. **Fix applicato**: rimosso il try/except che catturava qualunque `HTTPError` in `fetch_active_stories()` — ora un errore reale fa fallire lo script in modo visibile, il caso legittimo di lista vuota resta gestito come prima.
 - `ig_token_refresh.py`: trovato un secondo bug indipendente — `update_supabase_token_status()` sovrascriveva `expires_at` con `null` ad ogni tentativo fallito, perdendo la visibilità sull'ultima scadenza nota buona. **Fix applicato**: su fallimento lo script ora legge e riscrive il valore già presente invece di azzerarlo.
 
-**Criterio di completamento:** `a1_stories_daily.py` segnala (fallimento visibile) se riceve un errore di autenticazione — fatto; resta da verificare empiricamente, dopo il login manuale di Gianluca, se `ig_token_refresh.py` riesce davvero a spostare la scadenza in avanti o se serve un endpoint/flusso Meta diverso.
+**Criterio di completamento:** `a1_stories_daily.py` segnala (fallimento visibile) se riceve un errore di autenticazione — fatto e verificato con un run reale; `ig_token_refresh.py` riesce davvero a spostare la scadenza in avanti partendo da un login reale — verificato con un run reale (vedi sotto). Entrambi confermati.
+
+**Decisione/nota finale:** il mistero del "perché l'exchange restituiva sempre la stessa scadenza fissa" resta senza una spiegazione certa (non confermabile dall'esterno via log — potrebbe essere un limite Meta non documentato su rinnovi ripetuti senza un login fresco, o un effetto collaterale di un problema precedente non identificato). Non è bloccante: con un login reale appena fatto, il rinnovo settimanale riparte da una base sana e ora scrive sempre uno stato visibile (errore se fallisce, scadenza reale se riesce — grazie ai due fix di questo step). Da tenere d'occhio nelle prossime settimane tramite i pallini di stato (Step 1) invece che assumere "funziona per sempre".
 
 **Note (cronologia dello step):**
 - [2026-11-12] Trovato durante l'audit completo dei 10 GitHub Actions workflow del repo: `A1 Monthly` fallito il 2/11 (stesso token morto), `IG Token Refresh` fallito 2 volte consecutive (2/11, 9/11), `A1 Stories Daily` sempre verde ma silenziosamente inattivo da inizio mese. Audit ha anche rilevato che i workflow con cron frequente (ogni 30 min / ogni ora: `A1 MBS Watcher`, `Pipeline Watcher`) girano in realtà ogni 7-9 ore — limite di scheduling lato GitHub Actions sotto carico, non un bug nostro, solo da tenerne conto.
-- [2026-11-13] Letti i log reali di 5 run consecutivi di `ig_token_refresh.py` (5/10, 12/10, 19/10, 26/10, 2/11) — scoperta la vera causa radice (vedi sopra, non un bug di margine). Pushati i fix per `a1_stories_daily.py` (commit `0f6863e`) e per la perdita di visibilità su `expires_at` in `ig_token_refresh.py` (stesso commit). Resta da fare il login manuale Meta (solo Gianluca) e osservare il comportamento del rinnovo successivo.
+- [2026-11-13] Letti i log reali di 5 run consecutivi di `ig_token_refresh.py` (5/10, 12/10, 19/10, 26/10, 2/11) — scoperta la vera causa radice (vedi sopra, non un bug di margine). Pushati i fix per `a1_stories_daily.py` (commit `0f6863e`) e per la perdita di visibilità su `expires_at` in `ig_token_refresh.py` (stesso commit).
+- [2026-11-13, pomeriggio] Gianluca ha fatto il login manuale Meta via Graph API Explorer (app "GDC IA TEAM"), ottenuto un nuovo token short-lived, scambiato per long-lived via `fb_exchange_token`, aggiornato il secret `IG_ACCESS_TOKEN` su GitHub. Verifica con due run reali lanciati da Claude Code: `a1_stories_daily.yml` → successo, risposta IG reale "nessuna story attiva" (non più l'errore OAuth); `ig_token_refresh.yml` → successo, nuova scadenza ottenuta **2027-01-12** (quasi 60 giorni da oggi, non più la vecchia data fissa del 31/10) — conferma che il rinnovo funziona correttamente quando riparte da un login reale. Step chiuso.
 
 ### Step 3 — Tassonomia DIVULGAZIONE
 
@@ -181,9 +184,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-13 15:53] Step 1 completato (stati agenti), Step 2 avviato — scoperta la vera causa del token Instagram morto
+### [2026-11-13 17:21] Step 1 e Step 2 completati — stati agenti robusti, token Instagram rinnovato e verificato
 
-**Riepilogo:** Prima sessione di lavoro vero sul codice (le precedenti erano solo analisi/pianificazione): chiusa la robustezza degli stati agenti (Step 1), e durante lo Step 2 scoperta — leggendo i log reali di più run — che il rinnovo automatico del token Instagram non ha mai funzionato davvero: non uno sposta-scadenza ma un conto alla rovescia confermato ogni settimana verso una scadenza fissa.
+**Riepilogo:** Prima sessione di lavoro vero sul codice (le precedenti erano solo analisi/pianificazione): chiusa la robustezza degli stati agenti (Step 1); nello Step 2 scoperta — leggendo i log reali di più run — che il rinnovo automatico del token Instagram non ha mai funzionato davvero (un conto alla rovescia confermato ogni settimana verso una scadenza fissa, non un vero sposta-scadenza); Gianluca ha poi fatto il login manuale Meta e il rinnovo è stato verificato funzionante con due run reali lanciati da Claude Code.
 
 **Cosa è stato fatto:**
 - Step 1 implementato e pushato (commit `4fd6076`): `a1_monthly.py` — `main()` ora avvolge il corpo reale (rinominato `_run()`) in un try/except che scrive stato "error" su qualunque eccezione invece di lasciare "working" bloccato per sempre; `page_home_v25.html` — nuovo stato "error" reale in `mapState`/`CFG`/`PRI`/`STATO_PILLS`, scadenza di 3 ore sullo stato "working" (oltre la soglia passa a "error"), rimosso codice morto verificato via grep (`setStato`, `STATO_CYCLE`, `STATO_LABELS`).
@@ -200,6 +203,8 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   **Sintomo:** nessuna story salvata da inizio novembre, workflow sempre verde.
   **Causa:** `fetch_active_stories()` in `a1_stories_daily.py` catturava qualunque `HTTPError` (incluso l'OAuth 400 del token scaduto) e lo trattava come "nessuna story attiva".
   **Fix applicato:** rimosso il try/except — un errore reale ora fa fallire lo script in modo visibile; il caso legittimo di lista vuota (risposta 200 senza stories) resta gestito come prima. Commit `0f6863e`.
+- Gianluca ha fatto il login manuale su Meta (Graph API Explorer, app "GDC IA TEAM"): generato un nuovo token short-lived con i permessi necessari, scambiato per long-lived via `fb_exchange_token`, aggiornato a mano il secret `IG_ACCESS_TOKEN` su GitHub.
+- Verifica con due run reali lanciati da Claude Code via `workflow_dispatch`: `a1_stories_daily.yml` → successo, risposta IG reale "nessuna story attiva" (non più l'errore OAuth); `ig_token_refresh.yml` → successo, nuova scadenza **2027-01-12** (quasi 60 giorni da oggi) — conferma che il meccanismo di rinnovo funziona bene ripartendo da un login reale. La domanda "perché prima restituiva sempre la stessa scadenza fissa" resta senza una spiegazione certa, ma non più bloccante — da monitorare nelle prossime settimane.
 
 **File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `docs/documento-sessione-gdc-ia-team.md`.
 
