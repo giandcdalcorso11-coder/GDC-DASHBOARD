@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 3
-**Ultimo aggiornamento:** 2026-11-13 15:49
+**Versione:** 4
+**Ultimo aggiornamento:** 2026-11-13 15:53
 
 ## Vision
 
@@ -46,19 +46,21 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 2 — Token Instagram scaduto + bug silenzioso A1 Stories Daily
 
-**Stato:** da fare — urgente
+**Stato:** in corso — bloccato in attesa del login manuale Meta di Gianluca
 
 **Obiettivo:** il rinnovo del token Instagram torna a funzionare prima della scadenza reale (non dopo), e A1 Stories Daily non segnala più "successo" quando in realtà non ha salvato nulla.
 
 **Decisioni progettuali:**
 - Il token è scaduto per davvero il 31/10/2026 — un token scaduto non si può rinnovare via refresh, serve un nuovo login manuale Meta da parte di Gianluca (passaggio che richiede browser, non automatizzabile da script).
-- `ig_token_refresh.py` ha un bug di timing: il run del 2/11 si è attivato quando il token era già scaduto da "-1.9 giorni" — il margine di anticipo rispetto alla vera scadenza non è sufficiente. Da investigare la causa radice, non solo rigenerare il token.
-- `a1_stories_daily.py`: un errore OAuth 400 viene interpretato come "nessuna story attiva" e lo script esce con successo — da quasi due settimane (inizio novembre) non vengono salvate stories, senza nessun alert perché il workflow risulta verde. Fix: distinguere l'errore OAuth da una lista vuota legittima.
+- **Scoperta chiave (supera la lettura iniziale "bug di margine/timing" del 12/11):** non è un problema di margine. Confrontando i log reali di più run consecutivi di `ig_token_refresh.py` (19/10: "mancano 12.2 giorni" → nuova scadenza ottenuta 2026-10-31T18:20:21; 26/10: "mancano 5.2 giorni" → nuova scadenza ottenuta **di nuovo, identica al secondo**, 2026-10-31T18:20:21), risulta che la chiamata `fb_exchange_token` su questo token non ha mai davvero spostato la scadenza in avanti — ha solo confermato lo stesso conto alla rovescia verso una scadenza fissa legata all'ultimo login manuale reale. Il meccanismo di "auto-rinnovo settimanale" è risultato verde per mesi senza funzionare davvero. Non ancora verificato se questo sia un limite intrinseco di questo tipo di token/endpoint Meta o un dettaglio risolvibile — lo sapremo osservando se il prossimo rinnovo, dopo il login manuale di Gianluca, sposta davvero la data.
+- `a1_stories_daily.py`: un errore OAuth 400 veniva interpretato come "nessuna story attiva" e lo script usciva con successo — da inizio novembre non venivano salvate stories, senza nessun alert perché il workflow risultava verde. **Fix applicato**: rimosso il try/except che catturava qualunque `HTTPError` in `fetch_active_stories()` — ora un errore reale fa fallire lo script in modo visibile, il caso legittimo di lista vuota resta gestito come prima.
+- `ig_token_refresh.py`: trovato un secondo bug indipendente — `update_supabase_token_status()` sovrascriveva `expires_at` con `null` ad ogni tentativo fallito, perdendo la visibilità sull'ultima scadenza nota buona. **Fix applicato**: su fallimento lo script ora legge e riscrive il valore già presente invece di azzerarlo.
 
-**Criterio di completamento:** `ig_token_refresh.py` rinnova con margine sufficiente prima della scadenza; `a1_stories_daily.py` segnala (fallimento visibile) se riceve un errore di autenticazione, non lo confonde con "nessuna story".
+**Criterio di completamento:** `a1_stories_daily.py` segnala (fallimento visibile) se riceve un errore di autenticazione — fatto; resta da verificare empiricamente, dopo il login manuale di Gianluca, se `ig_token_refresh.py` riesce davvero a spostare la scadenza in avanti o se serve un endpoint/flusso Meta diverso.
 
 **Note (cronologia dello step):**
 - [2026-11-12] Trovato durante l'audit completo dei 10 GitHub Actions workflow del repo: `A1 Monthly` fallito il 2/11 (stesso token morto), `IG Token Refresh` fallito 2 volte consecutive (2/11, 9/11), `A1 Stories Daily` sempre verde ma silenziosamente inattivo da inizio mese. Audit ha anche rilevato che i workflow con cron frequente (ogni 30 min / ogni ora: `A1 MBS Watcher`, `Pipeline Watcher`) girano in realtà ogni 7-9 ore — limite di scheduling lato GitHub Actions sotto carico, non un bug nostro, solo da tenerne conto.
+- [2026-11-13] Letti i log reali di 5 run consecutivi di `ig_token_refresh.py` (5/10, 12/10, 19/10, 26/10, 2/11) — scoperta la vera causa radice (vedi sopra, non un bug di margine). Pushati i fix per `a1_stories_daily.py` (commit `0f6863e`) e per la perdita di visibilità su `expires_at` in `ig_token_refresh.py` (stesso commit). Resta da fare il login manuale Meta (solo Gianluca) e osservare il comportamento del rinnovo successivo.
 
 ### Step 3 — Tassonomia DIVULGAZIONE
 
@@ -178,6 +180,30 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-13 15:53] Step 1 completato (stati agenti), Step 2 avviato — scoperta la vera causa del token Instagram morto
+
+**Riepilogo:** Prima sessione di lavoro vero sul codice (le precedenti erano solo analisi/pianificazione): chiusa la robustezza degli stati agenti (Step 1), e durante lo Step 2 scoperta — leggendo i log reali di più run — che il rinnovo automatico del token Instagram non ha mai funzionato davvero: non uno sposta-scadenza ma un conto alla rovescia confermato ogni settimana verso una scadenza fissa.
+
+**Cosa è stato fatto:**
+- Step 1 implementato e pushato (commit `4fd6076`): `a1_monthly.py` — `main()` ora avvolge il corpo reale (rinominato `_run()`) in un try/except che scrive stato "error" su qualunque eccezione invece di lasciare "working" bloccato per sempre; `page_home_v25.html` — nuovo stato "error" reale in `mapState`/`CFG`/`PRI`/`STATO_PILLS`, scadenza di 3 ore sullo stato "working" (oltre la soglia passa a "error"), rimosso codice morto verificato via grep (`setStato`, `STATO_CYCLE`, `STATO_LABELS`).
+- Decisioni aperte dello Step 1 risolte: Gianluca ha confermato esplicitamente di procedere con le risposte di default proposte (override manuale mantenuto; tabella `user_settings` riusata per lo Step 9) — commit `7682bd9`.
+- **Bug: rinnovo automatico token Instagram non ha mai davvero funzionato**
+  **Sintomo:** `ig_token_refresh.py` risultava verde per mesi, ma il token è scaduto comunque il 31/10/2026.
+  **Causa:** confrontando i log di 5 run consecutivi (5/10 → 2/11), i rinnovi del 19/10 e del 26/10 hanno restituito **la stessa identica scadenza** (2026-10-31T18:20:21) invece di una nuova finestra di 60 giorni — la chiamata `fb_exchange_token` su questo token conferma solo il conto alla rovescia verso una scadenza fissa legata all'ultimo login manuale, non la estende. Non ancora chiaro se sia un limite intrinseco del tipo di token/endpoint usato o risolvibile diversamente — verificabile solo dopo il prossimo login manuale di Gianluca.
+  **Fix applicato:** nessuno per la causa radice (richiede prima il login manuale e poi un'osservazione empirica del rinnovo successivo); risolto però un bug indipendente nello stesso script, vedi sotto.
+- **Bug: perdita di visibilità sulla scadenza nota in caso di fallimento**
+  **Sintomo:** nessuno diretto — scoperto leggendo il codice durante l'indagine sul bug sopra.
+  **Causa:** `update_supabase_token_status()` in `ig_token_refresh.py` scriveva sempre `expires_at` nel payload, anche `None` sui fallimenti, azzerando ogni volta l'unica informazione affidabile sul countdown reale.
+  **Fix applicato:** su fallimento lo script ora legge e riscrive il valore già presente su Supabase invece di sovrascriverlo con null. Commit `0f6863e`.
+- **Bug: A1 Stories Daily segnalava successo anche su errore di autenticazione**
+  **Sintomo:** nessuna story salvata da inizio novembre, workflow sempre verde.
+  **Causa:** `fetch_active_stories()` in `a1_stories_daily.py` catturava qualunque `HTTPError` (incluso l'OAuth 400 del token scaduto) e lo trattava come "nessuna story attiva".
+  **Fix applicato:** rimosso il try/except — un errore reale ora fa fallire lo script in modo visibile; il caso legittimo di lista vuota (risposta 200 senza stories) resta gestito come prima. Commit `0f6863e`.
+
+**File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `docs/documento-sessione-gdc-ia-team.md`.
+
+---
 
 ### [2026-11-12 22:29] Analisi completa del sistema, decisione di ricostruire A1-A4 da Claude Code, audit infrastruttura
 
