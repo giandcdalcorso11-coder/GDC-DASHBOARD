@@ -111,15 +111,19 @@ def fetch_story_insights(story_id):
 
 
 def fetch_active_stories():
-    """Recupera tutte le stories attive + metriche via insights."""
+    """
+    Recupera tutte le stories attive + metriche via insights.
+
+    Nessun try/except attorno alla chiamata: un errore reale (es. OAuth 400
+    per token scaduto) deve far fallire lo script in modo visibile su
+    GitHub Actions, non essere confuso con "nessuna story attiva" — prima
+    veniva catturato qui e interpretato come lista vuota, mascherando per
+    settimane un token morto dietro un workflow verde.
+    """
     print("  → Fetch stories attive...")
     fields = "id,timestamp,permalink,media_type"
-    try:
-        data = ig_get(f"{IG_USER_ID}/stories", {"fields": fields, "limit": 100})
-        stories = data.get("data", [])
-    except requests.HTTPError as e:
-        print(f"    ATTENZIONE: permesso stories non disponibile — {e}")
-        return []
+    data = ig_get(f"{IG_USER_ID}/stories", {"fields": fields, "limit": 100})
+    stories = data.get("data", [])
 
     if not stories:
         print("    Nessuna story attiva al momento")

@@ -173,7 +173,29 @@ def update_github_secret(secret_name, secret_value):
 
 # ─── STEP 3 — SUPABASE LOG ──────────────────────────────────────────
 def update_supabase_token_status(expires_at_iso, success=True, error_msg=None):
-    """Scrive lo stato dell'ultimo rinnovo in una tabella di log/monitoraggio."""
+    """
+    Scrive lo stato dell'ultimo rinnovo in una tabella di log/monitoraggio.
+
+    Su fallimento (expires_at_iso=None) NON si deve mai sovrascrivere la
+    scadenza nota con null: il vecchio valore resta l'unica informazione
+    affidabile su quanto tempo resta davvero, e perderla qui (upsert con
+    merge-duplicates comunque sostituisce il campo con quanto passato nel
+    payload) è esattamente quello che ha reso invisibile il countdown reale
+    nelle settimane prima della scadenza del 31/10/2026. Se la chiamata non
+    ha un nuovo valore, si legge e si riscrive quello già presente.
+    """
+    headers_read = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+    }
+    if expires_at_iso is None:
+        r_read = requests.get(
+            f"{SUPABASE_URL}/rest/v1/token_status?id=eq.ig_token&select=expires_at",
+            headers=headers_read, timeout=10
+        )
+        if r_read.status_code == 200 and r_read.json():
+            expires_at_iso = r_read.json()[0].get("expires_at")
+
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
