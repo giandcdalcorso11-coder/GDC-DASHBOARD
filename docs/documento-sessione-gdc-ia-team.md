@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 6
-**Ultimo aggiornamento:** 2026-11-13 17:34
+**Versione:** 7
+**Ultimo aggiornamento:** 2026-11-13 17:41
 
 ## Vision
 
@@ -81,7 +81,8 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 **Note (cronologia dello step):**
 - [2026-11-12] Decisione presa dopo discussione con Gianluca, inclusa correzione di un'inversione primaria/secondaria che Gianluca aveva scritto a parole ("Sport primaria, GDC Stuff secondaria") rispetto a quanto documentato in A1/A2/A4 (GDC STUFF primaria, SPORT secondaria) — chiarito che la documentazione corrente è quella corretta, resa comunque superata dalla nuova categoria dedicata.
-- [2026-11-13] Implementato ovunque. `a1_monthly.py`: `CATEGORIE_GDC` ora a 4 valori, la serie si auto-classifica DIVULGAZIONE/GDC STUFF invece di GDC STUFF/SPORT (si riflette automaticamente nella dropdown di convalida del foglio Excel). Documenti prompt aggiornati in place (non ancora nel repo — vivono come upload di questa conversazione, migreranno nel repo allo Step 6): A2 v15 — normalizzazione, placeholder colore DIVULGAZIONE=D9B77E (stesso hex della palette teal di A3, per coerenza), riconoscimento serie ora basato sulla categoria invece che solo sul nome, rimossa la logica di sotto-righe "di cui/esclusa serie" (non più necessaria: DIVULGAZIONE è una categoria a sé nella tabella per-categoria); A4 v7 — nuova riga DIVULGAZIONE in tabella categorie, aggiornata sez. 7; A1 (documento tecnico .docx) v5 — tabella 6.0 aggiornata, nota sulla convalida a 4 valori, aggiunta riga changelog v5. Le 3 copie aggiornate (A1 v5 docx, A2 v15 md, A4 v7 md) consegnate a Gianluca via file — da ricaricare lui stesso nei rispettivi Progetti Claude.ai al posto delle vecchie, dato che per ora non vivono nel repo.
+- [2026-11-13] Implementato ovunque. `a1_monthly.py`: `CATEGORIE_GDC` ora a 4 valori, la serie si auto-classifica DIVULGAZIONE/GDC STUFF invece di GDC STUFF/SPORT (si riflette automaticamente nella dropdown di convalida del foglio Excel). Documenti prompt aggiornati: A2 v15 — normalizzazione, placeholder colore DIVULGAZIONE=D9B77E (stesso hex della palette teal di A3, per coerenza), riconoscimento serie ora basato sulla categoria invece che solo sul nome, rimossa la logica di sotto-righe "di cui/esclusa serie" (non più necessaria: DIVULGAZIONE è una categoria a sé nella tabella per-categoria); A4 v7 — nuova riga DIVULGAZIONE in tabella categorie, aggiornata sez. 7; A1 (documento tecnico .docx) v5 — tabella 6.0 aggiornata, nota sulla convalida a 4 valori, aggiunta riga changelog v5. Le 3 copie aggiornate (A1 v5 docx, A2 v15 md, A4 v7 md) consegnate a Gianluca via file.
+- [2026-11-13, più tardi] Chiarito con Gianluca: fino a quando la sessione Claude Code dedicata (Step 8) non è pronta, continuerà a lanciare i cicli mensili reali di A2/A3/A4 dai Progetti Claude.ai come fa oggi — quindi i prompt aggiornati vanno comunque ricaricati lì (l'istruzione di prima sessione era corretta, solo non motivata bene). In più, ha chiesto di mettere i 4 prompt anche su GitHub (`docs/prompts/`, posizione provvisoria prima del riordino dello Step 6) così restano leggibili da qualunque sessione Claude Code futura senza dipendere dagli upload di questa conversazione. Segnalato che il repo è pubblico prima di pushare (playbook operativo e link cartelle Drive visibili a chiunque, nessun segreto vero) — confermato "pubblici va bene", pushato (commit `a888677`), incluso anche Agente3_auto_prompt_v12.md (invariato) per avere i 4 insieme.
 
 ### Step 4 — Schermata di categorizzazione post
 
@@ -208,7 +209,16 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Verifica con due run reali lanciati da Claude Code via `workflow_dispatch`: `a1_stories_daily.yml` → successo, risposta IG reale "nessuna story attiva" (non più l'errore OAuth); `ig_token_refresh.yml` → successo, nuova scadenza **2027-01-12** (quasi 60 giorni da oggi) — conferma che il meccanismo di rinnovo funziona bene ripartendo da un login reale. La domanda "perché prima restituiva sempre la stessa scadenza fissa" resta senza una spiegazione certa, ma non più bloccante — da monitorare nelle prossime settimane.
 - Propagata DIVULGAZIONE come quarta categoria primaria (secondaria GDC STUFF) in tutti e 4 i documenti/script: `a1_monthly.py` (codice); documento tecnico A1 (.docx, v4→v5, editato via skill docx — unzip/merge_runs/edit XML/rezip/valida/rendering PDF di verifica); prompt A2 (md, v14→v15); prompt A4 (md, v6→v7). A3 confermato già corretto. Nei prompt A2/A4 colto anche il beneficio collaterale già previsto: il riconoscimento della serie "Capiamo la Sabbia" passa dal solo nome del post al campo categoria dedicato, più robusto. Le 3 copie aggiornate (A1 v5, A2 v15, A4 v7) consegnate a Gianluca come file — vivono ancora fuori dal repo (upload di conversazione), migreranno allo Step 6.
 
-**File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `.gitignore`, `docs/documento-sessione-gdc-ia-team.md`; fuori dal repo: `Agente1_auto_prompt_v5.docx`, `Agente2_auto_prompt_v15.md`, `Agente4_auto_prompt_v7.md` (consegnati a Gianluca).
+**Decisioni prese:**
+- Contesto: fino a quando dura la transizione (Step 8 non pronto), come gestire i cicli mensili reali di A2/A3/A4.
+  Decisione: restano sui Progetti Claude.ai come oggi, con i prompt aggiornati ricaricati manualmente da Gianluca.
+  Alternative scartate: congelare/rimandare i cicli in attesa del nuovo sistema — scartata perché Gianluca vuole continuità operativa nel frattempo.
+- Contesto: dove far vivere i 4 prompt agente in modo persistente e leggibile da future sessioni Claude Code, dato che il repo GDC-DASHBOARD è pubblico.
+  Decisione: pubblicarli così come sono in `docs/prompts/` nel repo pubblico — confermato da Gianluca dopo aver segnalato che contengono il playbook operativo e i link alle cartelle Drive (ma nessun segreto vero).
+  Alternative scartate: repo privato, o un repo separato solo per i prompt — non valutate necessarie da Gianluca.
+  Da rivedere se: in futuro uno dei prompt dovesse contenere dati davvero sensibili (es. credenziali, dati personali di terzi).
+
+**File consegnati/modificati:** `page_home_v25.html`, `scripts/a1_monthly.py`, `scripts/ig_token_refresh.py`, `scripts/a1_stories_daily.py`, `.gitignore`, `docs/documento-sessione-gdc-ia-team.md`, `docs/prompts/Agente1_auto_prompt_v5.docx`, `docs/prompts/Agente2_auto_prompt_v15.md`, `docs/prompts/Agente3_auto_prompt_v12.md`, `docs/prompts/Agente4_auto_prompt_v7.md`; consegnati anche a Gianluca come file (A1 v5, A2 v15, A4 v7) per ricaricarli nei Progetti Claude.ai.
 
 ---
 
