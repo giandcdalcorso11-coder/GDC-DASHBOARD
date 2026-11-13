@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 1
-**Ultimo aggiornamento:** 2026-11-12 22:29
+**Versione:** 3
+**Ultimo aggiornamento:** 2026-11-13 15:49
 
 ## Vision
 
@@ -25,22 +25,24 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 1 — Robustezza stato agenti (pallini home page)
 
-**Stato:** in corso
+**Stato:** completato
 
 **Obiettivo:** i pallini di stato degli agenti nella home (`page_home_v25.html`) devono riflettere in modo affidabile cosa sta succedendo davvero, senza restare bloccati in stati non veri.
 
 **Decisioni progettuali:**
-- Aggiungere uno stato "errore" reale (oggi il vocabolario è solo queued/working/done/riposo/sleep).
-- `a1_monthly.py` deve garantire sempre una scrittura finale su `agent_states` (done o error), avvolgendo `main()` in un try/except — oggi non lo fa.
-- Aggiungere in `mapState()` (JS) una scadenza temporale anche per lo stato `working` (oggi `done` e `riposo` scadono dopo 3 giorni, `working` no).
-- Rimuovere il codice morto lato webapp (`setStato`, `STATO_CYCLE`, `STATO_LABELS`, `renderActionsSimple`) dopo aver verificato che non sia più richiamato da nessun pulsante reale.
-- A2/A3/A4 non scrivono oggi nessuno stato automatico su `agent_states` (solo manuale via click pillola) — la correzione vera per questi tre arriva con il rebuild (Step 5), non va patchata qui a parte.
-- **Aperto**: se mantenere il click manuale sulle pillole come valvola di emergenza una volta che l'automazione è più robusta, o rimuoverlo — da decidere con Gianluca.
+- Aggiunto uno stato "errore" reale (prima il vocabolario era solo queued/working/done/riposo/sleep).
+- `a1_monthly.py` ora garantisce sempre una scrittura finale su `agent_states` (done o error), avvolgendo il corpo reale (rinominato `_run()`) in un try/except dentro `main()`.
+- Aggiunta in `mapState()` (JS) una scadenza di 3 ore per lo stato `working`: oltre quella soglia il pallino passa a "errore" invece di restare bloccato su "in corso" (copre anche il caso limite di un processo ucciso dal runner prima di poter scrivere qualunque cosa, non solo le eccezioni Python catturate).
+- Scelta di design per "errore": riusa la palette visiva già esistente di "queued" (rosso) sui loghi/card per non dover introdurre una sesta variante di colore per ognuno dei 7 loghi SVG animati — si distingue solo via testo (chip "⚠ Errore" vs "⏸ In attesa") e via pillola manuale dedicata. Compromesso accettato per tenere il cambiamento minimale; da rivedere se in futuro servisse una distinzione visiva più marcata.
+- Rimosso il codice morto verificato via grep (zero chiamate reali): `setStato()`, `STATO_CYCLE`, `STATO_LABELS`. `renderActionsSimple()` invece NON è stato toccato: è richiamata da `loadStates()` (righe 843-844 prima dell'edit) — è uno stub voluto per A5/A6, non codice morto, come indicato dal suo stesso commento.
+- A2/A3/A4 non scrivono oggi nessuno stato automatico su `agent_states` (solo manuale via click pillola) — la correzione vera per questi tre resta nel rebuild (Step 5), non patchata qui.
+- Override manuale: confermato da Gianluca — tenere `setStatoRaw` come valvola di emergenza, non rimuoverlo.
 
-**Criterio di completamento:** un run fallito di A1 Monthly produce uno stato "errore" visibile e non resta bloccato su "in corso"; nessun pulsante della home richiama più codice morto.
+**Criterio di completamento:** un run fallito di A1 Monthly produce uno stato "errore" visibile e non resta bloccato su "in corso"; nessun pulsante della home richiama più codice morto. — Verificato: sintassi Python (`py_compile`) e JS (`node --check` sullo script estratto) entrambe pulite dopo le modifiche; verifica funzionale su un run reale fallito ancora da fare al prossimo run di A1 Monthly (il prossimo tentativo utile è legato anche allo Step 2, token scaduto).
 
 **Note (cronologia dello step):**
 - [2026-11-12] Diagnosi completa: causa radice individuata leggendo `a1_monthly.py` (nessun try/except attorno a `main()`, stato "working" scritto come prima riga senza rete di sicurezza) e `page_home_v25.html` (`mapState()` senza scadenza per "working"; `setStatoRaw` permette override manuale diretto su Supabase). Confermato via grep che solo `a1_monthly.py` scrive su `agent_states` tra tutti gli script — A2/A3/A4 scrivono solo su `activity_log`. Fix concordato con Gianluca, lavoro avviato.
+- [2026-11-13] Fix implementato e pushato (commit `4fd6076`): `a1_monthly.py` ristrutturato (`main()` + `_run()` + try/except → stato "error" + `log_activity`); `page_home_v25.html` aggiornato (nuovo stato "error" in `mapState`/`CFG`/`PRI`/`STATO_PILLS`, scadenza 3h su "working", rimozione codice morto confermato via grep). Gianluca ha confermato esplicitamente di procedere con tutte le risposte di default proposte da Claude in questa sessione, inclusa questa: override manuale mantenuto. Scope A1-only (A2/A3/A4 al rebuild) confermato implicitamente, nessuna obiezione.
 
 ### Step 2 — Token Instagram scaduto + bug silenzioso A1 Stories Daily
 
@@ -167,12 +169,13 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 **Decisioni progettuali:**
 - Idea originale di Gianluca, mai realizzata finora per la difficoltà di modificare la webapp dai Progetti Claude.ai — ora che si lavora da Claude Code con push/rimozione file diretta, è un buon momento per affrontarla.
-- Trovata su Supabase una tabella `user_settings` (user_id + campo `settings` jsonb) già esistente ma con 0 righe e non collegata a nulla nel codice attuale — possibile scaffolding abbandonato di un tentativo precedente. Da verificare con Gianluca se riusarla o costruire da zero, prima di procedere.
+- Trovata su Supabase una tabella `user_settings` (user_id + campo `settings` jsonb) già esistente ma con 0 righe e non collegata a nulla nel codice attuale — possibile scaffolding abbandonato di un tentativo precedente. Confermato con Gianluca: si riusa questa tabella (ha già la forma giusta: user_id + jsonb) invece di costruirne una nuova.
 
 **Criterio di completamento:** da definire nel dettaglio quando si arriva allo step (categorie di notifiche da esporre, granularità).
 
 **Note (cronologia dello step):**
 - [2026-11-12] Trovata `user_settings` durante l'audit Supabase generale. Non ancora deciso se riusarla.
+- [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
 
