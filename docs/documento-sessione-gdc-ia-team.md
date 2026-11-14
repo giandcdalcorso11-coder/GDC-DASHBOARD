@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 9
-**Ultimo aggiornamento:** 2026-11-14 10:20
+**Versione:** 10
+**Ultimo aggiornamento:** 2026-11-14 10:53
 
 ## Vision
 
@@ -189,9 +189,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-14 10:20] Step 4 completato — schermata di categorizzazione post
+### [2026-11-14 10:53] Step 4 completato e verificato con dati reali — trovati e risolti 2 bug veri
 
-**Riepilogo:** Costruita la schermata di categorizzazione post (primaria fissa + secondaria a tendina che cresce) con il relativo schema Supabase, collegandola alla pipeline di A1 Monthly; il suggerimento AI previsto nel design originale è rimandato allo Step 8 per non violare il vincolo di costo.
+**Riepilogo:** Costruita la schermata di categorizzazione post con il relativo schema Supabase; Gianluca l'ha provata subito sul sito vero (merge su `main` fatto in giornata), e per testarla con dati veri abbiamo fatto girare A1 Monthly su Ottobre 2026 caricando io stesso il CSV MBS che mi aveva dato — il run reale ha fatto emergere due bug che nessun test sintetico avrebbe trovato, entrambi risolti e riverificati con un secondo run reale.
 
 **Cosa è stato fatto:**
 - Creato lo schema Supabase per la categorizzazione: tabella `posts` (specchio dei post ORIGINALE, letto/scritto dalla webapp) e `categoria_secondaria_vocabolario` (vocabolario che cresce), RLS identica al pattern già in uso (`authenticated`, true/true). Migrazione applicata e registrata in `supabase/migrations/` (prima volta che questo repo traccia le migrazioni, non esisteva una convenzione).
@@ -206,7 +206,17 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   Alternative scartate: chiamata API diretta dal browser (violerebbe il vincolo di costo); nessuna preparazione dello schema (avrebbe richiesto una migrazione in più in futuro).
   Da rivedere se: lo Step 8 arrivasse a un'architettura diversa da quella immaginata (bottone che apre una sessione Claude Code con messaggio precompilato).
 
-**File consegnati/modificati:** `scripts/a1_monthly.py`, `app/agenti/a1-analytics/categorizza.html` (nuovo), `app/agenti/a1-analytics/page_agent_a1_v1.html`, `supabase/migrations/20261114_add_posts_categorization.sql` (nuovo), `docs/documento-sessione-gdc-ia-team.md`; schema Supabase: tabelle `posts` e `categoria_secondaria_vocabolario`.
+- Merge su `main` (fast-forward, nessun conflitto — `main` non si era mosso dall'inizio di questa sessione). Gianluca ha provato la pagina sul sito vero: corretto, vuota (nessun post ancora sincronizzato finché A1 Monthly non gira). Per provarla con dati veri, Gianluca ha fornito il CSV MBS di ottobre: l'ho caricato io stesso su Drive nella cartella giusta con il nome atteso dallo script (bypassando il caricamento manuale, stesso identico percorso di lettura di A1), poi lanciato A1 Monthly via workflow_dispatch.
+- **Bug: upsert Supabase falliva quando il mese aveva sia episodi di serie sia post normali**
+  **Sintomo:** primo run reale di A1 Monthly su Ottobre 2026 (7 post, 1 di serie) — `⚠ Errore sync posts su Supabase: 400 PGRST102 "All object keys must match"`.
+  **Causa:** PostgREST rifiuta un batch di insert dove gli oggetti non hanno tutti le stesse chiavi; i post di serie hanno 3 chiavi categoria in più degli altri (per design, per non sovrascrivere mai una categoria già scelta a mano sui post normali).
+  **Fix applicato:** `sync_posts_to_supabase()` divisa in due chiamate separate (post normali / post di serie), ciascuna internamente uniforme. Riverificato con un secondo run reale: `Supabase posts: 7 post ORIGINALE sincronizzati`, zero errori.
+- **Bug: la UI nascondeva gli episodi di serie dal campo sbagliato**
+  **Sintomo:** controllando i dati reali appena sincronizzati, 2 dei 4 episodi di serie del mese (caption scritte senza il trattino previsto, es. "Capiamo la sabbia EP2" invece di "Capiamo la sabbia - EP.2") comparivano come "da categorizzare" nella UI, pur essendo già classificati DIVULGAZIONE/GDC STUFF da A1.
+  **Causa:** `classifica_serie()` in `a1_monthly.py` riconosce l'appartenenza alla serie dal solo prefisso della caption (nessun trattino richiesto) ma estrae il numero episodio con una regex più rigida che il trattino lo richiede — comportamento corretto e già documentato (fallback "Episodio Serie vuoto"). La pagina `categorizza.html` però usava proprio "episodio_serie is null" per decidere se un post fosse di serie, scambiando "numero non leggibile" per "non è serie".
+  **Fix applicato:** filtro spostato su `categoria_primaria = 'DIVULGAZIONE'` (il segnale che A1 scrive sempre e solo per la serie, affidabile indipendentemente dal numero episodio) in `categorizza.html` e semplificato lo stesso controllo in `page_agent_a1_v1.html`. Risultato atteso con i dati reali: 4 post normali da categorizzare, 3 episodi di serie nascosti — da confermare visivamente da Gianluca sulla pagina vera.
+
+**File consegnati/modificati:** `scripts/a1_monthly.py`, `app/agenti/a1-analytics/categorizza.html` (nuovo), `app/agenti/a1-analytics/page_agent_a1_v1.html`, `supabase/migrations/20261114_add_posts_categorization.sql` (nuovo), `docs/documento-sessione-gdc-ia-team.md`; schema Supabase: tabelle `posts` e `categoria_secondaria_vocabolario` (ora con dati reali di Ottobre 2026); Drive: caricato `Oct-01-2026_Oct-31-2026_1520066349931563.csv` in "Archivio docs MBS".
 
 ---
 
