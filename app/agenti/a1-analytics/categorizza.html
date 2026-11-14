@@ -72,6 +72,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
 const CATEGORIE_PRIMARIE = ['SPORT','RELATION','GDC STUFF','DIVULGAZIONE'];
+const SERIE_CAT_PRIMARIA = 'DIVULGAZIONE'; // stesso valore di SERIE_CAT_PRIMARIA in a1_monthly.py
 
 function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
 
@@ -114,15 +115,33 @@ async function loadVocab(){
 }
 
 async function loadPosts(){
-  const res = await sbFetch(SUPA_URL+'/rest/v1/posts?select=*&episodio_serie=is.null&order=mese.desc');
+  // Tutti i post del mese, serie inclusa: la distinzione serie/normale si fa
+  // lato client su categoria_primaria, non su episodio_serie — una caption
+  // scritta senza il trattino previsto ("Capiamo la sabbia EP2" invece di
+  // "Capiamo la sabbia - EP.2") lascia episodio_serie vuoto anche per un
+  // vero episodio di serie (A1 lo classifica comunque DIVULGAZIONE, solo
+  // senza numero leggibile) — filtrare su episodio_serie lo avrebbe
+  // mostrato per sbaglio come "da categorizzare" (bug trovato con un run
+  // reale il 14/11/2026).
+  const res = await sbFetch(SUPA_URL+'/rest/v1/posts?select=*&order=mese.desc');
   POSTS = await res.json();
+}
+
+function isSeriePost(p){
+  return p.categoria_primaria === SERIE_CAT_PRIMARIA;
 }
 
 function groupByMese(posts){
   const groups = {};
-  posts.forEach(p=>{ (groups[p.mese] = groups[p.mese] || []).push(p); });
+  posts.filter(p=>!isSeriePost(p)).forEach(p=>{ (groups[p.mese] = groups[p.mese] || []).push(p); });
   Object.values(groups).forEach(list => list.sort((a,b)=> (b.data+b.ora).localeCompare(a.data+a.ora)));
   return groups;
+}
+
+function serieCountByMese(posts){
+  const counts = {};
+  posts.filter(isSeriePost).forEach(p=>{ counts[p.mese] = (counts[p.mese]||0) + 1; });
+  return counts;
 }
 
 function secondaryOptionsHtml(postId, primaria, current){
@@ -147,8 +166,7 @@ function render(){
   }
 
   // conteggio episodi serie per mese, per la nota informativa
-  const serieCount = {};
-  POSTS_SERIE.forEach(p=>{ serieCount[p.mese] = (serieCount[p.mese]||0) + 1; });
+  const serieCount = serieCountByMese(POSTS);
 
   container.innerHTML = mesi.map(mese=>{
     const list = groups[mese];
@@ -164,13 +182,6 @@ function render(){
       ${list.map(p=>postCardHtml(p)).join('')}
     </div>`;
   }).join('');
-}
-
-let POSTS_SERIE = [];
-
-async function loadSerieCount(){
-  const res = await sbFetch(SUPA_URL+'/rest/v1/posts?select=mese&episodio_serie=not.is.null');
-  POSTS_SERIE = await res.json();
 }
 
 function postCardHtml(p){
@@ -279,7 +290,7 @@ async function savePost(postId){
 async function init(){
   if (!gdcToken()) { window.location.href = '../../../page_login_v6.html'; return; }
   try {
-    await Promise.all([loadVocab(), loadPosts(), loadSerieCount()]);
+    await Promise.all([loadVocab(), loadPosts()]);
     render();
   } catch(e){
     if (e.message !== 'session-expired') {

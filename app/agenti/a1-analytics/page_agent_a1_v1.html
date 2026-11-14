@@ -743,7 +743,7 @@ async function loadA1(){
 async function loadCategorizePending(){
   const sub=document.getElementById('catPendingSub');
   try{
-    const res=await sbFetch(SUPA_URL+'/rest/v1/posts?select=id&categoria_primaria=is.null&episodio_serie=is.null', {
+    const res=await sbFetch(SUPA_URL+'/rest/v1/posts?select=id&categoria_primaria=is.null', {
       headers: { 'Prefer': 'count=exact' }
     });
     const n = parseInt((res.headers.get('content-range')||'/0').split('/')[1], 10) || 0;
