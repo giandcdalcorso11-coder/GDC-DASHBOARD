@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 8
-**Ultimo aggiornamento:** 2026-11-13 17:52
+**Versione:** 9
+**Ultimo aggiornamento:** 2026-11-14 10:20
 
 ## Vision
 
@@ -86,7 +86,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 4 — Schermata di categorizzazione post
 
-**Stato:** da fare
+**Stato:** completato (manca solo il suggerimento AI, rimandato — vedi sotto)
 
 **Obiettivo:** Gianluca categorizza i post del mese (oggi: celle gialle manuali in uno spreadsheet) da un'interfaccia comoda nella webapp, con suggerimento automatico.
 
@@ -96,10 +96,12 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Vocabolario di partenza per la secondaria (estratto da A4 v6, sez. 2): SPORT → Torneo/Gara, Allenamento, Nazionale, Viaggio/Trasferta; RELATION → Coppia, Famiglia, Amici; GDC STUFF → Stampa 3D, Elettronica/Coding, Prodotto finito, Making of.
 - Diventa un passaggio esplicito e visibile della pipeline (es. "Ottobre: 2 post da categorizzare"), non più invisibile come oggi — gate prima che A2 possa partire sensatamente.
 
-**Criterio di completamento:** Gianluca può categorizzare un mese intero dalla webapp senza aprire lo spreadsheet; i valori usati si accumulano nel menù secondario nel tempo.
+**Criterio di completamento:** Gianluca può categorizzare un mese intero dalla webapp senza aprire lo spreadsheet; i valori usati si accumulano nel menù secondario nel tempo. — Fatto per la parte manuale; il "suggerimento di Claude" della decisione originale non c'è ancora (vedi sotto).
+
+**Decisione presa in corso d'opera:** il "suggerimento di Claude" previsto nel design originale non può essere una vera chiamata API dalla webapp (violerebbe il vincolo "zero costo extra" — pagina statica, nessun backend). Deciso di costruire comunque lo schema pronto (colonne `categoria_primaria_suggerita`/`categoria_secondaria_suggerita` su `posts`, mostrate in UI se presenti) ma lasciarle vuote per ora — le popolerà la sessione Claude Code dedicata (Step 8) quando esisterà, usando l'abbonamento Pro invece di una chiamata a pagamento. Oggi la schermata è quindi solo manuale, senza suggerimento pre-compilato.
 
 **Note (cronologia dello step):**
-- Nessuna nota ancora — step discusso e deciso, non ancora iniziato.
+- [2026-11-14] Creato lo schema Supabase (tabelle `posts` e `categoria_secondaria_vocabolario`, migrazione applicata e registrata in `supabase/migrations/`). Estesa `a1_monthly.py` con `sync_posts_to_supabase()`: scrive su Supabase solo i post ORIGINALE non-serie, senza includere le colonne categoria nel payload per non sovrascrivere mai una scelta già fatta da Gianluca in un rerun del mese (verificato con un test diretto sul database prima di fidarsi della logica). Costruita la pagina `app/agenti/a1-analytics/categorizza.html` (primaria a 4 bottoni, secondaria a tendina che cresce con testo libero, episodi di serie esclusi perché già automatici) e collegata da una nuova card in `page_agent_a1_v1.html` con conteggio dinamico "N post da categorizzare". Verificati sintassi JS/Python e tutti i link del repo (53 controllati, 0 rotti) prima del push.
 
 ### Step 5 — Schema Supabase + pagine HTML (dashboard A2, calendari A3/A4)
 
@@ -186,6 +188,27 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-14 10:20] Step 4 completato — schermata di categorizzazione post
+
+**Riepilogo:** Costruita la schermata di categorizzazione post (primaria fissa + secondaria a tendina che cresce) con il relativo schema Supabase, collegandola alla pipeline di A1 Monthly; il suggerimento AI previsto nel design originale è rimandato allo Step 8 per non violare il vincolo di costo.
+
+**Cosa è stato fatto:**
+- Creato lo schema Supabase per la categorizzazione: tabella `posts` (specchio dei post ORIGINALE, letto/scritto dalla webapp) e `categoria_secondaria_vocabolario` (vocabolario che cresce), RLS identica al pattern già in uso (`authenticated`, true/true). Migrazione applicata e registrata in `supabase/migrations/` (prima volta che questo repo traccia le migrazioni, non esisteva una convenzione).
+- `a1_monthly.py`: nuova `sync_posts_to_supabase()` — upsert dei soli post ORIGINALE non-serie, senza toccare le colonne categoria sui rerun (verificato con un test diretto sul database, non solo per ragionamento: inserite righe finte, simulato un secondo upsert senza le colonne categoria, confermato che il valore esistente resta intatto). Per gli episodi della serie le categorie restano sempre incluse nel payload.
+- Nuova pagina `app/agenti/a1-analytics/categorizza.html`: categoria primaria a 4 bottoni fissi, secondaria a tendina filtrata sulla primaria + testo libero che si aggiunge al vocabolario per le volte successive. Gli episodi di "Capiamo la Sabbia" non compaiono (già classificati in automatico). Stesso pattern di autenticazione (`sbFetch`/`gdcToken`) del resto della webapp.
+- `page_agent_a1_v1.html`: nuova card "Categorizza post" con conteggio dinamico "N post da categorizzare" via query `count=exact` su Supabase.
+- Verificati sintassi JS/Python su tutti i file toccati e tutti i link del repo con lo script scritto ieri (53 link, 0 rotti) prima del push.
+
+**Decisioni prese:**
+- Contesto: il design originale dello Step 4 prevedeva un "suggerimento di Claude" per la categoria, ma la webapp è una pagina statica senza backend e il vincolo è zero costo API aggiuntivo.
+  Decisione: costruire lo schema già pronto per il suggerimento (colonne dedicate, mostrate in UI se presenti) ma lasciarlo vuoto per ora — lo popolerà la sessione Claude Code dedicata (Step 8), usando l'abbonamento Pro invece di una chiamata a pagamento.
+  Alternative scartate: chiamata API diretta dal browser (violerebbe il vincolo di costo); nessuna preparazione dello schema (avrebbe richiesto una migrazione in più in futuro).
+  Da rivedere se: lo Step 8 arrivasse a un'architettura diversa da quella immaginata (bottone che apre una sessione Claude Code con messaggio precompilato).
+
+**File consegnati/modificati:** `scripts/a1_monthly.py`, `app/agenti/a1-analytics/categorizza.html` (nuovo), `app/agenti/a1-analytics/page_agent_a1_v1.html`, `supabase/migrations/20261114_add_posts_categorization.sql` (nuovo), `docs/documento-sessione-gdc-ia-team.md`; schema Supabase: tabelle `posts` e `categoria_secondaria_vocabolario`.
+
+---
 
 ### [2026-11-13 17:52] Step 1, 2, 3 completati e Step 6 avviato — stati agenti robusti, token Instagram rinnovato, tassonomia DIVULGAZIONE ovunque, prime pagine riorganizzate
 
