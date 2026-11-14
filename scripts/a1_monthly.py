@@ -778,6 +778,27 @@ def _apply_post_validations(ws):
     ws.add_data_validation(dv_ep)
 
 
+def fetch_posts_categorization_overrides():
+    """
+    Legge da Supabase (tabella posts) le categorie già inserite a mano dalla
+    schermata di categorizzazione della webapp (step 4 pipeline webapp) per
+    il mese corrente. La webapp scrive solo su Supabase, non sul Google
+    Sheet — questa funzione riporta quei valori nel foglio che A2/A3/A4
+    leggono ancora oggi, altrimenti i post categorizzati a mano risultano
+    vuoti per loro (bug reale, trovato da una run vera di A2 su Ottobre 2026).
+    """
+    url = f"{SUPA_URL}/rest/v1/posts?mese=eq.{requests.utils.quote(MESE_LABEL)}&select=id,categoria_primaria,categoria_secondaria,episodio_serie"
+    try:
+        r = requests.get(url, headers=supabase_headers(), timeout=10)
+        if r.status_code != 200:
+            print(f"    ⚠ Errore lettura categorie da Supabase: {r.status_code} {r.text}")
+            return {}
+        return {row["id"]: row for row in r.json()}
+    except Exception as e:
+        print(f"    ⚠ Errore lettura categorie da Supabase: {e}")
+        return {}
+
+
 def compile_sheet_post(wb, posts):
     """
     Compila Sheet 2 — Insights Post.
@@ -785,9 +806,11 @@ def compile_sheet_post(wb, posts):
     Per i repost: impressioni e reach vuoti (non disponibili via API per media altrui).
     Per gli originali: tutte le metriche da /insights.
     Celle categoria gialle solo per ORIGINALE — tranne i post della serie
-    "Capiamo la Sabbia", precompilati DIVULGAZIONE / GDC STUFF + Episodio Serie.
+    "Capiamo la Sabbia", precompilati DIVULGAZIONE / GDC STUFF + Episodio Serie,
+    e i post già categorizzati a mano dalla webapp (vedi fetch_posts_categorization_overrides).
     """
     ws = wb["Insights Post"]
+    cat_overrides = fetch_posts_categorization_overrides()
     headers = HEADERS["Insights Post"]
     _ensure_post_header_v4(ws, headers)
 
@@ -859,6 +882,16 @@ def compile_sheet_post(wb, posts):
         # Serie "Capiamo la Sabbia": solo ORIGINALE (un repost della serie resta REPOST, senza categorie)
         serie = classifica_serie(p.get("caption")) if tipo_autore == "ORIGINALE" else None
         cat_primaria, cat_secondaria, episodio = serie if serie else ("", "", "")
+
+        # Se A1 non ha riconosciuto automaticamente la serie (o non è un post
+        # di serie), ma la categoria è già stata inserita a mano dalla webapp,
+        # usa quella invece di lasciare la cella vuota.
+        if not cat_primaria and tipo_autore == "ORIGINALE":
+            override = cat_overrides.get(p.get("id"))
+            if override and override.get("categoria_primaria"):
+                cat_primaria = override["categoria_primaria"]
+                cat_secondaria = override.get("categoria_secondaria") or ""
+                episodio = override.get("episodio_serie") or ""
 
         rows_to_insert.append([
             MESE_LABEL, data_str, ora_str, tipo_contenuto, tipo_autore,
