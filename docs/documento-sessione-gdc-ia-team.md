@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 12
-**Ultimo aggiornamento:** 2026-11-14 13:10
+**Versione:** 13
+**Ultimo aggiornamento:** 2026-11-14 13:25
 
 ## Vision
 
@@ -122,6 +122,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Step discusso e deciso, non ancora iniziato. Ricevuti e letti integralmente i 4 prompt agente (A1 v4, A2 v14, A3 v12, A4 v6) come base per la ricostruzione fedele dei contenuti.
 - [2026-11-14] Punto 1: creata tabella `kpi_mensili` su Supabase (RLS `authenticated_all_kpi_mensili`); `a1_monthly.py` ora sincronizza la riga del mese (stessi valori già calcolati per lo Sheet "KPI Medi", nessun calcolo duplicato) tramite `sync_kpi_to_supabase()`, chiamata da `_run()` dopo `compile_sheet_kpi()`. Verificato con una run reale sul branch (A1 Monthly, Ottobre 2026): riga sincronizzata correttamente, valori coerenti con l'Excel.
 - [2026-11-14] Punto 2: creata `app/agenti/a2-analyst/dashboard_kpi.html`, raggiungibile dalla nuova card "Dashboard KPI" nelle Azioni di A2. Mostra, per ogni metrica di `kpi_mensili` (gruppi Post/Stories), il valore del mese corrente, il delta % vs il mese precedente (colorato in base a se la metrica è "meglio se alta", neutro per Sentiment Score che non ha una direzione ovvia) e uno sparkline SVG con l'andamento su tutti i mesi sincronizzati (compare dal secondo mese disponibile). Nessun calcolo nuovo: legge solo `kpi_mensili`. Mergiato su main per essere testabile dal sito reale.
+- [2026-11-14] Backfill storico: scaricato il foglio Google "Instagram_Analytics_GDC" (via Drive, export xlsx) e letti i 10 mesi reali già presenti nello Sheet "KPI Medi" (Gennaio→Ottobre 2026 — A1 li ha sempre scritti lì, solo non ancora sincronizzati su Supabase prima di oggi). Inseriti su `kpi_mensili` i 9 mesi mancanti (Gennaio-Settembre, Ottobre già sincronizzato dalla run reale di oggi) con `on conflict (mese) do nothing`. La dashboard di A2 mostra ora lo storico completo con gli sparkline popolati su tutti i 10 mesi, non solo da oggi in avanti.
 
 ### Step 6 — Riorganizzazione cartelle GitHub
 
@@ -192,9 +193,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-14 13:10] Step 5 avviato — schema KPI mensili + dashboard A2 (punti 1-2 su 5)
+### [2026-11-14 13:25] Step 5 avviato — schema KPI mensili + dashboard A2 + backfill storico (punti 1-2 su 5)
 
-**Riepilogo:** Deciso di spezzare lo Step 5 in 5 sotto-punti (un agente alla volta, fino in fondo) per evitare di costruire tutto insieme e trovare bug ovunque come rischiato allo Step 4; fatti i primi due: sincronizzazione dei KPI mensili su Supabase e la pagina dashboard di A2 che li legge, entrambi verificati con una run reale di A1 Monthly.
+**Riepilogo:** Deciso di spezzare lo Step 5 in 5 sotto-punti (un agente alla volta, fino in fondo) per evitare di costruire tutto insieme e trovare bug ovunque come rischiato allo Step 4; fatti i primi due (sincronizzazione dei KPI mensili su Supabase e la pagina dashboard di A2 che li legge) più il backfill dei 9 mesi storici già presenti nel foglio Google di A1, così la dashboard parte subito con lo storico reale completo invece che con un solo mese.
 
 **Cosa è stato fatto:**
 - Creata la tabella Supabase `kpi_mensili` (RLS `authenticated_all_kpi_mensili`, stesso pattern delle altre tabelle agent-facing), migrazione registrata in `supabase/migrations/20261114_add_kpi_mensili.sql`.
@@ -208,6 +209,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - `scripts/a1_monthly.py` (modificato: `compile_sheet_kpi()`, nuova `sync_kpi_to_supabase()`, chiamata in `_run()`)
 - `app/agenti/a2-analyst/dashboard_kpi.html` (nuovo)
 - `app/agenti/a2-analyst/page_agent_a2_v3.html` (modificato: nuova card "Dashboard KPI")
+- Tabella `kpi_mensili` su Supabase: backfill diretto via SQL dei 9 mesi storici (nessun file di codice coinvolto, solo dati)
 
 ---
 
