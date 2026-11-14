@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 13
-**Ultimo aggiornamento:** 2026-11-14 13:25
+**Versione:** 14
+**Ultimo aggiornamento:** 2026-11-14 14:10
 
 ## Vision
 
@@ -105,7 +105,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 5 — Schema Supabase + pagine HTML (dashboard A2, calendari A3/A4)
 
-**Stato:** in corso — scomposto in sotto-punti, fatti 1 e 2 su un piano di 5 (per agente, fino in fondo, uno alla volta: A2 prima di A3/A4)
+**Stato:** in corso — scomposto in sotto-punti, fatti 1-3 su un piano di 5 (per agente, fino in fondo, uno alla volta: A2 prima di A3/A4). Resta da verificare con una run reale di A2 (lato Gianluca, su Claude.ai Projects) prima di considerare A2 chiuso.
 
 **Obiettivo:** A2, A3 e A4 (solo apertura mese) producono pagine HTML invece di pptx/pdf, con lo stesso contenuto/struttura/voce di oggi; il contenuto vero vive su Supabase protetto da login, i template sono pubblici su GitHub Pages.
 
@@ -123,6 +123,8 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-14] Punto 1: creata tabella `kpi_mensili` su Supabase (RLS `authenticated_all_kpi_mensili`); `a1_monthly.py` ora sincronizza la riga del mese (stessi valori già calcolati per lo Sheet "KPI Medi", nessun calcolo duplicato) tramite `sync_kpi_to_supabase()`, chiamata da `_run()` dopo `compile_sheet_kpi()`. Verificato con una run reale sul branch (A1 Monthly, Ottobre 2026): riga sincronizzata correttamente, valori coerenti con l'Excel.
 - [2026-11-14] Punto 2: creata `app/agenti/a2-analyst/dashboard_kpi.html`, raggiungibile dalla nuova card "Dashboard KPI" nelle Azioni di A2. Mostra, per ogni metrica di `kpi_mensili` (gruppi Post/Stories), il valore del mese corrente, il delta % vs il mese precedente (colorato in base a se la metrica è "meglio se alta", neutro per Sentiment Score che non ha una direzione ovvia) e uno sparkline SVG con l'andamento su tutti i mesi sincronizzati (compare dal secondo mese disponibile). Nessun calcolo nuovo: legge solo `kpi_mensili`. Mergiato su main per essere testabile dal sito reale.
 - [2026-11-14] Backfill storico: scaricato il foglio Google "Instagram_Analytics_GDC" (via Drive, export xlsx) e letti i 10 mesi reali già presenti nello Sheet "KPI Medi" (Gennaio→Ottobre 2026 — A1 li ha sempre scritti lì, solo non ancora sincronizzati su Supabase prima di oggi). Inseriti su `kpi_mensili` i 9 mesi mancanti (Gennaio-Settembre, Ottobre già sincronizzato dalla run reale di oggi) con `on conflict (mese) do nothing`. La dashboard di A2 mostra ora lo storico completo con gli sparkline popolati su tutti i 10 mesi, non solo da oggi in avanti.
+- [2026-11-14] Punto 3a: creata tabella Supabase `report_mensili` (condivisa a2/a3/a4, `agente`+`mese` chiave, RLS identica al pattern già in uso) e nuova pagina `app/agenti/a2-analyst/report.html` — elenco mesi con report disponibili, apertura dentro un `<iframe srcdoc>` per isolare lo stile scuro del report dallo stile chiaro dell'app. Card "Report mensili" aggiunta alle Azioni di A2. Verificata la pipeline Supabase→iframe con una riga di test (scritta ed eliminata subito dopo, nessun dato reale coinvolto).
+- [2026-11-14] Punto 3b: riscritto il prompt di A2 da v15 a v16 (nuovo file `Agente2_auto_prompt_v16.md`, v15 rimosso — stessa convenzione già in uso per gli altri agenti, un solo file per agente con lo storico nelle "Note di Versione" interne). Cambia solo il contenitore dell'output: pagina HTML autonoma scritta su Supabase (`report_mensili`, via connector MCP) invece di PPTX consegnato con `present_files` e caricato a mano su Drive. Tutta la sostanza progettuale (formule ER/viralità/sentiment, normalizzazione categorie, riconoscimento e regole della serie "Capiamo la Sabbia", badge, Top3, Mix Topic, Checklist Pre-Avvio) resta identica alla v15 — tradotte solo le parti tecniche: layout da coordinate PptxGenJS (pollici/pt) a CSS responsive (flexbox, breakpoint 600px); colori hex con '#' (convenzione invertita rispetto a PPTX, dove il '#' era vietato); rimossa la scala di altezza riga adattiva per le stories e il limite di altezza della tabella serie, non più necessari senza slide a altezza fissa (la pagina HTML scorre liberamente); Chiusura sessione riscritta per scrivere su Supabase invece di generare il file e aggiornato il link nel log `activity_log`. Non ancora verificato con una run reale di A2 (serve un run vero su Claude.ai Projects per confermare che il prompt produca l'HTML atteso e lo scriva correttamente) — prossimo passo prima di considerare il punto 3 chiuso.
 
 ### Step 6 — Riorganizzazione cartelle GitHub
 
@@ -192,6 +194,24 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-14 14:10] Step 5 — pagina Report + prompt A2 v16 (punto 3 su 5)
+
+**Riepilogo:** Completato lo schema e la pagina per i report HTML (condivisa a2/a3/a4) e riscritto il prompt di A2 (v15→v16): stesso contenuto e stessa sostanza di sempre, cambia solo il contenitore (HTML su Supabase invece di PPTX su Drive). Manca ancora una run reale di A2 per verificare che il nuovo prompt produca davvero l'HTML atteso.
+
+**Cosa è stato fatto:**
+- Tabella Supabase `report_mensili` (agente a2/a3/a4, chiave agente+mese, RLS `authenticated_all_report_mensili`), migrazione registrata in `supabase/migrations/20261114_add_report_mensili.sql`.
+- Nuova `app/agenti/a2-analyst/report.html`: senza `?mese=` mostra l'elenco dei mesi con report disponibili; con `?mese=X` apre quel report dentro un `<iframe srcdoc>` — scelta deliberata per isolare lo stile scuro/Impact/Courier New del report dallo stile chiaro/Jost dell'app, senza dover scrivere regole CSS "scoped" fragili. Card "Report mensili" aggiunta alle Azioni di A2.
+- Verificata la pipeline con una riga di test scritta ed eliminata subito su Supabase (nessun dato reale), oltre ai controlli di link/sintassi già in uso.
+- Riscritto `Agente2_auto_prompt_v16.md` (sostituisce la v15): la sostanza progettuale — formule, normalizzazione categorie, regole della serie "Capiamo la Sabbia", badge, Top3, Mix Topic, Checklist — resta identica; cambiano solo le parti tecniche legate al contenitore (layout PptxGenJS→CSS responsive, convenzione colori hex, consegna via scrittura Supabase invece di `present_files`+upload Drive). Rimossa anche una regola che nella v15 esisteva solo per il vincolo di altezza fissa delle slide (scala adattiva delle righe stories), non più necessaria con una pagina che scorre liberamente.
+
+**File consegnati/modificati:**
+- `supabase/migrations/20261114_add_report_mensili.sql` (nuovo)
+- `app/agenti/a2-analyst/report.html` (nuovo)
+- `app/agenti/a2-analyst/page_agent_a2_v3.html` (modificato: card "Report mensili")
+- `docs/prompts/Agente2_auto_prompt_v16.md` (nuovo, sostituisce `Agente2_auto_prompt_v15.md`)
+
+---
 
 ### [2026-11-14 13:25] Step 5 avviato — schema KPI mensili + dashboard A2 + backfill storico (punti 1-2 su 5)
 
