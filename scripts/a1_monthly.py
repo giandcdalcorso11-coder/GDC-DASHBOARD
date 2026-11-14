@@ -1123,6 +1123,35 @@ def compile_sheet_kpi(wb, posts, stories):
         ws.cell(row=2, column=j, value=val)
 
     print(f"    Sheet KPI: riga {MESE_LABEL} inserita")
+    return row_data
+
+
+def sync_kpi_to_supabase(kpi_row):
+    """
+    Sincronizza la riga KPI Medi del mese su Supabase (tabella kpi_mensili),
+    letta dalla dashboard A2 (grafici mese per mese) — step 5 pipeline webapp.
+    Stessi valori già calcolati per lo Sheet 4, nessun calcolo duplicato.
+    """
+    labels = [
+        "mese", "er_medio", "viz_medie_post", "reach_medio_post",
+        "like_medio", "commenti_medi", "salvataggi_medi",
+        "tasso_viralita_medio", "sentiment_score_medio",
+        "viz_medie_stories", "reach_medio_stories"
+    ]
+    payload = dict(zip(labels, kpi_row))
+    payload["anno"] = ANNO
+    payload["mese_num"] = MESE_NUM
+    for k, v in payload.items():
+        if v == "":
+            payload[k] = None
+
+    url = f"{SUPA_URL}/rest/v1/kpi_mensili?on_conflict=mese"
+    headers = {**supabase_headers(), "Prefer": "resolution=merge-duplicates,return=minimal"}
+    r = requests.post(url, json=payload, headers=headers, timeout=15)
+    if r.status_code not in (200, 201, 204):
+        print(f"    ⚠ Errore sync KPI su Supabase: {r.status_code} {r.text}")
+    else:
+        print(f"    Supabase kpi_mensili: {MESE_LABEL} sincronizzato")
 
 
 # ─── 4. SUPABASE ─────────────────────────────────────────────────────────────────
@@ -1266,7 +1295,8 @@ def _run():
         sync_posts_to_supabase(all_posts)
         compile_sheet_stories(wb, stories)
         compile_sheet_panoramica(wb, all_posts, stories, profile_data)
-        compile_sheet_kpi(wb, all_posts, stories)
+        kpi_row = compile_sheet_kpi(wb, all_posts, stories)
+        sync_kpi_to_supabase(kpi_row)
 
         # 9. Salva e carica su Drive
         wb.save(local_excel)
