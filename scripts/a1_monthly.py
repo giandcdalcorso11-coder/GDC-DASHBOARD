@@ -900,16 +900,24 @@ def sync_posts_to_supabase(posts):
     per la schermata di categorizzazione della webapp (Step 4) — i REPOST
     non si categorizzano, restano solo sul foglio Excel.
 
-    Upsert su id (media id IG). Per i post NON di serie il payload non
-    include categoria_primaria/categoria_secondaria/episodio_serie: un
-    rerun di A1 Monthly (es. dopo il recupero del CSV MBS) non deve mai
-    sovrascrivere una categoria che Gianluca ha gia' scelto dalla webapp —
-    upsert con Prefer: resolution=merge-duplicates aggiorna solo le colonne
-    presenti nel payload, lascia intatte le altre. Per i post della serie
-    "Capiamo la Sabbia" la categoria va invece sempre inclusa (sempre
-    DIVULGAZIONE/GDC STUFF, senza eccezioni — stessa regola del foglio Excel).
+    Upsert su id (media id IG), in due chiamate separate (non una sola):
+    PostgREST rifiuta un batch dove gli oggetti non hanno tutti le stesse
+    chiavi ("PGRST102 — All object keys must match", scoperto con un run
+    reale il 14/11/2026), e i post di serie hanno 3 chiavi categoria in
+    piu' degli altri — niente di piu' semplice che dividerli in due gruppi
+    internamente uniformi.
+
+    Per i post NON di serie il payload non include categoria_primaria/
+    categoria_secondaria/episodio_serie: un rerun di A1 Monthly (es. dopo
+    il recupero del CSV MBS) non deve mai sovrascrivere una categoria che
+    Gianluca ha gia' scelto dalla webapp — upsert con Prefer:
+    resolution=merge-duplicates aggiorna solo le colonne presenti nel
+    payload, lascia intatte le altre. Per i post della serie "Capiamo la
+    Sabbia" la categoria va invece sempre inclusa (sempre DIVULGAZIONE/
+    GDC STUFF, senza eccezioni — stessa regola del foglio Excel).
     """
-    payloads = []
+    plain_payloads = []
+    serie_payloads = []
     for p in posts:
         if p.get("_tipo_autore") == "REPOST":
             continue
@@ -933,19 +941,28 @@ def sync_posts_to_supabase(posts):
             row["categoria_primaria"] = cat_primaria
             row["categoria_secondaria"] = cat_secondaria
             row["episodio_serie"] = episodio if episodio != "" else None
-        payloads.append(row)
+            serie_payloads.append(row)
+        else:
+            plain_payloads.append(row)
 
-    if not payloads:
+    if not plain_payloads and not serie_payloads:
         print("    Supabase posts: nessun post ORIGINALE da sincronizzare")
         return
 
     url = f"{SUPA_URL}/rest/v1/posts?on_conflict=id"
     headers = {**supabase_headers(), "Prefer": "resolution=merge-duplicates,return=minimal"}
-    r = requests.post(url, json=payloads, headers=headers, timeout=15)
-    if r.status_code not in (200, 201, 204):
-        print(f"    ⚠ Errore sync posts su Supabase: {r.status_code} {r.text}")
-    else:
-        print(f"    Supabase posts: {len(payloads)} post ORIGINALE sincronizzati")
+    n_ok, n_err = 0, 0
+    for label, batch in (("non di serie", plain_payloads), ("di serie", serie_payloads)):
+        if not batch:
+            continue
+        r = requests.post(url, json=batch, headers=headers, timeout=15)
+        if r.status_code not in (200, 201, 204):
+            print(f"    ⚠ Errore sync posts su Supabase ({label}): {r.status_code} {r.text}")
+            n_err += len(batch)
+        else:
+            n_ok += len(batch)
+
+    print(f"    Supabase posts: {n_ok} post ORIGINALE sincronizzati" + (f", {n_err} falliti" if n_err else ""))
 
 
 def compile_sheet_stories(wb, stories):
