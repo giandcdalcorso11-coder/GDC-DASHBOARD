@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 11
-**Ultimo aggiornamento:** 2026-11-14 11:20
+**Versione:** 12
+**Ultimo aggiornamento:** 2026-11-14 13:10
 
 ## Vision
 
@@ -105,7 +105,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 5 — Schema Supabase + pagine HTML (dashboard A2, calendari A3/A4)
 
-**Stato:** da fare
+**Stato:** in corso — scomposto in sotto-punti, fatti 1 e 2 su un piano di 5 (per agente, fino in fondo, uno alla volta: A2 prima di A3/A4)
 
 **Obiettivo:** A2, A3 e A4 (solo apertura mese) producono pagine HTML invece di pptx/pdf, con lo stesso contenuto/struttura/voce di oggi; il contenuto vero vive su Supabase protetto da login, i template sono pubblici su GitHub Pages.
 
@@ -114,11 +114,14 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Pagine di A3/A4: niente grafici (non hanno dati numerici da rappresentare allo stesso modo) — un calendario/elenco semplice di mesi, ognuno con link al proprio documento.
 - Il report/piano/brief aperto cliccando un mese resta lo stesso contenuto prodotto oggi — cambia solo il contenitore (HTML invece di pptx/pdf).
 - Motivazione privacy: il repo GitHub è pubblico (verificato), quindi i template/shell HTML restano vuoti e pubblici; i dati veri (metriche, testo dei report) vivono in Supabase dietro lo stesso sistema di login/sessione già usato dal resto della webapp (stesso comportamento di scadenza token già presente).
+- Scomposizione dello step in 5 sotto-punti, un agente alla volta fino in fondo (schema → pagina → riscrittura prompt → prova con un mese vero) prima di passare al successivo, stessa lezione imparata allo Step 4: (1) schema KPI mensili su Supabase per A2; (2) pagina dashboard A2; (3) riscrittura prompt A2 (v15→v16) per generare HTML/Supabase invece di pptx; (4) stesso lavoro per A3 (calendario); (5) stesso lavoro per A4 (solo apertura mese).
 
 **Criterio di completamento:** apertura di un mese passato mostra lo stesso contenuto che oggi è nel pptx/pdf corrispondente, ma come pagina HTML raggiungibile solo da sessione autenticata.
 
 **Note (cronologia dello step):**
-- Nessuna nota ancora — step discusso e deciso, non ancora iniziato. Ricevuti e letti integralmente i 4 prompt agente (A1 v4, A2 v14, A3 v12, A4 v6) come base per la ricostruzione fedele dei contenuti.
+- [2026-11-13] Step discusso e deciso, non ancora iniziato. Ricevuti e letti integralmente i 4 prompt agente (A1 v4, A2 v14, A3 v12, A4 v6) come base per la ricostruzione fedele dei contenuti.
+- [2026-11-14] Punto 1: creata tabella `kpi_mensili` su Supabase (RLS `authenticated_all_kpi_mensili`); `a1_monthly.py` ora sincronizza la riga del mese (stessi valori già calcolati per lo Sheet "KPI Medi", nessun calcolo duplicato) tramite `sync_kpi_to_supabase()`, chiamata da `_run()` dopo `compile_sheet_kpi()`. Verificato con una run reale sul branch (A1 Monthly, Ottobre 2026): riga sincronizzata correttamente, valori coerenti con l'Excel.
+- [2026-11-14] Punto 2: creata `app/agenti/a2-analyst/dashboard_kpi.html`, raggiungibile dalla nuova card "Dashboard KPI" nelle Azioni di A2. Mostra, per ogni metrica di `kpi_mensili` (gruppi Post/Stories), il valore del mese corrente, il delta % vs il mese precedente (colorato in base a se la metrica è "meglio se alta", neutro per Sentiment Score che non ha una direzione ovvia) e uno sparkline SVG con l'andamento su tutti i mesi sincronizzati (compare dal secondo mese disponibile). Nessun calcolo nuovo: legge solo `kpi_mensili`. Mergiato su main per essere testabile dal sito reale.
 
 ### Step 6 — Riorganizzazione cartelle GitHub
 
@@ -188,6 +191,25 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-14 13:10] Step 5 avviato — schema KPI mensili + dashboard A2 (punti 1-2 su 5)
+
+**Riepilogo:** Deciso di spezzare lo Step 5 in 5 sotto-punti (un agente alla volta, fino in fondo) per evitare di costruire tutto insieme e trovare bug ovunque come rischiato allo Step 4; fatti i primi due: sincronizzazione dei KPI mensili su Supabase e la pagina dashboard di A2 che li legge, entrambi verificati con una run reale di A1 Monthly.
+
+**Cosa è stato fatto:**
+- Creata la tabella Supabase `kpi_mensili` (RLS `authenticated_all_kpi_mensili`, stesso pattern delle altre tabelle agent-facing), migrazione registrata in `supabase/migrations/20261114_add_kpi_mensili.sql`.
+- `a1_monthly.py`: `compile_sheet_kpi()` ora ritorna la riga calcolata; nuova `sync_kpi_to_supabase()` la scrive su `kpi_mensili` via upsert su `mese` — nessun calcolo duplicato, solo sincronizzazione dei valori già prodotti per lo Sheet "KPI Medi". Verificato lanciando A1 Monthly reale sul branch: riga "Ottobre 2026" sincronizzata con valori coerenti con l'Excel (ER 6,68%, reach medio post 2944, ecc.).
+- Nuova pagina `app/agenti/a2-analyst/dashboard_kpi.html`: per ogni metrica (gruppi "Post" e "Stories") mostra il valore del mese corrente, il delta % vs il mese precedente (colore in base a se la metrica è "meglio se alta"; neutro per Sentiment Score, che non ha una direzione ovvia) e uno sparkline SVG con l'andamento su tutti i mesi sincronizzati — il grafico compare da solo dal secondo mese disponibile, senza bisogno di altri interventi. Letta la skill dataviz del progetto prima di scrivere il codice dei grafici (un'unica tinta per serie, nessun doppio asse, tooltip nativo per punto).
+- Aggiunta la card "Dashboard KPI" nelle Azioni di A2, che apre la nuova pagina.
+- Verificato: sintassi Python/JS, tutti i link del repo (56, 0 rotti) con lo script già scritto in una sessione precedente, prima del push. Fast-forward merge su `main` per renderla testabile dal sito reale.
+
+**File consegnati/modificati:**
+- `supabase/migrations/20261114_add_kpi_mensili.sql` (nuovo)
+- `scripts/a1_monthly.py` (modificato: `compile_sheet_kpi()`, nuova `sync_kpi_to_supabase()`, chiamata in `_run()`)
+- `app/agenti/a2-analyst/dashboard_kpi.html` (nuovo)
+- `app/agenti/a2-analyst/page_agent_a2_v3.html` (modificato: nuova card "Dashboard KPI")
+
+---
 
 ### [2026-11-14 11:20] Step 4 completato e verificato end-to-end — trovati e risolti 2 bug veri, categorizzazione reale confermata
 
