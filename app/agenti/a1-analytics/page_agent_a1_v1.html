@@ -328,6 +328,11 @@ body{
       <div class="sc-head"><span class="sc-label">&#9889; Azioni</span></div>
       <div class="sc-body">
         <div class="action-row">
+          <a class="lg-btn" href="categorizza.html" id="catLink">
+            <span class="btn-icon">&#127991;&#65039;</span>
+            <div class="btn-text"><div class="btn-title">Categorizza post</div><div class="btn-sub" id="catPendingSub">Caricamento...</div></div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
           <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank">
             <span class="btn-icon">&#128202;</span>
             <div class="btn-text"><div class="btn-title">Apri Google Sheet</div><div class="btn-sub">Instagram_Analytics_GDC</div></div>
@@ -735,6 +740,22 @@ async function loadA1(){
   }
 }
 
+async function loadCategorizePending(){
+  const sub=document.getElementById('catPendingSub');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/posts?select=id&categoria_primaria=is.null&episodio_serie=is.null', {
+      headers: { 'Prefer': 'count=exact' }
+    });
+    const n = parseInt((res.headers.get('content-range')||'/0').split('/')[1], 10) || 0;
+    sub.textContent = n>0 ? (n+' post da categorizzare') : 'Tutto categorizzato ✓';
+    sub.style.color = n>0 ? 'var(--life)' : '';
+    sub.style.fontWeight = n>0 ? '700' : '';
+  }catch(e){
+    console.error('Errore conteggio da categorizzare:',e);
+    sub.textContent = 'Apri schermata';
+  }
+}
+
 async function loadActivity(){
   const box=document.getElementById('runList');
   try{
@@ -765,6 +786,7 @@ if(!gdcToken()){
 } else {
   loadA1();
   loadActivity();
+  loadCategorizePending();
 }
 </script>
 </body>

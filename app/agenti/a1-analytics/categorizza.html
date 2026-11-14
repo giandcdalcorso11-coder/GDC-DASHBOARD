@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Categorizza post</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
+  --life:#C2193A; --life-bg:#F5E0E6; --life-mid:#E9415A;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
+@media(prefers-color-scheme:dark){
+  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+  .back-btn,.section-card,.post-card{ background:var(--bianco); border-color:var(--border); }
+  select,.sec-input{ background:#1A1A1A; color:var(--nero); border-color:var(--border); }
+}
+.page-content{ width:100%; max-width:560px; padding:20px 16px; }
+.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:14px; }
+.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
+.page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
+.month-group{ margin-bottom:22px; }
+.month-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.month-label{ font-weight:800; font-size:.92rem; }
+.month-badge{ font-size:.66rem; font-weight:700; border-radius:999px; padding:3px 10px; }
+.month-badge.pending{ background:var(--life-bg); color:var(--life); }
+.month-badge.done{ background:var(--maker-bg); color:var(--maker); }
+.series-note{ font-size:.68rem; color:var(--grigio); margin-bottom:10px; font-style:italic; }
+.post-card{ background:var(--bianco); border:2px solid var(--border); border-radius:16px; padding:14px; margin-bottom:10px; transition:border-color .2s; }
+.post-card.pending{ border-color:var(--life); }
+.post-card.saved{ border-color:var(--maker); }
+.post-top{ display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.post-meta{ font-size:.68rem; color:var(--grigio); font-weight:700; }
+.post-fmt{ font-size:.62rem; font-weight:800; letter-spacing:.03em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:5px; padding:2px 6px; }
+.post-link{ margin-left:auto; font-size:.68rem; font-weight:700; color:var(--sabbia-dk); text-decoration:none; }
+.post-link:hover{ text-decoration:underline; }
+.post-caption{ font-size:.78rem; line-height:1.5; margin-bottom:12px; color:var(--nero); white-space:pre-wrap; max-height:4.5em; overflow:hidden; }
+.post-caption.expanded{ max-height:none; }
+.caption-toggle{ font-size:.66rem; color:var(--grigio); cursor:pointer; text-decoration:underline; margin:-8px 0 12px; display:inline-block; }
+.primary-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-bottom:10px; }
+.primary-btn{ font-family:'Jost',sans-serif; font-size:.66rem; font-weight:700; padding:8px 4px; border-radius:10px; border:1.5px solid var(--border); background:var(--carta); color:var(--grigio); cursor:pointer; transition:all .15s; text-align:center; }
+.primary-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
+.primary-btn .sugg{ display:block; font-size:.56rem; font-weight:600; opacity:.7; margin-top:1px; }
+.sec-row{ display:flex; gap:6px; margin-bottom:10px; }
+.sec-row select,.sec-input{ flex:1; font-family:'Jost',sans-serif; font-size:.78rem; padding:8px 10px; border:1.5px solid var(--border); border-radius:10px; background:var(--carta); color:var(--nero); outline:none; min-width:0; }
+.sec-row select:focus,.sec-input:focus{ border-color:var(--sabbia); }
+.save-row{ display:flex; align-items:center; gap:10px; }
+.save-btn{ font-family:'Jost',sans-serif; font-size:.74rem; font-weight:700; padding:8px 16px; border:none; border-radius:10px; background:var(--life); color:#fff; cursor:pointer; transition:opacity .15s; }
+.save-btn:hover{ opacity:.88; }
+.save-btn:disabled{ background:#ccc; cursor:not-allowed; opacity:.6; }
+.save-btn.is-saved{ background:var(--maker); }
+.save-status{ font-size:.68rem; color:var(--grigio); }
+.empty-state{ text-align:center; padding:40px 16px; color:var(--grigio); font-size:.82rem; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="page-content">
+  <a class="back-btn" href="page_agent_a1_v1.html">&#8592; Agente 1</a>
+  <div class="page-title">Categorizza post</div>
+  <div class="page-sub">Categoria Primaria e Secondaria dei post ORIGINALE del mese — stesso dato che prima si compilava a mano sulle celle gialle dello spreadsheet. Gli episodi di "Capiamo la Sabbia" sono già classificati automaticamente e non compaiono qui.</div>
+
+  <div id="list"></div>
+</div>
+
+<script>
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+const CATEGORIE_PRIMARIE = ['SPORT','RELATION','GDC STUFF','DIVULGAZIONE'];
+
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token');
+  sessionStorage.removeItem('gdc_uid');
+  let banner = document.getElementById('gdcSessionBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'gdcSessionBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent = 'Sessione scaduta — reindirizzamento al login...';
+  setTimeout(function(){ window.location.href = '../../../page_login_v6.html'; }, 1600);
+}
+
+async function sbFetch(url, options){
+  options = options || {};
+  const headers = Object.assign({ 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + gdcToken() }, options.headers || {});
+  const res = await fetch(url, Object.assign({}, options, { headers: headers }));
+  if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+let VOCAB = {}; // { PRIMARIA: [valori...] }
+let POSTS = [];
+
+async function loadVocab(){
+  const res = await sbFetch(SUPA_URL+'/rest/v1/categoria_secondaria_vocabolario?select=categoria_primaria,valore&order=valore.asc');
+  const rows = await res.json();
+  VOCAB = {};
+  rows.forEach(r=>{
+    (VOCAB[r.categoria_primaria] = VOCAB[r.categoria_primaria] || []).push(r.valore);
+  });
+}
+
+async function loadPosts(){
+  const res = await sbFetch(SUPA_URL+'/rest/v1/posts?select=*&episodio_serie=is.null&order=mese.desc');
+  POSTS = await res.json();
+}
+
+function groupByMese(posts){
+  const groups = {};
+  posts.forEach(p=>{ (groups[p.mese] = groups[p.mese] || []).push(p); });
+  Object.values(groups).forEach(list => list.sort((a,b)=> (b.data+b.ora).localeCompare(a.data+a.ora)));
+  return groups;
+}
+
+function secondaryOptionsHtml(postId, primaria, current){
+  const valori = VOCAB[primaria] || [];
+  let html = '<option value="">— scegli —</option>';
+  const seen = new Set(valori);
+  if (current && !seen.has(current)) { html += `<option value="${escapeHtml(current)}" selected>${escapeHtml(current)}</option>`; seen.add(current); }
+  valori.forEach(v=>{
+    html += `<option value="${escapeHtml(v)}"${v===current?' selected':''}>${escapeHtml(v)}</option>`;
+  });
+  html += '<option value="__new__">+ Aggiungi nuovo...</option>';
+  return html;
+}
+
+function render(){
+  const groups = groupByMese(POSTS);
+  const container = document.getElementById('list');
+  const mesi = Object.keys(groups);
+  if (mesi.length === 0){
+    container.innerHTML = '<div class="empty-state">Nessun post ancora sincronizzato da A1 Monthly.<br>Torna qui dopo il run del 2 del mese.</div>';
+    return;
+  }
+
+  // conteggio episodi serie per mese, per la nota informativa
+  const serieCount = {};
+  POSTS_SERIE.forEach(p=>{ serieCount[p.mese] = (serieCount[p.mese]||0) + 1; });
+
+  container.innerHTML = mesi.map(mese=>{
+    const list = groups[mese];
+    const pending = list.filter(p=>!p.categoria_primaria).length;
+    const badge = pending>0
+      ? `<span class="month-badge pending">${pending} da categorizzare</span>`
+      : `<span class="month-badge done">&#10003; tutti categorizzati</span>`;
+    const serieNote = serieCount[mese]
+      ? `<div class="series-note">+ ${serieCount[mese]} episodio/i "Capiamo la Sabbia" già classificati automaticamente (non mostrati qui)</div>` : '';
+    return `<div class="month-group">
+      <div class="month-head"><span class="month-label">${escapeHtml(mese)}</span>${badge}</div>
+      ${serieNote}
+      ${list.map(p=>postCardHtml(p)).join('')}
+    </div>`;
+  }).join('');
+}
+
+let POSTS_SERIE = [];
+
+async function loadSerieCount(){
+  const res = await sbFetch(SUPA_URL+'/rest/v1/posts?select=mese&episodio_serie=not.is.null');
+  POSTS_SERIE = await res.json();
+}
+
+function postCardHtml(p){
+  const isPending = !p.categoria_primaria;
+  const state = { primaria: p.categoria_primaria || p.categoria_primaria_suggerita || '' };
+  const primaryBtns = CATEGORIE_PRIMARIE.map(cat=>{
+    const active = cat === (p.categoria_primaria || '');
+    const isSugg = !p.categoria_primaria && cat === p.categoria_primaria_suggerita;
+    return `<button type="button" class="primary-btn${active?' active':''}" data-post="${p.id}" data-cat="${cat}" onclick="selectPrimary('${p.id}','${cat}')">${cat}${isSugg?'<span class="sugg">suggerito</span>':''}</button>`;
+  }).join('');
+  return `<div class="post-card${isPending?' pending':' saved'}" id="card-${p.id}">
+    <div class="post-top">
+      <span class="post-fmt">${escapeHtml(p.tipo_contenuto||'')}</span>
+      <span class="post-meta">${escapeHtml(p.data||'')} · ${escapeHtml(p.ora||'')}</span>
+      ${p.permalink?`<a class="post-link" href="${escapeHtml(p.permalink)}" target="_blank">Apri su Instagram &#8599;</a>`:''}
+    </div>
+    <div class="post-caption" id="cap-${p.id}">${escapeHtml(p.caption||'(nessuna caption)')}</div>
+    <span class="caption-toggle" onclick="toggleCaption('${p.id}')">espandi/riduci</span>
+    <div class="primary-row" id="primary-${p.id}">${primaryBtns}</div>
+    <div class="sec-row">
+      <select id="sec-${p.id}" onchange="onSecChange('${p.id}')">${secondaryOptionsHtml(p.id, state.primaria, p.categoria_secondaria)}</select>
+    </div>
+    <div class="save-row">
+      <button type="button" class="save-btn${!isPending?' is-saved':''}" id="savebtn-${p.id}" onclick="savePost('${p.id}')" ${state.primaria?'':'disabled'}>${isPending?'Salva':'Aggiornato ✓'}</button>
+      <span class="save-status" id="status-${p.id}"></span>
+    </div>
+  </div>`;
+}
+
+function toggleCaption(id){
+  document.getElementById('cap-'+id).classList.toggle('expanded');
+}
+
+function selectPrimary(postId, cat){
+  document.querySelectorAll(`#primary-${postId} .primary-btn`).forEach(b=>{
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+  const post = POSTS.find(p=>p.id===postId);
+  const sec = document.getElementById('sec-'+postId);
+  const currentVal = sec.value === '__new__' ? '' : sec.value;
+  sec.innerHTML = secondaryOptionsHtml(postId, cat, currentVal);
+  post._pendingPrimaria = cat;
+  updateSaveEnabled(postId);
+}
+
+async function onSecChange(postId){
+  const sec = document.getElementById('sec-'+postId);
+  if (sec.value !== '__new__') { updateSaveEnabled(postId); return; }
+  const nuovo = prompt('Nuova categoria secondaria:');
+  const post = POSTS.find(p=>p.id===postId);
+  const primaria = post._pendingPrimaria || post.categoria_primaria || post.categoria_primaria_suggerita;
+  if (!nuovo || !nuovo.trim() || !primaria) { sec.value = post.categoria_secondaria || ''; return; }
+  const valore = nuovo.trim();
+  try {
+    await sbFetch(SUPA_URL+'/rest/v1/categoria_secondaria_vocabolario?on_conflict=categoria_primaria,valore', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Prefer':'resolution=ignore-duplicates,return=minimal' },
+      body: JSON.stringify({ categoria_primaria: primaria, valore })
+    });
+    (VOCAB[primaria] = VOCAB[primaria] || []);
+    if (!VOCAB[primaria].includes(valore)) VOCAB[primaria].push(valore);
+    sec.innerHTML = secondaryOptionsHtml(postId, primaria, valore);
+  } catch(e){ console.error('Errore aggiunta vocabolario:', e); }
+  updateSaveEnabled(postId);
+}
+
+function updateSaveEnabled(postId){
+  const post = POSTS.find(p=>p.id===postId);
+  const primaria = post._pendingPrimaria || post.categoria_primaria;
+  const sec = document.getElementById('sec-'+postId).value;
+  const btn = document.getElementById('savebtn-'+postId);
+  btn.disabled = !primaria || !sec || sec === '__new__';
+}
+
+async function savePost(postId){
+  const post = POSTS.find(p=>p.id===postId);
+  const primaria = post._pendingPrimaria || post.categoria_primaria;
+  const secondaria = document.getElementById('sec-'+postId).value;
+  const statusEl = document.getElementById('status-'+postId);
+  const btn = document.getElementById('savebtn-'+postId);
+  if (!primaria || !secondaria || secondaria === '__new__') return;
+  btn.disabled = true;
+  statusEl.textContent = 'Salvataggio...';
+  try {
+    const res = await sbFetch(SUPA_URL+'/rest/v1/posts?id=eq.'+encodeURIComponent(postId), {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json', 'Prefer':'return=minimal' },
+      body: JSON.stringify({ categoria_primaria: primaria, categoria_secondaria: secondaria })
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    post.categoria_primaria = primaria;
+    post.categoria_secondaria = secondaria;
+    statusEl.textContent = 'Salvato';
+    btn.textContent = 'Aggiornato ✓';
+    btn.classList.add('is-saved');
+    document.getElementById('card-'+postId).classList.remove('pending');
+    document.getElementById('card-'+postId).classList.add('saved');
+    render(); // ricalcola i badge "N da categorizzare" per mese
+  } catch(e){
+    console.error('Errore salvataggio post:', e);
+    statusEl.textContent = 'Errore — riprova';
+    btn.disabled = false;
+  }
+}
+
+async function init(){
+  if (!gdcToken()) { window.location.href = '../../../page_login_v6.html'; return; }
+  try {
+    await Promise.all([loadVocab(), loadPosts(), loadSerieCount()]);
+    render();
+  } catch(e){
+    if (e.message !== 'session-expired') {
+      document.getElementById('list').innerHTML = '<div class="empty-state">Errore di caricamento. Riprova.</div>';
+      console.error(e);
+    }
+  }
+}
+init();
+</script>
+</body>
+</html>

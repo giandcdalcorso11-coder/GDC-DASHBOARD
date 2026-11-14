@@ -894,6 +894,60 @@ def compile_sheet_post(wb, posts):
     return rows_to_insert
 
 
+def sync_posts_to_supabase(posts):
+    """
+    Specchio su Supabase (tabella `posts`) dei soli post ORIGINALE del mese,
+    per la schermata di categorizzazione della webapp (Step 4) — i REPOST
+    non si categorizzano, restano solo sul foglio Excel.
+
+    Upsert su id (media id IG). Per i post NON di serie il payload non
+    include categoria_primaria/categoria_secondaria/episodio_serie: un
+    rerun di A1 Monthly (es. dopo il recupero del CSV MBS) non deve mai
+    sovrascrivere una categoria che Gianluca ha gia' scelto dalla webapp —
+    upsert con Prefer: resolution=merge-duplicates aggiorna solo le colonne
+    presenti nel payload, lascia intatte le altre. Per i post della serie
+    "Capiamo la Sabbia" la categoria va invece sempre inclusa (sempre
+    DIVULGAZIONE/GDC STUFF, senza eccezioni — stessa regola del foglio Excel).
+    """
+    payloads = []
+    for p in posts:
+        if p.get("_tipo_autore") == "REPOST":
+            continue
+        username = p.get("username", p.get("owner", {}).get("username", ""))
+        if username and username != "giandcdalcorso":
+            continue
+
+        data_str, ora_str = parse_ts(p.get("timestamp", ""))
+        row = {
+            "id": p["id"],
+            "mese": MESE_LABEL,
+            "data": data_str,
+            "ora": ora_str,
+            "tipo_contenuto": media_type_to_gdc(p.get("media_type", "")),
+            "caption": p.get("caption", "")[:500] if p.get("caption") else "",
+            "permalink": p.get("permalink", ""),
+        }
+        serie = classifica_serie(p.get("caption"))
+        if serie:
+            cat_primaria, cat_secondaria, episodio = serie
+            row["categoria_primaria"] = cat_primaria
+            row["categoria_secondaria"] = cat_secondaria
+            row["episodio_serie"] = episodio if episodio != "" else None
+        payloads.append(row)
+
+    if not payloads:
+        print("    Supabase posts: nessun post ORIGINALE da sincronizzare")
+        return
+
+    url = f"{SUPA_URL}/rest/v1/posts?on_conflict=id"
+    headers = {**supabase_headers(), "Prefer": "resolution=merge-duplicates,return=minimal"}
+    r = requests.post(url, json=payloads, headers=headers, timeout=15)
+    if r.status_code not in (200, 201, 204):
+        print(f"    ⚠ Errore sync posts su Supabase: {r.status_code} {r.text}")
+    else:
+        print(f"    Supabase posts: {len(payloads)} post ORIGINALE sincronizzati")
+
+
 def compile_sheet_stories(wb, stories):
     """
     Compila Sheet 3 — Insights Stories (top 10 per visualizzazioni).
@@ -1192,6 +1246,7 @@ def _run():
 
         # 8. Compila i 4 sheet
         compile_sheet_post(wb, all_posts)
+        sync_posts_to_supabase(all_posts)
         compile_sheet_stories(wb, stories)
         compile_sheet_panoramica(wb, all_posts, stories, profile_data)
         compile_sheet_kpi(wb, all_posts, stories)
