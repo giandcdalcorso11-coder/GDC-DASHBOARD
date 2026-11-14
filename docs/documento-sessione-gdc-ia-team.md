@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 10
-**Ultimo aggiornamento:** 2026-11-14 10:53
+**Versione:** 11
+**Ultimo aggiornamento:** 2026-11-14 11:20
 
 ## Vision
 
@@ -96,7 +96,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Vocabolario di partenza per la secondaria (estratto da A4 v6, sez. 2): SPORT → Torneo/Gara, Allenamento, Nazionale, Viaggio/Trasferta; RELATION → Coppia, Famiglia, Amici; GDC STUFF → Stampa 3D, Elettronica/Coding, Prodotto finito, Making of.
 - Diventa un passaggio esplicito e visibile della pipeline (es. "Ottobre: 2 post da categorizzare"), non più invisibile come oggi — gate prima che A2 possa partire sensatamente.
 
-**Criterio di completamento:** Gianluca può categorizzare un mese intero dalla webapp senza aprire lo spreadsheet; i valori usati si accumulano nel menù secondario nel tempo. — Fatto per la parte manuale; il "suggerimento di Claude" della decisione originale non c'è ancora (vedi sotto).
+**Criterio di completamento:** Gianluca può categorizzare un mese intero dalla webapp senza aprire lo spreadsheet; i valori usati si accumulano nel menù secondario nel tempo. — **Verificato end-to-end con dati reali**: i 7 post di Ottobre 2026 sono tutti categorizzati (4 a mano + 3 di serie automatici), il vocabolario secondario è cresciuto con i 2 valori liberi inseriti da Gianluca ("Gdc stuff" sotto RELATION, "Premiazioni" sotto SPORT), disponibili in tendina da subito. Resta solo il "suggerimento di Claude" della decisione originale, non ancora presente (vedi sotto).
 
 **Decisione presa in corso d'opera:** il "suggerimento di Claude" previsto nel design originale non può essere una vera chiamata API dalla webapp (violerebbe il vincolo "zero costo extra" — pagina statica, nessun backend). Deciso di costruire comunque lo schema pronto (colonne `categoria_primaria_suggerita`/`categoria_secondaria_suggerita` su `posts`, mostrate in UI se presenti) ma lasciarle vuote per ora — le popolerà la sessione Claude Code dedicata (Step 8) quando esisterà, usando l'abbonamento Pro invece di una chiamata a pagamento. Oggi la schermata è quindi solo manuale, senza suggerimento pre-compilato.
 
@@ -189,7 +189,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-14 10:53] Step 4 completato e verificato con dati reali — trovati e risolti 2 bug veri
+### [2026-11-14 11:20] Step 4 completato e verificato end-to-end — trovati e risolti 2 bug veri, categorizzazione reale confermata
 
 **Riepilogo:** Costruita la schermata di categorizzazione post con il relativo schema Supabase; Gianluca l'ha provata subito sul sito vero (merge su `main` fatto in giornata), e per testarla con dati veri abbiamo fatto girare A1 Monthly su Ottobre 2026 caricando io stesso il CSV MBS che mi aveva dato — il run reale ha fatto emergere due bug che nessun test sintetico avrebbe trovato, entrambi risolti e riverificati con un secondo run reale.
 
@@ -214,7 +214,8 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - **Bug: la UI nascondeva gli episodi di serie dal campo sbagliato**
   **Sintomo:** controllando i dati reali appena sincronizzati, 2 dei 4 episodi di serie del mese (caption scritte senza il trattino previsto, es. "Capiamo la sabbia EP2" invece di "Capiamo la sabbia - EP.2") comparivano come "da categorizzare" nella UI, pur essendo già classificati DIVULGAZIONE/GDC STUFF da A1.
   **Causa:** `classifica_serie()` in `a1_monthly.py` riconosce l'appartenenza alla serie dal solo prefisso della caption (nessun trattino richiesto) ma estrae il numero episodio con una regex più rigida che il trattino lo richiede — comportamento corretto e già documentato (fallback "Episodio Serie vuoto"). La pagina `categorizza.html` però usava proprio "episodio_serie is null" per decidere se un post fosse di serie, scambiando "numero non leggibile" per "non è serie".
-  **Fix applicato:** filtro spostato su `categoria_primaria = 'DIVULGAZIONE'` (il segnale che A1 scrive sempre e solo per la serie, affidabile indipendentemente dal numero episodio) in `categorizza.html` e semplificato lo stesso controllo in `page_agent_a1_v1.html`. Risultato atteso con i dati reali: 4 post normali da categorizzare, 3 episodi di serie nascosti — da confermare visivamente da Gianluca sulla pagina vera.
+  **Fix applicato:** filtro spostato su `categoria_primaria = 'DIVULGAZIONE'` (il segnale che A1 scrive sempre e solo per la serie, affidabile indipendentemente dal numero episodio) in `categorizza.html` e semplificato lo stesso controllo in `page_agent_a1_v1.html`. Confermato visivamente da Gianluca sulla pagina vera: 4 post normali mostrati come da categorizzare, i 3 episodi di serie correttamente nascosti.
+- Gianluca ha categorizzato a mano i 4 post dal sito vero. Verificato su Supabase: tutti e 7 i post di Ottobre hanno ora categoria primaria+secondaria; il vocabolario secondario è cresciuto con 2 valori liberi nuovi inseriti da Gianluca durante la prova ("Gdc stuff" sotto RELATION, "Premiazioni" sotto SPORT). Osservazione non problematica: uno dei 4 post categorizzati a mano ("Campionato italiano di beach volley...") è tematicamente un episodio della serie ma la sua caption non inizia con "Capiamo la Sabbia" — A1 non l'aveva riconosciuto in automatico, Gianluca l'ha classificato DIVULGAZIONE/GDC STUFF a mano. Esattamente il caso d'uso per cui serviva una schermata manuale accanto all'automazione.
 
 **File consegnati/modificati:** `scripts/a1_monthly.py`, `app/agenti/a1-analytics/categorizza.html` (nuovo), `app/agenti/a1-analytics/page_agent_a1_v1.html`, `supabase/migrations/20261114_add_posts_categorization.sql` (nuovo), `docs/documento-sessione-gdc-ia-team.md`; schema Supabase: tabelle `posts` e `categoria_secondaria_vocabolario` (ora con dati reali di Ottobre 2026); Drive: caricato `Oct-01-2026_Oct-31-2026_1520066349931563.csv` in "Archivio docs MBS".
 
