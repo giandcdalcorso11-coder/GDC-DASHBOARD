@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Dashboard KPI A2</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
+  --athlete:#2B5F9E; --athlete-bg:#D9E6F3;
+  --life:#C2193A; --life-bg:#F5E0E6; --life-mid:#E9415A;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
+@media(prefers-color-scheme:dark){
+  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+  .back-btn,.section-card{ background:var(--bianco); border-color:var(--border); }
+}
+.page-content{ width:100%; max-width:560px; padding:20px 16px; }
+.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:14px; }
+.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
+.page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:6px; }
+.mese-badge{ display:inline-flex; align-items:center; gap:6px; font-size:.68rem; font-weight:700; color:var(--athlete); background:var(--athlete-bg); border-radius:999px; padding:4px 11px; margin-bottom:18px; }
+
+.section-card{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; margin-bottom:12px; overflow:hidden; }
+.sc-head{ padding:11px 14px 9px; border-bottom:1px solid var(--border); }
+.sc-label{ font-size:.62rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--grigio); }
+.sc-body{ padding:4px 14px 6px; }
+
+.kpi-row{ padding:12px 0; border-bottom:1px solid var(--border); }
+.kpi-row:last-child{ border-bottom:none; }
+.kpi-row-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.kpi-label{ font-size:.76rem; font-weight:700; }
+.kpi-delta{ font-size:.64rem; font-weight:700; border-radius:999px; padding:2px 8px; white-space:nowrap; }
+.kpi-delta-up{ background:var(--maker-bg); color:var(--maker); }
+.kpi-delta-down{ background:var(--life-bg); color:var(--life); }
+.kpi-delta-flat{ background:var(--border); color:var(--grigio); }
+.kpi-row-body{ display:flex; align-items:center; gap:10px; }
+.kpi-value{ font-size:1.1rem; font-weight:800; flex-shrink:0; min-width:64px; }
+.kpi-spark{ flex:1; min-width:0; height:40px; }
+.kpi-note{ font-size:.66rem; color:var(--grigio); font-style:italic; }
+.empty-state{ text-align:center; padding:40px 16px; color:var(--grigio); font-size:.82rem; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="page-content">
+  <a class="back-btn" href="page_agent_a2_v3.html">&#8592; Agente 2</a>
+  <div class="page-title">Dashboard KPI</div>
+  <div class="page-sub">Numeri e andamento mese per mese, letti dalla tabella Supabase <code>kpi_mensili</code> — gli stessi valori già calcolati da A1 per lo Sheet "KPI Medi" dell'Excel, separati qui dal contenuto narrativo del report.</div>
+  <div id="meseBadge"></div>
+
+  <div id="content"></div>
+</div>
+
+<script>
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+
+const GRUPPI = [
+  { label: 'Post', metriche: [
+    { key:'er_medio', label:'Engagement Rate medio', fmt:v=>pct(v*100), higherBetter:true },
+    { key:'reach_medio_post', label:'Reach medio', fmt:v=>int(v), higherBetter:true },
+    { key:'viz_medie_post', label:'Visualizzazioni medie', fmt:v=>int(v), higherBetter:true },
+    { key:'like_medio', label:'Like medio', fmt:v=>dec1(v), higherBetter:true },
+    { key:'commenti_medi', label:'Commenti medi', fmt:v=>dec1(v), higherBetter:true },
+    { key:'salvataggi_medi', label:'Salvataggi medi', fmt:v=>dec1(v), higherBetter:true },
+    { key:'tasso_viralita_medio', label:'Tasso viralità medio', fmt:v=>pct(v), higherBetter:true },
+    { key:'sentiment_score_medio', label:'Sentiment Score medio', fmt:v=>dec2(v), higherBetter:null },
+  ]},
+  { label: 'Stories', metriche: [
+    { key:'viz_medie_stories', label:'Visualizzazioni medie', fmt:v=>int(v), higherBetter:true },
+    { key:'reach_medio_stories', label:'Reach medio', fmt:v=>int(v), higherBetter:true },
+  ]},
+];
+
+function int(v){ return Math.round(v).toLocaleString('it-IT'); }
+function dec1(v){ return v.toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function dec2(v){ return v.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function pct(v){ return v.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+'%'; }
+
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+  let banner=document.getElementById('gdcSessionBanner');
+  if(!banner){ banner=document.createElement('div'); banner.id='gdcSessionBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent='Sessione scaduta — reindirizzamento al login...';
+  setTimeout(()=>{ window.location.href='../../../page_login_v6.html'; },1600);
+}
+async function sbFetch(url,options){
+  options=options||{};
+  const headers=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+gdcToken()},options.headers||{});
+  const res=await fetch(url,Object.assign({},options,{headers:headers}));
+  if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+function sparkSvg(values){
+  // values: array di numeri (null ammesso), in ordine cronologico
+  const pts = values.map((v,i)=>({x:i,v:v})).filter(p=>p.v!=null && p.v!=='');
+  if(pts.length<2) return '';
+  const W=200,H=36,PAD=4;
+  const min=Math.min(...pts.map(p=>p.v)), max=Math.max(...pts.map(p=>p.v));
+  const span = (max-min)||1;
+  const n = values.length;
+  const xAt = i => PAD + (n===1?0:(W-2*PAD)*i/(n-1));
+  const yAt = v => (max===min) ? H/2 : (H-PAD) - (v-min)/span*(H-2*PAD);
+  const coords = pts.map(p=>[xAt(p.x), yAt(p.v)]);
+  const path = coords.map((c,i)=> (i===0?'M':'L') + c[0].toFixed(1) + ' ' + c[1].toFixed(1)).join(' ');
+  const dots = coords.map((c,i)=>{
+    const p = pts[i];
+    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="2.5" fill="var(--athlete)"><title>${p.v}</title></circle>`;
+  }).join('');
+  return `<svg class="kpi-spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <path d="${path}" fill="none" stroke="var(--athlete)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}
+  </svg>`;
+}
+
+function deltaBadge(curr, prev, higherBetter){
+  if(prev==null || prev==='' || curr==null) return '';
+  const diff = curr - prev;
+  if(Math.abs(diff) < 1e-9) return '<span class="kpi-delta kpi-delta-flat">— invariato</span>';
+  const pctChange = prev!==0 ? (diff/Math.abs(prev)*100) : null;
+  const up = diff > 0;
+  let cls = 'kpi-delta-flat';
+  if(higherBetter===true) cls = up ? 'kpi-delta-up' : 'kpi-delta-down';
+  else if(higherBetter===false) cls = up ? 'kpi-delta-down' : 'kpi-delta-up';
+  const arrow = up ? '▲' : '▼';
+  const txt = pctChange!=null ? Math.abs(pctChange).toFixed(1)+'%' : Math.abs(diff).toFixed(2);
+  return `<span class="kpi-delta ${cls}">${arrow} ${txt}</span>`;
+}
+
+async function load(){
+  const content = document.getElementById('content');
+  try{
+    const res = await sbFetch(SUPA_URL+'/rest/v1/kpi_mensili?select=*&order=anno.asc,mese_num.asc');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows = await res.json();
+    if(!rows.length){
+      content.innerHTML = '<div class="empty-state">Nessun KPI ancora sincronizzato.<br>Compare qui dopo la prima run mensile di A1.</div>';
+      return;
+    }
+    const last = rows[rows.length-1];
+    const prevRow = rows.length>1 ? rows[rows.length-2] : null;
+    document.getElementById('meseBadge').innerHTML = `<div class="mese-badge">&#128197; ${last.mese}</div>`;
+
+    content.innerHTML = GRUPPI.map(g=>`
+      <div class="section-card">
+        <div class="sc-head"><span class="sc-label">${g.label}</span></div>
+        <div class="sc-body">
+          ${g.metriche.map(m=>{
+            const curr = last[m.key];
+            const prev = prevRow ? prevRow[m.key] : null;
+            const series = rows.map(r=>r[m.key]);
+            const hasVal = curr!=null && curr!=='';
+            return `<div class="kpi-row">
+              <div class="kpi-row-head">
+                <span class="kpi-label">${m.label}</span>
+                ${deltaBadge(curr,prev,m.higherBetter)}
+              </div>
+              <div class="kpi-row-body">
+                <span class="kpi-value">${hasVal?m.fmt(Number(curr)):'—'}</span>
+                ${sparkSvg(series) || '<span class="kpi-note">Il grafico comparirà dal secondo mese disponibile</span>'}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `).join('');
+  }catch(e){
+    console.error('Errore caricamento KPI:', e);
+    content.innerHTML = '<div class="empty-state">Impossibile caricare i KPI al momento.</div>';
+  }
+}
+
+if(!gdcToken()){
+  window.location.href='../../../page_login_v6.html';
+} else {
+  load();
+}
+</script>
+</body>
+</html>
