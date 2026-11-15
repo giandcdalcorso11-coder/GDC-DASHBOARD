@@ -308,6 +308,18 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     Hub
   </a>
 </div>
+<div style="width:100%;max-width:540px;padding:0 16px 10px;">
+  <div class="acard" style="border-color:var(--athlete);margin-bottom:0;">
+    <div style="padding:14px 16px 6px;">
+      <div class="agent-title"><span class="agent-name">&#x26A1; Ciclo editoriale mensile</span><span class="agent-tag">A2&#x2192;A3&#x2192;A4</span></div>
+      <div class="agent-desc">Sessione Claude Code dedicata e persistente &#x2014; apertura mese per Analyst, Planner, Brief &amp; Script in un unico passaggio.</div>
+    </div>
+    <div class="actions" style="grid-template-columns:1fr 1fr;">
+      <a class="lg-btn lg-primary" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank"><svg><use href="#ic-chat"/></svg><span>Apri sessione</span></a>
+      <button class="lg-btn" onclick="openMsg('CICLO','Ciclo editoriale A2&#x2192;A3&#x2192;A4',MSG_CICLO)"><svg><use href="#ic-copy"/></svg><span>Copia messaggio</span></button>
+    </div>
+  </div>
+</div>
 <div class="list-wrap">
   <svg style="display:none"><defs>
     <symbol id="ic-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
@@ -550,6 +562,8 @@ const MSGS={
   A6_1:"Ciao A6.1.\nProduci il Media Kit per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n-> lista la cartella e identifica autonomamente i 2 report piu recenti.\n\nCartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):\nCerca se esiste gia la cartella [NOME AZIENDA]:\n- Se esiste: non fare nulla, indicami il link.\n- Se non esiste: creala e indicami il link.\n\nProduci il PPTX Media Kit e presentamelo via present_files.\n\nNota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sara il PDF ad essere allegato da A7 alla mail.",
   A6_2:"Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nMedia Kit (A6.1) in Drive A6 — opzionale ma consigliato:\nCerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].\nSe trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.\n\nDopo approvazione, salva il TXT nella sottocartella specifica dell'azienda:\nCartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella [NOME AZIENDA] -> salva li il file\n-> mail_[NOME AZIENDA]_YYYY-MM-DD.txt\nNon salvare nella radice di Aziende ne in altre cartelle.",
 };
+
+const MSG_CICLO="Esegui il ciclo editoriale mensile.\n\n1. A2 - report del mese chiuso: "+Mm1+" "+Am1+"\n2. A3 - piano editoriale di: "+M0+" "+A0+"\n3. A4 - brief di apertura mese di: "+M0+" "+A0+"\n\nSegui l'ordine A2 -> A3 -> A4, leggendo prima docs/documento-sessione-gdc-ia-team.md e i prompt in docs/prompts/ come da tuo ruolo. Controlla agent_states su Supabase prima di ogni passaggio. Se manca un dato di input perche' il mese e' a cavallo della migrazione storica, chiedimi il link Drive diretto invece di bloccarti.";
 
 function buildMsgA3(calBpt){
   const cal=calBpt||'[calendario BPT non disponibile — esegui bpt_calendar.py]';

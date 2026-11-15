@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 22
-**Ultimo aggiornamento:** 2026-11-15 18:30
+**Versione:** 23
+**Ultimo aggiornamento:** 2026-11-15 19:10
 
 ## Vision
 
@@ -204,7 +204,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 8 — Bottone trigger verso sessione Claude Code dedicata
 
-**Stato:** da fare
+**Stato:** in corso
 
 **Obiettivo:** un bottone nella webapp apre la sessione Claude Code dedicata ad A1-A4 con il messaggio del mese già pronto da incollare.
 
@@ -213,11 +213,16 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Versione più automatica (notifica il giorno 1 del mese: "vuoi iniziare l'analisi di [mese]? Sì / Più tardi / No") valutata come miglioria futura, non nella prima versione — richiederebbe probabilmente passare dal semplice "copia e incolla" a un meccanismo che crea/avvia la sessione in automatico (es. una piccola funzione server-side), perché un tap su una notifica non può aprire da solo una chat interattiva.
 - La sessione Claude Code dedicata ad A1-A4 è separata da questa (stesso repo, già confermato funzionare con lo stesso pattern in un altro progetto di Gianluca).
 - Requisiti identificati per far lavorare la sessione dedicata: accesso al repo (automatico), le istruzioni degli agenti (i 4 prompt, già raccolti), i dati del mese da A1 (consigliato: `a1_monthly.py` scrive anche una copia dati nel repo, evitando di dover passare credenziali Google alla sessione dedicata), un connector Supabase (non chiavi in chiaro) se la sessione deve scrivere i report.
+- **Scelta architetturale (confermata da Gianluca il 15/11):** sessione **persistente**, non una nuova ad ogni ciclo — stesso link fisso riusato ogni mese, continuità di contesto tra un mese e l'altro (accetta il compromesso di un contesto che cresce nel tempo, gestibile con autocompact).
+- **Scope v1 (confermato da Gianluca il 15/11):** solo l'apertura mese (A2→A3→A4). La modalità itinerante di A4 (consulenza post per post durante il mese) resta esplicitamente fuori da questo step — non automatizzata, da valutare più avanti.
+- Idee discusse ma non ancora decise per step futuri, oltre il perimetro attuale: integrare la modalità itinerante di A4 nella stessa sessione dedicata (se e quando deciso); una vision più a lungo termine di editing video e gestione/pubblicazione diretta dei post dalla stessa catena — entrambe segnalate da Gianluca come lavoro lungo e separato, da affrontare solo a fine pipeline.
 
 **Criterio di completamento:** un click nella webapp porta a una sessione Claude Code pronta, con solo da incollare e inviare.
 
 **Note (cronologia dello step):**
-- Nessuna nota ancora — step discusso e deciso, non ancora iniziato.
+- [2026-11-15] Step avviato. Creata la sessione Claude Code dedicata e persistente (repo `giandcdalcorso11-coder/GDC-DASHBOARD`, branch `main`, stesso environment/connettori di questa sessione — Supabase, Google Drive, GitHub già disponibili senza configurazione aggiuntiva). Messaggio di setup iniziale le assegna il ruolo (eseguire A2→A3→A4 nell'ordine, leggendo i prompt in `docs/prompts/` e lo stato del progetto da `docs/documento-sessione-gdc-ia-team.md` prima di ogni ciclo, scrivendo una propria voce di storico dopo ogni ciclo eseguito, commit+push su `main`). Confermato pronta e in attesa (non esegue nulla finché Gianluca non chiede un mese specifico).
+- [2026-11-15] Aggiunto il bottone nella webapp: nuova card "Ciclo editoriale mensile" in cima a `page_home_v25.html` (sopra la lista degli agenti, perché l'azione è trasversale A2→A3→A4, non di un singolo agente) con due pulsanti — "Apri sessione" (link fisso alla sessione dedicata) e "Copia messaggio" (riusa il popup generico `openMsg()` già esistente sulla pagina, nessun nuovo meccanismo). Messaggio precompilato (`MSG_CICLO`) generato con mese corrente/precedente dinamici, stesso pattern già in uso per gli altri messaggi della pagina.
+- Non ancora verificato con un ciclo reale completo (Gianluca non ha ancora lanciato il primo ciclo dalla sessione dedicata) — prossimo passo per chiudere lo step.
 
 ### Step 9 — Pagina Impostazioni/notifiche
 
@@ -236,6 +241,35 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 19:10] Step 8 avviato — sessione Claude Code dedicata creata + bottone webapp
+
+**Riepilogo:** Discusse con Gianluca le due scelte architetturali chiave dello Step 8 (sessione persistente vs nuova ogni volta; scope iniziale con o senza la modalità itinerante di A4) e avviato il lavoro concreto: creata la sessione Claude Code dedicata e persistente per il ciclo A2→A3→A4, e aggiunto il bottone corrispondente nella webapp.
+
+**Cosa è stato fatto:**
+- Creata una sessione Claude Code Remote dedicata (`session_01HsrMVD8rfwcZoBQUR5DssK`), agganciata al repo `giandcdalcorso11-coder/GDC-DASHBOARD` su branch `main` (a differenza di questa sessione di sviluppo, che lavora sul branch `claude/webapp-github-automation-analysis-76x7fi`). Eredita automaticamente connettori e accesso già configurati per l'ambiente (Supabase, Google Drive, GitHub) — nessuna configurazione aggiuntiva necessaria.
+- Messaggio di setup iniziale inviato alla sessione: ruolo (eseguire A2→A3→A4 nell'ordine solo su richiesta esplicita con il nome del mese), dove trovare le istruzioni (i 3 prompt in `docs/prompts/`, A1 escluso perché completamente automatico), dove leggere lo stato del progetto prima di ogni ciclo (`docs/documento-sessione-gdc-ia-team.md`), cosa fare dopo ogni ciclo (nuova voce di storico + commit/push su `main`), e il perimetro esplicito (la modalità itinerante di A4 resta fuori). Verificato che la sessione ha letto il messaggio ed è pronta, in attesa (stato: idle, nessun ciclo eseguito).
+- Nuova card "Ciclo editoriale mensile" in cima a `page_home_v25.html` (sopra la lista per-agente, perché l'azione è trasversale A2→A3→A4): due pulsanti, "Apri sessione" (link fisso alla sessione dedicata) e "Copia messaggio" (riusa il meccanismo popup `openMsg()` già esistente sulla pagina per altri messaggi, nessun nuovo componente). Nuovo messaggio precompilato `MSG_CICLO`, generato dinamicamente con mese corrente/precedente, stesso pattern già in uso per i messaggi degli altri agenti su questa pagina.
+- Verificata la sintassi JS della pagina dopo le modifiche (estratto e validato con `node --check`).
+
+**Decisioni prese:**
+- Contesto: se la sessione dedicata ad A1-A4 deve essere una sola sessione persistente ripresa ogni mese, o una nuova sessione creata ad ogni ciclo.
+  Decisione: persistente — un solo link fisso nel bottone, continuità di contesto/memoria tra un mese e l'altro.
+  Alternative scartate: sessione nuova ogni volta (link che cambia o va rigenerato ogni mese, nessuna memoria pregressa) — scartata da Gianluca a favore della continuità, accettando il compromesso di un contesto che cresce nel tempo (gestibile con autocompact se necessario).
+- Contesto: se includere la modalità itinerante di A4 (consulenza creativa post per post durante il mese) nello scope di questo step.
+  Decisione: resta fuori per ora — lo Step 8 v1 copre solo l'apertura mese (A2→A3→A4). Idea di integrarla nella stessa sessione dedicata discussa ma non decisa, da valutare più avanti.
+  Alternative scartate: includerla da subito nella stessa sessione — scartata perché avrebbe richiesto che la sessione restasse aperta/richiamabile tutto il mese e non solo a inizio mese, cambiando la natura dello step.
+  Da rivedere se: Gianluca chiede esplicitamente di allargare lo scope in un prossimo step.
+- Nota collaterale (non una decisione formale, solo registrata): discussa anche una vision più a lungo termine — editing video e gestione/pubblicazione diretta dei post dalla stessa catena — esplicitamente descritta da Gianluca come lavoro nuovo, lungo, da affrontare solo a pipeline finita. Nessuna azione presa; osservazione di Claude: l'editing video romperebbe probabilmente il vincolo "zero costo extra" (richiede strumenti esterni al di fuori di Claude Code), la pubblicazione diretta è più abbordabile via API Instagram ma richiede un gate di conferma per non eliminare la revisione editoriale di Gianluca prima della pubblicazione.
+
+**File consegnati/modificati:**
+- `app/page_home_v25.html` (modificato: nuova card "Ciclo editoriale mensile", nuova costante `MSG_CICLO`)
+- Sessione Claude Code Remote `session_01HsrMVD8rfwcZoBQUR5DssK` (nuova, non è un file di repo ma una risorsa dell'account — link: `https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK`)
+- `docs/documento-sessione-gdc-ia-team.md`
+
+**Impatto su Vision/Pipeline:** Step 8 passa da "da fare" a "in corso". Resta da fare per chiuderlo: una prova reale completa (Gianluca lancia un ciclo vero dalla sessione dedicata e si verifica che A2→A3→A4 vadano a buon fine in sequenza).
+
+---
 
 ### [2026-11-15 18:30] Step 7 completato — migrazione storica completa dei 22 mesi A2/A3/A4
 
