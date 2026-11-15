@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 17
-**Ultimo aggiornamento:** 2026-11-15 09:05
+**Versione:** 18
+**Ultimo aggiornamento:** 2026-11-15 09:20
 
 ## Vision
 
@@ -144,9 +144,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-15] Gianluca ha rilanciato A2 con il prompt v17: le immagini reali si vedono correttamente nel report. Nota per dopo (non bloccante, rimandata esplicitamente da Gianluca): le foto escono quadrate invece che nel rettangolo 190×150 previsto — da controllare in una sessione futura, non urgente.
 - [2026-11-15] **Bug: pallino/logo di A2 in home bloccato su "in coda"** — Sintomo: dopo che A2 ha finito un report, l'icona/badge di A2 nella webapp restava rossa ("in coda") invece di passare a "completato". Causa: nessuno script scrive mai `agent_states` → 'done' per A2 — solo `a1_monthly.py` lo scrive 'ready' (in coda) quando A1 finisce; la riga non veniva più aggiornata dopo. Verificato leggendo `agent_states`: nella run appena fatta A2 aveva comunque scritto 'done' di propria iniziativa (ha il connector Supabase e ha dedotto da solo di doverlo fare, imitando A1) — corretto ma non garantito per i run futuri, perché non era nel prompt. Fix applicato: prompt A2 v17→v18 — Step 0 scrive `agent_states`→'working' prima di leggere i dati, Chiusura scrive `agent_states`→'done' con mese/n_post/n_stories (stessi campi letti dalla Tab Run della pagina di A2). Non ancora verificato con un nuovo run reale (il comportamento "giusto" di questa run specifica era già quello scritto spontaneamente da A2, non ancora quello scritto dal prompt v18).
 
-### Step 6 — Riorganizzazione cartelle GitHub
+### Step 6 — Riorganizzazione cartelle GitHub + pulizia grafica/organizzazione
 
-**Stato:** in corso — avviata in anticipo rispetto allo Step 5 (vedi decisione sotto), parziale
+**Stato:** in corso — avviata in anticipo rispetto allo Step 5 (vedi decisione sotto), parziale. La parte di pulizia grafica/UX e rimozione residui (vedi sotto) è deliberatamente rimandata: va fatta per ultima, dopo tutti gli step di funzionamento (5 completo con A3/A4, 7, 8, 9) — prima si finisce di far funzionare tutto, poi si riordina com'è fatto.
 
 **Obiettivo:** la struttura del repo (oggi completamente piatta) rispecchia quella già ordinata di Drive, per agente.
 
@@ -156,12 +156,14 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Spostare le pagine esistenti richiede aggiornare `manifest.json` (start_url), il redirect di `index.html`, e tutti i link interni tra pagine — da fare con attenzione e verifica di navigazione dopo, non è un'operazione a costo zero.
 - Trovata una cartella sospetta su Drive, `processed/` dentro AGENTE 6 (creata dal service account), che contraddice la decisione documentata "A7 non usa una cartella processed/" — da controllarne il contenuto prima di decidere se eliminarla.
 - **Il documento di sessione vive in `docs/documento-sessione-gdc-ia-team.md`** (questo file), deciso esplicitamente da Gianluca come posto fisso nel repo invece che fuori, dato che finora si lavorava dai Progetti Claude.ai senza repo.
+- **Pulizia grafica/organizzazione (decisione del 15/11/2026, da fare per ultima):** Gianluca non è soddisfatto di alcuni aspetti emersi lavorando — es. per vedere la Dashboard KPI di A2 bisogna entrare in una scheda/card separata invece di vederla più direttamente; ci sono residui della versione precedente (pptx-era) non più usati che vanno individuati e rimossi. Nessun elenco esaustivo ancora raccolto: va fatto un audit dedicato quando si arriva a questo punto della pipeline, non solo questi due esempi.
 
-**Criterio di completamento:** tutte le pagine esistenti funzionano dai nuovi percorsi, nessun link interno rotto, nuove pagine editoriali già nella struttura definitiva.
+**Criterio di completamento:** tutte le pagine esistenti funzionano dai nuovi percorsi, nessun link interno rotto, nuove pagine editoriali già nella struttura definitiva; passata la pulizia finale, nessun residuo della versione precedente e la navigazione rispecchia come Gianluca vuole usare la webapp (non solo come l'abbiamo costruita in ordine).
 
 **Note (cronologia dello step):**
 - [2026-11-12] Audit completo struttura Drive vs GitHub eseguito. Confermato repo pubblico (verificato via fetch diretto). Cartella `docs/` creata in questa sessione per ospitare questo documento.
 - [2026-11-13] Gianluca ha chiesto di anticipare la riorganizzazione (invece di farla insieme allo Step 5) per far nascere le pagine nuove già nel posto giusto. Eseguita solo la parte a basso rischio: `page_home_v25.html` e `page_hub_v1.html` → `app/`; le quattro pagine agente → `app/agenti/a{1,2,3,4}-{analytics,analyst,planner,brief}/`. Lasciati deliberatamente in root (zero rischio di toccare automazioni fuori perimetro): `index.html`/`manifest.json`/`sw.js` (vincolo PWA), `page_login_v6.html` (bootstrap PWA — spostarlo avrebbe richiesto toccare il link di login/redirect in ogni singola pagina del repo, incluse quelle A5-A7 fuori perimetro, per un guadagno minimo), `page_agent_a5/a6/a7_v1.html`, `page_company_v2.html`, `page_pipeline_v1.html`, `gdc_studio.html`, `gdc_reset_tool.html` — i primi tre sono referenziati da `WEBAPP_BASE` dentro script Python di A5-A7 (`a7_followup.py`, `pipeline_notify.py`) che non si è voluto toccare in questo giro. Aggiornati tutti i link che puntano da/verso i file spostati (incluse le pagine rimaste in root). Scritto ed eseguito un verificatore automatico che risolve ogni link relativo contro il filesystem reale (50 link, 0 rotti) — ha anche scovato un errore reale fatto durante l'edit (profondità sbagliata nel link di login dalle pagine agente, 2 livelli invece di 3). Verificata anche sintassi Python/JS su tutti i file toccati. Push fatto sul branch di lavoro, non su main — il sito live su GitHub Pages non è impattato finché non c'è merge. Resta da fare: cartella `editoriale/` per gli output mensili (Step 5), eventuale riordino di A5-A7/company/pipeline/login (non ancora deciso se necessario).
+- [2026-11-15] Gianluca ha chiesto di mettere in pipeline, per dopo aver finito tutti gli step di funzionamento, una pulizia di grafica/organizzazione delle sezioni — due esempi dati: navigazione della Dashboard KPI di A2 (oggi dentro una scheda separata, non piace) e residui della versione precedente non più usati. Non ancora iniziato per scelta esplicita: prima si finisce il funzionamento (Step 5 punti 4-5, poi 7, 8, 9), poi si riordina.
 
 ### Step 7 — Trasporto dati storici da Drive
 
@@ -212,6 +214,20 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 09:20] Decisione: pulizia grafica/organizzazione rimandata a fine pipeline
+
+**Riepilogo:** Gianluca ha chiesto di accodare in pipeline (Step 6), da fare solo dopo aver completato tutti gli step di funzionamento, una pulizia di grafica e organizzazione delle sezioni — niente eseguito ora, solo registrato.
+
+**Decisioni prese:**
+- Contesto: lavorando sulla webapp sono emerse cose che a Gianluca non piacciono (es. la Dashboard KPI di A2 richiede di entrare in una scheda separata) e residui della versione precedente non più usati.
+- Decisione: questa pulizia va fatta per ultima, dopo Step 5 (punti 4-5, A3/A4), 7, 8, 9 — prima si finisce il funzionamento, poi si riordina com'è fatto. Aggiunta come nuova parte dello Step 6 (già esistente per la riorganizzazione cartelle), non come step separato.
+- Da rivedere se: quando si arriva a quel punto, serve un audit dedicato per l'elenco completo dei residui da rimuovere — i due esempi dati non sono esaustivi.
+
+**File consegnati/modificati:**
+- `docs/documento-sessione-gdc-ia-team.md` (Pipeline, Step 6 aggiornato)
+
+---
 
 ### [2026-11-15 09:05] Copertine confermate + bug pallino A2 bloccato (prompt A2 v18)
 
