@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 18
-**Ultimo aggiornamento:** 2026-11-15 09:20
+**Versione:** 19
+**Ultimo aggiornamento:** 2026-11-15 10:15
 
 ## Vision
 
@@ -105,7 +105,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 5 — Schema Supabase + pagine HTML (dashboard A2, calendari A3/A4)
 
-**Stato:** in corso — scomposto in sotto-punti, fatti 1-3 su un piano di 5 (per agente, fino in fondo, uno alla volta: A2 prima di A3/A4). Punto 3 verificato con una run reale di A2 su Ottobre 2026 (lato Gianluca, su Claude.ai Projects) — trovato e risolto un bug reale (vedi Note).
+**Stato:** in corso — scomposto in sotto-punti, fatti 1-4 su un piano di 5 (per agente, fino in fondo, uno alla volta: A2 prima di A3/A4). Punto 3 (A2) verificato con run reali; punto 4 (A3) costruito, non ancora verificato con una run reale di A3.
 
 **Obiettivo:** A2, A3 e A4 (solo apertura mese) producono pagine HTML invece di pptx/pdf, con lo stesso contenuto/struttura/voce di oggi; il contenuto vero vive su Supabase protetto da login, i template sono pubblici su GitHub Pages.
 
@@ -143,6 +143,11 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   Verificato con una run reale di A1 Monthly su Ottobre 2026: tutti i 7 post ORIGINALE hanno ricevuto un `image_url` valido, i file caricati sul bucket sono JPEG reali da 116–339 KB (controllato leggendo i metadati di `storage.objects`, non solo che la riga non fosse vuota), e la colonna 24 del Google Sheet risulta popolata correttamente (vuota solo per il repost, come atteso).
 - [2026-11-15] Gianluca ha rilanciato A2 con il prompt v17: le immagini reali si vedono correttamente nel report. Nota per dopo (non bloccante, rimandata esplicitamente da Gianluca): le foto escono quadrate invece che nel rettangolo 190×150 previsto — da controllare in una sessione futura, non urgente.
 - [2026-11-15] **Bug: pallino/logo di A2 in home bloccato su "in coda"** — Sintomo: dopo che A2 ha finito un report, l'icona/badge di A2 nella webapp restava rossa ("in coda") invece di passare a "completato". Causa: nessuno script scrive mai `agent_states` → 'done' per A2 — solo `a1_monthly.py` lo scrive 'ready' (in coda) quando A1 finisce; la riga non veniva più aggiornata dopo. Verificato leggendo `agent_states`: nella run appena fatta A2 aveva comunque scritto 'done' di propria iniziativa (ha il connector Supabase e ha dedotto da solo di doverlo fare, imitando A1) — corretto ma non garantito per i run futuri, perché non era nel prompt. Fix applicato: prompt A2 v17→v18 — Step 0 scrive `agent_states`→'working' prima di leggere i dati, Chiusura scrive `agent_states`→'done' con mese/n_post/n_stories (stessi campi letti dalla Tab Run della pagina di A2). Non ancora verificato con un nuovo run reale (il comportamento "giusto" di questa run specifica era già quello scritto spontaneamente da A2, non ancora quello scritto dal prompt v18).
+- [2026-11-15] Punto 4 — A3: costruito lo stesso lavoro fatto per A2, adattato alla decisione già presa (A3/A4 niente grafici, solo calendario/elenco mesi). Riusata la tabella `report_mensili` esistente (già pensata per agente a2/a3/a4, nessuno schema nuovo necessario) — verificata con una riga di test (mese fittizio "Test collegamento"), rimasta da eliminare perché la conferma della `DELETE` non è arrivata in tempo (stesso comportamento già visto con il test di A2) — da confermare a Gianluca. Nuova `app/agenti/a3-planner/piano.html` (stesso meccanismo iframe di `report.html`), card "Piani editoriali" su A3, messaggio precompilato aggiornato (citava ancora file pptx su Drive — report A2 e piano precedente che con la v18 di A2 non esistono più lì).
+
+  Prompt A3 v12→v13: oltre al cambio di contenitore (HTML su Supabase invece di PPTX, stessa logica della v16 di A2), anche l'**input** di A3 è cambiato — leggeva il report di A2 e il proprio piano precedente come file pptx su Drive, che con la migrazione di A2 non vengono più prodotti. Spostati su Supabase (`report_mensili`, letto tramite connector MCP). Incluse fin da subito (lezione della v18 di A2, qui anticipata) l'auto-segnalazione di stato su `agent_states` e la segnalazione di A4 pronto alla chiusura di A3 — completando la catena A1→A2→A3→A4. Di conseguenza anche il prompt di A2 è stato aggiornato (v18→v19): mancava la riga che segnala A3 pronto quando A2 finisce (stesso bug trovato ieri per A2, qui chiuso anche per lo step successivo della catena).
+
+  Non ancora verificato con una run reale di A3 — prossimo passo prima di considerare il punto 4 chiuso.
 
 ### Step 6 — Riorganizzazione cartelle GitHub + pulizia grafica/organizzazione
 
@@ -214,6 +219,25 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 10:15] Step 5 punto 4 — A3 su HTML/Supabase (non ancora verificato con run reale)
+
+**Riepilogo:** Costruito per A3 lo stesso lavoro già fatto per A2 (punto 4 su 5 della scomposizione dello Step 5): pagina piano, prompt v12→v13. In più, migrando A3 è emerso che anche il suo input dipendeva da file pptx ormai inesistenti (report A2, piano precedente) — spostato anche quello su Supabase. Corretta anche A2 (v18→v19) per completare la catena di stati A1→A2→A3→A4.
+
+**Cosa è stato fatto:**
+- Nessuno schema nuovo: riusata `report_mensili` (già condivisa a2/a3/a4). Verificata la pipeline con una riga di test (da eliminare — conferma `DELETE` non ricevuta in tempo, come già successo per A2).
+- Nuova `app/agenti/a3-planner/piano.html` (stesso meccanismo `<iframe srcdoc>` di `report.html`), card "Piani editoriali" su A3.
+- Aggiornato il messaggio precompilato di A3 (`page_agent_a3_v1.html`): citava ancora file pptx su Drive per il report di A2 e il proprio piano precedente, entrambi non più prodotti lì dalla v18 di A2 in avanti.
+- Prompt A3 v12→v13 (`Agente3_auto_prompt_v13.md`): output HTML su Supabase (stessa logica della v16 di A2); **input** report A2 e piano precedente letti da Supabase invece che da pptx su Drive (cambio non necessario per A2, ma necessario qui perché A3 dipende da output che A2 non produce più); auto-segnalazione di stato su `agent_states` inclusa fin da subito (non dopo, come per A2); segnalazione di A4 pronto alla chiusura di A3.
+- Prompt A2 v18→v19 (`Agente2_auto_prompt_v19.md`): aggiunta la riga mancante della catena — A2 ora segnala A3 pronto quando finisce (stesso bug del pallino bloccato, qui chiuso anche per lo step successivo).
+
+**File consegnati/modificati:**
+- `app/agenti/a3-planner/piano.html` (nuovo)
+- `app/agenti/a3-planner/page_agent_a3_v1.html` (modificato: card "Piani editoriali", messaggio precompilato)
+- `docs/prompts/Agente3_auto_prompt_v13.md` (nuovo, sostituisce `Agente3_auto_prompt_v12.md`)
+- `docs/prompts/Agente2_auto_prompt_v19.md` (nuovo, sostituisce `Agente2_auto_prompt_v18.md`)
+
+---
 
 ### [2026-11-15 09:20] Decisione: pulizia grafica/organizzazione rimandata a fine pipeline
 
