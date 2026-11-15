@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 15
-**Ultimo aggiornamento:** 2026-11-14 23:05
+**Versione:** 16
+**Ultimo aggiornamento:** 2026-11-15 08:10
 
 ## Vision
 
@@ -136,6 +136,11 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   **Fix applicato:** nuova `fetch_posts_categorization_overrides()` in `a1_monthly.py` — legge da Supabase le categorie del mese corrente; `compile_sheet_post()` le usa quando A1 non ha già riconosciuto automaticamente un post come episodio di serie. Verificato con una seconda run reale di A1 Monthly su Ottobre: il Google Sheet ora ha "GDC STUFF/Stampa 3D" e "RELATION/Gdc stuff" per i due post controllati (prima vuoti), serie ed episodi invariati, repost ancora correttamente vuoto. Prossimo passo: Gianluca rilancia A2 su Ottobre per vedere il Mix Topic corretto nel report.
 
   Nota: è un problema architetturale transitorio — con la migrazione completa (A1-A4 che leggono/scrivono tutti su Supabase, non più sul Google Sheet) questa doppia fonte di verità sparirà da sola. Per ora il fix sopra tiene i due sincronizzati.
+- [2026-11-15] Gianluca ha verificato il report corretto (Mix Topic completo, numeri controllati a mano) e ha chiesto se ora — passati mesi dall'inizio del progetto e con l'output in HTML — fosse possibile avere le copertine reali dei post invece del placeholder colorato usato da sempre. Verificato con un run reale: l'API Instagram restituisce `media_url`/`thumbnail_url` per i post ORIGINALE — non è mai stato un limite di permessi o di tempo, semplicemente A1 non li richiedeva. Controllati anche i limiti del piano free Supabase (database 29/500 MB, storage 0/1 GB, egress 5 GB/mese) prima di procedere: nessun rischio concreto ai volumi di questo progetto (poche immagini al mese, un solo utilizzatore).
+
+  Implementato: bucket pubblico Supabase Storage `post-covers`; nuova `upload_post_cover_image()` in `a1_monthly.py` — scarica la copertina giusta per tipo (frame per i Reel via thumbnail_url, prima slide per i caroselli via children[0], immagine diretta per i post singoli) e la ri-ospita sul bucket, perché gli URL di Instagram sono firmati e scadono; l'URL pubblico risultante va sia su Supabase (`posts.image_url`, nuova colonna) sia sul Google Sheet (nuova colonna 24 "Immagine URL"). Prompt A2 aggiornato (v16→v17, nuovo file `Agente2_auto_prompt_v17.md`): mostra l'immagine reale dentro un contenitore a dimensione fissa (`.gdc-cover`, 190×150px desktop / 100%×150px mobile) con `object-fit:cover` — qualsiasi proporzione reale della foto viene ritagliata per riempire esattamente lo stesso spazio del vecchio placeholder, mai una foto che deforma o sfonda il layout del blocco post; fallback al placeholder colorato via `onerror` se il link si rompe, o se la colonna è vuota (REPOST, o download temporaneamente fallito).
+
+  Verificato con una run reale di A1 Monthly su Ottobre 2026: tutti i 7 post ORIGINALE hanno ricevuto un `image_url` valido, i file caricati sul bucket sono JPEG reali da 116–339 KB (controllato leggendo i metadati di `storage.objects`, non solo che la riga non fosse vuota), e la colonna 24 del Google Sheet risulta popolata correttamente (vuota solo per il repost, come atteso). Non ancora verificato visivamente nel report di A2 (serve un nuovo run di A2 su Claude.ai Projects con il prompt v17).
 
 ### Step 6 — Riorganizzazione cartelle GitHub
 
@@ -205,6 +210,24 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 08:10] Copertine reali dei post (prompt A2 v17)
+
+**Riepilogo:** Dopo aver verificato il report corretto, Gianluca ha chiesto se fosse possibile sostituire il placeholder colorato con l'immagine vera del post. Verificato che l'API Instagram la fornisce già (solo non richiesta finora), controllati i limiti del piano free Supabase (nessun rischio), implementato il download/upload permanente e il rendering a dimensione fissa nel report — verificato con una run reale di A1, non ancora con una run reale di A2.
+
+**Cosa è stato fatto:**
+- Creato il bucket pubblico Supabase Storage `post-covers`.
+- Nuova `upload_post_cover_image()` in `a1_monthly.py`: scarica la copertina giusta per tipo di post (thumbnail per i Reel, prima slide per i caroselli, immagine diretta per i post singoli) e la ri-ospita sul bucket — necessario perché gli URL che Instagram restituisce sono firmati e scadono in poco tempo, non vanno bene per un report che deve restare leggibile per mesi.
+- Nuova colonna `posts.image_url` su Supabase e nuova colonna 24 "Immagine URL" sul Google Sheet (gestita da `_ensure_post_header_v4()`, generalizzata per aggiungere colonne in coda oltre "Episodio Serie").
+- Prompt A2 v16→v17 (`Agente2_auto_prompt_v17.md`): nuove classi `.gdc-cover`/`.gdc-cover img` (dimensione fissa, `object-fit:cover`, responsive), markup con fallback `onerror` al placeholder colorato. Nessun'altra modifica alla sostanza del report.
+- Verificato con una run reale di A1 Monthly (Ottobre 2026): 7/7 post ORIGINALE con `image_url` valido, file caricati controllati come JPEG reali (116–339 KB) via metadati di `storage.objects`, colonna 24 del Google Sheet popolata correttamente.
+
+**File consegnati/modificati:**
+- `scripts/a1_monthly.py` (modificato: `upload_post_cover_image()`, nuova colonna Immagine URL, generalizzato `_ensure_post_header_v4()`)
+- `supabase/migrations/20261115_add_post_covers_storage.sql` (nuovo)
+- `docs/prompts/Agente2_auto_prompt_v17.md` (nuovo, sostituisce `Agente2_auto_prompt_v16.md`)
+
+---
 
 ### [2026-11-14 23:05] Prima run reale di A2 v16 — trovato e risolto bug di sincronizzazione categorie
 
