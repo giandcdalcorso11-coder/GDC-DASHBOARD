@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 16
-**Ultimo aggiornamento:** 2026-11-15 08:10
+**Versione:** 17
+**Ultimo aggiornamento:** 2026-11-15 09:05
 
 ## Vision
 
@@ -140,7 +140,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
   Implementato: bucket pubblico Supabase Storage `post-covers`; nuova `upload_post_cover_image()` in `a1_monthly.py` — scarica la copertina giusta per tipo (frame per i Reel via thumbnail_url, prima slide per i caroselli via children[0], immagine diretta per i post singoli) e la ri-ospita sul bucket, perché gli URL di Instagram sono firmati e scadono; l'URL pubblico risultante va sia su Supabase (`posts.image_url`, nuova colonna) sia sul Google Sheet (nuova colonna 24 "Immagine URL"). Prompt A2 aggiornato (v16→v17, nuovo file `Agente2_auto_prompt_v17.md`): mostra l'immagine reale dentro un contenitore a dimensione fissa (`.gdc-cover`, 190×150px desktop / 100%×150px mobile) con `object-fit:cover` — qualsiasi proporzione reale della foto viene ritagliata per riempire esattamente lo stesso spazio del vecchio placeholder, mai una foto che deforma o sfonda il layout del blocco post; fallback al placeholder colorato via `onerror` se il link si rompe, o se la colonna è vuota (REPOST, o download temporaneamente fallito).
 
-  Verificato con una run reale di A1 Monthly su Ottobre 2026: tutti i 7 post ORIGINALE hanno ricevuto un `image_url` valido, i file caricati sul bucket sono JPEG reali da 116–339 KB (controllato leggendo i metadati di `storage.objects`, non solo che la riga non fosse vuota), e la colonna 24 del Google Sheet risulta popolata correttamente (vuota solo per il repost, come atteso). Non ancora verificato visivamente nel report di A2 (serve un nuovo run di A2 su Claude.ai Projects con il prompt v17).
+  Verificato con una run reale di A1 Monthly su Ottobre 2026: tutti i 7 post ORIGINALE hanno ricevuto un `image_url` valido, i file caricati sul bucket sono JPEG reali da 116–339 KB (controllato leggendo i metadati di `storage.objects`, non solo che la riga non fosse vuota), e la colonna 24 del Google Sheet risulta popolata correttamente (vuota solo per il repost, come atteso).
+- [2026-11-15] Gianluca ha rilanciato A2 con il prompt v17: le immagini reali si vedono correttamente nel report. Nota per dopo (non bloccante, rimandata esplicitamente da Gianluca): le foto escono quadrate invece che nel rettangolo 190×150 previsto — da controllare in una sessione futura, non urgente.
+- [2026-11-15] **Bug: pallino/logo di A2 in home bloccato su "in coda"** — Sintomo: dopo che A2 ha finito un report, l'icona/badge di A2 nella webapp restava rossa ("in coda") invece di passare a "completato". Causa: nessuno script scrive mai `agent_states` → 'done' per A2 — solo `a1_monthly.py` lo scrive 'ready' (in coda) quando A1 finisce; la riga non veniva più aggiornata dopo. Verificato leggendo `agent_states`: nella run appena fatta A2 aveva comunque scritto 'done' di propria iniziativa (ha il connector Supabase e ha dedotto da solo di doverlo fare, imitando A1) — corretto ma non garantito per i run futuri, perché non era nel prompt. Fix applicato: prompt A2 v17→v18 — Step 0 scrive `agent_states`→'working' prima di leggere i dati, Chiusura scrive `agent_states`→'done' con mese/n_post/n_stories (stessi campi letti dalla Tab Run della pagina di A2). Non ancora verificato con un nuovo run reale (il comportamento "giusto" di questa run specifica era già quello scritto spontaneamente da A2, non ancora quello scritto dal prompt v18).
 
 ### Step 6 — Riorganizzazione cartelle GitHub
 
@@ -210,6 +212,20 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 09:05] Copertine confermate + bug pallino A2 bloccato (prompt A2 v18)
+
+**Riepilogo:** Gianluca ha confermato che le copertine reali funzionano nel report (foto quadrate invece di 190×150, rimandato — non urgente). Notando poi che il logo di A2 in home restava rosso dopo il completamento, trovato e risolto un secondo bug reale: nessuno script segnalava mai il completamento di A2 su `agent_states`.
+
+**Cosa è stato fatto:**
+- Verificato `agent_states` per `a2`: la riga era già `done` (A2 l'aveva scritta di propria iniziativa durante il run v17, non essendo nel prompt) — spiegazione più probabile per quanto visto da Gianluca: pagina caricata prima di quell'aggiornamento, da ricaricare.
+- Confermato via grep su tutti gli script che solo `a1_monthly.py` scrive lo stato di A2 ("ready"), nessuno scrive "done" — il comportamento osservato era un'iniziativa non garantita dell'agente, non una regola scritta.
+- Prompt A2 v17→v18 (`Agente2_auto_prompt_v18.md`): nuovo Step 0 (sez. 4) — scrive `agent_states`→'working' prima di leggere i dati; Chiusura (sez. 11) — scrive `agent_states`→'done' con mese/n_post/n_stories, stesso pattern già usato da A1 per sé.
+
+**File consegnati/modificati:**
+- `docs/prompts/Agente2_auto_prompt_v18.md` (nuovo, sostituisce `Agente2_auto_prompt_v17.md`)
+
+---
 
 ### [2026-11-15 08:10] Copertine reali dei post (prompt A2 v17)
 
