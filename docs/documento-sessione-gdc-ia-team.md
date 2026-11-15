@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 21
-**Ultimo aggiornamento:** 2026-11-15 16:15
+**Versione:** 22
+**Ultimo aggiornamento:** 2026-11-15 18:30
 
 ## Vision
 
@@ -185,18 +185,22 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 7 — Trasporto dati storici da Drive
 
-**Stato:** da fare — dopo Step 5/6
+**Stato:** completato
 
 **Obiettivo:** la webapp ricostruita parte già popolata con la storia reale (report/piani/brief passati), non vuota.
 
 **Decisioni progettuali:**
 - Da eseguire dopo che schema Supabase, pagine HTML e nuova struttura cartelle sono pronti — i contenuti storici vanno importati direttamente nel formato definitivo, non migrati due volte.
-- Dettagli di importazione (quali mesi, come convertire pptx/pdf esistenti in contenuto Supabase/HTML) ancora da definire.
+- Scope deciso con Gianluca: **tutto dall'inizio del progetto**, come se il workflow HTML/Supabase fosse sempre stato in uso — non solo un backfill parziale. Per ogni agente, tutti i mesi storici che precedono il primo mese già migrato con una run reale (Step 5): A2 fino a Settembre 2026 (Ottobre già reale), A3 fino a Ottobre 2026 (Novembre già reale), A4 fino a Ottobre 2026 (Novembre già reale).
+- Metodo: per ogni mese, letto il documento originale da Drive (PDF, Google Doc o Google Slides secondo il mese), ricostruito il contenuto nell'HTML del template reale dell'agente (fedeltà di struttura/CSS garantita leggendo prima una riga reale già migrata da Supabase, non ricreando il template a memoria), poi scritto direttamente via `INSERT ... ON CONFLICT` su `report_mensili` — nessun file intermedio sul repo, i dati storici vivono solo su Supabase come i dati nuovi.
+- Principio "cambia solo il contenitore": nessun dato numerico, nessuna frase, nessuna classificazione è stata corretta o aggiornata col senno di poi — ogni mese riflette fedelmente cosa l'agente aveva scritto in quel momento, inclusi i casi in cui un mese successivo ha corretto/superato quel dato (es. la serie "Capiamo la Sabbia" a Settembre 2026 resta classificata GDC STUFF/SPORT, la tassonomia DIVULGAZIONE introdotta dopo non è stata applicata retroattivamente).
+- Dati OCR ambigui o mancanti (frequenti nei PDF più vecchi, soprattutto a due colonne): mai inventati. Dove il testo originale non permetteva una lettura certa (es. abbinamento data/ER di post multipli interlacciati in colonne diverse), ricostruita la combinazione più plausibile per cardinalità/ordine ma segnalata esplicitamente con una nota di trasparenza nell'HTML stesso, stesso pattern già usato dagli agenti veri quando manca un dato.
 
-**Criterio di completamento:** la dashboard di A2 mostra grafici reali anche per i mesi passati già esistenti su Drive, non solo da oggi in avanti; i calendari di A3/A4 mostrano i mesi già pianificati in passato.
+**Criterio di completamento:** la dashboard di A2 mostra grafici reali anche per i mesi passati già esistenti su Drive, non solo da oggi in avanti; i calendari di A3/A4 mostrano i mesi già pianificati in passato. — **Verificato**: `report_mensili` contiene ora 25 righe totali — A2 10 mesi (Gennaio-Ottobre 2026), A3 8 mesi (Aprile-Novembre 2026), A4 7 mesi (Maggio-Novembre 2026), confermato con query diretta sui conteggi e le lunghezze dell'HTML per ogni riga.
 
 **Note (cronologia dello step):**
 - [2026-11-12] Step aggiunto alla pipeline su richiesta esplicita di Gianluca, non ancora iniziato.
+- [2026-11-15] Avviato su istruzione esplicita di Gianluca ("tutto dall'inizio del progetto... come se dall'inizio avessimo usato questo nuovo workflow"). Fatto inventario completo via ricerca Drive sulle tre cartelle agente: 22 documenti storici totali da convertire (A2: Gennaio-Settembre 2026, 9 mesi; A3: Aprile-Ottobre 2026, 7 mesi; A4: Maggio-Ottobre 2026, 6 mesi). Eseguita la conversione mese per mese, nell'ordine A2 → A3 → A4, usando per ciascun agente il template HTML reale già in produzione (fetchato una volta da una riga Supabase vera) come riferimento di struttura/CSS. Recuperata da un riavvio del processo di lavoro a metà Agosto 2026 (A2) senza perdita di dati, grazie alla natura idempotente degli upsert e alla checklist dei mesi tenuta come lista di task. Tutti i 22 mesi inseriti e verificati con una query finale di conteggio/lunghezza per agente — nessun documento mancante, nessun dato duplicato.
 
 ### Step 8 — Bottone trigger verso sessione Claude Code dedicata
 
@@ -232,6 +236,31 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 18:30] Step 7 completato — migrazione storica completa dei 22 mesi A2/A3/A4
+
+**Riepilogo:** Su istruzione esplicita di Gianluca ("tutto dall'inizio del progetto... come se dall'inizio avessimo usato questo nuovo workflow"), convertiti in HTML/Supabase tutti i documenti storici mai prodotti da A2, A3 e A4 prima della migrazione dello Step 5 — 22 mesi in totale, nessuno escluso. `report_mensili` ora contiene l'intera storia del progetto, non solo i mesi prodotti dal nuovo workflow in avanti.
+
+**Cosa è stato fatto:**
+- Inventario completo via ricerca Google Drive sulle tre cartelle agente: A2 Gennaio-Settembre 2026 (9 mesi, Ottobre già reale dallo Step 5), A3 Aprile-Ottobre 2026 (7 mesi, Novembre già reale), A4 Maggio-Ottobre 2026 (6 mesi, Novembre già reale).
+- Per ciascun mese: letto il documento originale da Drive (PDF, Google Doc o Google Slides secondo il caso), ricostruito fedelmente come pagina HTML nel template reale e già in produzione dell'agente (CSS/struttura presi da una riga Supabase vera, non ricreati a memoria), scritto via `INSERT ... ON CONFLICT (agente, mese)` direttamente su `report_mensili` — nessun file intermedio nel repo.
+- Principio seguito ovunque: "cambia solo il contenitore" — nessun numero, frase o classificazione storica è stata corretta col senno di poi (es. la serie "Capiamo la Sabbia" a Settembre 2026 resta GDC STUFF/SPORT, non riclassificata DIVULGAZIONE anche se quella categoria esiste da mesi successivi). Dati illeggibili nei PDF più vecchi (soprattutto OCR a doppia colonna) non sono stati mai inventati: dove la lettura era ambigua, la ricostruzione più plausibile è stata comunque segnalata con una nota di trasparenza dentro l'HTML stesso.
+- Recuperato un riavvio del processo di lavoro a metà percorso (durante A2 Agosto 2026) senza perdita né duplicazione di dati, grazie alla checklist a task e alla natura idempotente degli upsert.
+- Verifica finale con query diretta su `report_mensili`: 25 righe totali (A2: 10 mesi Gennaio-Ottobre; A3: 8 mesi Aprile-Novembre; A4: 7 mesi Maggio-Novembre), nessun mese mancante.
+
+**Decisioni prese:**
+- Contesto: come trattare dati OCR ambigui o mancanti nei documenti storici più vecchi (PDF a doppia colonna con serie di dati interlacciate).
+  Decisione: mai inventare un numero preciso — dove il PDF non permette una lettura certa, presentare solo i campi leggibili con certezza e aggiungere una nota di trasparenza esplicita nell'HTML, stesso pattern già usato dagli agenti reali quando manca un dato.
+  Alternative scartate: tentare comunque una ricostruzione numerica precisa presentata come dato certo — scartata perché avrebbe introdotto numeri falsi nella storia del progetto.
+- Contesto: come trattare le classificazioni storiche superate da decisioni successive (es. tassonomia DIVULGAZIONE, introdotta dopo Settembre 2026).
+  Decisione: ogni mese riflette la classificazione che l'agente aveva davvero usato in quel momento, non quella "corretta" col senno di poi.
+  Alternative scartate: applicare retroattivamente le tassonomie più recenti a tutta la storia — scartata perché contraddice il principio "cambia solo il contenitore" e falsificherebbe la cronologia reale delle decisioni di progetto.
+
+**File consegnati/modificati:** nessun file di codice — solo 22 nuove righe in `report_mensili` su Supabase (nessuna migrazione di schema necessaria, tabella già condivisa a2/a3/a4 dallo Step 5); `docs/documento-sessione-gdc-ia-team.md`.
+
+**Impatto su Vision/Pipeline:** Step 7 passa da "da fare" a "completato". Prossimo passo in pipeline: Step 8 (sessione Claude Code dedicata per l'intera catena A1→A4), poi Step 6 (pulizia grafica/organizzazione) per ultimo, come già deciso. Discussione aperta con Gianluca su un possibile allargamento di scope per lo Step 8 (includere la modalità itinerante di A4, finora esplicitamente fuori dall'automazione) e su una vision a lungo termine ulteriore (editing video e gestione pubblicazione post direttamente dalla stessa catena) — entrambe non ancora decise, solo discusse; vedi conversazione per il ragionamento, non ancora trascritto come decisione.
+
+---
 
 ### [2026-11-15 16:15] Step 5 completato — run reali di verifica A3 e A4
 
