@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 20
-**Ultimo aggiornamento:** 2026-11-15 11:45
+**Versione:** 21
+**Ultimo aggiornamento:** 2026-11-15 16:15
 
 ## Vision
 
@@ -105,7 +105,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 5 — Schema Supabase + pagine HTML (dashboard A2, calendari A3/A4)
 
-**Stato:** in corso — scomposto in sotto-punti, costruiti tutti i 5 (per agente, fino in fondo, uno alla volta: A2, poi A3, poi A4). Punto 3 (A2) verificato con run reali; punti 4 (A3) e 5 (A4) costruiti, non ancora verificati con una run reale.
+**Stato:** completato — tutti i 5 punti costruiti e verificati con run reali (A2, A3, A4).
 
 **Obiettivo:** A2, A3 e A4 (solo apertura mese) producono pagine HTML invece di pptx/pdf, con lo stesso contenuto/struttura/voce di oggi; il contenuto vero vive su Supabase protetto da login, i template sono pubblici su GitHub Pages.
 
@@ -154,7 +154,13 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
   Prompt A4 v7→v8 (nuovo file `Agente4_auto_prompt_v8.md`, v7 rimosso): cambio di contenitore (HTML su Supabase invece di PDF via `present_files` + upload manuale su Drive); input di piano A3 e report A2 spostato su Supabase (`report_mensili`, come già fatto per A3); aggiunta nuova sez. 4.3 con la struttura tecnica della pagina HTML (palette blu propria, card responsive, nessuno script/font esterno); incluse fin da subito (lezione di A2/A3) `agent_states`→'working' all'apertura e →'done' alla chiusura — nessuna riga 'ready' per un agente successivo, perché A4 è l'ultimo della catena A1→A4 migrata e A5-A7 non sono sequenziali a questo passaggio. Sezioni 5-9 (struttura brief per formato, lavoro post per post, serie Capiamo la Sabbia, revisione, tono) lasciate invariate in sostanza.
 
-  Non ancora verificato con una run reale di A4 — con questo si chiude la costruzione di tutti i 5 punti dello Step 5; resta da fare la verifica reale di A3 e A4 prima di considerare lo step davvero completo.
+- [2026-11-15, più tardi] **Run reali di verifica — A3 e A4, Step 5 completato.** A3 (prompt v13) ha generato il piano di Novembre 2026 per davvero: scritto correttamente su `report_mensili` (21.613 caratteri, verificato leggendo l'HTML reale), `agent_states` a3→done e a4→ready. Durante la run A3 ha incontrato da solo il gap previsto per i mesi a cavallo della migrazione (piano A3 di Ottobre e report A2 di Settembre non esistono su Supabase, perché generati prima che A2/A3 iniziassero a scriverci) — l'ha gestito di propria iniziativa leggendo il piano di Ottobre direttamente dal vecchio file su Drive, segnalandolo sia in chat sia come nota esplicita dentro il piano stesso. Verificato anche che il piano contenga davvero le 7 sezioni previste dal prompt.
+
+  A4 (prompt v8) ha incontrato lo stesso gap in modo più rigido: il prompt dice esplicitamente di fermarsi e comunicare se un dato obbligatorio manca (report A2 Settembre, piano A3 Ottobre), quindi si è fermato con `agent_states` bloccato su 'working' invece di risolverlo da solo come A3. Risolto passando ad A4 i link Drive diretti ai due file mancanti (stessa cartella e stesso nome file usati prima della migrazione) — A4 li ha letti e ha completato il brief. Verificato: `report_mensili` a4/Novembre 2026 scritta (19.744 caratteri, HTML ben formato), `agent_states` a4→done, `activity_log` con link a `brief.html?mese=Novembre%202026` (il primo link che punta al nuovo sistema invece che a una cartella Drive).
+
+  **Nota per il futuro:** questo gap sui mesi a cavallo della migrazione è transitorio e non si ripresenterà — da Dicembre 2026 in avanti ogni piano/report/brief sarà già su Supabase quando il mese successivo lo richiede. Non è stato necessario nessun fix di prompt: il comportamento "fermati e comunica" di A4 era quello corretto e voluto, l'intervento giusto era fornire i dati mancanti, non modificare l'automazione.
+
+  **Step 5 completato.** Tutti i 5 punti costruiti e verificati con run reali per A2, A3 e A4.
 
 ### Step 6 — Riorganizzazione cartelle GitHub + pulizia grafica/organizzazione
 
@@ -226,6 +232,25 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 16:15] Step 5 completato — run reali di verifica A3 e A4
+
+**Riepilogo:** Gianluca ha fatto girare per davvero A3 (prompt v13, piano Novembre 2026) e A4 (prompt v8, brief Novembre 2026): entrambi hanno scritto correttamente su Supabase, verificato leggendo l'HTML reale e gli stati agenti. Entrambi hanno incontrato lo stesso gap sui dati a cavallo della migrazione (mesi precedenti non ancora su Supabase) — gestito diversamente da ciascuno, risolto in entrambi i casi senza toccare i prompt. Lo Step 5 (migrazione A2/A3/A4 da pptx/pdf a HTML/Supabase) è ora completato in tutti i suoi 5 punti.
+
+**Cosa è stato fatto:**
+- Verificata la run reale di A3: `report_mensili` (a3, Novembre 2026, 21.613 caratteri) e `agent_states` (a3→done, a4→ready) corretti. A3 ha incontrato da solo il gap (piano Ottobre non su Supabase, perché generato prima della migrazione di A2/A3) e l'ha risolto di propria iniziativa leggendo il vecchio file da Drive, segnalandolo sia in chat che come nota esplicita nel piano stesso.
+- Verificata la run reale di A4: `report_mensili` (a4, Novembre 2026, 19.744 caratteri) e `agent_states` (a4→done) corretti, `activity_log` con il primo link che punta al nuovo sistema (`brief.html?mese=...`) invece che a una cartella Drive. A4 ha incontrato lo stesso gap (report A2 Settembre, piano A3 Ottobre) ma si è fermato come da prompt v8 ("fermati e comunica se manca un dato obbligatorio") invece di risolverlo da solo — risolto passandogli i link Drive diretti ai due file mancanti.
+
+**Decisioni prese:**
+- Contesto: come gestire il gap sui dati dei mesi a cavallo della migrazione (report/piani prodotti prima che A2/A3 scrivessero su Supabase, quindi assenti quando l'agente successivo li cerca).
+  Decisione: non è un bug da correggere nei prompt — il comportamento di A4 (fermarsi e comunicare) era quello corretto e voluto. L'intervento giusto è fornire i dati mancanti al momento (link Drive ai vecchi file), non modificare l'automazione. Il gap è transitorio: da Dicembre 2026 in avanti non si ripresenta, perché ogni documento nuovo sarà già su Supabase quando il mese successivo lo richiede.
+  Alternative scartate: backfillare manualmente su Supabase i report/piani storici pre-migrazione solo per chiudere questo gap — non necessario, il problema si risolve da solo col passare dei mesi.
+
+**File consegnati/modificati:** `docs/documento-sessione-gdc-ia-team.md` (nessuna modifica a codice/prompt in questa sessione — solo verifica e aggiornamento pipeline).
+
+**Impatto su Vision/Pipeline:** Step 5 passa da "in corso" a "completato". Prossimo step della pipeline: Step 7 (migrazione storico Drive→Supabase) e Step 8 (sessione Claude Code dedicata per l'intera catena A1→A4), poi Step 6 (pulizia grafica/organizzazione) per ultimo, come già deciso.
+
+---
 
 ### [2026-11-15 11:45] Step 5 punto 5 — A4 su HTML/Supabase (non ancora verificato con run reale) — tutti i 5 punti ora costruiti
 
