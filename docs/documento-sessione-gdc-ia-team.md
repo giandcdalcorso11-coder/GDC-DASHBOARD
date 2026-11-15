@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 23
-**Ultimo aggiornamento:** 2026-11-15 19:10
+**Versione:** 24
+**Ultimo aggiornamento:** 2026-11-15 19:45
 
 ## Vision
 
@@ -241,6 +241,27 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 19:45] Gate categorizzazione obbligatoria prima di A2 (prompt A2 v20) — risponde a: come si gestisce l'interruzione per categorizzare i post?
+
+**Riepilogo:** Gianluca ha chiesto come viene gestita, nel nuovo flusso automatico (Step 8), l'interruzione in cui deve categorizzare manualmente i post prima che A2 possa analizzarli (schermata webapp dello Step 4). Verificato che oggi **nessuna versione del prompt controlla questo** — funzionava solo perché finora Gianluca categorizzava sempre prima di aprire il Progetto Claude.ai di A2 a mano. Una sessione automatica che riceve solo "esegui il ciclo di [mese]" non ha modo di saperlo da sola: avrebbe generato silenziosamente un report con Mix Topic incompleto, lo stesso bug già visto (e finora corretto solo a valle) nello Step 5. Aggiunto un gate esplicito in testa al prompt di A2.
+
+**Cosa è stato fatto:**
+- Prompt A2 v19→v20 (`Agente2_auto_prompt_v20.md`, v19 rimosso): nuovo Step 0.5 in sez. 4, eseguito subito dopo la segnalazione `agent_states`→'working' e prima di leggere qualunque dato. Interroga Supabase (`select count(*) from posts where mese = '[Mese Anno]' and categoria_primaria is null`) — stessa query già usata dalla card "Categorizza post" di A1 per il conteggio "N post da categorizzare". Se 0: procede normalmente (vale anche per i mesi storici pre-Step 4, dove la tabella `posts` non ha righe per quel mese — nessun blocco falso). Se maggiore di 0: si ferma, comunica a Gianluca quanti post mancano e il link alla pagina di categorizzazione (`.../app/agenti/a1-analytics/categorizza.html`), e riprende solo dopo una sua conferma esplicita — stesso pattern "fermati e comunica" già validato su A4 per i dati mancanti (Step 5), qui applicato preventivamente invece che scoperto come bug a posteriori.
+- Verificata la query direttamente su Supabase prima di scriverla nel prompt (non solo per ragionamento): su Ottobre 2026 restituisce 0 post da categorizzare (coerente con i 7/7 già categorizzati), confermando che la stessa query usata altrove nella webapp si comporta come previsto anche per questo nuovo uso.
+
+**Decisioni prese:**
+- Contesto: dove deve vivere questo controllo — nel prompt di A2 (letto da chiunque esegua A2, sessione dedicata o Progetto Claude.ai) o solo nelle istruzioni della sessione dedicata dello Step 8.
+  Decisione: nel prompt di A2 — è la fonte autorevole che ogni esecutore legge comunque, non duplica logica nella sessione orchestratrice, e resta valido anche se in futuro A2 gira da un posto diverso.
+  Alternative scartate: mettere il controllo solo nelle istruzioni della sessione Claude Code dedicata — scartata perché duplicherebbe la logica in un posto meno autorevole e non proteggerebbe un run di A2 lanciato altrove (es. ancora dai Progetti Claude.ai, possibile durante la transizione).
+
+**File consegnati/modificati:**
+- `docs/prompts/Agente2_auto_prompt_v20.md` (nuovo, sostituisce `Agente2_auto_prompt_v19.md`)
+- `docs/documento-sessione-gdc-ia-team.md`
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step della pipeline (lavoro di dettaglio dentro lo Step 8, già "in corso"). Nota per la sessione dedicata: il suo messaggio di setup iniziale cita ancora per nome `Agente2_auto_prompt_v19.md` (non più esistente) — non bloccante, perché le sue istruzioni le dicono comunque di leggere i prompt "per intero prima di eseguire ogni agente" e troverà v20 cercando nella cartella; non è stato possibile inviarle un messaggio di correzione diretto in questa sessione (nessun tool disponibile per messaggiare una sessione Claude Code Remote già creata) — da verificare al primo ciclo reale che lo faccia correttamente da sola.
+
+---
 
 ### [2026-11-15 19:10] Step 8 avviato — sessione Claude Code dedicata creata + bottone webapp
 
