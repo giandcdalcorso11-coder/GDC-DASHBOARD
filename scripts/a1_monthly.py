@@ -185,7 +185,8 @@ def fetch_posts():
     Paginazione automatica finché non usciamo dal periodo.
     """
     print("  → Fetch post originali...")
-    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,username"
+    fields = ("id,timestamp,media_type,caption,permalink,like_count,comments_count,username,"
+              "media_url,thumbnail_url,children{media_url,thumbnail_url,media_type}")
     posts = []
     url = f"{IG_USER_ID}/media"
     params = {"fields": fields, "limit": 100}
@@ -218,6 +219,56 @@ def fetch_posts():
 
     print(f"    Trovati {len(posts)} post originali nel periodo")
     return posts
+
+
+def upload_post_cover_image(post_id, item):
+    """
+    Scarica la copertina reale del post — frame per i Reel (thumbnail_url),
+    prima slide per i caroselli, immagine diretta per i post singoli — e la
+    carica sul bucket pubblico Supabase Storage 'post-covers'. Ritorna
+    l'URL pubblico, o "" se l'immagine non è disponibile o il download/
+    upload fallisce: è un arricchimento, non deve mai bloccare la run.
+    Gli URL di Instagram (media_url/thumbnail_url) sono firmati e scadono
+    dopo poco — per questo vengono scaricati e ri-ospitati subito, non
+    salvati come link diretto.
+    """
+    media_type = item.get("media_type", "")
+    src_url = ""
+    if media_type == "VIDEO":
+        src_url = item.get("thumbnail_url", "")
+    elif media_type == "CAROUSEL_ALBUM":
+        children = (item.get("children") or {}).get("data") or []
+        if children:
+            first = children[0]
+            src_url = first.get("thumbnail_url") if first.get("media_type") == "VIDEO" else first.get("media_url")
+    else:  # IMAGE
+        src_url = item.get("media_url", "")
+
+    if not src_url:
+        return ""
+
+    try:
+        img = requests.get(src_url, timeout=15)
+        if img.status_code != 200 or not img.content:
+            print(f"    ⚠ Immagine non scaricabile per post {post_id}: HTTP {img.status_code}")
+            return ""
+        content_type = img.headers.get("Content-Type", "image/jpeg")
+        upload_url = f"{SUPA_URL}/storage/v1/object/post-covers/{post_id}.jpg"
+        r = requests.post(
+            upload_url, data=img.content, timeout=20,
+            headers={
+                "Authorization": f"Bearer {SUPA_KEY}",
+                "Content-Type": content_type,
+                "x-upsert": "true",
+            }
+        )
+        if r.status_code not in (200, 201):
+            print(f"    ⚠ Upload immagine fallito per post {post_id}: {r.status_code} {r.text}")
+            return ""
+        return f"{SUPA_URL}/storage/v1/object/public/post-covers/{post_id}.jpg"
+    except Exception as e:
+        print(f"    ⚠ Errore immagine post {post_id}: {e}")
+        return ""
 
 
 # ─── EMAIL NOTIFICHE (Gmail — invio reale, non bozza — step 20, 3.9) ────────
@@ -639,7 +690,8 @@ HEADERS = {
         "Salvataggi", "Condivisioni", "Interazioni Totali",
         "Engagement Rate", "Tasso Viralità", "Sentiment Score",
         "Follower Acquisiti", "Collaborazione Sì/No", "Note",
-        "Episodio Serie"  # col. 23, nuova dalla v4 — in coda per non spostare gli indici
+        "Episodio Serie",  # col. 23, nuova dalla v4 — in coda per non spostare gli indici
+        "Immagine URL"     # col. 24, nuova — copertina reale del post (Supabase Storage)
     ],
     "Insights Stories": [
         "Mese", "Data", "Ora", "Permalink",
@@ -723,8 +775,9 @@ def classifica_serie(caption):
 
 def _ensure_post_header_v4(ws, headers):
     """
-    Workbook esistenti (creati con 22 colonne): aggiunge l'header
-    "Episodio Serie" in col. 23 con lo stesso stile degli altri header.
+    Workbook esistenti con meno colonne di quelle attese: aggiunge l'header
+    mancante in coda (una colonna per chiamata — "Episodio Serie" la prima
+    volta, poi "Immagine URL") con lo stesso stile degli altri header.
     Estende anche il grigio ai separatori dei mesi precedenti.
     """
     col = len(headers)
@@ -741,7 +794,7 @@ def _ensure_post_header_v4(ws, headers):
         if first.value in (None, "") and first.fill is not None and \
                 (first.fill.fgColor.rgb or "").upper().endswith(COLOR_GRAY_SEP):
             ws.cell(row=r, column=col).fill = gray_fill
-    print("    Sheet Post: aggiunta colonna 23 'Episodio Serie'")
+    print(f"    Sheet Post: aggiunta colonna {col} '{headers[-1]}'")
 
 
 def _apply_post_validations(ws):
@@ -893,6 +946,12 @@ def compile_sheet_post(wb, posts):
                 cat_secondaria = override.get("categoria_secondaria") or ""
                 episodio = override.get("episodio_serie") or ""
 
+        # Copertina reale del post (solo ORIGINALE — i repost non hanno
+        # accesso ai media di altri account). Risultato riusato anche da
+        # sync_posts_to_supabase() tramite l'attributo sul post stesso.
+        image_url = upload_post_cover_image(p["id"], p) if tipo_autore == "ORIGINALE" else ""
+        p["_image_url"] = image_url
+
         rows_to_insert.append([
             MESE_LABEL, data_str, ora_str, tipo_contenuto, tipo_autore,
             p.get("caption", "")[:500] if p.get("caption") else "",
@@ -903,7 +962,8 @@ def compile_sheet_post(wb, posts):
             likes, comments, saved, shares,
             interactions, er, viralita, sentiment,
             follows, collaborazione, note,
-            episodio         # col. 23 Episodio Serie — solo serie
+            episodio,        # col. 23 Episodio Serie — solo serie
+            image_url        # col. 24 Immagine URL — solo ORIGINALE
         ])
 
     ws.insert_rows(insert_at, amount=len(rows_to_insert) + 1)
@@ -967,6 +1027,7 @@ def sync_posts_to_supabase(posts):
             "tipo_contenuto": media_type_to_gdc(p.get("media_type", "")),
             "caption": p.get("caption", "")[:500] if p.get("caption") else "",
             "permalink": p.get("permalink", ""),
+            "image_url": p.get("_image_url") or None,
         }
         serie = classifica_serie(p.get("caption"))
         if serie:
