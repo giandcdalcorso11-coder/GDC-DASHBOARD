@@ -185,7 +185,7 @@ def fetch_posts():
     Paginazione automatica finché non usciamo dal periodo.
     """
     print("  → Fetch post originali...")
-    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,username,media_url,thumbnail_url,children{media_url,thumbnail_url,media_type}"
+    fields = "id,timestamp,media_type,caption,permalink,like_count,comments_count,username"
     posts = []
     url = f"{IG_USER_ID}/media"
     params = {"fields": fields, "limit": 100}
@@ -207,10 +207,6 @@ def fetch_posts():
             metrics = fetch_post_insights(item["id"], item.get("media_type", "IMAGE"))
             item.update(metrics)
             posts.append(item)
-            print(f"    [TEST IMMAGINI] id={item['id']} tipo={item.get('media_type')} "
-                  f"media_url={'presente' if item.get('media_url') else 'assente'} "
-                  f"thumbnail_url={'presente' if item.get('thumbnail_url') else 'assente'} "
-                  f"children={len(item.get('children', {}).get('data', [])) if item.get('children') else 0}")
 
         next_url = data.get("paging", {}).get("next")
         if not next_url:
