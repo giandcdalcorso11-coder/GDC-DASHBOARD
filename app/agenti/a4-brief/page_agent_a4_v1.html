@@ -377,6 +377,15 @@ body{
   <div id="panel-azioni" class="panel active">
     <div class="action-row">
 
+      <a class="lg-btn" href="brief.html">
+        <span class="btn-icon">&#128203;</span>
+        <div class="btn-text">
+          <div class="btn-title">Brief mensili</div>
+          <div class="btn-sub">Brief completo di ogni mese, in HTML</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </a>
+
       <a class="lg-btn" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
         <span class="btn-icon">&#128196;</span>
         <div class="btn-text">
@@ -626,34 +635,19 @@ document.getElementById('repMm2Lbl').textContent=`report_GDC_${Mm2}_${Am2}`;
 document.getElementById('ioM0Lbl').textContent=`${M0}_${A0}`;
 document.getElementById('configMeseLbl').textContent=`M0 — ${M0} ${A0}`;
 
-const MSG=`Ciao A4. È il momento degli script mensili.
+const MSG=`Ciao A4. È il momento del brief mensile.
 
-Trovi i file necessari nelle seguenti cartelle Drive:
+Link diretto al Google Sheet:
+https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit
 
-Piano editoriale mese corrente (A3):
-https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK
-→ file: piano_${M0}_${A0}.pptx
-
-Piano editoriale mese precedente (A3):
-https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK
-→ file: piano_${Mm1}_${Am1}.pptx
-
-Report A2 (ultimi 2 mesi):
-https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC
-→ file: report_GDC_${Mm1}_${Am1}.pptx
-→ file: report_GDC_${Mm2}_${Am2}.pptx
-
-GDC Analytics xlsx (A1):
-https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM
-→ file: Instagram_Analytics_GDC.xlsx
+Piano editoriale A3 e report A2: leggili da Supabase (tabella report_mensili) tramite il connector MCP Supabase GDC.
+→ piano mese corrente: agente='a3', mese='${M0} ${A0}'
+→ piano mese precedente: agente='a3', mese='${Mm1} ${Am1}'
+→ report A2: agente='a2', mese='${Mm1} ${Am1}' e mese='${Mm2} ${Am2}'
 
 Mese di riferimento: ${M0} ${A0}
 
-Genera gli script e il brief e offrili in download via present_files.
-→ nome file: brief_${M0}_${A0}.docx
-
-(Dopo il download, carica tu il file nella cartella Drive A4:
-https://drive.google.com/drive/folders/1uJZEyjjh01UzkgZmKAYw7qifsqurkaIs )`;
+Genera il brief come pagina HTML e scrivilo su Supabase (tabella report_mensili, agente='a4'), come da prompt v8.`;
 
 document.getElementById('msgText').value=MSG;
 

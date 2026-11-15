@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 19
-**Ultimo aggiornamento:** 2026-11-15 10:15
+**Versione:** 20
+**Ultimo aggiornamento:** 2026-11-15 11:45
 
 ## Vision
 
@@ -105,7 +105,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 5 — Schema Supabase + pagine HTML (dashboard A2, calendari A3/A4)
 
-**Stato:** in corso — scomposto in sotto-punti, fatti 1-4 su un piano di 5 (per agente, fino in fondo, uno alla volta: A2 prima di A3/A4). Punto 3 (A2) verificato con run reali; punto 4 (A3) costruito, non ancora verificato con una run reale di A3.
+**Stato:** in corso — scomposto in sotto-punti, costruiti tutti i 5 (per agente, fino in fondo, uno alla volta: A2, poi A3, poi A4). Punto 3 (A2) verificato con run reali; punti 4 (A3) e 5 (A4) costruiti, non ancora verificati con una run reale.
 
 **Obiettivo:** A2, A3 e A4 (solo apertura mese) producono pagine HTML invece di pptx/pdf, con lo stesso contenuto/struttura/voce di oggi; il contenuto vero vive su Supabase protetto da login, i template sono pubblici su GitHub Pages.
 
@@ -148,6 +148,13 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   Prompt A3 v12→v13: oltre al cambio di contenitore (HTML su Supabase invece di PPTX, stessa logica della v16 di A2), anche l'**input** di A3 è cambiato — leggeva il report di A2 e il proprio piano precedente come file pptx su Drive, che con la migrazione di A2 non vengono più prodotti. Spostati su Supabase (`report_mensili`, letto tramite connector MCP). Incluse fin da subito (lezione della v18 di A2, qui anticipata) l'auto-segnalazione di stato su `agent_states` e la segnalazione di A4 pronto alla chiusura di A3 — completando la catena A1→A2→A3→A4. Di conseguenza anche il prompt di A2 è stato aggiornato (v18→v19): mancava la riga che segnala A3 pronto quando A2 finisce (stesso bug trovato ieri per A2, qui chiuso anche per lo step successivo della catena).
 
   Non ancora verificato con una run reale di A3 — prossimo passo prima di considerare il punto 4 chiuso.
+- [2026-11-15] Punto 5 — A4: stesso lavoro, adattato alla natura particolare di A4 — a differenza di A2/A3 (un documento al mese), A4 produce un brief di apertura mese (sez. 1-4 del suo prompt) **più** lavoro libero post per post per il resto del mese (sez. 6), che non produce nessun documento e quindi non va migrato — resta conversazione pura, come già deciso nella sessione del 12/11 ("automatizzare solo la parte apertura mese; il lavoro libero resta conversazione non automatizzata"). Migrato solo il brief di apertura mese.
+
+  Nuova `app/agenti/a4-brief/brief.html` (stesso meccanismo lista+iframe di `report.html`/`piano.html`), card "Brief mensili" su `page_agent_a4_v1.html`, messaggio precompilato riscritto (citava ancora piano A3 e report A2 come file pptx su Drive, non più prodotti dalla migrazione di A2/A3; i dati A1 restano sul Google Sheet, non toccati).
+
+  Prompt A4 v7→v8 (nuovo file `Agente4_auto_prompt_v8.md`, v7 rimosso): cambio di contenitore (HTML su Supabase invece di PDF via `present_files` + upload manuale su Drive); input di piano A3 e report A2 spostato su Supabase (`report_mensili`, come già fatto per A3); aggiunta nuova sez. 4.3 con la struttura tecnica della pagina HTML (palette blu propria, card responsive, nessuno script/font esterno); incluse fin da subito (lezione di A2/A3) `agent_states`→'working' all'apertura e →'done' alla chiusura — nessuna riga 'ready' per un agente successivo, perché A4 è l'ultimo della catena A1→A4 migrata e A5-A7 non sono sequenziali a questo passaggio. Sezioni 5-9 (struttura brief per formato, lavoro post per post, serie Capiamo la Sabbia, revisione, tono) lasciate invariate in sostanza.
+
+  Non ancora verificato con una run reale di A4 — con questo si chiude la costruzione di tutti i 5 punti dello Step 5; resta da fare la verifica reale di A3 e A4 prima di considerare lo step davvero completo.
 
 ### Step 6 — Riorganizzazione cartelle GitHub + pulizia grafica/organizzazione
 
@@ -219,6 +226,26 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-15 11:45] Step 5 punto 5 — A4 su HTML/Supabase (non ancora verificato con run reale) — tutti i 5 punti ora costruiti
+
+**Riepilogo:** Costruito per A4 lo stesso lavoro già fatto per A2 e A3 (punto 5/5, ultimo della scomposizione dello Step 5), adattato alla natura particolare di A4: solo il brief di apertura mese è stato migrato a HTML/Supabase, il lavoro libero post per post (sez. 6 del suo prompt) resta conversazione non automatizzata, come già deciso il 12/11.
+
+**Cosa è stato fatto:**
+- Nessuno schema nuovo: riusata `report_mensili` (agente='a4').
+- Nuova `app/agenti/a4-brief/brief.html` (stesso meccanismo lista+iframe di `report.html`/`piano.html`), card "Brief mensili" su `page_agent_a4_v1.html`.
+- Aggiornato il messaggio precompilato di A4 (`page_agent_a4_v1.html`): citava ancora file pptx su Drive per piano A3 e report A2 (già rotti dalla migrazione di A2/A3); i dati A1 restano sul Google Sheet, link diretto aggiunto come già fatto per A3.
+- Prompt A4 v7→v8 (`Agente4_auto_prompt_v8.md`, v7 rimosso): output pagina HTML su Supabase invece di PDF via `present_files` + upload manuale su Drive; input piano A3/report A2 spostato su Supabase (stessa logica di A3); nuova sez. 4.3 con la struttura tecnica HTML (palette blu propria, card responsive, nessuno script/font esterno); `agent_states`→'working' all'apertura e →'done' alla chiusura incluse fin da subito — nessuna riga 'ready' per un agente successivo (A4 è l'ultimo della catena A1→A4 migrata, A5-A7 non sequenziali a questo passaggio). Sezioni 5-9 (struttura brief, lavoro post per post, serie Capiamo la Sabbia, revisione, tono) invariate in sostanza.
+
+**File consegnati/modificati:**
+- `app/agenti/a4-brief/brief.html` (nuovo)
+- `app/agenti/a4-brief/page_agent_a4_v1.html` (card azione + messaggio precompilato)
+- `docs/prompts/Agente4_auto_prompt_v8.md` (nuovo, sostituisce `Agente4_auto_prompt_v7.md`)
+- `docs/documento-sessione-gdc-ia-team.md`
+
+**Impatto su Vision/Pipeline:** Step 5 — tutti i 5 punti della scomposizione ora costruiti (A2 verificato con run reali; A3 e A4 non ancora verificati con una run reale). Prossimo passo: Gianluca prova A3 e A4 per davvero, poi lo step si considera completo.
+
+---
 
 ### [2026-11-15 10:15] Step 5 punto 4 — A3 su HTML/Supabase (non ancora verificato con run reale)
 
