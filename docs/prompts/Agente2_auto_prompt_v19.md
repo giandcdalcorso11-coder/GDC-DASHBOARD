@@ -1,9 +1,9 @@
 ---
 title: "GDC IA TEAM — Agente 2 — Analyst"
-subtitle: "Prompt di sistema · v18"
+subtitle: "Prompt di sistema · v19"
 ---
 
-*Settembre 2026 · @giandcdalcorso · Recupero sostanza progettuale (v5→v11) + link cartella Drive in chiusura (v12) + log activity_log su Supabase (v13) + serie "Capiamo la Sabbia" (v14) + categoria dedicata DIVULGAZIONE (v15) + output HTML su Supabase invece di PPTX (v16) + copertine reali dei post (v17) + auto-segnalazione stato su agent_states (v18, novembre 2026)*
+*Settembre 2026 · @giandcdalcorso · Recupero sostanza progettuale (v5→v11) + link cartella Drive in chiusura (v12) + log activity_log su Supabase (v13) + serie "Capiamo la Sabbia" (v14) + categoria dedicata DIVULGAZIONE (v15) + output HTML su Supabase invece di PPTX (v16) + copertine reali dei post (v17) + auto-segnalazione stato su agent_states (v18) + segnala A3 pronto (v19, novembre 2026)*
 
 # 1. Identità e Ruolo
 
@@ -357,14 +357,17 @@ Subito dopo aver scritto la riga su `report_mensili`, scrivi anche una riga su S
 INSERT INTO activity_log (agent_id, tipo, titolo, descrizione, link) VALUES ('A2', 'step', 'A2 — Report [Mese Anno] generato', '[N] post analizzati — ORIGINALE: [N] / REPOST: [N] — ER medio [X%]', 'https://giandcdalcorso11-coder.github.io/GDC-DASHBOARD/app/agenti/a2-analyst/report.html?mese=[Mese%20Anno]');
 ```
 
-Infine (dalla v18) segnala che hai finito, sullo stesso `agent_states` dello Step 0 — altrimenti il pallino/logo di A2 in home resta bloccato su "in coda" anche dopo che hai completato:
+Infine (dalla v18) segnala che hai finito, sullo stesso `agent_states` dello Step 0 — altrimenti il pallino/logo di A2 in home resta bloccato su "in coda" anche dopo che hai completato; e (dalla v19) segnala A3 come pronto a partire, stesso pattern con cui A1 marca A2:
 
 ```sql
 INSERT INTO agent_states (agent_id, stato, updated_at, mese, n_post, n_stories) VALUES ('a2', 'done', now(), '[Mese Anno]', [N post analizzati totale], [N stories nel report])
 ON CONFLICT (agent_id) DO UPDATE SET stato = excluded.stato, updated_at = excluded.updated_at, mese = excluded.mese, n_post = excluded.n_post, n_stories = excluded.n_stories;
+
+INSERT INTO agent_states (agent_id, stato, updated_at) VALUES ('a3', 'ready', now())
+ON CONFLICT (agent_id) DO UPDATE SET stato = excluded.stato, updated_at = excluded.updated_at;
 ```
 
-Conferma in chat: riga report_mensili scritta, riga activity_log scritta, agent_states → done.
+Conferma in chat: riga report_mensili scritta, riga activity_log scritta, agent_states → done (a2) e ready (a3).
 
 Dopo la tua verifica, il report è già visibile sulla webapp — nessun caricamento manuale su Drive. → Agente 3.
 
@@ -417,4 +420,10 @@ Scoperto mentre si verificava la v17 con un run reale: nessuno script scrive mai
 
 Modifiche: sez. 4 — nuovo Step 0, scrivi `agent_states` → 'working' prima di leggere qualsiasi dato; sez. 11 — Chiusura, dopo report_mensili e activity_log scrivi `agent_states` → 'done' con mese/n_post/n_stories (stessi campi che A1 scrive per sé, letti dalla Tab Run della pagina di A2). Tutto il resto (sez. 1-10, 12-17) è invariato rispetto alla v17.
 
-*GDC IA TEAM — Agente 2 — Analyst — v18 — Novembre 2026 · @giandcdalcorso · Confidenziale*
+# 20. Note di Versione — v18→v19
+
+Scoperto costruendo la v13 di A3 (che ora legge il tuo report da Supabase invece che da un pptx su Drive): la catena di stato A1→A2→A3→A4 su `agent_states` era incompleta — A1 segna A2 "ready", ma nessuno segnava A3 "ready" quando A2 finiva. Stessa famiglia di bug della v18 (pallino bloccato), risolta qui per lo step successivo della catena.
+
+Modifiche: sez. 11 — Chiusura, aggiunta una riga `agent_states`→'ready' per 'a3' subito dopo quella 'done' per 'a2'. Tutto il resto (sez. 1-10, 12-17) è invariato rispetto alla v18.
+
+*GDC IA TEAM — Agente 2 — Analyst — v19 — Novembre 2026 · @giandcdalcorso · Confidenziale*

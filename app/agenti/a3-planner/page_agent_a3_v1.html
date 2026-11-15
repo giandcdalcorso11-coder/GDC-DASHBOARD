@@ -391,6 +391,15 @@ body{
   <div id="panel-azioni" class="panel active">
     <div class="action-row">
 
+      <a class="lg-btn" href="piano.html">
+        <span class="btn-icon">&#128197;</span>
+        <div class="btn-text">
+          <div class="btn-title">Piani editoriali</div>
+          <div class="btn-sub">Piano completo di ogni mese, in HTML</div>
+        </div>
+        <span class="btn-arr">&#8594;</span>
+      </a>
+
       <a class="lg-btn" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
         <span class="btn-icon">&#128202;</span>
         <div class="btn-text">
@@ -639,31 +648,19 @@ document.getElementById('msgSubLbl').textContent=`Launcher A3 — ${M0} ${A0}`;
 function buildMsg(calText){
   return `Ciao A3. È il momento del piano editoriale mensile.
 
-Trovi i file necessari nelle seguenti cartelle Drive:
+Link diretto al Google Sheet:
+https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit
 
-GDC Analytics xlsx (A1):
-https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM
-→ file: Instagram_Analytics_GDC.xlsx
-
-Report A2 (ultimi 2 mesi):
-https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC
-→ file: report_GDC_${Mm1}_${Am1}.pptx
-→ file: report_GDC_${Mm2}_${Am2}.pptx
-
-Piano A3 mese precedente:
-https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK
-→ file: piano_${Mm1}_${Am1}.pptx
+Report A2 e il tuo piano del mese precedente: leggili da Supabase (tabella report_mensili) tramite il connector MCP Supabase GDC.
+→ report A2: agente='a2', mese='${Mm1} ${Am1}' e mese='${Mm2} ${Am2}'
+→ piano precedente: agente='a3', mese='${Mm1} ${Am1}'
 
 Mese da pianificare: ${M0} ${A0}
 
 CALENDARIO IMPEGNI ${M0} ${A0}:
 ${calText}
 
-Genera il piano editoriale e offrilo in download via present_files.
-→ nome file: piano_${M0}_${A0}.pptx
-
-(Dopo il download, carica tu il file nella cartella Drive A3:
-https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK )`;
+Genera il piano editoriale come pagina HTML e scrivilo su Supabase (tabella report_mensili, agente='a3'), come da prompt v13.`;
 }
 document.getElementById('msgText').value=buildMsg('[caricamento calendario BPT...]');
 
