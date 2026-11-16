@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 27
-**Ultimo aggiornamento:** 2026-11-16 14:30
+**Versione:** 28
+**Ultimo aggiornamento:** 2026-11-16 15:00
 
 ## Vision
 
@@ -258,6 +258,20 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 15:00] Messaggio precompilato del ciclo editoriale aggiornato — tolto un riferimento ormai superato alla migrazione storica
+
+**Riepilogo:** Gianluca ha notato che `MSG_CICLO` (il testo copiato dal pulsante "Copia messaggio" nella pillola del ciclo editoriale) citava ancora il gap sui mesi a cavallo della migrazione — superato da quando lo Step 7 ha portato tutta la storia del progetto su Supabase.
+
+**Cosa è stato fatto:** Rimossa da `MSG_CICLO` la frase "Se manca un dato di input perché il mese è a cavallo della migrazione storica, chiedimi il link Drive diretto" — sostituita con un'istruzione generica, non più legata alla migrazione: "Se manca un dato di input, serve una categorizzazione non ancora fatta, o un passaggio richiede una mia conferma, fermati e dimmelo invece di procedere nel dubbio" (quest'ultima parte copre anche il gate di categorizzazione aggiunto al prompt A2 v20). Aggiunta anche una riga che dice alla sessione dedicata di usare sempre la versione più recente di ciascun prompt in `docs/prompts/`, non uno che potrebbe ricordare da una conversazione precedente — stessa cautela già annotata per il messaggio di setup iniziale della sessione (Step 8), qui estesa al messaggio che viene effettivamente incollato ogni mese.
+
+**File consegnati/modificati:** `app/page_home_v25.html` (modificato: `MSG_CICLO`)
+
+**Verifiche fatte:** sintassi JS (`node --check`).
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step — correzione di un testo residuo, stessa famiglia di pulizia già in corso nello Step 6.
+
+---
 
 ### [2026-11-16 14:30] Home page — seconda passata di correzioni su screenshot reale (pillole, pulsanti stato, colori, logo)
 
