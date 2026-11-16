@@ -104,6 +104,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .lg-done{background:rgba(74,124,89,.12);border-color:rgba(74,124,89,.25);color:var(--maker);}
 .lg-done:hover:not(.lg-disabled){background:rgba(74,124,89,.18);}
 .lg-disabled{opacity:.45;cursor:not-allowed;background:rgba(200,200,200,.15);border-color:rgba(200,200,200,.25);color:var(--grigio);box-shadow:none;}
+.cat-count{position:absolute;top:-6px;right:-6px;display:none;align-items:center;justify-content:center;background:var(--life);color:#fff;font-size:.56rem;font-weight:800;min-width:16px;height:16px;border-radius:999px;padding:0 4px;box-shadow:0 1px 3px rgba(0,0,0,.25);}
 .lg-stato{background:rgba(196,168,101,.12);border-color:rgba(196,168,101,.3);color:var(--sabbia-dk);}
 .lg-stato:hover:not(.lg-disabled){background:rgba(196,168,101,.2);}
 .stato-row{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:0 10px 10px;border-top:1px solid var(--border);margin-top:2px;padding-top:7px;}
@@ -236,8 +237,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 
 /* ══ Ciclo editoriale mensile: pillola unica, estremi a specchio ══ */
 .ciclo-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:50px;padding:5px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);}
-.ciclo-end{flex-shrink:0;height:40px;display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 14px;border-radius:999px;background:var(--athlete-bg);color:var(--athlete);border:none;cursor:pointer;text-decoration:none;transition:transform .12s;}
+.ciclo-end{flex-shrink:0;height:40px;display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 14px;border-radius:999px;background:var(--athlete-bg);color:var(--athlete);border:none;cursor:pointer;text-decoration:none;transition:transform .12s,opacity .2s;}
 .ciclo-end:active{transform:scale(.97);}
+.ciclo-end.ciclo-disabled{opacity:.4;pointer-events:none;}
 .ciclo-end svg{width:15px;height:15px;flex-shrink:0;}
 .ciclo-label{flex:1;text-align:center;font-size:.72rem;color:var(--nero);font-weight:800;letter-spacing:.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
@@ -331,7 +333,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 </div>
 <div style="width:100%;max-width:540px;padding:0 16px 10px;">
   <div class="ciclo-pill">
-    <a class="ciclo-end" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Apri sessione Claude Code">
+    <a class="ciclo-end ciclo-disabled" id="cicloOpenBtn" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Caricamento stato...">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 7 4 12 9 17"/><polyline points="15 7 20 12 15 17"/></svg>
       <span>Apri sessione</span>
     </a>
@@ -367,9 +369,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a1">AGENTE 1 &#x2014; Data Collector</span></div>
 
     </div>
-    <div class="actions" id="actions-a1" style="grid-template-columns:1fr 1fr;">
+    <div class="actions" id="actions-a1">
       <a class="lg-btn" href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&amp;asset_id=1110414672162254&amp;platform=Instagram" target="_blank" title="Meta Business Suite &#x2014; Content Insights (export CSV repost)"><span class="fmt-badge fmt-gsheet" style="background:#1877F2;color:#fff;margin:0">MBS</span><span>Apri MBS</span></a>
       <a class="lg-btn lg-primary" href="agenti/a1-analytics/carica_mbs.html" title="Carica il CSV esportato da MBS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Carica CSV</span></a>
+      <a class="lg-btn lg-disabled" id="catBtn-a1" href="agenti/a1-analytics/categorizza.html" title="Categorizza i post del mese"><span class="cat-count" id="catCount-a1"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg><span>Categorizza</span></a>
     </div>
     <div class="stato-row" id="stato-row-a1"></div>
     </div>
@@ -774,6 +777,48 @@ function stopAnim(id){
     const dot=document.getElementById('c-dot');if(dot)dot.setAttribute('cy','46');
   }
 }
+/* ══ Gate del pulsante "Apri sessione" (ciclo editoriale): cliccabile solo
+   quando A1 ha finito la run del mese E non ci sono post da categorizzare.
+   L'MBS resta escluso di proposito — A2 è scritto per gestire l'assenza di
+   repost come caso normale, non un dato bloccante (vedi docs/prompts/
+   Agente2_auto_prompt_v20.md, sez. 3/7/9). ══ */
+let _a1Done=null, _catPending=null;
+function updateCicloGate(){
+  const btn=document.getElementById('cicloOpenBtn');
+  if(!btn) return;
+  const ready=_a1Done===true&&_catPending===0;
+  btn.classList.toggle('ciclo-disabled',!ready);
+  if(!ready){
+    btn.title=_a1Done!==true
+      ? 'A1 non ha ancora completato la run del mese'
+      : 'Ci sono ancora post da categorizzare';
+  } else {
+    btn.title='Apri sessione Claude Code';
+  }
+}
+
+async function loadCategorizePending(){
+  const btn=document.getElementById('catBtn-a1');
+  const badge=document.getElementById('catCount-a1');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/posts?select=id&categoria_primaria=is.null',{headers:{'Prefer':'count=exact'}});
+    const n=parseInt((res.headers.get('content-range')||'/0').split('/')[1],10)||0;
+    _catPending=n;
+    if(btn){
+      if(n>0){
+        btn.className='lg-btn lg-primary';
+        if(badge){ badge.textContent=n; badge.style.display='flex'; }
+      } else {
+        btn.className='lg-btn lg-done';
+        if(badge){ badge.style.display='none'; }
+      }
+    }
+  }catch(e){
+    console.error('loadCategorizePending',e);
+  }
+  updateCicloGate();
+}
+
 function setLogoState(id,st){
   const c=CFG[st]||CFG.sleep;
   const box=document.getElementById('box-'+id);
@@ -868,6 +913,8 @@ async function loadStates(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
+    _a1Done=!!(byId['a1']&&byId['a1'].stato==='done');
+    updateCicloGate();
     // Costruisce MSGS.A3 con calendario BPT reale
     const bptRow=byId['bpt_calendar'];
     buildMsgA3(bptRow?bptRow.calendario_bpt:null);
@@ -898,6 +945,8 @@ async function loadStates(){
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
     document.getElementById('sysMini').style.color='var(--grigio)';
     document.getElementById('sysMini').title='';
+    _a1Done=false;
+    updateCicloGate();
   }
 }
 
@@ -1234,6 +1283,7 @@ if (!gdcToken()) {
 } else {
   loadStates();
   loadLatestReports();
+  loadCategorizePending();
 }
 </script>
 </body>
