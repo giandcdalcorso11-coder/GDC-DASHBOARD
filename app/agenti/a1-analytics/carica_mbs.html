@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Carica CSV MBS</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF;
+  --life:#C2193A; --life-bg:#F5E0E6;
+  --athlete:#2B5C8A; --athlete-bg:#D9E6F3;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
+@media(prefers-color-scheme:dark){
+  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+  .back-btn,.section-card,.drop-zone{ background:var(--bianco); border-color:var(--border); }
+  select,input{ background:#1A1A1A; color:var(--nero); border-color:var(--border); }
+}
+.page-content{ width:100%; max-width:560px; padding:20px 16px; }
+.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:14px; }
+.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
+.page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
+.section-card{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; padding:16px; margin-bottom:14px; }
+.field-label{ font-size:.68rem; font-weight:700; color:var(--grigio); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; display:block; }
+.mese-row{ display:flex; gap:8px; margin-bottom:16px; }
+.mese-row select{ flex:1; font-family:'Jost',sans-serif; font-size:.82rem; padding:9px 10px; border:1.5px solid var(--border); border-radius:10px; background:var(--carta); color:var(--nero); outline:none; }
+.drop-zone{ border:2px dashed var(--border); border-radius:14px; padding:28px 16px; text-align:center; cursor:pointer; transition:border-color .15s,background .15s; background:var(--carta); }
+.drop-zone.drag{ border-color:var(--athlete); background:var(--athlete-bg); }
+.drop-zone.has-file{ border-color:var(--maker); }
+.drop-icon{ font-size:1.6rem; margin-bottom:6px; }
+.drop-text{ font-size:.78rem; color:var(--grigio); }
+.drop-file{ font-size:.82rem; font-weight:700; color:var(--nero); margin-top:4px; }
+#fileInput{ display:none; }
+.upload-btn{ width:100%; margin-top:14px; font-family:'Jost',sans-serif; font-size:.82rem; font-weight:700; padding:12px; border:none; border-radius:12px; background:var(--life); color:#fff; cursor:pointer; transition:opacity .15s; }
+.upload-btn:disabled{ background:#ccc; cursor:not-allowed; opacity:.7; }
+.upload-btn.done{ background:var(--maker); }
+.status-msg{ font-size:.74rem; margin-top:10px; text-align:center; }
+.status-msg.ok{ color:var(--maker); }
+.status-msg.err{ color:var(--life); }
+.note{ font-size:.68rem; color:var(--grigio); line-height:1.5; background:var(--athlete-bg); border-radius:10px; padding:10px 12px; }
+</style>
+</head>
+<body>
+<div class="page-content">
+  <a class="back-btn" href="page_agent_a1_v1.html">&#8592; Agente 1</a>
+  <div class="page-title">Carica CSV MBS</div>
+  <div class="page-sub">Esporta il CSV dei repost da Meta Business Suite (Content Insights) e caricalo qui — va direttamente su Supabase, niente più Drive né nomi di file esatti da rispettare.</div>
+
+  <div class="section-card">
+    <span class="field-label">Mese di riferimento</span>
+    <div class="mese-row">
+      <select id="meseSel"></select>
+      <select id="annoSel"></select>
+    </div>
+
+    <span class="field-label">File CSV</span>
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-icon">&#128196;</div>
+      <div class="drop-text" id="dropText">Trascina qui il CSV, o tocca per scegliere il file</div>
+      <div class="drop-file" id="dropFile"></div>
+    </div>
+    <input type="file" id="fileInput" accept=".csv,text/csv">
+
+    <button class="upload-btn" id="uploadBtn" disabled>Carica</button>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <div class="note">Nota: questo file sostituisce il passaggio "esporta → carica su Drive in una cartella precisa". Il caricamento su Supabase è attivo da subito; la lettura automatica da parte di A1 Monthly (oggi ancora dalla cartella Drive) viene aggiornata in un passaggio successivo per leggere da qui.</div>
+</div>
+
+<script>
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+const MESI=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token');
+  sessionStorage.removeItem('gdc_uid');
+  let banner = document.getElementById('gdcSessionBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'gdcSessionBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent = 'Sessione scaduta — reindirizzamento al login...';
+  setTimeout(function(){ window.location.href = '../../../page_login_v6.html'; }, 1600);
+}
+
+async function sbFetch(url, options){
+  options = options || {};
+  const headers = Object.assign({ 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + gdcToken() }, options.headers || {});
+  const res = await fetch(url, Object.assign({}, options, { headers: headers }));
+  if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+// Mese di riferimento di default = mese precedente (stesso Mm1 usato nel resto della webapp)
+const now=new Date();
+const prev=new Date(now.getFullYear(), now.getMonth()-1, 1);
+const meseSel=document.getElementById('meseSel'), annoSel=document.getElementById('annoSel');
+MESI.forEach((m,i)=>meseSel.appendChild(new Option(m, i+1)));
+meseSel.value = prev.getMonth()+1;
+for(let y=now.getFullYear()-1; y<=now.getFullYear()+1; y++) annoSel.appendChild(new Option(y,y));
+annoSel.value = prev.getFullYear();
+
+let selectedFile=null;
+const dropZone=document.getElementById('dropZone'), fileInput=document.getElementById('fileInput');
+const dropText=document.getElementById('dropText'), dropFile=document.getElementById('dropFile');
+const uploadBtn=document.getElementById('uploadBtn'), statusMsg=document.getElementById('statusMsg');
+
+function setFile(f){
+  if(!f) return;
+  selectedFile=f;
+  dropZone.classList.add('has-file');
+  dropText.textContent='File selezionato:';
+  dropFile.textContent=f.name+' ('+Math.round(f.size/1024)+' KB)';
+  uploadBtn.disabled=false;
+  statusMsg.textContent='';statusMsg.className='status-msg';
+}
+dropZone.addEventListener('click', ()=>fileInput.click());
+fileInput.addEventListener('change', e=>setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev, e=>{e.preventDefault();dropZone.classList.add('drag');}));
+['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev, e=>{e.preventDefault();dropZone.classList.remove('drag');}));
+dropZone.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) setFile(f); });
+
+uploadBtn.addEventListener('click', async ()=>{
+  if(!selectedFile) return;
+  uploadBtn.disabled=true;
+  uploadBtn.textContent='Caricamento...';
+  statusMsg.textContent='';statusMsg.className='status-msg';
+  const anno=annoSel.value, meseNum=String(meseSel.value).padStart(2,'0');
+  const path=anno+'-'+meseNum+'.csv';
+  try{
+    const res=await sbFetch(SUPA_URL+'/storage/v1/object/mbs-csv/'+path, {
+      method:'POST',
+      headers:{ 'Content-Type': selectedFile.type || 'text/csv', 'x-upsert': 'true' },
+      body: selectedFile
+    });
+    if(!res.ok){ const t=await res.text(); throw new Error('HTTP '+res.status+' '+t); }
+    uploadBtn.textContent='Caricato ✓';
+    uploadBtn.classList.add('done');
+    statusMsg.textContent='Salvato come '+path+' — pronto per il prossimo ciclo A1 Monthly.';
+    statusMsg.className='status-msg ok';
+  }catch(e){
+    console.error('upload mbs csv', e);
+    uploadBtn.disabled=false;
+    uploadBtn.textContent='Carica';
+    statusMsg.textContent='Errore durante il caricamento: '+e.message;
+    statusMsg.className='status-msg err';
+  }
+});
+
+if (!gdcToken()) {
+  window.location.href = '../../../page_login_v6.html';
+}
+</script>
+</body>
+</html>

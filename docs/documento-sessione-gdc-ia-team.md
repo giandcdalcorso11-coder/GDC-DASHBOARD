@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 24
-**Ultimo aggiornamento:** 2026-11-15 19:45
+**Versione:** 25
+**Ultimo aggiornamento:** 2026-11-16 12:00
 
 ## Vision
 
@@ -164,7 +164,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 6 — Riorganizzazione cartelle GitHub + pulizia grafica/organizzazione
 
-**Stato:** in corso — avviata in anticipo rispetto allo Step 5 (vedi decisione sotto), parziale. La parte di pulizia grafica/UX e rimozione residui (vedi sotto) è deliberatamente rimandata: va fatta per ultima, dopo tutti gli step di funzionamento (5 completo con A3/A4, 7, 8, 9) — prima si finisce di far funzionare tutto, poi si riordina com'è fatto.
+**Stato:** in corso — riorganizzazione cartelle completata per le pagine a basso rischio (nota 13/11); la pulizia grafica/UX, inizialmente rimandata a fine pipeline, è stata **anticipata su richiesta di Gianluca il 16/11** (prima passata: redesign home page — vedi nota sotto). Lo Step 8 non ha ancora avuto una prova reale completa, lo Step 9 non è iniziato: la pulizia grafica procede comunque in parallelo, non più strettamente "per ultima".
 
 **Obiettivo:** la struttura del repo (oggi completamente piatta) rispecchia quella già ordinata di Drive, per agente.
 
@@ -182,6 +182,23 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-12] Audit completo struttura Drive vs GitHub eseguito. Confermato repo pubblico (verificato via fetch diretto). Cartella `docs/` creata in questa sessione per ospitare questo documento.
 - [2026-11-13] Gianluca ha chiesto di anticipare la riorganizzazione (invece di farla insieme allo Step 5) per far nascere le pagine nuove già nel posto giusto. Eseguita solo la parte a basso rischio: `page_home_v25.html` e `page_hub_v1.html` → `app/`; le quattro pagine agente → `app/agenti/a{1,2,3,4}-{analytics,analyst,planner,brief}/`. Lasciati deliberatamente in root (zero rischio di toccare automazioni fuori perimetro): `index.html`/`manifest.json`/`sw.js` (vincolo PWA), `page_login_v6.html` (bootstrap PWA — spostarlo avrebbe richiesto toccare il link di login/redirect in ogni singola pagina del repo, incluse quelle A5-A7 fuori perimetro, per un guadagno minimo), `page_agent_a5/a6/a7_v1.html`, `page_company_v2.html`, `page_pipeline_v1.html`, `gdc_studio.html`, `gdc_reset_tool.html` — i primi tre sono referenziati da `WEBAPP_BASE` dentro script Python di A5-A7 (`a7_followup.py`, `pipeline_notify.py`) che non si è voluto toccare in questo giro. Aggiornati tutti i link che puntano da/verso i file spostati (incluse le pagine rimaste in root). Scritto ed eseguito un verificatore automatico che risolve ogni link relativo contro il filesystem reale (50 link, 0 rotti) — ha anche scovato un errore reale fatto durante l'edit (profondità sbagliata nel link di login dalle pagine agente, 2 livelli invece di 3). Verificata anche sintassi Python/JS su tutti i file toccati. Push fatto sul branch di lavoro, non su main — il sito live su GitHub Pages non è impattato finché non c'è merge. Resta da fare: cartella `editoriale/` per gli output mensili (Step 5), eventuale riordino di A5-A7/company/pipeline/login (non ancora deciso se necessario).
 - [2026-11-15] Gianluca ha chiesto di mettere in pipeline, per dopo aver finito tutti gli step di funzionamento, una pulizia di grafica/organizzazione delle sezioni — due esempi dati: navigazione della Dashboard KPI di A2 (oggi dentro una scheda separata, non piace) e residui della versione precedente non più usati. Non ancora iniziato per scelta esplicita: prima si finisce il funzionamento (Step 5 punti 4-5, poi 7, 8, 9), poi si riordina.
+- [2026-11-16] **Supera la decisione del 15/11/2026** — Gianluca ha chiesto di anticipare comunque una prima passata di pulizia grafica (via mockup iterativo su Artifact, poi applicata al codice reale). Oggetto: `page_home_v25.html` e card A1. Criterio guida dato da Gianluca per ogni elemento dubbio: *"il pulsante serve? Se sì lo teniamo, se no lo togliamo."*
+
+  **Cosa è cambiato:**
+  - Pillola **Hub** (sinistra, punta rivolta a sinistra come un "torna indietro") e **Attiva notifiche** (destra, piena/accent finché non attive, poi neutra come Hub) — ordine invertito rispetto a prima. La punta della pillola Hub non usa un CSS `border` (si tagliava in modo innaturale sulla punta, verificato sul mockup): due livelli sovrapposti con lo stesso `clip-path`, quello esterno fa da bordo uniforme.
+  - La card "Ciclo editoriale mensile" (Step 8) è diventata una pillola unica: bottone rotondo-pillola a sinistra (icona segnaposto per il simbolo Claude Code — non ho l'asset ufficiale, da sostituire quando disponibile) per aprire la sessione dedicata, etichetta centrale in grassetto, "Copia messaggio" a destra nella stessa forma, a specchio (icona verso il bordo esterno su entrambi, testo verso il centro).
+  - Schede **A1/A2/A3/A4**: tolta la descrizione testuale sotto il titolo; angolo sinistro della card ora concentrico al box del logo (raggio 30px = raggio logo 20px + 10px di distanza bordo-card/bordo-logo, calcolato dai valori CSS reali, verificato sul mockup prima di applicarlo).
+  - A1: rimossi i pulsanti "Avvia Run Manuale" e "→ Analytics GDC" (non superano il criterio "serve?" secondo Gianluca). Resta "Apri MBS" (invariato) + nuovo **"Carica CSV"**, che apre `agenti/a1-analytics/carica_mbs.html` (pagina nuova).
+  - A2/A3/A4: tolti "Copia messaggio" e "→ A2/A3/A4 in Claude" dalla home (il percorso principale è ora il ciclo unico; il percorso singolo-agente resta disponibile ma si sposta in una tab della pagina del singolo agente — non ancora fatto, prossimo passo). Resta un solo pulsante, **dinamico**: "Vedi report/piano/brief — [mese più recente]", che interroga `report_mensili` per il mese più recente di quell'agente ad ogni caricamento pagina (nuova `loadLatestReports()`) invece di un link fisso — si aggiorna da solo ogni mese, nessun link da toccare a mano. `renderActions()`/`copyMsg()` (la vecchia logica a 3 pulsanti dipendente dallo stato) rimossi, non più usati.
+
+  **Decisione presa in corso d'opera — MBS senza Drive:** Gianluca ha chiesto se fosse possibile scaricare il CSV di Meta Business Suite in modo automatico. Verificato: questa sessione non ha accesso browser a Meta (nessun Claude in Chrome/computer use disponibile in un ambiente cloud), e la ricerca del 12/11 aveva già confermato che l'API Instagram/Meta espone solo il conteggio dei repost, non i dettagli — l'export CSV dalla dashboard web resta necessario, non automatizzabile in modo affidabile (uno script che si loggasse da solo su Meta sarebbe fragile e rischioso lato ToS). **Deciso**: il passo manuale di export resta, ma la destinazione cambia — niente più cartella Drive con nome file esatto, upload diretto su Supabase Storage dalla webapp.
+  - Creato bucket Supabase Storage privato `mbs-csv` + policy RLS `mbs_csv_authenticated_all` (ALL su `storage.objects` dove `bucket_id='mbs-csv'`, ruolo `authenticated`) — stesso pattern già in uso per `thumb-assets`.
+  - Nuova pagina `app/agenti/a1-analytics/carica_mbs.html`: selettore mese/anno (default mese precedente) + drag&drop o file picker per il CSV, upload diretto via `POST .../storage/v1/object/mbs-csv/{anno}-{mese}.csv` con `x-upsert:true` (sovrascrivibile se ri-caricato).
+  - **Non ancora fatto, segnalato esplicitamente nella pagina stessa**: `a1_monthly.py` legge ancora il CSV dei repost dalla cartella Drive, non da questo nuovo bucket — il caricamento funziona già or a, ma il lato lettura va aggiornato in un passaggio separato, da verificare con un run reale prima di fidarsene (stesso principio già seguito per ogni altra automazione di questo progetto: costruire e poi verificare con un caso vero, non solo a ragionamento).
+
+  **Verifiche fatte:** sintassi JS di `page_home_v25.html` e `carica_mbs.html` (`node --check`); controllo automatico di tutti i link locali del repo (33 link, 0 rotti) dopo le modifiche; bucket e policy Supabase confermati con query diretta.
+
+  **Residuo noto, non toccato in questo giro:** `MSGS.A2/A3/A4`, `PROJ`, `DRIVE`, `FILE_CUR`, `FILE_FMT` in `page_home_v25.html` sono rimasti nel codice ma non sono più referenziati da nessun pulsante della home (dead code) — restano usati da A5/A6/A7 (fuori perimetro, non toccati) per la parte `MSGS`. Pulizia completa rimandata a quando si affronta per intero la tab "percorso singolo agente" nelle pagine di A2/A3/A4.
 
 ### Step 7 — Trasporto dati storici da Drive
 
@@ -241,6 +258,35 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 12:00] Step 6 anticipato — redesign home page (pillole, ciclo editoriale, card A1-A4) + upload MBS senza Drive
+
+**Riepilogo:** Gianluca ha anticipato la pulizia grafica (Step 6, inizialmente rimandata a fine pipeline) con una prima passata sulla home page: iterata via mockup su Artifact fino ad approvazione, poi applicata al codice reale. Criterio guida: "il pulsante serve? Se sì lo teniamo, se no lo togliamo." In parallelo, risolto il tema di come caricare il CSV di Meta Business Suite senza passare più da Drive.
+
+**Cosa è stato fatto:**
+- Iterato un mockup HTML (Artifact, stessi font/colori del sito reale) su 4 round di revisione per: pillole Hub (punta sinistra "torna indietro")/Notifiche (stato colorato→neutro), pillola unica per il ciclo editoriale (bottoni a specchio, icona verso l'esterno/testo verso il centro), card A1/A2 con angolo sinistro concentrico al logo.
+- Applicato il design approvato a `app/page_home_v25.html`: nuove classi CSS (`.pill-hub-wrap`/`.pill-hub`, `.pill-notif`, `.ciclo-pill`/`.ciclo-end`/`.ciclo-label`, `.acard-logo-round`); card A1-A4 senza descrizione testuale; A1 con soli 2 pulsanti (Apri MBS + Carica CSV); A2/A3/A4 con un solo pulsante dinamico "Vedi report/piano/brief" che punta sempre al mese più recente trovato su Supabase (nuova `loadLatestReports()`), al posto dei 3 pulsanti dipendenti dallo stato di prima (`renderActions()`/`copyMsg()` rimossi).
+- **Bug evitato prima di arrivare al codice reale**: il primo tentativo di pillola con punta a sinistra usava un CSS `border` classico — si tagliava in modo innaturale sulla punta (visibile solo sul mockup, mai arrivato al sito vero). Fix: due livelli sovrapposti con lo stesso `clip-path`, nessun `border`.
+- **MBS senza Drive**: creato bucket Supabase Storage privato `mbs-csv` + policy RLS `mbs_csv_authenticated_all`; nuova pagina `app/agenti/a1-analytics/carica_mbs.html` (selettore mese/anno + drag&drop, upload diretto via Storage API). Verificato che un download automatico via browser non è praticabile da questa sessione (nessun accesso Chrome/computer-use in ambiente cloud) e che l'API Meta non offre comunque il dettaglio dei repost (confermato il 12/11, invariato). Il lato lettura (`a1_monthly.py` legge ancora da Drive) resta un passaggio separato, segnalato esplicitamente nella pagina stessa.
+- Verificato: sintassi JS (`node --check`) su entrambi i file toccati; controllo automatico di tutti i link locali del repo (33, 0 rotti); bucket e policy Supabase confermati con query diretta.
+
+**Decisioni prese:**
+- Contesto: come automatizzare il download del CSV MBS, dato che l'API non espone i dati di dettaglio dei repost.
+  Decisione: il passo di export manuale da MBS resta; cambia solo la destinazione, da cartella Drive con nome file esatto a upload diretto su Supabase Storage dalla webapp.
+  Alternative scartate: script che si autentica da solo su Meta (fragile, rischio ToS); nessuna, dato il vincolo tecnico confermato due volte (12/11 e 16/11).
+- Contesto: quando applicare la pulizia grafica della home, rispetto all'ordine Step 7→8→9→6 deciso il 15/11.
+  Decisione: Gianluca ha scelto di anticiparla comunque, in parallelo, non più strettamente "per ultima".
+  Alternative scartate: nessuna — scelta esplicita e diretta di Gianluca, non una proposta di Claude.
+
+**File consegnati/modificati:**
+- `app/page_home_v25.html` (modificato: pillole, ciclo editoriale, card A1-A4, `loadLatestReports()`, rimossi `renderActions()`/`copyMsg()`)
+- `app/agenti/a1-analytics/carica_mbs.html` (nuovo)
+- Supabase: bucket Storage `mbs-csv` (nuovo, privato) + policy `mbs_csv_authenticated_all`
+- `docs/documento-sessione-gdc-ia-team.md`
+
+**Impatto su Vision/Pipeline:** Step 6 passa da "pulizia rimandata a fine pipeline" a "pulizia in corso in parallelo" (prima passata: home page). Resta da fare: stessa pulizia sulle pagine singolo-agente (dove si sposta il percorso "vecchio" con Progetto Claude.ai/copia messaggio, tolto dalla home), aggiornamento di `a1_monthly.py` per leggere il CSV MBS da Supabase Storage invece che da Drive, pulizia del codice morto residuo (`MSGS.A2/A3/A4`, `PROJ`, `DRIVE`, `FILE_CUR`, `FILE_FMT`).
+
+---
 
 ### [2026-11-15 19:45] Gate categorizzazione obbligatoria prima di A2 (prompt A2 v20) — risponde a: come si gestisce l'interruzione per categorizzare i post?
 

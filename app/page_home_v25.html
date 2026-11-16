@@ -222,6 +222,31 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.67rem;color:var(--grigio);padding:4px 16px 0;}
 .leg{display:flex;align-items:center;gap:4px;}
 .legdot{width:8px;height:8px;border-radius:50%;border:1.5px solid transparent;}
+
+/* ══ Pillola Hub: punta a sinistra ("torna indietro"), tonda a destra.
+   Niente CSS border (si taglierebbe sulla punta): due livelli sovrapposti
+   con lo stesso clip-path, il più esterno fa da bordo uniforme. ══ */
+.pill-hub-wrap{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);transition:background .2s;}
+.pill-hub{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px 0 18px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%);}
+.pill-hub svg{width:12px;height:12px;flex-shrink:0;}
+/* Pillola Notifiche: piena/accent finché non sono attive, poi neutra come Hub */
+.pill-notif{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px;border-radius:999px;border:1.5px solid var(--athlete);background:var(--athlete);color:#fff;cursor:pointer;transition:background .2s,color .2s,border-color .2s;}
+.pill-notif.on{background:var(--bianco);border-color:var(--border);color:var(--nero);}
+@media(prefers-color-scheme:dark){.pill-hub{background:var(--bianco);}.pill-notif.on{background:var(--bianco);}}
+
+/* ══ Ciclo editoriale mensile: pillola unica, estremi a specchio ══ */
+.ciclo-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:50px;padding:5px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);}
+.ciclo-end{flex-shrink:0;height:40px;display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 14px;border-radius:999px;background:var(--athlete-bg);color:var(--athlete);border:none;cursor:pointer;text-decoration:none;transition:transform .12s;}
+.ciclo-end:active{transform:scale(.97);}
+.ciclo-end svg{width:15px;height:15px;flex-shrink:0;}
+.ciclo-label{flex:1;text-align:center;font-size:.72rem;color:var(--nero);font-weight:800;letter-spacing:.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ══ Card agente: angolo sinistro concentrico al logo (A1-A4 solo — A5/A6/A7 invariate) ══
+   raggio logo 20px + (bordo card 2px + padding logo-col 8px) = 30px */
+.acard-logo-round{border-top-left-radius:30px;border-bottom-left-radius:30px;border-top-right-radius:16px;border-bottom-right-radius:16px;}
+.acard-logo-round .acard-body{align-items:center;}
 </style>
 </head>
 <body>
@@ -299,25 +324,26 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
 </div>
 <div style="width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:space-between;align-items:center;">
-  <button id="pushBtn" onclick="togglePushNotifications()" style="display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);background:none;border:none;cursor:pointer;padding:0;transition:color .15s;" onmouseover="this.style.color='var(--nero)'" onmouseout="this.style.color='var(--grigio)'">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="page_hub_v1.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Hub</span>
+  </a></div>
+  <button id="pushBtn" class="pill-notif" onclick="togglePushNotifications()">
     <svg id="pushBtnIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span id="pushBtnLabel">Attiva notifiche</span>
   </button>
-  <a href="page_hub_v1.html" style="display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='var(--nero)'" onmouseout="this.style.color='var(--grigio)'">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Hub
-  </a>
 </div>
 <div style="width:100%;max-width:540px;padding:0 16px 10px;">
-  <div class="acard" style="border-color:var(--athlete);margin-bottom:0;">
-    <div style="padding:14px 16px 6px;">
-      <div class="agent-title"><span class="agent-name">&#x26A1; Ciclo editoriale mensile</span><span class="agent-tag">A2&#x2192;A3&#x2192;A4</span></div>
-      <div class="agent-desc">Sessione Claude Code dedicata e persistente &#x2014; apertura mese per Analyst, Planner, Brief &amp; Script in un unico passaggio.</div>
-    </div>
-    <div class="actions" style="grid-template-columns:1fr 1fr;">
-      <a class="lg-btn lg-primary" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank"><svg><use href="#ic-chat"/></svg><span>Apri sessione</span></a>
-      <button class="lg-btn" onclick="openMsg('CICLO','Ciclo editoriale A2&#x2192;A3&#x2192;A4',MSG_CICLO)"><svg><use href="#ic-copy"/></svg><span>Copia messaggio</span></button>
-    </div>
+  <div class="ciclo-pill">
+    <a class="ciclo-end" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Apri sessione Claude Code">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 7 4 12 9 17"/><polyline points="15 7 20 12 15 17"/></svg>
+      <span>Apri sessione</span>
+    </a>
+    <span class="ciclo-label">Ciclo editoriale mensile</span>
+    <button class="ciclo-end" onclick="copyCicloMsg(this)">
+      <span>Copia messaggio</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+    </button>
   </div>
 </div>
 <div class="list-wrap">
@@ -330,7 +356,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <symbol id="ic-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></symbol>
   </defs></svg>
   <!-- A1 -->
-  <div class="acard" id="card-a1"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a1"><div class="acard-body">
     <a class="logo-col" href="agenti/a1-analytics/page_agent_a1_v1.html" title="Vai alla pagina A1">
       <div class="logo-box bg-sleep" id="box-a1"><div class="logo-wrap s-sleep" id="wrap-a1">
         <svg viewBox="30 150 560 530" xmlns="http://www.w3.org/2000/svg">
@@ -344,19 +370,17 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </a>
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a1">AGENTE 1 &#x2014; Data Collector</span><span class="agent-tag">&#x26A1; Auto</span></div>
-      <div class="agent-desc">Script GitHub Actions. Sync dati Instagram + BPT Calendar ogni 1&#xB0; del mese.</div>
-      
+
     </div>
-    <div class="actions" id="actions-a1">
-      <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions" target="_blank"><svg><use href="#ic-check"/></svg><span>Avvia Run Manuale</span></a>
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank"><span class="fmt-badge fmt-gsheet">Fogli</span><span>&#x2192; Analytics GDC</span></a>
-      <a class="lg-btn" href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&amp;asset_id=1110414672162254&amp;platform=Instagram" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;" title="Meta Business Suite &#x2014; Content Insights (export CSV repost per A1)"><span class="fmt-badge fmt-gsheet" style="background:#1877F2;color:#fff;margin:0">MBS</span><span>Content Insights</span></a>
+    <div class="actions" id="actions-a1" style="grid-template-columns:1fr 1fr;">
+      <a class="lg-btn" href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&amp;asset_id=1110414672162254&amp;platform=Instagram" target="_blank" title="Meta Business Suite &#x2014; Content Insights (export CSV repost)"><span class="fmt-badge fmt-gsheet" style="background:#1877F2;color:#fff;margin:0">MBS</span><span>Apri MBS</span></a>
+      <a class="lg-btn lg-primary" href="agenti/a1-analytics/carica_mbs.html" title="Carica il CSV esportato da MBS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Carica CSV</span></a>
     </div>
     <div class="stato-row" id="stato-row-a1"></div>
     </div>
   </div></div>
   <!-- A2 -->
-  <div class="acard" id="card-a2"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a2"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a2')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a2"><div class="logo-wrap s-sleep" id="wrap-a2">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -371,15 +395,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a2">AGENTE 2 &#x2014; Analyst</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Analizza i dati Instagram e genera il report mensile.</div>
-      
+
     </div>
-    <div class="actions" id="actions-a2"></div>
+    <div class="actions" id="actions-a2" style="grid-template-columns:1fr;">
+      <a class="lg-btn lg-primary lg-disabled" id="viewBtn-a2"><svg><use href="#ic-folder"/></svg><span id="viewBtnLbl-a2">Caricamento...</span></a>
+    </div>
     <div class="stato-row" id="stato-row-a2"></div>
     </div>
   </div></div>
   <!-- A3 -->
-  <div class="acard" id="card-a3"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a3"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a3')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a3"><div class="logo-wrap s-sleep" id="wrap-a3">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -401,15 +426,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a3">AGENTE 3 &#x2014; Planner</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Genera il piano editoriale mensile su report A2 e calendario BPT.</div>
-      
+
     </div>
-    <div class="actions" id="actions-a3"></div>
+    <div class="actions" id="actions-a3" style="grid-template-columns:1fr;">
+      <a class="lg-btn lg-primary lg-disabled" id="viewBtn-a3"><svg><use href="#ic-folder"/></svg><span id="viewBtnLbl-a3">Caricamento...</span></a>
+    </div>
     <div class="stato-row" id="stato-row-a3"></div>
     </div>
   </div></div>
   <!-- A4 -->
-  <div class="acard" id="card-a4"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a4"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a4')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a4"><div id="wrap-a4" class="a4-wrap s-sleep" style="width:100%;height:100%">
         <svg id="svg-a4" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -426,10 +452,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="right-col"><div class="info-row">
       <div class="agent-title"><span class="agent-name" id="name-a4">AGENTE 4 &#x2014; Brief &amp; Script</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Scrive brief e script post del mese in formato DOCX.</div>
-      
+
     </div>
-    <div class="actions" id="actions-a4"></div>
+    <div class="actions" id="actions-a4" style="grid-template-columns:1fr;">
+      <a class="lg-btn lg-primary lg-disabled" id="viewBtn-a4"><svg><use href="#ic-folder"/></svg><span id="viewBtnLbl-a4">Caricamento...</span></a>
+    </div>
     <div class="stato-row" id="stato-row-a4"></div>
     </div>
   </div></div>
@@ -640,13 +667,16 @@ async function getExistingPushSubscription() {
 
 async function updatePushButtonUI() {
   const label = document.getElementById('pushBtnLabel');
+  const btn = document.getElementById('pushBtn');
   if (!label) return;
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     label.textContent = 'Notifiche non supportate';
+    if (btn) btn.classList.add('on');
     return;
   }
   const sub = await getExistingPushSubscription();
   label.textContent = sub ? 'Notifiche attive' : 'Attiva notifiche';
+  if (btn) btn.classList.toggle('on', !!sub);
 }
 
 async function togglePushNotifications() {
@@ -665,6 +695,7 @@ async function togglePushNotifications() {
     } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
     await existing.unsubscribe();
     if (label) label.textContent = 'Attiva notifiche';
+    document.getElementById('pushBtn').classList.remove('on');
     return;
   }
 
@@ -697,6 +728,7 @@ async function togglePushNotifications() {
     });
 
     if (label) label.textContent = 'Notifiche attive';
+    document.getElementById('pushBtn').classList.add('on');
   } catch (e) {
     console.error('Errore attivazione notifiche:', e);
     alert('Errore durante l\'attivazione delle notifiche. Riprova, o controlla la console per dettagli.');
@@ -811,19 +843,31 @@ function renderActionsSimple(id,st){
   // aggiorna solo la stato-row
 }
 
-function renderActions(id,st){
-  const acts=document.getElementById('actions-'+id.toLowerCase());if(!acts)return;
-  const isQ=(st==='queued'),isA=(st==='active'),isD=(st==='done');
-  const fname=isD?(FILE_CUR[id]||''):'';
-  const fshort=fname.length>14?fname.slice(0,14)+'...':fname;
-  const fmt=FILE_FMT[id]||'pdf',fmtL=FILE_FMT_LBL[id]||'File';
-  const msgBtn=isD?'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-check"/></svg><span>Inviato &#x2713;</span></button>':('<button class="'+(isQ?'lg-btn lg-primary':isA?'lg-btn':'lg-btn lg-disabled')+'" '+((!isQ&&!isA)?'disabled':'')+' onclick="copyMsg(\''+id+'\')" ><svg><use href="#ic-copy"/></svg><span onclick="event.stopPropagation();openMsg(\''+id+'\',\'Messaggio '+id+'\',MSGS[\''+id+'\'])" class="show-msg-link">mostra</span></button>');
-  const driveBtn=fname?('<a class="'+(isD?'lg-btn lg-done':'lg-btn')+'" href="'+DRIVE[id]+'" target="_blank"><span class="fmt-badge fmt-'+fmt+'">'+fmtL+'</span><span>&#x2192; '+fshort+'</span></a>'):'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-folder"/></svg><span>Drive</span></button>';
-  const href=PROJ[id]||'#';
-  const chatBtn=(href!=='#'&&(isQ||isA||isD))?('<a class="'+(isD?'lg-btn lg-done':'lg-btn lg-primary')+'" href="'+href+'" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; '+id+' in Claude</span></a>'):'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>&#x2192; '+id+' in Claude</span></button>';
-  acts.innerHTML=msgBtn+driveBtn+chatBtn;
+// A2/A3/A4: il pulsante "Vedi report/piano/brief" non dipende più dallo stato
+// dell'agente — punta sempre al mese più recente trovato su Supabase (vedi
+// loadLatestReports). Lo slot "Apri {agente} in Claude"/"Copia messaggio" si
+// è spostato nella tab LAVORO della pagina del singolo agente.
+const REPORT_PAGES={a2:{page:'agenti/a2-analyst/report.html',label:'report'},a3:{page:'agenti/a3-planner/piano.html',label:'piano'},a4:{page:'agenti/a4-brief/brief.html',label:'brief'}};
+async function loadLatestReports(){
+  for(const id of ['a2','a3','a4']){
+    const cfg=REPORT_PAGES[id];
+    const btn=document.getElementById('viewBtn-'+id), lbl=document.getElementById('viewBtnLbl-'+id);
+    if(!btn||!lbl) continue;
+    try{
+      const res=await sbFetch(SUPA_URL+'/rest/v1/report_mensili?agente=eq.'+id+'&select=mese,mese_num,anno&order=anno.desc,mese_num.desc&limit=1');
+      const rows=await res.json();
+      if(rows&&rows.length){
+        btn.href=cfg.page+'?mese='+encodeURIComponent(rows[0].mese);
+        btn.classList.remove('lg-disabled');
+        lbl.textContent='Vedi '+cfg.label+' — '+rows[0].mese;
+      } else {
+        btn.removeAttribute('href');
+        btn.classList.add('lg-disabled');
+        lbl.textContent='Nessun '+cfg.label+' ancora';
+      }
+    }catch(e){ console.error('loadLatestReports',id,e); }
+  }
 }
-function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]).catch(()=>{});}
 
 async function loadStates(){
   try{
@@ -838,7 +882,6 @@ async function loadStates(){
       const row=byId[id];
       const st=mapState(row);
       setLogoState(id,st);
-      if(['a2','a3','a4'].includes(id)) renderActions(id.toUpperCase(),st);
       renderStatoRow(id.toUpperCase(), row?row.stato:'sleep');
     });
     const st5=worstState([byId['a5_1'],byId['a5_2']]);
@@ -858,7 +901,6 @@ async function loadStates(){
   }catch(e){
     console.error('Supabase:',e);
     ['a1','a2','a3','a4','a5','a6','a7'].forEach(id=>{setLogoState(id,'sleep');});
-    ['A2','A3','A4'].forEach(id=>renderActions(id,'sleep'));
     ['A1','A2','A3','A4','A5','A6','A7'].forEach(id=>renderStatoRow(id,'sleep'));
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
     document.getElementById('sysLabel').style.color='var(--grigio)';
@@ -912,6 +954,13 @@ function copyMsgPopup(){
   const btn=document.getElementById('msgCopyBtn');
   btn.textContent='Copiato \u2713';btn.className='msg-copy-btn copied';
   setTimeout(()=>{btn.textContent='Copia';btn.className='msg-copy-btn';},2000);
+}
+function copyCicloMsg(btn){
+  navigator.clipboard&&navigator.clipboard.writeText(MSG_CICLO).catch(()=>{});
+  const span=btn.querySelector('span');
+  const orig=span.textContent;
+  span.textContent='Copiato \u2713';
+  setTimeout(()=>{span.textContent=orig;},2000);
 }
 
 function startA4Anim(){
@@ -1191,6 +1240,7 @@ if (!gdcToken()) {
   window.location.href = '../page_login_v6.html';
 } else {
   loadStates();
+  loadLatestReports();
 }
 </script>
 </body>
