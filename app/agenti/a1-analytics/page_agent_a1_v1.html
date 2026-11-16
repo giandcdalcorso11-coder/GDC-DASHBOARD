@@ -25,9 +25,10 @@ body{
 }
 @media(prefers-color-scheme:dark){
   :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
-  .system-bar,.date-chip{ background:#2E2E2E; border-color:var(--border); }
+  .date-chip{ background:#2E2E2E; border-color:var(--border); }
   .hero-card,.section-card,.note-box{ background:var(--bianco); border-color:var(--border); }
-  .back-btn{ background:#2E2E2E; border-color:var(--border); }
+  .pill-hub{ background:var(--bianco); }
+  .pill-notif.on{ background:var(--bianco); }
   .tab-btn{ background:#2E2E2E; }
   .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
   .io-block{ background:#1A1A1A; }
@@ -51,19 +52,27 @@ body{
 .header-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .gdc-logo-wrap{ display:flex; align-items:center; }
 #hub-master-svg .logo-G, #hub-master-svg .logo-D, #hub-master-svg .logo-C, #hub-master-svg .logo-STUFF, #hub-master-svg .logo-linee { opacity:0; transition:opacity .22s ease; }
-.date-chip{ display:flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px; font-size:.75rem; font-weight:700; cursor:pointer; transition:border-color .2s; user-select:none; }
+.date-chip{ display:flex; align-items:center; gap:6px; height:32px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:0 14px; font-size:.7rem; font-weight:700; cursor:pointer; transition:border-color .2s; user-select:none; flex-shrink:0; }
 .date-chip:hover{ border-color:var(--nero); }
 .date-chip-dot{ width:7px; height:7px; border-radius:50%; background:var(--maker); flex-shrink:0; }
-.system-bar{ display:flex; align-items:center; gap:8px; background:var(--bianco); border:1.5px solid var(--border); border-radius:10px; padding:9px 13px; }
-.sys-dot-wrap{ position:relative; width:10px; height:10px; flex-shrink:0; }
-.sys-dot{ width:10px; height:10px; border-radius:50%; background:var(--maker); }
-.sys-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--maker); animation:sysPulse 2s ease-out infinite; }
+.sys-mini{ display:flex; align-items:center; gap:6px; flex:1; min-width:0; justify-content:center; font-size:.72rem; font-weight:700; color:var(--maker); transition:color .3s; }
+.sys-mini span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sys-mini-dot{ position:relative; width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.sys-mini-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid currentColor; animation:sysPulse 2s ease-out infinite; }
 @keyframes sysPulse{ 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(2)} }
-.sys-label{ font-weight:700; font-size:.82rem; color:var(--maker); flex:1; }
-.sys-meta{ font-size:.7rem; color:var(--grigio); }
-.push-row{ width:100%; max-width:540px; padding:0 16px 6px; display:flex; justify-content:flex-end; }
-.push-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; color:var(--grigio); background:none; border:none; cursor:pointer; padding:0; transition:color .15s; }
-.push-btn:hover{ color:var(--nero); }
+
+/* ══ Pillola Home: punta a sinistra ("torna indietro"), tonda a destra — stesso
+   pattern della pillola Hub in home (due livelli sovrapposti, niente CSS border
+   che si taglierebbe sulla punta). Pillola Notifiche: stesse dimensioni del
+   date-chip (altezza 32px). ══ */
+.pill-row{ width:100%; max-width:540px; padding:0 16px 10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; }
+.pill-hub{ display:inline-flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--nero); cursor:pointer; text-decoration:none; border:none; border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
+.pill-hub svg{ width:12px; height:12px; flex-shrink:0; }
+.pill-notif{ display:inline-flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; height:32px; padding:0 14px; border-radius:999px; border:1.5px solid var(--athlete); background:var(--athlete); color:#fff; cursor:pointer; transition:background .2s,color .2s,border-color .2s; }
+.pill-notif.on{ background:var(--bianco); border-color:var(--border); color:var(--nero); }
 
 /* ══ CALENDAR ══ */
 .cal-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.4); z-index:200; display:none; align-items:flex-start; justify-content:center; padding-top:70px; }
@@ -96,8 +105,6 @@ body{
 
 /* ══ PAGE LAYOUT ══ */
 .page-content{ width:100%; max-width:540px; padding:0 16px; }
-.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:12px; }
-.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
 
 /* ══ HERO ══ */
 .hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; transition:border-color .3s; }
@@ -125,8 +132,7 @@ body{
 @keyframes spinCCW1{to{transform:rotate(-360deg)}}
 @keyframes a1DP{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
 .hero-text{ flex:1; min-width:0; }
-.agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
-.agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
+.agent-name-big{ font-size:1.1rem; font-weight:800; line-height:1.15; margin-bottom:5px; color:var(--athlete); transition:color .4s; }
 .agent-desc-big{ font-size:.71rem; color:var(--grigio); line-height:1.4; }
 .hero-meta{ display:flex; align-items:center; gap:7px; padding:0 16px 14px; flex-wrap:wrap; }
 .status-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:4px 10px; font-size:.67rem; font-weight:700; }
@@ -135,7 +141,7 @@ body{
 .badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
 .badge-sleep{ color:var(--grigio); border-color:var(--border); } .badge-sleep .badge-dot{ background:var(--grigio); }
 .badge-warn{ color:var(--life); border-color:var(--life-bg); background:var(--life-bg); } .badge-warn .badge-dot{ background:var(--life); }
-.type-tag-auto{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:4px 9px; }
+.type-tag-auto{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:999px; padding:4px 9px; }
 .last-run-lbl{ font-size:.65rem; color:var(--grigio); }
 
 /* ══ MBS BANNER ══ */
@@ -184,6 +190,10 @@ body{
 .file-name{ font-size:.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .file-sub{ font-size:.62rem; color:var(--grigio); margin-top:1px; }
 .file-arr{ font-size:.85rem; color:var(--grigio); flex-shrink:0; }
+.kpi-row{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+.kpi-row:last-child{ border-bottom:none; }
+.kpi-month{ font-size:.72rem; font-weight:700; flex-shrink:0; }
+.kpi-stats{ font-size:.64rem; color:var(--grigio); text-align:right; line-height:1.4; }
 
 /* ══ LAVORO ══ */
 .io-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
@@ -264,31 +274,31 @@ body{
         <g class="logo-linee" fill="var(--nero)"><rect x="34.04" y="446.1" width="116.55" height="7.14"/><rect x="436.27" y="446.1" width="116.18" height="7.14"/></g>
       </svg>
     </div>
+    <div class="sys-mini" id="sysMini">
+      <span class="sys-mini-dot"></span><span id="sysLabel">Caricamento...</span>
+    </div>
     <div class="date-chip" id="dateChip" onclick="openCal()">
       <span class="date-chip-dot"></span>
       <span id="dateChipText"></span>
     </div>
   </div>
-  <div class="system-bar">
-    <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
-    <div class="sys-meta" id="sysMeta"></div>
-  </div>
 </div>
-<div class="push-row">
-  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
+<div class="pill-row">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="../../page_home_v25.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a></div>
+  <button id="pushBtn" class="pill-notif" onclick="togglePushNotifications()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span id="pushBtnLabel">Attiva notifiche</span>
   </button>
 </div>
 
 <div class="page-content">
-  <a class="back-btn" href="../../page_home_v25.html">&#8592; Home</a>
-
   <div class="mbs-banner" id="mbsBanner">
     <span style="font-size:1.1rem;">&#9888;&#65039;</span>
     <div style="flex:1;"><span id="mbsBannerText"></span></div>
-    <a href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&asset_id=1110414672162254&platform=Instagram" target="_blank">Apri MBS &#8594;</a>
+    <a href="carica_mbs.html">Carica CSV &#8594;</a>
   </div>
 
   <div class="hero-card" id="heroCard">
@@ -302,9 +312,8 @@ body{
         </svg>
       </div></div>
       <div class="hero-text">
-        <div class="agent-id-lbl">Agente 1</div>
-        <div class="agent-name-big">Data Collector</div>
-        <div class="agent-desc-big">Sync Instagram + BPT Calendar, in automatico via GitHub Actions. Nessun intervento richiesto.</div>
+        <div class="agent-name-big" id="agentTitle">AGENTE 1 &#x2014; Data Collector</div>
+        <div class="agent-desc-big">Ogni mese sincronizza automaticamente i dati Instagram e il calendario tornei BPT, aggiorna lo Sheet performance e passa il testimone ad A2.</div>
       </div>
     </div>
     <div class="hero-meta">
@@ -318,7 +327,6 @@ body{
     <button class="tab-btn active" onclick="switchTab('panoramica',this)">Panoramica</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
     <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
-    <button class="tab-btn" onclick="switchTab('run',this)">Attività</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
@@ -333,14 +341,19 @@ body{
             <div class="btn-text"><div class="btn-title">Categorizza post</div><div class="btn-sub" id="catPendingSub">Caricamento...</div></div>
             <span class="btn-arr">&#8594;</span>
           </a>
-          <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank">
+          <a class="lg-btn" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30" target="_blank">
             <span class="btn-icon">&#128202;</span>
             <div class="btn-text"><div class="btn-title">Apri Google Sheet</div><div class="btn-sub">Instagram_Analytics_GDC</div></div>
             <span class="btn-arr">&#8594;</span>
           </a>
           <a class="lg-btn" href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&asset_id=1110414672162254&platform=Instagram" target="_blank">
             <span class="btn-icon">&#128193;</span>
-            <div class="btn-text"><div class="btn-title">Meta Business Suite</div><div class="btn-sub">Content Insights — export CSV repost per A1</div></div>
+            <div class="btn-text"><div class="btn-title">Apri MBS</div><div class="btn-sub">Content Insights — export CSV repost per A1</div></div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
+          <a class="lg-btn" href="carica_mbs.html">
+            <span class="btn-icon">&#11014;&#65039;</span>
+            <div class="btn-text"><div class="btn-title">Carica CSV</div><div class="btn-sub">Upload diretto del CSV MBS su Supabase Storage</div></div>
             <span class="btn-arr">&#8594;</span>
           </a>
           <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions/workflows/a1_monthly.yml" target="_blank">
@@ -353,7 +366,28 @@ body{
             <div class="btn-text"><div class="btn-title">GitHub Actions — MBS Watcher</div><div class="btn-sub">Log dei controlli automatici (2&#8211;10 del mese)</div></div>
             <span class="btn-arr">&#8594;</span>
           </a>
+          <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions/workflows/bpt_calendar.yml" target="_blank">
+            <span class="btn-icon">&#128197;</span>
+            <div class="btn-text"><div class="btn-title">GitHub Actions — BPT Calendar</div><div class="btn-sub">Storico run + avvio manuale (workflow_dispatch)</div></div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
         </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128202; Ultimo run completato</span></div>
+      <div class="sc-body">
+        <div class="stat-grid">
+          <div><div class="stat-num" id="statMese" style="color:var(--maker);">&#8212;</div><div class="stat-lbl">Mese</div></div>
+          <div><div class="stat-num" id="statPost">&#8212;</div><div class="stat-lbl">Post</div></div>
+          <div><div class="stat-num" id="statStories">&#8212;</div><div class="stat-lbl">Stories</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#8987; Attività recente (activity_log)</span></div>
+      <div class="sc-body" id="runList">
+        <div class="empty-note">Caricamento...</div>
       </div>
     </div>
     <div class="section-card">
@@ -389,12 +423,12 @@ body{
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#9881;&#65039; Cosa fa</span></div>
       <div class="sc-body">
-        <div class="work-step"><div class="work-num">1</div><div><div class="work-desc">Il cron GitHub Actions scatta il 2 del mese alle 06:00 UTC.</div><div class="work-sub">a1_monthly.yml</div></div></div>
-        <div class="work-step"><div class="work-num">2</div><div><div class="work-desc">Chiama Instagram Graph API e recupera post e reel originali del mese precedente.</div><div class="work-sub">IG User ID 17841400693489316</div></div></div>
-        <div class="work-step"><div class="work-num">3</div><div><div class="work-desc">Cerca su Drive il CSV MBS Content Insights (repost/menzioni). Se manca, la run prosegue comunque senza repost e attiva il flag mbs_missing.</div></div></div>
-        <div class="work-step"><div class="work-num">4</div><div><div class="work-desc">Aggiorna il Google Sheet con la riga mensile: reach, like, commenti, saves, topic.</div></div></div>
-        <div class="work-step"><div class="work-num">5</div><div><div class="work-desc">Aggiorna Supabase (a1=done, a2=ready), scrive su activity_log e invia push a tutti i dispositivi registrati.</div></div></div>
-        <div class="work-step"><div class="work-num">6</div><div><div class="work-desc">Se il CSV MBS mancava, a1_mbs_watcher.py lo controlla ogni 30 min dal 2 al 10 del mese e ritriggera A1 Monthly appena compare su Drive.</div><div class="work-sub">a1_mbs_watcher.py — nessun intervento manuale richiesto</div></div></div>
+        <div class="work-step"><div class="work-num">1</div><div><div class="work-desc">Il cron GitHub Actions scatta il 2 del mese alle 06:00 UTC, senza bisogno di avviarlo a mano.</div><div class="work-sub">a1_monthly.yml</div></div></div>
+        <div class="work-step"><div class="work-num">2</div><div><div class="work-desc">Chiama Instagram Graph API e recupera tutti i post e reel pubblicati nel mese appena chiuso (solo i contenuti originali, non i repost di terzi).</div><div class="work-sub">IG User ID 17841400693489316</div></div></div>
+        <div class="work-step"><div class="work-num">3</div><div><div class="work-desc">Cerca nel bucket Supabase Storage (mbs-csv) il CSV MBS Content Insights con i dati di repost/menzioni dello stesso mese. Se manca, la run prosegue comunque senza quei dati e attiva il flag mbs_missing (vedi banner in Panoramica).</div></div></div>
+        <div class="work-step"><div class="work-num">4</div><div><div class="work-desc">Calcola le metriche per ogni post (reach, like, commenti, salvataggi, tasso di viralità) e le aggrega in una riga di KPI medi mensili, poi scrive i dati su due destinazioni: il Google Sheet storico (riga per riga, post per post) e la tabella Supabase kpi_mensili (riga aggregata del mese, quella mostrata nel tab Documenti).</div></div></div>
+        <div class="work-step"><div class="work-num">5</div><div><div class="work-desc">Aggiorna lo stato su Supabase (a1=done, a2=ready — è questo il segnale che sblocca A2), scrive su activity_log e invia una notifica push a tutti i dispositivi registrati.</div></div></div>
+        <div class="work-step"><div class="work-num">6</div><div><div class="work-desc">Se il CSV MBS mancava, a1_mbs_watcher.py lo ricontrolla ogni 30 min dal 2 al 10 del mese e ritriggera A1 Monthly in automatico appena il file compare nel bucket Storage — nessuna run manuale necessaria.</div><div class="work-sub">a1_mbs_watcher.py</div></div></div>
       </div>
     </div>
     <div class="section-card">
@@ -410,15 +444,50 @@ body{
   <div id="panel-file" class="panel">
     <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128202; Google Sheet — Output A1</span>
-        <a href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" class="sc-link" target="_blank">Apri &#8594;</a>
+        <span class="sc-label">&#128202; KPI mensili — dato reale (kpi_mensili)</span>
+        <a href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" class="sc-link" target="_blank">Apri tabella &#8594;</a>
       </div>
+      <div class="sc-body" id="kpiList">
+        <div class="empty-note">Caricamento...</div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128202; Google Sheet — Output A1</span></div>
       <div class="sc-body">
         <a class="file-item" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30" target="_blank">
           <div class="file-icon fi-sheet">&#128202;</div>
           <div class="file-info"><div class="file-name">Instagram_Analytics_GDC</div><div class="file-sub" id="sheetSub">Foglio Google</div></div>
           <span class="file-arr">&#8594;</span>
         </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CONFIG -->
+  <div id="panel-config" class="panel">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128273; Configurazione</span></div>
+      <div class="sc-body">
+        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9881; Automatico &#8212; GitHub Actions</span></div>
+        <div class="config-row"><span class="config-key">A1 Monthly</span><span class="config-val">0 6 2 * * (2 del mese, 06:00 UTC)</span></div>
+        <div class="config-row"><span class="config-key">BPT Calendar</span><span class="config-val">0 6 2 * * (2 del mese, 06:00 UTC)</span></div>
+        <div class="config-row"><span class="config-key">MBS Watcher</span><span class="config-val">ogni 30' &#8212; 2&#8211;10 del mese</span></div>
+        <div class="config-row"><span class="config-key">Stories Daily</span><span class="config-val">22:50 UTC &#8212; ogni giorno</span></div>
+        <div class="config-row"><span class="config-key">Token Refresh</span><span class="config-val">ogni 50 giorni</span></div>
+        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM</span></div>
+        <div class="config-row"><span class="config-key">Sheet ID</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30</span></div>
+        <div class="config-row"><span class="config-key">IG User ID</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">17841400693489316</span></div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128994; Secrets richiesti</span></div>
+      <div class="sc-body">
+        <div style="font-size:.65rem;color:var(--grigio);margin-bottom:8px;">Elenco documentale — non verificabile dal browser, gestiti su GitHub Actions.</div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">IG_ACCESS_TOKEN / IG_USER_ID</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">GOOGLE_CREDENTIALS / DRIVE_FOLDER_A1 / DRIVE_FOLDER_A3</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">SUPABASE_URL / SUPABASE_SERVICE_KEY</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">VAPID_PRIVATE_KEY / VAPID_EMAIL</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">GMAIL_CLIENT_ID / SECRET / REFRESH_TOKEN</span></div>
       </div>
     </div>
     <div class="section-card">
@@ -441,7 +510,7 @@ body{
         </a>
         <a class="file-item" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/blob/main/scripts/bpt_calendar.py" target="_blank">
           <div class="file-icon">&#128196;</div>
-          <div class="file-info"><div class="file-name">bpt_calendar.py</div><div class="file-sub">Calendario impegni tornei · stesso workflow di A1 Monthly</div></div>
+          <div class="file-info"><div class="file-name">bpt_calendar.py</div><div class="file-sub">Calendario impegni tornei · workflow proprio, stesso orario di A1 Monthly</div></div>
           <span class="file-arr">&#8594;</span>
         </a>
         <a class="file-item" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/blob/main/scripts/ig_token_refresh.py" target="_blank">
@@ -449,54 +518,6 @@ body{
           <div class="file-info"><div class="file-name">ig_token_refresh.py</div><div class="file-sub">Rinnovo automatico token Instagram · ogni 50gg</div></div>
           <span class="file-arr">&#8594;</span>
         </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: ATTIVITÀ -->
-  <div id="panel-run" class="panel">
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#8987; Attività recente (activity_log)</span></div>
-      <div class="sc-body" id="runList">
-        <div class="empty-note">Caricamento...</div>
-      </div>
-    </div>
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128202; Ultimo run completato</span></div>
-      <div class="sc-body">
-        <div class="stat-grid">
-          <div><div class="stat-num" id="statMese" style="color:var(--maker);">&#8212;</div><div class="stat-lbl">Mese</div></div>
-          <div><div class="stat-num" id="statPost">&#8212;</div><div class="stat-lbl">Post</div></div>
-          <div><div class="stat-num" id="statStories">&#8212;</div><div class="stat-lbl">Stories</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: CONFIG -->
-  <div id="panel-config" class="panel">
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128273; Configurazione</span></div>
-      <div class="sc-body">
-        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9881; Automatico &#8212; GitHub Actions</span></div>
-        <div class="config-row"><span class="config-key">A1 Monthly</span><span class="config-val">0 6 2 * * (2 del mese, 06:00 UTC)</span></div>
-        <div class="config-row"><span class="config-key">MBS Watcher</span><span class="config-val">ogni 30' &#8212; 2&#8211;10 del mese</span></div>
-        <div class="config-row"><span class="config-key">Stories Daily</span><span class="config-val">22:50 UTC &#8212; ogni giorno</span></div>
-        <div class="config-row"><span class="config-key">Token Refresh</span><span class="config-val">ogni 50 giorni</span></div>
-        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM</span></div>
-        <div class="config-row"><span class="config-key">Sheet ID</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30</span></div>
-        <div class="config-row"><span class="config-key">IG User ID</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">17841400693489316</span></div>
-      </div>
-    </div>
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128994; Secrets richiesti</span></div>
-      <div class="sc-body">
-        <div style="font-size:.65rem;color:var(--grigio);margin-bottom:8px;">Elenco documentale — non verificabile dal browser, gestiti su GitHub Actions.</div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">IG_ACCESS_TOKEN / IG_USER_ID</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">GOOGLE_CREDENTIALS / DRIVE_FOLDER_A1</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">SUPABASE_URL / SUPABASE_SERVICE_KEY</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">VAPID_PRIVATE_KEY / VAPID_EMAIL</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-ok"></span><span style="flex:1;">GMAIL_CLIENT_ID / SECRET / REFRESH_TOKEN</span></div>
       </div>
     </div>
     <div class="section-card">
@@ -559,10 +580,12 @@ async function getExistingPushSubscription(){
   return await reg.pushManager.getSubscription();
 }
 async function updatePushButtonUI(){
-  const label=document.getElementById('pushBtnLabel'); if(!label) return;
+  const label=document.getElementById('pushBtnLabel'); const btn=document.getElementById('pushBtn');
+  if(!label) return;
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
   const sub=await getExistingPushSubscription();
   label.textContent=sub?'Notifiche attive':'Attiva notifiche';
+  if(btn) btn.classList.toggle('on',!!sub);
 }
 let pushToggleInProgress=false;
 async function togglePushNotifications(){
@@ -581,7 +604,7 @@ async function togglePushNotifications(){
     const existing=await getExistingPushSubscription();
     if(existing){
       try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
-      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; if(btn) btn.classList.remove('on'); return;
     }
     try{
       const permission=await Notification.requestPermission();
@@ -591,11 +614,11 @@ async function togglePushNotifications(){
       const subJson=sub.toJSON();
       await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
-      if(label) label.textContent='Notifiche attive';
+      if(label) label.textContent='Notifiche attive'; if(btn) btn.classList.add('on');
     }catch(e){
       console.error('Errore attivazione notifiche:',e);
       const realSub=await getExistingPushSubscription();
-      if(realSub){ if(label) label.textContent='Notifiche attive'; }
+      if(realSub){ if(label) label.textContent='Notifiche attive'; if(btn) btn.classList.add('on'); }
       else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
     }
   } finally {
@@ -681,15 +704,16 @@ async function loadA1(){
     const a1=rows.find(r=>r.agent_id==='a1');
     const bpt=rows.find(r=>r.agent_id==='bpt_calendar');
 
-    document.getElementById('sysLabel').textContent='Connesso a Supabase';
-    document.getElementById('sysLabel').style.color='var(--maker)';
-    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
+    document.getElementById('sysMini').style.color='var(--maker)';
+    document.getElementById('sysMini').title='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 
-    // Badge + logo stato
+    // Badge + logo stato + titolo (colore coerente con lo stato)
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
     const heroCard=document.getElementById('heroCard');
+    const title=document.getElementById('agentTitle');
     const st=a1?a1.stato:null;
     const age=a1&&a1.updated_at?Date.now()-new Date(a1.updated_at).getTime():Infinity;
     const THREE_DAYS=3*24*60*60*1000;
@@ -697,21 +721,25 @@ async function loadA1(){
       badge.className='status-badge badge-warn'; lbl.textContent='MBS mancante — '+(a1.mbs_missing_mese||'');
       if(logoBox) logoBox.className='logo-box-hero logo-warn';
       if(logoWrap) logoWrap.className='logo-wrap s-queued';
+      if(title) title.style.color='var(--life)';
       heroCard.classList.add('st-warn');
       document.getElementById('mbsBanner').classList.add('show');
-      document.getElementById('mbsBannerText').textContent='Il file MBS Content Insights per '+(a1.mbs_missing_mese||'questo mese')+' non è ancora su Drive. a1_mbs_watcher.py lo rileverà da solo (giorno 2–10, ogni 30 min) — nessuna azione richiesta a meno che tu non voglia caricarlo prima.';
+      document.getElementById('mbsBannerText').textContent='Il file MBS Content Insights per '+(a1.mbs_missing_mese||'questo mese')+' non è ancora stato caricato. a1_mbs_watcher.py lo rileverà da solo ogni 30 min (giorno 2–10) una volta su Supabase Storage, oppure caricalo subito tu.';
     } else if(st==='working'){
       badge.className='status-badge badge-active'; lbl.textContent='In corso';
       if(logoBox) logoBox.className='logo-box-hero logo-active';
       if(logoWrap) logoWrap.className='logo-wrap s-active';
+      if(title) title.style.color='var(--sabbia-dk)';
     } else if(st==='done'&&age<THREE_DAYS){
       badge.className='status-badge badge-done'; lbl.textContent='Completato di recente';
       if(logoBox) logoBox.className='logo-box-hero logo-done';
       if(logoWrap) logoWrap.className='logo-wrap s-done';
+      if(title) title.style.color='var(--maker)';
     } else {
       badge.className='status-badge badge-sleep'; lbl.textContent='Inattivo — prossimo run automatico';
       if(logoBox) logoBox.className='logo-box-hero logo-sleep';
       if(logoWrap) logoWrap.className='logo-wrap s-sleep';
+      if(title) title.style.color='var(--athlete)';
     }
     document.getElementById('lastRunLbl').textContent=a1&&a1.updated_at?('Ultimo aggiornamento: '+timeAgo(a1.updated_at)):'';
 
@@ -735,7 +763,8 @@ async function loadA1(){
   }catch(e){
     console.error('Errore caricamento A1:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
-    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('sysMini').style.color='var(--grigio)';
+    document.getElementById('sysMini').title='';
     document.getElementById('statusBadgeLbl').textContent='Non disponibile';
   }
 }
@@ -781,12 +810,30 @@ async function loadActivity(){
   }
 }
 
+async function loadKpi(){
+  const box=document.getElementById('kpiList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/kpi_mensili?select=mese,reach_medio_post,like_medio,commenti_medi,salvataggi_medi,tasso_viralita_medio&order=anno.desc,mese_num.desc&limit=6');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){ box.innerHTML='<div class="empty-note">Nessun KPI mensile calcolato ancora.</div>'; return; }
+    box.innerHTML=rows.map(r=>
+      '<div class="kpi-row"><span class="kpi-month">'+r.mese+'</span><span class="kpi-stats">Reach medio '+(r.reach_medio_post!=null?Math.round(r.reach_medio_post).toLocaleString('it-IT'):'—')+
+      ' &middot; Like '+(r.like_medio!=null?Math.round(r.like_medio):'—')+' &middot; Comm. '+(r.commenti_medi!=null?Math.round(r.commenti_medi):'—')+
+      ' &middot; Save '+(r.salvataggi_medi!=null?Math.round(r.salvataggi_medi):'—')+' &middot; Viralità '+(r.tasso_viralita_medio!=null?r.tasso_viralita_medio+'%':'—')+'</span></div>'
+    ).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare i KPI mensili al momento.</div>';
+  }
+}
+
 if(!gdcToken()){
   window.location.href='../../../page_login_v6.html';
 } else {
   loadA1();
   loadActivity();
   loadCategorizePending();
+  loadKpi();
 }
 </script>
 </body>
