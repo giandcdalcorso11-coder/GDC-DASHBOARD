@@ -75,6 +75,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .cal-event-text{font-weight:600;color:var(--nero);font-size:.74rem;}
 .cal-event-agent{font-size:.64rem;color:var(--grigio);}
 .list-wrap{width:100%;max-width:540px;padding:0 16px;}
+/* Stacco visivo Team Social (A1-A4) / Team Commerciale (A5-A7): cornice
+   neutra (nessun colore nuovo, per non competere con i colori di stato
+   delle card) concentrica alle card, con l'etichetta che taglia il bordo
+   in linea con il quadrato del logo — 16 (padding banda) + 2 (bordo
+   card) + 8 (padding logo-col) = 26px. */
+.team-band{position:relative;border:1.5px solid var(--border);border-radius:20px;padding:16px;margin-bottom:28px;}
+.team-band-lbl{position:absolute;top:-8px;left:26px;background:var(--carta);padding:0 8px;font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);line-height:16px;}
+.team-band .acard:last-child{margin-bottom:0;}
 .acard{position:relative;z-index:1;background:var(--bianco);border:2px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;transition:border-color .4s;}
 .acard-body{display:flex;}
 .logo-col{flex-shrink:0;width:166px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;transition:opacity .15s;text-decoration:none;}
@@ -353,6 +361,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <symbol id="ic-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></symbol>
     <symbol id="ic-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></symbol>
   </defs></svg>
+  <div class="team-band">
+  <span class="team-band-lbl">Team Social</span>
   <!-- A1 -->
   <div class="acard acard-logo-round" id="card-a1"><div class="acard-body">
     <a class="logo-col" href="agenti/a1-analytics/page_agent_a1_v1.html" title="Vai alla pagina A1">
@@ -455,6 +465,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="stato-row" id="stato-row-a4"></div>
     </div>
   </div></div>
+  </div>
+  <div class="team-band">
+  <span class="team-band-lbl">Team Commerciale</span>
   <!-- A5 -->
   <div class="acard" id="card-a5"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a5')" style="cursor:pointer">
@@ -545,6 +558,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="stato-row" id="stato-row-a7"></div>
     </div>
   </div></div>
+  </div>
 </div>
 <div class="legend">
   <div class="leg"><div class="legdot" style="background:#C7DFCF;border-color:#4A7C59"></div>Completato</div>
