@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 28
-**Ultimo aggiornamento:** 2026-11-16 15:00
+**Versione:** 29
+**Ultimo aggiornamento:** 2026-11-16 18:22
 
 ## Vision
 
@@ -258,6 +258,32 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 18:22] Pagina Agente A1 ridisegnata — pillole, titolo unico, tab ristrutturate, render live dei KPI
+
+**Riepilogo:** Dopo la home, stessa passata di pulizia/redesign (mockup-first, poi codice reale) sulla pagina del singolo agente A1 — prima pagina agente toccata in questo giro, da usare come riferimento per A2/A3/A4 in seguito.
+
+**Cosa è stato fatto:**
+1. **Pillole header**: il pulsante "← Home" perde la freccetta e diventa a punta a sinistra (stesso pattern della pillola Hub in home); "Attiva notifiche" diventa una vera pillola, stessa altezza/dimensioni della pillola calendario (prima era testo semplice).
+2. **Titolo hero unificato**: da etichetta piccola + sottotitolo grande ("Agente 1" / "Data Collector") a un unico titolo ("AGENTE 1 — Data Collector"), colore dinamico coerente con lo stato corrente (verde=completato, rosso=MBS mancante, oro=in corso, blu=inattivo) — stessa logica della home. Descrizione sotto il titolo riscritta per essere informativa (cosa fa, dove va l'output) invece del generico "nessun intervento richiesto".
+3. Badge "⚙ Automatico" reso neutro (grigio) — il verde stonava, non comunicava uno stato.
+4. **Riferimenti a Drive ormai sbagliati corretti**: banner e step "Cosa fa" parlavano ancora di cercare il CSV MBS "su Drive" — ora dicono correttamente "bucket Supabase Storage" (coerente con la migrazione del CSV MBS fatta in sessione precedente). Aggiunto pulsante "Carica CSV" nelle Azioni (mancava su questa pagina, c'era solo in home) e corretto il link "Apri Google Sheet" che puntava alla cartella Drive invece che al foglio.
+5. **Pulsante BPT Calendar mancante**: Gianluca l'ha notato in revisione — bpt_calendar.py ha un workflow GitHub proprio (`bpt_calendar.yml`, stesso cron di A1 Monthly ma non lo stesso workflow), non c'era alcun pulsante per vederlo/avviarlo. Aggiunto in Azioni, più la riga cron e il secret `DRIVE_FOLDER_A3` in Config.
+6. **Tab ridotte da 5 a 4** (proposta di Gianluca, io ho proposto la disposizione): Panoramica assorbe Attività (Azioni + stat ultimo run + log activity_log + riepilogo BPT in un'unica tab); Lavoro invariata nella struttura ma con gli step "Cosa fa" più dettagliati; Documenti non mostra più solo link statici ma il **render live degli ultimi KPI mensili** dalla tabella Supabase `kpi_mensili` (reach/like/commenti/salvataggi/viralità per mese), con link diretto alla tabella su Supabase, più il Google Sheet; Config invariata nella sostanza ma guadagna la sezione Script (spostata da Documenti, più coerente lì) e la riga BPT Calendar.
+
+**Decisioni prese:**
+- Contesto: Gianluca ha chiesto se serva ancora il "doppio binario" Google Sheet + Supabase per i dati di A1, visto che ora Documenti mostra dati Supabase.
+- Decisione: sì, resta necessario, ma non è un doppio binario ridondante — sono tre pezzi con tre scopi diversi. Google Sheet = unica fonte dati di A2 (legge 5 sheet dettagliati che su Supabase non esistono in quel formato, confermato leggendo `docs/prompts/Agente2_auto_prompt_v20.md`). Supabase `posts` = serve alla categorizzazione e al gate di A2 (il Sheet non è interrogabile comodamente da un gate automatico o dal browser). Supabase `kpi_mensili` = prima di questa sessione non aveva alcun lettore (solo scritta da a1_monthly.py, mai letta da nessuno) — il render in Documenti le dà il suo primo vero scopo: è l'unico modo per mostrare dati KPI nella webapp senza esporre credenziali Google al browser.
+- Alternative scartate: rimuovere la scrittura di `kpi_mensili` da a1_monthly.py in quanto codice senza scopo — scartata perché il render in Documenti le dà ora un consumo reale.
+- Da rivedere se: in futuro si decidesse di togliere il render KPI da Documenti, la scrittura di `kpi_mensili` tornerebbe un sync morto e andrebbe tolta.
+
+**File consegnati/modificati:** `app/agenti/a1-analytics/page_agent_a1_v1.html` (riscritta: CSS/HTML del redesign + nuova funzione `loadKpi()` con fetch reale da Supabase, mantenuto invariato il guard di autenticazione e le fetch reali esistenti — il giro di mockup su Artifact/file inviato in chat usava dati finti e nessun redirect, mai arrivato in questa forma al repo).
+
+**Verifiche fatte:** sintassi JS (`node --check` sullo script estratto), controllo manuale che tutti i link relativi nuovi/esistenti (`carica_mbs.html`, `categorizza.html`, `../../page_home_v25.html`, `../../../page_login_v6.html`, `../../../sw.js`) risolvano a file reali.
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step — stesso filone di pulizia/redesign dello Step 6, ora esteso dalla home alle pagine dei singoli agenti (A1 prima, A2/A3/A4 da fare con lo stesso approccio).
+
+---
 
 ### [2026-11-16 15:00] Messaggio precompilato del ciclo editoriale aggiornato — tolto un riferimento ormai superato alla migrazione storica
 
