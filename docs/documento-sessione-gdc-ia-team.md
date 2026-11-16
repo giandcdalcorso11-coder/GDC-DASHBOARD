@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 29
-**Ultimo aggiornamento:** 2026-11-16 18:22
+**Versione:** 30
+**Ultimo aggiornamento:** 2026-11-16 19:36
 
 ## Vision
 
@@ -258,6 +258,28 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 19:36] Pulsante Categorizza nella scheda A1 (home) + gate su "Apri sessione" del ciclo editoriale
+
+**Riepilogo:** Chiusa la richiesta di portare la categorizzazione post anche in home — non come pillola header (prima proposta, scartata da Gianluca) ma come terzo pulsante nella scheda A1 — e aggiunto un gate di cliccabilità sul pulsante "Apri sessione" del ciclo editoriale.
+
+**Cosa è stato fatto:**
+1. **Pulsante "Categorizza" nella scheda A1**: la griglia Azioni di A1 era già definita a 3 colonne nel CSS (`.actions`), solo forzata a 2 da uno style inline aggiunto nel redesign precedente — tolto l'override, aggiunto il terzo pulsante senza toccare A2-A4 (che usano la stessa classe CSS). Rosso (`lg-primary`) con badge numerico in alto a destra quando ci sono post da categorizzare, **verde** (`lg-done`, non neutro/grigio come nella prima proposta — richiesto da Gianluca) quando il conteggio è zero. Stessa query già usata in `categorizza.html`/pagina A1 (`categoria_primaria is null`), un'unica fetch condivisa anche con il gate sotto.
+2. **Gate sul pulsante "Apri sessione"** (ciclo editoriale): discussa con Gianluca la sua proposta di bloccarlo finché non sono pronti MBS + categorie + dati di A1 Monthly. Ho controllato il prompt di A2 (v20) prima di rispondere: A2 è scritto apposta per gestire l'assenza di repost come caso normale (badge "n.d." su reach/ER, sezione "Repost — Metriche Volume" solo se presenti), non un dato bloccante — l'MBS è un arricchimento facoltativo, non un prerequisito. Proposto di bloccare solo su **A1 completato** (stato `done` su `agent_states`) **e categorizzazione completa** (conteggio pendenti a zero), escludendo l'MBS. Gianluca ha confermato. Il pulsante parte disabilitato di default (stesso pattern dei pulsanti "Vedi report/piano/brief") finché entrambe le condizioni non sono confermate da Supabase.
+
+**Decisioni prese:**
+- Contesto: dove mettere il pulsante di categorizzazione in home — la prima proposta (pillola nell'header, accanto a Hub/Notifiche) è stata scartata da Gianluca a favore dell'inserimento diretto nella scheda A1.
+- Decisione: terzo pulsante nella griglia Azioni di A1, non una pillola separata in header.
+- Decisione: il gate su "Apri sessione" copre A1-completato e categorizzazione, non l'MBS — motivato dal comportamento reale di A2 verificato nel suo prompt, non da preferenza estetica.
+- Alternative scartate: pillola header con Notifiche+Categorizza affiancate (primo mockup, mostrato ma non approvato); includere l'MBS nel gate del ciclo editoriale (proposta iniziale di Gianluca, rivista dopo la verifica sul prompt A2).
+
+**File consegnati/modificati:** `app/page_home_v25.html` (modificato: terzo pulsante Categorizza in `#actions-a1`, badge `.cat-count`, funzione `loadCategorizePending()`, gate `updateCicloGate()` agganciato sia a `loadStates()` — stato A1 — sia alla nuova fetch del conteggio pendenti, pulsante `#cicloOpenBtn` disabilitato di default).
+
+**Verifiche fatte:** sintassi JS (`node --check` sullo script estratto), controllo che `agenti/a1-analytics/categorizza.html` risolva correttamente dal path della home.
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step — stesso filone di pulizia/redesign dello Step 6, qui tornato sulla home dopo il giro sulla pagina A1.
+
+---
 
 ### [2026-11-16 18:22] Pagina Agente A1 ridisegnata — pillole, titolo unico, tab ristrutturate, render live dei KPI
 
