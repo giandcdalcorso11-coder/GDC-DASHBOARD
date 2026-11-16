@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 25
-**Ultimo aggiornamento:** 2026-11-16 12:00
+**Versione:** 26
+**Ultimo aggiornamento:** 2026-11-16 13:30
 
 ## Vision
 
@@ -258,6 +258,34 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 13:30] a1_monthly.py e a1_mbs_watcher.py aggiornati — MBS legge da Supabase Storage, non più da Drive
+
+**Riepilogo:** Chiuso il cerchio aperto ieri con `carica_mbs.html`: `a1_monthly.py` e `a1_mbs_watcher.py` ora leggono il CSV repost MBS dal bucket Supabase Storage `mbs-csv` invece che dalla cartella Drive "Archivio docs MBS". Non ancora verificato con un run reale con un file vero caricato — vedi sotto.
+
+**Cosa è stato fatto:**
+- `scripts/a1_monthly.py`: rimossa `find_mbs_csv()` (ricerca su Drive per pattern di date nel nome, fragile — storicamente già causa di un bug quando l'ID Meta nel nome file è cambiato tra giugno e luglio 2026). Nuova `find_mbs_csv_path(supabase)`: confronto esatto su `{ANNO}-{MESE_NUM:02d}.csv` nella lista del bucket — più semplice e robusto perché ora il nome del file lo decidiamo noi al momento dell'upload, non più l'export di Meta. `fetch_mbs_reposts()` non prende più `drive_service` come parametro; scarica il CSV via `supabase.storage.from_('mbs-csv').download(path)` invece che via Drive API. Aggiornati i testi di email/push/activity_log sul file mancante: linkano ora a `carica_mbs.html` invece che alla cartella Drive.
+- `scripts/a1_mbs_watcher.py`: stessa sostituzione (Drive → Storage) per il controllo periodico che decide se ritriggerare A1 Monthly. Rimossa `get_drive_service()` e l'intera dipendenza da `google-auth`/`googleapiclient` in questo script — non gli serve più nulla di Google, solo Supabase + GitHub API.
+- `.github/workflows/a1_mbs_watcher.yml`: rimosso il secret `GOOGLE_CREDENTIALS` dall'env dello step (non più letto dallo script).
+- Verificato: `python3 -m py_compile` su entrambi gli script; nessun riferimento residuo a `MBS_FOLDER_ID` o a `get_drive_service` nello watcher; confermato via query diretta che il bucket `mbs-csv` e la policy RLS creati ieri sono ancora al loro posto.
+
+**Decisioni prese:**
+- Contesto: come testare il nuovo codice, dato che questa sessione non ha le credenziali reali (service_role key, token Instagram) per lanciare `a1_monthly.py` in locale, né un modo per caricare io stesso un CSV di prova nel bucket (serve una sessione webapp autenticata da browser, non disponibile qui).
+  Decisione: non lanciare un run reale di `a1_monthly.yml` senza coordinarmi prima con Gianluca — lo farebbe comunque con il bucket vuoto (nessun file ancora caricato da nessuno in `mbs-csv`), quindi manderebbe una email/push reale "MBS mancante" che rischia di confondere, dato che il file su Drive per il mese corrente esiste già (il run del 16/11 è già andato a buon fine con il vecchio codice, prima di questa modifica).
+  Alternative scartate: testare caricando un file fittizio via SQL direttamente nella tabella `storage.objects` — scartata, creerebbe una riga senza il contenuto reale nel backend di storage, stato inconsistente.
+- Contesto: se mantenere un fallback che controlla ANCHE Drive, per transizione morbida, o tagliare netto su Supabase Storage.
+  Decisione: taglio netto, Drive non viene più controllato per MBS — Gianluca aveva chiesto esplicitamente "dato che ora non usiamo più il drive" il 15/11, quindi un fallback silenzioso avrebbe contraddetto l'intenzione.
+  Da rivedere se: il primo run reale con un file vero caricato da webapp dovesse fallire per un motivo imprevisto nell'API storage3/supabase-py (nessuna verifica diretta possibile in questa sessione, solo lettura della documentazione del pacchetto).
+
+**File consegnati/modificati:**
+- `scripts/a1_monthly.py` (modificato: `find_mbs_csv_path()`, `fetch_mbs_reposts()`, link email/push)
+- `scripts/a1_mbs_watcher.py` (modificato: `find_mbs_csv_path()`, rimossa dipendenza Google Drive)
+- `.github/workflows/a1_mbs_watcher.yml` (modificato: rimosso secret `GOOGLE_CREDENTIALS`)
+- `docs/documento-sessione-gdc-ia-team.md`
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step; chiude il lavoro "MBS senza Drive" iniziato il 15/11 nello Step 6. **Resta da fare per chiudere del tutto**: una verifica con un run reale — Gianluca carica un CSV vero (o di prova) via `carica_mbs.html`, poi si lancia A1 Monthly e si controllano i log, stesso principio già seguito per ogni altra automazione di questo progetto (costruire, poi verificare con un caso vero prima di fidarsene).
+
+---
 
 ### [2026-11-16 12:00] Step 6 anticipato — redesign home page (pillole, ciclo editoriale, card A1-A4) + upload MBS senza Drive
 

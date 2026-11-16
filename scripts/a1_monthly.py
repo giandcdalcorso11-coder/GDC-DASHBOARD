@@ -4,7 +4,9 @@ Ogni 2° del mese alle 08:00 ora italiana.
 
 Flusso:
 1. Instagram Graph API → metriche post + reel del mese precedente (originali)
-2. CSV Meta Business Suite (Drive "Archivio docs MBS") → repost/menzioni del mese precedente
+2. CSV Meta Business Suite (Supabase Storage, bucket mbs-csv — caricato da
+   Gianluca via webapp, app/agenti/a1-analytics/carica_mbs.html) → repost/
+   menzioni del mese precedente
 3. Compila Instagram_Analytics_GDC.xlsx (5 sheet) — inclusa la precompilazione
    categorie + episodio della serie "Capiamo la Sabbia" (prompt v4, sez. 6.0)
 4. Carica su Google Drive (cartella A1.2)
@@ -340,10 +342,13 @@ def supabase_set_mbs_flag(missing, mese=None):
     }).eq("agent_id", "a1").execute()
 
 
-MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS" — struttura flat
-# NB (2/8/2026): rimosso MBS_FILE_SUFFIX hardcoded (ID Meta non stabile,
-# vedi nota in find_mbs_csv). Il riconoscimento ora usa solo il pattern
-# delle date nel nome + estensione .csv.
+MBS_BUCKET = "mbs-csv"  # Supabase Storage — caricato dalla webapp (carica_mbs.html)
+# NB (16/11/2026): prima si leggeva da Drive "Archivio docs MBS", con un
+# riconoscimento a pattern sulle date nel nome perche' il nome del file lo
+# decideva l'export di Meta (vedi cronologia sotto in git). Da quando il
+# caricamento passa dalla webapp invece che da Drive, il nome lo decidiamo
+# noi al momento dell'upload ("ANNO-MM.csv") — il controllo e' quindi un
+# confronto esatto, non piu' un pattern match.
 
 # Mappa "Tipo di post" (etichette MBS) -> valori media_type stile API,
 # cosi' compile_sheet_post puo' riusare media_type_to_gdc() senza differenze
@@ -356,76 +361,50 @@ MBS_TIPO_MAP = {
 }
 
 
-def find_mbs_csv(drive_service):
+def find_mbs_csv_path(supabase):
     """
-    Cerca in 'Archivio docs MBS' il CSV Content/Post del mese target.
-    Riconosce il file dalle date embedded nel nome
-    (es. Jul-01-2026_Jul-31-2026_977239325349001.csv) — non serve
-    rinominare il file caricato. Se piu' file corrispondono allo stesso
-    mese, usa quello caricato piu' di recente (vedi step 20, 3.7).
-
-    NOTA (2/8/2026): fino a giugno il nome finiva sempre con lo stesso
-    ID Meta Business Suite (account/pagina), hardcoded come
-    MBS_FILE_SUFFIX. A luglio quell'ID e' cambiato lato Meta
-    (3909528329355109 -> 977239325349001) e lo script ha smesso di
-    trovare il file — causa del mancato rilevamento del CSV di Luglio
-    2026, nonostante cartella/permessi/mimeType tutti corretti (vedi
-    debug del 2/8/2026). L'ID Meta non e' garantito stabile nel tempo,
-    quindi ora il riconoscimento si basa solo sul pattern delle date
-    nel nome + estensione .csv, senza piu' dipendere da quel numero.
+    Verifica se il CSV MBS del mese target e' su Supabase Storage
+    (bucket mbs-csv). Ritorna il path ('ANNO-MM.csv') se esiste, None
+    altrimenti — non bloccante, vedi fetch_mbs_reposts.
     """
-    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
-    results = drive_service.files().list(
-        q=query, fields="files(id, name, createdTime, mimeType)",
-        supportsAllDrives=True, includeItemsFromAllDrives=True
-    ).execute()
-
-    candidates = []
-    for f in results.get("files", []):
-        name = f["name"]
-        if not name.lower().endswith(".csv"):
-            continue
-        m = re.match(r"^([A-Za-z]{3})-(\d{2})-(\d{4})_", name)
-        if not m:
-            continue
-        try:
-            file_start = datetime.strptime(f"{m.group(1)} {m.group(3)}", "%b %Y").date()
-        except ValueError:
-            continue
-        if file_start.year == ANNO and file_start.month == MESE_NUM:
-            candidates.append(f)
-
-    if not candidates:
+    path = f"{ANNO}-{MESE_NUM:02d}.csv"
+    try:
+        files = supabase.storage.from_(MBS_BUCKET).list()
+    except Exception as e:
+        print(f"    ⚠ Errore lettura bucket Storage '{MBS_BUCKET}': {e}")
         return None
+    names = {f.get("name") for f in files}
+    return path if path in names else None
 
-    candidates.sort(key=lambda f: f.get("createdTime", ""), reverse=True)
-    return candidates[0]["id"]
 
-
-def fetch_mbs_reposts(drive_service):
+def fetch_mbs_reposts():
     """
-    Legge il CSV Content/Post MBS del mese target, tiene solo le righe
-    con account diverso dal proprio (repost/menzioni — le righe del
-    proprio account sono gia' coperte dall'API) e le converte nello
-    stesso formato usato per i post originali (vedi step 20, 4.2).
+    Legge il CSV Content/Post MBS del mese target da Supabase Storage
+    (bucket mbs-csv, caricato da Gianluca via app/agenti/a1-analytics/
+    carica_mbs.html), tiene solo le righe con account diverso dal proprio
+    (repost/menzioni — le righe del proprio account sono gia' coperte
+    dall'API) e le converte nello stesso formato usato per i post
+    originali (vedi step 20, 4.2).
 
-    Se il file non e' ancora su Drive la run prosegue comunque, senza
-    repost per questo giro — nessun errore bloccante. Invia una email
-    reale di avviso e scrive il flag mbs_missing su Supabase, cosi'
+    Se il file non e' ancora stato caricato la run prosegue comunque,
+    senza repost per questo giro — nessun errore bloccante. Invia una
+    email reale di avviso e scrive il flag mbs_missing su Supabase, cosi'
     a1_mbs_watcher.py sa quando ricontrollare (step 20, 3.9/3.10).
     """
     print("  → Fetch repost da CSV MBS...")
-    file_id = find_mbs_csv(drive_service)
+    supabase = create_client(SUPA_URL, SUPA_KEY)
+    path = find_mbs_csv_path(supabase)
+    upload_url = f"{WEBAPP_BASE}/app/agenti/a1-analytics/carica_mbs.html"
 
-    if not file_id:
+    if not path:
         print(f"    ⚠ CSV MBS non trovato per {MESE_LABEL} — repost vuoti per questo run")
         was_missing, missing_mese = supabase_get_mbs_flag()
         gia_segnalato_questo_mese = was_missing and missing_mese == MESE_LABEL
 
         send_email(
             f"⚠ A1: file MBS mancante — {MESE_LABEL}",
-            f"Il file MBS repost per {MESE_LABEL} non è ancora su Drive "
-            f"(cartella 'Archivio docs MBS').\n\n"
+            f"Il file MBS repost per {MESE_LABEL} non è ancora stato caricato "
+            f"({upload_url}).\n\n"
             f"La run di A1 è proseguita comunque: post e stories originali "
             f"sono stati aggiornati, ma i repost non sono inclusi in questo giro.\n\n"
             f"Carica il CSV Content Insights quando puoi — a1_mbs_watcher.py "
@@ -439,13 +418,13 @@ def fetch_mbs_reposts(drive_service):
         if not gia_segnalato_questo_mese:
             log_activity(
                 "A1", f"MBS mancante — {MESE_LABEL}",
-                "Il file MBS repost non è ancora su Drive. Repost esclusi da questo giro.",
-                f"{WEBAPP_BASE}/app/page_home_v25.html"
+                "Il file MBS repost non è ancora stato caricato. Repost esclusi da questo giro.",
+                upload_url
             )
             send_push(
                 f"⚠ A1: MBS mancante — {MESE_LABEL}",
                 "Repost esclusi da questo giro. Carica il CSV quando puoi.",
-                f"{WEBAPP_BASE}/app/page_home_v25.html"
+                upload_url
             )
         return []
 
@@ -470,15 +449,8 @@ def fetch_mbs_reposts(drive_service):
             f"{WEBAPP_BASE}/app/page_home_v25.html"
         )
 
-    from googleapiclient.http import MediaIoBaseDownload
-    request = drive_service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while not done:
-        _, done = downloader.next_chunk()
-    fh.seek(0)
-    text = fh.read().decode("utf-8-sig")
+    data = supabase.storage.from_(MBS_BUCKET).download(path)
+    text = data.decode("utf-8-sig")
 
     def to_int(v):
         v = (v or "").strip()
@@ -516,7 +488,7 @@ def fetch_mbs_reposts(drive_service):
             "_tipo_autore":   "REPOST",
         })
 
-    print(f"    Trovati {len(repost)} repost nel periodo (fonte: MBS)")
+    print(f"    Trovati {len(repost)} repost nel periodo (fonte: MBS/Supabase Storage)")
     return repost
 
 
@@ -1362,11 +1334,11 @@ def _run():
     # 2. Fetch post originali dal profilo
     posts_originali = fetch_posts()
 
-    # 3. Setup Drive (serve anche per leggere il CSV MBS dei repost)
+    # 3. Setup Drive (stories/Excel — non piu' per il CSV MBS, ora su Supabase Storage)
     drive_service, _ = get_drive_service()
 
     # 4. Fetch repost da CSV MBS (sostituisce /tags — vedi step 20, 3.6)
-    posts_repost = fetch_mbs_reposts(drive_service)
+    posts_repost = fetch_mbs_reposts()
 
     # 5. Unifica: originali + repost, ordinati per timestamp
     all_posts = posts_originali + posts_repost
