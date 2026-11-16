@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 26
-**Ultimo aggiornamento:** 2026-11-16 13:30
+**Versione:** 27
+**Ultimo aggiornamento:** 2026-11-16 14:30
 
 ## Vision
 
@@ -258,6 +258,32 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 14:30] Home page — seconda passata di correzioni su screenshot reale (pillole, pulsanti stato, colori, logo)
+
+**Riepilogo:** Gianluca ha rivisto la home sul sito vero (screenshot da iPad) e ha chiesto 6 correzioni puntuali sul redesign di ieri — tutte applicate direttamente al codice, nessun nuovo giro di mockup (le basi erano già verificate ieri).
+
+**Cosa è stato fatto:**
+1. Rimosse le pillole "⚡ Auto"/"👤 Claude" dal titolo di A1-A4 (A5-A7 invariate, fuori perimetro).
+2. **Bug trovato guardando lo screenshot**: la griglia dei pulsanti di stato (In coda/In corso/Fatto/Riposo/Inattivo/Errore) era a 5 colonne (`grid-template-columns:repeat(5,1fr)`) ma i pulsanti sono 6 — il sesto ("Errore") andava sempre a capo su una riga separata. Fix: 6 colonne, pulsanti leggermente più compatti per restare leggibili.
+3. Titolo agente ingrandito (`.agent-name` da .82rem a 1rem). Colore dei pulsanti "Vedi report/piano/brief" (A2/A3/A4) reso coerente con la sostanza: erano rossi (classe `lg-primary`) anche quando il report esisteva già — ora `loadLatestReports()` applica `lg-done` (verde) quando trova un report, lascia il grigio neutro (`lg-disabled`, già di default) solo se non ne esiste ancora nessuno. "Carica CSV" di A1 resta rosso di proposito (Gianluca l'ha confermato: il file non è stato caricato dall'app, solo mandato in chat — rosso è corretto).
+4. Rimossa l'etichetta di stato testuale sotto il logo ("COMPLETATO" ecc.) su A1-A4 — lo stato si legge già dal colore del bordo scheda e dai pulsantini sotto; elemento già gestito con guardia `if(lbl)` lato JS, rimozione sicura senza toccare lo script.
+5. Rimossa la scheda "Tutti i sistemi attivi / Aggiornato alle...": logo GDC ingrandito (34px→40px), nuovo indicatore compatto (`sys-mini`: pallino + testo breve) inserito nella riga dell'header tra logo e pillola calendario — il dettaglio "Aggiornato alle HH:MM" resta disponibile come tooltip (`title`) invece che come testo visibile separato.
+6. Pillola calendario e pillola notifiche uniformate (altezza 32px, stesso padding, stesso font-size) — prima il calendario era visibilmente più piccolo.
+
+**Decisioni prese:**
+- Contesto: dove mettere le informazioni di stato sistema tolte dalla scheda rimossa — Gianluca aveva offerto due opzioni (dentro il popup del calendario, oppure nella riga dell'header tra logo e calendario).
+  Decisione: riga dell'header (opzione più semplice, non richiede ristrutturare il popup calendario) — il dettaglio orario resta comunque disponibile al passaggio del mouse/tocco prolungato (tooltip), non perso del tutto.
+  Da rivedere se: Gianluca preferisce in pratica vedere il dettaglio orario sempre visibile — si può comunque spostare nel popup calendario in un secondo momento.
+
+**File consegnati/modificati:**
+- `app/page_home_v25.html` (modificato: CSS `.stato-row`/`.stato-pill`/`.agent-name`/`.date-chip`, nuova `.sys-mini`, rimossa `.system-bar` e classi correlate; HTML card A1-A4 e header; JS `loadLatestReports()` e gestione stato sistema)
+
+**Verifiche fatte:** sintassi JS (`node --check`); controllo automatico di tutti i link locali del repo (33, 0 rotti).
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step; prosegue il lavoro di pulizia grafica (Step 6) sulla home page, ora più rifinito dopo revisione diretta sul dispositivo reale.
+
+---
 
 ### [2026-11-16 13:30] a1_monthly.py e a1_mbs_watcher.py aggiornati — MBS legge da Supabase Storage, non più da Drive
 
