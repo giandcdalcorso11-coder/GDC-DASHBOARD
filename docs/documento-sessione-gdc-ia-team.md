@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 33
-**Ultimo aggiornamento:** 2026-11-16 21:05
+**Versione:** 34
+**Ultimo aggiornamento:** 2026-11-16 21:40
 
 ## Vision
 
@@ -258,6 +258,30 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 21:40] Pagina Agente A4 ridisegnata — rimosso il vecchio flusso Drive/claude.ai, completata la catena A1→A4
+
+**Riepilogo:** Stesso trattamento (audit → mockup → allineamento → codice reale) applicato a tutta la catena editoriale A1-A4 in questa sessione, qui su A4 — l'ultimo agente rimasto. A differenza di A2/A3, il prompt di A4 (v8) non menzionava esplicitamente il passaggio a una sessione Claude Code dedicata, quindi prima di rimuovere il pulsante "Apri progetto Claude A4" è stato chiesto esplicitamente a Gianluca.
+
+**Cosa è stato fatto:**
+1. **Audit preliminare**: letta tutta la pagina e confrontata con il prompt reale di A4 (v8) e con `brief.html` (già corretto, legge da `report_mensili` come `piano.html`/`report.html`).
+2. **Domanda di chiarimento esplicita**: il prompt v8 dice ancora "ogni mese apriamo una conversazione dedicata nel Progetto", senza il changelog di spostamento a Claude Code che invece A2 (v18) e A3 (v13) hanno esplicitamente. Gianluca ha confermato: A4 fa parte della stessa sessione Claude Code dedicata lanciata dalla pillola "Ciclo editoriale mensile" in home (A2→A3→A4 in sequenza nella stessa conversazione).
+3. **Rimosso l'intero vecchio flusso**: popup "Copia messaggio precompilato" + pulsante "Apri progetto Claude A4" (claude.ai/project) + pulsanti "Cartella Drive A3 — Piani" e "Cartella Drive A4" — nessun punto di lancio sulla pagina stessa, coerente con la risposta di Gianluca.
+4. **Bug corretto**: la pagina diceva "A4 non scrive su activity_log al momento, e non salva mese/numeri come A1/A2" — falso dalla v5 (activity_log) e v8 (mese su agent_states).
+5. **Dipendenze rese reali**: piano A3 mese corrente + mese precedente, report A2 degli ultimi due mesi (qui il doppio mese resta corretto — il prompt lo richiede esplicitamente come OBBLIGATORIO, a differenza della semplificazione fatta per A3) — ora controlli reali su `report_mensili` invece di "non verificabile qui".
+6. **Posizione nel flusso aggiornata**: A4 resta l'ultimo della catena A1→A4, nessuna dipendenza o segnale verso un agente successivo (diversamente da A1→A2→A3 che si passano il testimone).
+7. **Documenti**: ora mostra il render live degli ultimi brief generati (`report_mensili`, agente='a4') con link a `brief.html?mese=...`, più l'input diretto al Google Sheet A1 (unico input non ancora migrato su Supabase, confermato dal prompt).
+8. **Coerenza visiva con A1/A2/A3**: pillole Home/Notifiche a punta, titolo unico colorato per stato, `.sys-mini`, tab ridotte da 5 a 4. Mantenuta intatta l'animazione JS-driven dell'icona A4 (disegno del documento + barre + cursore che scrive, `startA4Anim`/`stopA4Anim`), diversa dalle animazioni CSS di A1/A3 — non toccata perché non superata, solo funzionalità reale.
+
+**File consegnati/modificati:**
+- `app/agenti/a4-brief/page_agent_a4_v1.html` — riscritto (pillole/titolo/tab/logica reale), animazione icona A4 preservata
+- `/tmp/.../scratchpad/mockup-a4-agent.html` — mockup approvato, base per il file reale
+
+**Verifiche fatte:** `node --check` sullo script estratto — OK; grep per residui del vecchio flusso (msgOverlay, openMsg/closeMsg/copyMsg, claude.ai/project, Cartella Drive A3/A4, .docx, present_files, lg-cta, lg-maker, back-btn, system-bar) — nessuno trovato; tutti i link relativi (brief.html, home, login, sw.js) verificati esistenti sul filesystem.
+
+**Impatto su Vision/Pipeline:** con A4 ridisegnata, la catena editoriale mensile A1→A2→A3→A4 che la Vision cita come "presa in mano da Claude Code" è ora completa su tutti e quattro gli agenti — stesso linguaggio visivo, stessa sessione Claude Code dedicata, stesso output HTML su Supabase per tutti.
+
+---
 
 ### [2026-11-16 21:05] Pagina Agente A3 ridisegnata — rimosso il vecchio flusso PPTX/Drive/claude.ai
 
