@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 32
-**Ultimo aggiornamento:** 2026-11-16 20:30
+**Versione:** 33
+**Ultimo aggiornamento:** 2026-11-16 21:05
 
 ## Vision
 
@@ -258,6 +258,28 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 21:05] Pagina Agente A3 ridisegnata — rimosso il vecchio flusso PPTX/Drive/claude.ai
+
+**Riepilogo:** Stesso trattamento (audit → mockup → allineamento → codice reale) già applicato ad A1 e A2, ora su A3 — stessa categoria di problema di A2: la pagina descriveva un flusso di lavoro completamente superato.
+
+**Cosa è stato fatto:**
+1. **Audit preliminare**: letta tutta la pagina e confrontata con il prompt reale di A3 (v13) e con `piano.html` (già aggiornato, legge correttamente da Supabase). Confermato che il prompt v13 ha già completato la stessa transizione di A2 (v13: output HTML su Supabase invece di PPTX, input Report-A2/piano-precedente da Supabase invece che da Drive, auto-segnalazione su agent_states, scrittura su activity_log dalla v11).
+2. **Rimosso l'intero vecchio flusso**: popup "Copia messaggio precompilato" (con build del messaggio via `buildMsg()`) + pulsante "Apri progetto Claude A3" (claude.ai/project) + due pulsanti "Cartella Drive A2 — Report" e "Cartella Drive A3" come output — tutti sostituiti dal riferimento alla sessione Claude Code dedicata lanciata dalla pillola "Ciclo editoriale mensile" in home (stesso punto d'ingresso di A2, nessun pulsante di lancio sulla pagina stessa).
+3. **Bug corretto**: la pagina diceva "A3 non scrive su activity_log al momento" — non vero dalla v11. Il tab Panoramica ora mostra l'attività reale da `activity_log`.
+4. **Dipendenze rese reali**: "Report A2 Mm2" e "Piano A3 Mm1" erano segnate "Non verificabile qui" (placeholder hardcoded) — ora sono controlli reali su `report_mensili` (agente+mese esatti), più il controllo calendario BPT già reale (ereditato dalla correzione fatta in questa stessa sessione su `bpt_calendars`).
+5. **Semplificazione segnalata esplicitamente a Gianluca**: il vecchio messaggio precompilato citava due mesi di report A2 (Mm1 e Mm2), ma il prompt v13 parla di un solo "report del mese chiuso" (opzionale) — ridotto a un solo riferimento, in attesa di eventuale correzione se serve ancora il doppio mese.
+6. **Documenti**: ora mostra il render live degli ultimi piani generati (`report_mensili`, agente='a3') con link a `piano.html?mese=...`, più l'input diretto al Google Sheet A1 (confermato obbligatorio dal prompt, letto in parallelo da A3 oltre che da A2).
+7. **Coerenza visiva con A1/A2**: pillole Home/Notifiche a punta, titolo unico colorato per stato (prima diviso in "Agente 3"/"Planner"), `.sys-mini` al posto della vecchia `.system-bar`, tab ridotte da 5 a 4 (Panoramica unisce Azioni+Run).
+8. **Correzione richiesta da Gianluca**: nel mockup il logo GDC in alto a sinistra era un placeholder testuale ("GDC") invece del vero SVG animato — corretto nel file reale, riportato l'SVG master (G/D/C/STUFF/linee) con l'animazione a comparsa sequenziale, identico a quello di A1/A2/home.
+
+**File consegnati/modificati:**
+- `app/agenti/a3-planner/page_agent_a3_v1.html` — riscritto (pillole/titolo/tab/logica reale), con il vero logo GDC animato
+- `/tmp/.../scratchpad/mockup-a3-agent.html` — mockup iterato e approvato, base per il file reale (non toccato dopo l'approvazione tranne per il fix del logo, fatto direttamente sul file reale)
+
+**Verifiche fatte:** `node --check` sullo script estratto — OK; grep per residui del vecchio flusso (msgOverlay, openMsg/closeMsg/copyMsg, buildMsg, claude.ai/project, Cartella Drive A2/A3, .pptx, lg-cta, lg-maker, back-btn, system-bar) — nessuno trovato; tutti i link relativi (piano.html, home, login, sw.js) verificati esistenti sul filesystem.
+
+---
 
 ### [2026-11-16 20:30] BPT Calendar: bug reale trovato (torneo dicembre mancante) e script riscritto senza Playwright
 
