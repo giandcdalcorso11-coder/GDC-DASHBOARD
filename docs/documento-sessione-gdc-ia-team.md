@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 31
-**Ultimo aggiornamento:** 2026-11-16 19:53
+**Versione:** 32
+**Ultimo aggiornamento:** 2026-11-16 20:30
 
 ## Vision
 
@@ -258,6 +258,39 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 20:30] BPT Calendar: bug reale trovato (torneo dicembre mancante) e script riscritto senza Playwright
+
+**Riepilogo:** Gianluca ha segnalato che `bpt_calendar.yml` "non funziona" (sospettava fosse fragile fin da quando l'ha costruito) — indagine confermata: il workflow non falliva mai su GitHub Actions, ma produceva dati sbagliati per un bug nei nomi dei campi letti dall'API, e nel frattempo la FIVB sta sostituendo il Beach Pro Tour con una nuova serie (FIVB Beach World Series, dal 2026/2027), che avrebbe rotto in silenzio il filtro per livello usato finora. Riscritto lo script su una fonte dati migliore (fivbeach.com) e con un criterio di filtro più robusto a questo cambiamento.
+
+**Cosa è stato fatto:**
+
+**Bug: calendario BPT dà sempre "0 tornei" di fatto, anche quando non è vero**
+
+**Sintomo:** le tre run automatiche più recenti (sett./ott./nov. 2026) hanno tutte scritto "Nessun torneo BPT nel mese" su Supabase, senza mai un errore su GitHub Actions (conclusion sempre "success", step da ~3 secondi).
+
+**Causa:** diagnosi in due parti.
+1. Per ottobre e novembre 2026 lo 0 era corretto (nessun torneo BPT in quei mesi secondo il calendario reale). Ma per **dicembre 2026 era sbagliato**: esiste un torneo (Beach Elite Itapema, Brasile, 9–13 dic) con Cottafava/Dal Corso iscritti nel tabellone principale (verificato scraping diretto la pagina iscritti) — pubblicato/confermato sull'API BPT *dopo* la run del 2 novembre, quindi mai visto dal workflow (nessun meccanismo di ri-controllo dopo il run mensile).
+2. Bug strutturale indipendente, nel codice: lo script cercava i campi `location`/`city`/`venue`/`country` e `title`/`name` nel JSON di `en.volleyballworld.com`, ma l'API reale usa `destination` (stringa unica "Città, Paese") e il campo `name` è uno slug tecnico, non un nome leggibile. Risultato silenzioso: "Luogo:" sempre vuoto nel testo generato per A3, e di conseguenza anche il calcolo oltreoceano/vicina sempre sbagliato (dipende dal testo location, sempre vuoto) — confermato sull'unica riga reale già salvata in passato (Rio de Janeiro, agosto 2026: Luogo vuoto, trattato come trasferta "vicina" invece che oltreoceano).
+
+**Fix applicato:** riscritto `scripts/bpt_calendar.py` da zero su una fonte diversa, **fivbeach.com**, verificata più affidabile: ogni pagina (calendario e singolo torneo) incorpora un blob JSON già pulito nell'HTML statico (attributo `data-page`, Inertia.js) — leggibile con una normale richiesta HTTP, **senza alcun bisogno di Playwright/browser**, né per il calendario né per la lista iscritti (prima richiedeva Playwright per cercare "Dal Corso" testualmente in una tabella HTML). Rimosso Playwright dal workflow (installazione Chromium e dipendenze di sistema, ~35s di setup) e dai requirements. Rimossi anche `GOOGLE_CREDENTIALS`/`DRIVE_FOLDER_A3`: erano letti ma il salvataggio su Drive non veniva mai chiamato da `main()` — dead code, il testo è sempre stato letto dalla webapp solo da Supabase.
+
+**Decisioni prese:**
+- Contesto: Gianluca ha chiesto se, visto il periodo di transizione (nuova FIVB Beach World Series che sostituisce il Beach Pro Tour tra fine 2026 e il 2027), il cambio di struttura dei tornei avrebbe potuto rompere di nuovo il sito/script.
+- Decisione: il nuovo script **non filtra più per tier/tipo di torneo** (Elite16, Challenge, ecc. — la tassonomia che la federazione sta proprio cambiando), ma scarica tutti i tornei maschili pro-rilevanti (esclude solo tour nazionali/giovanili/multisport, categorie strutturalmente diverse) nella finestra di viaggio del mese target, e verifica l'iscrizione effettiva di Dal Corso/Cottafava torneo per torneo. Verificato in pratica: il primo evento della nuova serie (Beach World Series Dubai, gen. 2027, classificato con tier/tipo nuovi "major"/"World Series") viene correttamente intercettato e controllato dal nuovo script — un filtro per tier vecchio l'avrebbe saltato in silenzio.
+- Alternative scartate: tenere il filtro per tier/tipo aggiornandolo ai nuovi nomi — scartata perché si romperebbe di nuovo al prossimo cambio federale (è già successo una volta).
+- Da rivedere se: il volume di tornei "non esclusi" dovesse crescere troppo (oggi ~200/anno su 3 anni scaricati, verifica iscritti solo su quelli in finestra — qualche richiesta HTTP in più per run, nessun problema di tempo osservato).
+
+**File consegnati/modificati:**
+- `scripts/bpt_calendar.py` — riscritto (fonte fivbeach.com, niente Playwright, filtro per finestra-viaggio + verifica iscritti invece che per tier)
+- `.github/workflows/bpt_calendar.yml` — rimossi step installazione Playwright/Chromium e secret Drive non più usati; `timeout-minutes` abbassato da 20 a 10
+- `scripts/requirements.txt` — rimosso `playwright==1.44.0`
+
+**Verifiche fatte:** `python3 -m py_compile` sullo script; dry-run locale (mock del client Supabase, nessuna scrittura reale) per dicembre 2026 → trova correttamente 1 torneo (Itapema), testo generato con "Luogo: Itapema, Brazil" e trasferta "oltreoceano (+6gg anticipo)" corretti; dry-run per novembre 2026 → correttamente 0 tornei (nessuna regressione); dry-run per gennaio 2027 → intercetta e verifica Beach World Series Dubai (nuova serie), Dal Corso non trovato (dato reale, non assunto).
+
+**Nota per il prossimo passo:** la riga `bpt_calendars` di dicembre 2026 su Supabase è ancora quella vecchia e sbagliata (0 tornei) — va rigenerata lanciando il workflow con `bpt_target_month=2026-12` ora che il fix è su `main`. Non ancora fatto in questa sessione: in attesa di conferma di Gianluca prima di toccare il dato live.
+
+---
 
 ### [2026-11-16 19:53] Pagina Agente A2 ridisegnata — rimosso l'intero vecchio flusso PPTX/Drive/claude.ai
 
