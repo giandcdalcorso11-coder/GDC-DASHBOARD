@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 34
-**Ultimo aggiornamento:** 2026-11-16 21:40
+**Versione:** 35
+**Ultimo aggiornamento:** 2026-11-16 22:10
 
 ## Vision
 
@@ -258,6 +258,29 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 22:10] Home: stacco visivo Team Social / Team Commerciale
+
+**Riepilogo:** Dopo aver verificato dalla webapp il lavoro di redesign A1-A4, Gianluca ha chiesto di dare "un po' di stacco" in home tra il gruppo A1-A4 (team social) e A5-A7 (team commerciale), rimasti finora in un'unica lista senza alcuna separazione visiva. Risolto con una cornice neutra concentrica alle card, dopo tre iterazioni di mockup.
+
+**Cosa è stato fatto:**
+1. **3 proposte iniziali** in mockup: etichetta con riga, divisore con barretta colorata, fasce di sfondo colorate. Gianluca ha scelto le fasce come idea.
+2. **Problema di design individuato da Gianluca**: una tinta fissa sulla fascia (es. blu/sabbia) competerebbe con i colori che bordo e logo-box delle card già usano per lo stato reale dell'agente (verde=completato, rosso=in coda, sabbia=in corso, azzurro=inattivo) — rischio di sembrare essa stessa uno stato/errore. Rifatto il mockup con i veri colori/card della webapp per ragionarci sopra, e proposte 3 varianti tutte neutre (nessuna tinta nuova): fascia rialzata (bianco su carta), fascia incassata (ombra interna leggera), solo cornice tratteggiata.
+3. **Scelta: variante incassata ("Opzione B"), con due correzioni richieste da Gianluca**: la cornice doveva essere concentrica alle card (padding uguale su tutti i lati — nella prima versione era asimmetrico, 20/10/10/12, per via della vecchia etichetta in flusso) e la scritta andava spostata fuori dal perimetro del bordo, in linea con il quadrato del logo delle card, con un "taglio" nel bordo dove passa il testo (pattern legend/fieldset).
+4. **Implementato sulla home reale**: cornice con padding uniforme 16px, etichetta posizionata matematicamente (16 padding banda + 2 bordo card + 8 padding logo-col = 26px) invece che a occhio, sfondo dell'etichetta = `var(--carta)` per mascherare il bordo dietro il testo in entrambi i temi senza bisogno di regole dark-mode separate.
+
+**Decisioni prese:**
+- Contesto: come separare visivamente due gruppi di agenti su una home dove ogni card cambia già colore (bordo + logo-box) in base al proprio stato live.
+- Decisione: cornice neutra (solo bordo, nessun fill/tinta) con etichetta in stile "legend", concentrica alle card.
+- Alternative scartate: fasce con sfondo colorato fisso (rischio di confondersi con i colori di stato); etichetta dentro la cornice in flusso (rompe la concentricità, richiede padding asimmetrico).
+
+**File consegnati/modificati:**
+- `app/page_home_v25.html` — aggiunta `.team-band`/`.team-band-lbl`, card A1-A4 e A5-A7 wrappate rispettivamente in "Team Social" e "Team Commerciale"
+- `/tmp/.../scratchpad/mockup-home-team-split.html`, `-v2.html`, `-v3.html` — le tre iterazioni di mockup (etichette iniziali → fasce neutre con toggle chiaro/scuro → cornice concentrica rifinita)
+
+**Verifiche fatte:** parser HTML Python (`html.parser`) sull'intero file per verificare che l'inserimento dei due wrapper `<div class="team-band">` non abbia sbilanciato la struttura dei tag — nessun mismatch.
+
+---
 
 ### [2026-11-16 21:40] Pagina Agente A4 ridisegnata — rimosso il vecchio flusso Drive/claude.ai, completata la catena A1→A4
 
