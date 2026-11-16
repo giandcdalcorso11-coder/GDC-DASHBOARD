@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 30
-**Ultimo aggiornamento:** 2026-11-16 19:36
+**Versione:** 31
+**Ultimo aggiornamento:** 2026-11-16 19:53
 
 ## Vision
 
@@ -258,6 +258,29 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 
 ## Storico sessioni
+
+### [2026-11-16 19:53] Pagina Agente A2 ridisegnata — rimosso l'intero vecchio flusso PPTX/Drive/claude.ai
+
+**Riepilogo:** Stesso trattamento (audit → mockup → allineamento → codice reale) applicato ad A1 nelle sessioni precedenti, ora su A2 — ma qui il problema non era solo cosmetico: la pagina descriveva un flusso di lavoro completamente superato (report in PPTX consegnato via claude.ai/project e caricato a mano su Drive/Slides), mentre da tempo A2 scrive il report come pagina HTML direttamente su Supabase tramite la sessione Claude Code dedicata.
+
+**Cosa è stato fatto:**
+1. **Audit preliminare**: letta tutta la pagina e confrontata con il prompt reale di A2 (v20) e con `report.html`/`dashboard_kpi.html` (già aggiornati, letture da Supabase corrette) per distinguere cosa era davvero superato da cosa era solo da uniformare visivamente ad A1.
+2. **Rimosso l'intero vecchio flusso**: popup "Copia messaggio precompilato" (con un messaggio che citava ancora Drive e un numero di versione del prompt vecchio) + pulsante "Apri progetto Claude A2" (claude.ai/project) + pulsante "Cartella Drive A2" come output — tutti sostituiti dal riferimento alla sessione Claude Code dedicata già in uso da Step 8 (lanciata dalla pillola "Ciclo editoriale mensile" in home, non più da questa pagina).
+3. **Bug corretto**: la pagina diceva "A2 non scrive su activity_log al momento" — non vero da diverse versioni del prompt (v13+). Il tab Panoramica ora mostra l'attività reale da `activity_log`.
+4. **Tab Documenti riscritta**: da nomi di file Slides inesistenti ("report_GDC_[mese]_[anno]") a un render live degli ultimi report da `report_mensili`, con link diretto a `report.html?mese=...`.
+5. **Tab Lavoro**: "Procedura manuale" (6 passaggi del vecchio flusso: copia messaggio → genera pptx → scarica → carica su Drive → conversione Slides → aggiorna Supabase a mano) sostituita da "Cosa fa" con gli step reali (apertura sessione dedicata, lettura del documento di sessione e dell'ultimo prompt, gate di categorizzazione, lettura Sheet A1, scrittura diretta su Supabase, activity_log + stato).
+6. **Tab Config**: tolte 3 righe "Dipendenze" placeholder del vecchio flusso ("Drive accessibile"/"progetto Claude.ai configurato"/"conversione Google attiva", tutte "Non verificabile qui"), aggiunta una dipendenza reale — "Categorizzazione completata" — con la stessa query già usata per il gate di A1/home.
+7. **Coerenza visiva con A1**: pillole header (Home a punta + Notifiche, tolto il doppio Home+Hub), titolo hero unico con colore dinamico sullo stato, badge tipo neutro ("🤖 Claude Code" invece di "☁️ Claude.ai" verde), mini-indicatore al posto della vecchia system-bar.
+8. **Richiesta di Gianluca in revisione**: dare più risalto al pulsante "Report mensili" — spostato per primo nella lista Azioni (prima era terzo, dopo Dashboard KPI e Google Sheet).
+9. Ripristinata la logica reale (guard di autenticazione + fetch Supabase vere) dopo il giro di mockup, che usava dati finti per il solo scopo di revisione visiva.
+
+**File consegnati/modificati:** `app/agenti/a2-analyst/page_agent_a2_v3.html` (riscritta).
+
+**Verifiche fatte:** sintassi JS (`node --check`), controllo che tutti i link relativi (`report.html`, `dashboard_kpi.html`, `../../page_home_v25.html`, `../../../page_login_v6.html`, `../../../sw.js`) risolvano a file reali, nessun residuo di codice/CSS morto legato agli elementi rimossi (verificato via grep).
+
+**Impatto su Vision/Pipeline:** nessuno sui macro-step — stesso filone di redesign dello Step 6, qui esteso alla pagina di A2. Prossimo passo naturale: A3 e A4 con lo stesso approccio.
+
+---
 
 ### [2026-11-16 19:36] Pulsante Categorizza nella scheda A1 (home) + gate su "Apri sessione" del ciclo editoriale
 
