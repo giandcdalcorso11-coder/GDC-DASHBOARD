@@ -1,15 +1,31 @@
 """
 GDC IA TEAM — Script BPT Calendar
-Gira il 1° del mese alle 08:00 in parallelo ad A1.
+Gira il 2 del mese in parallelo ad A1, pianifica il mese successivo
+(mese corrente + 1, salvo override manuale).
+
+Fonte dati: fivbeach.com — sito ufficiale del circuito pro di beach volley.
+Ogni pagina incorpora un blob JSON (attributo data-page, Inertia.js) già
+pulito e leggibile con una normale richiesta HTTP: nessun browser/Playwright
+necessario, né per il calendario né per la lista iscritti dei singoli
+tornei.
 
 Flusso:
-1. Playwright apre il sito BPT e carica la lista tornei 2026
-2. Per ogni torneo nel mese da pianificare (mese corrente + 1):
-   → Entra nella pagina del torneo
-   → Cerca "Dal Corso" tra i partecipanti
-   → Se trovato → calcola partenza/rientro/riposo
-3. Genera testo calendario formattato per A3
-4. Salva bpt_[mese]_[anno].txt su Drive (cartella A3)
+1. Scarica il calendario maschile da fivbeach.com per l'anno del mese
+   target ± 1 (per non perdere tornei il cui margine di viaggio sfora
+   a cavallo di fine/inizio anno).
+2. Esclude solo le categorie strutturalmente non pertinenti per un
+   giocatore pro adulto (tour nazionali, giovanili U18/U20/U22, eventi
+   multi-sport). NON filtra per livello/tier (Elite, Challenge, World
+   Series, ...): la FIVB sta cambiando quella tassonomia nel passaggio
+   dal Beach Pro Tour alla nuova FIVB Beach World Series (2026→2027), e
+   un filtro basato sui nomi di livello attuali si romperebbe in silenzio
+   a ogni cambio di nome federale. Il livello su cui filtriamo davvero è
+   "il torneo cade nella finestra di viaggio del mese target?", poi si
+   verifica l'iscrizione effettiva.
+3. Per ogni torneo la cui finestra [partenza-anticipo, rientro+riposo]
+   tocca il mese target, scarica la pagina del torneo e controlla la
+   lista iscritti per "Dal Corso" / "Cottafava".
+4. Genera il testo calendario formattato per A3.
 5. Aggiorna Supabase:
    - bpt_calendars (upsert per mese_num+anno) → fonte usata da A3/home
      per costruire il messaggio del mese effettivamente pianificato
@@ -17,32 +33,29 @@ Flusso:
      "ultimo ciclo generato" (es. pagina A1), non usare per il messaggio A3
 
 Secrets GitHub richiesti:
-  GOOGLE_CREDENTIALS  — JSON service account Google (base64)
-  DRIVE_FOLDER_A3     — ID cartella Drive A3
   SUPABASE_URL          — URL progetto Supabase
   SUPABASE_SERVICE_KEY  — service_role key Supabase (bypassa la RLS; NON l'anon key)
+
+(GOOGLE_CREDENTIALS / DRIVE_FOLDER_A3 non servono più: il testo è letto
+dalla webapp direttamente da Supabase, non da un file su Drive.)
 """
 
 import os
-import json
-import base64
 import re
-import tempfile
-from datetime import date, timedelta
+import json
+import html
+import time
+from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+import requests
 from supabase import create_client
 
 
 # ─── CONFIG ────────────────────────────────────────────────────────────────────
 
-DRIVE_FOLDER_A3 = os.environ.get("DRIVE_FOLDER_A3", "")  # opzionale
-SUPA_URL        = os.environ["SUPABASE_URL"]
-SUPA_KEY        = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
+SUPA_URL = os.environ["SUPABASE_URL"]
+SUPA_KEY = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la RLS, mai l'anon key
 
 # Mese da pianificare = mese corrente + 1, salvo override manuale
 # (2/8/2026: aggiunto override — la riga calendario_bpt su Supabase e'
@@ -50,24 +63,33 @@ SUPA_KEY        = os.environ["SUPABASE_SERVICE_KEY"]  # service_role: bypassa la
 # viene lanciato in ritardo rispetto al ciclo normale, il mese giusto
 # puo' risultare gia' sovrascritto da quello successivo. BPT_TARGET_MONTH
 # (formato YYYY-MM) permette di rigenerare un mese specifico su richiesta.)
-today           = date.today()
-override        = os.environ.get("BPT_TARGET_MONTH", "").strip()
+today    = date.today()
+override = os.environ.get("BPT_TARGET_MONTH", "").strip()
 if override:
     target = date.fromisoformat(override + "-01")
 else:
     target = today + relativedelta(months=1)
-MESE_NUM        = target.month
-ANNO            = target.year
-MESI_IT         = ["", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-                   "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
-MESE_IT         = MESI_IT[MESE_NUM]
-MESE_LABEL      = f"{MESE_IT} {ANNO}"
-MESE_IT_LOWER   = MESE_IT.lower()
+MESE_NUM = target.month
+ANNO     = target.year
+MESI_IT  = ["", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+            "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"]
+MESE_IT       = MESI_IT[MESE_NUM]
+MESE_LABEL    = f"{MESE_IT} {ANNO}"
 
-BPT_URL         = f"https://en.volleyballworld.com/beachvolleyball/competitions/beach-pro-tour/{ANNO}/"
-PLAYER_SEARCH_TERMS = ["dal corso", "cottafava", "cottafava/dal corso"]  # tutti i modi in cui può apparire
+PLAYER_SEARCH_TERMS = ["dal corso", "cottafava"]
 
-print(f"▶ BPT Calendar — mese da pianificare: {MESE_LABEL}")
+FIVBEACH_BASE = "https://fivbeach.com"
+HTTP_HEADERS  = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+    "Accept":     "text/html",
+}
+
+# Categorie strutturalmente non pertinenti per un giocatore pro adulto.
+# Volutamente NON includiamo qui i nomi di livello del circuito pro
+# (Elite, Challenge, World Series, Major, ...) — vedi nota in testa al file.
+EXCLUDE_TYPE_KEYWORDS = [
+    "national tour", "youth", "u18", "u20", "u22", "zonal tour", "multiple sports",
+]
 
 
 # ─── LISTA PAESI OLTREOCEANO ────────────────────────────────────────────────────
@@ -92,350 +114,99 @@ OLTREOCEANO_KEYWORDS = [
 
 def is_oltreoceano(location: str) -> bool:
     """True se la destinazione richiede +6 giorni di anticipo."""
-    loc = location.lower()
+    loc = (location or "").lower()
     return any(kw in loc for kw in OLTREOCEANO_KEYWORDS)
 
 
-# ─── PLAYWRIGHT — SCRAPING BPT ──────────────────────────────────────────────────
+# ─── FIVBEACH.COM — LETTURA DATI ────────────────────────────────────────────────
 
-API_URL = f"https://en.volleyballworld.com/api/v1/globalschedule/bpt/competitions/{ANNO}/"
-
-# Categorie da escludere (Futures = tornei minori)
-SKIP_CATEGORIES = ["futures", "future"]
-
-
-def parse_slug(slug: str) -> tuple:
+def fetch_page_json(path: str, params: dict | None = None) -> dict:
     """
-    Estrae città e categoria da uno slug BPT.
-    Es: 'elite16-gstaad-sui-2026' → ('Gstaad', 'Elite16')
+    Scarica una pagina fivbeach.com e ne estrae il blob JSON incorporato
+    nell'attributo data-page (pagina Inertia.js, server-rendered —
+    nessun browser necessario).
     """
-    s = slug.lower()
-    # Rimuovi anno finale
-    s = re.sub(r'-\d{4}$', '', s)
-
-    # Identifica e rimuovi categoria
-    categoria = ""
-    for cat, label in [("elite16", "Elite16"), ("elite8", "Elite8"), ("elite", "Elite"),
-                       ("challenger", "Challenger"), ("major", "Major"), ("challenge", "Challenge")]:
-        if cat in s:
-            categoria = label
-            s = s.replace(cat, "").strip("-")
-            break
-
-    # Rimuovi prefisso bpt
-    s = re.sub(r'^bpt-?', '', s).strip("-")
-    # Rimuovi codice nazione finale (2-3 lettere)
-    s = re.sub(r'-[a-z]{2,3}$', '', s).strip("-")
-
-    citta = s.replace("-", " ").title().strip()
-    return citta, categoria
+    resp = requests.get(f"{FIVBEACH_BASE}{path}", headers=HTTP_HEADERS, params=params, timeout=30)
+    resp.raise_for_status()
+    m = re.search(r'data-page="(.*)"', resp.text, re.S)
+    if not m:
+        raise RuntimeError(f"Blob data-page non trovato su {path}")
+    return json.loads(html.unescape(m.group(1)))
 
 
-def scrape_bpt_tournaments(page) -> list[dict]:
+def fetch_tournaments_for_year(year: int) -> list[dict]:
+    """Lista tornei maschili per un anno (homepage calendario fivbeach.com)."""
+    data = fetch_page_json("/", params={"year": year, "gender": "M"})
+    return data.get("props", {}).get("tournaments", [])
+
+
+def is_excluded_type(tipo: str) -> bool:
+    t = (tipo or "").lower()
+    return any(kw in t for kw in EXCLUDE_TYPE_KEYWORDS)
+
+
+def parse_iso_date(s) -> date | None:
+    """fivbeach.com restituisce sempre date in formato 'YYYY-MM-DD'."""
+    if not s:
+        return None
+    try:
+        return datetime.strptime(str(s)[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def scrape_all_tournaments() -> list[dict]:
     """
-    Chiama direttamente l'API JSON di volleyballworld tramite Playwright.
-    Più affidabile dello scraping HTML — restituisce dati strutturati.
-    Esclude i tornei Futures (troppo numerosi e non rilevanti).
+    Scarica i tornei maschili per l'anno del mese target ± 1 (copre i
+    tornei il cui margine di viaggio sfora a cavallo di fine/inizio anno),
+    deduplica per id torneo e scarta solo le categorie non pertinenti.
     """
-    print(f"  → Chiamo API BPT: {API_URL}")
+    per_id: dict[int, dict] = {}
+    for y in (ANNO - 1, ANNO, ANNO + 1):
+        try:
+            for item in fetch_tournaments_for_year(y):
+                per_id[item["no"]] = item
+        except Exception as e:
+            print(f"    ATTENZIONE: impossibile scaricare il calendario {y}: {e}")
 
-    # Usa Playwright per fare la chiamata API (bypassa robots.txt)
-    response = page.request.get(API_URL, headers={
-        "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://en.volleyballworld.com/"
-    })
-
-    if not response.ok:
-        print(f"    ERRORE API: {response.status}")
-        return []
-
-    data = response.json()
-    print(f"    API risposta ricevuta — parsing tornei...")
-
-    tournaments = []
-    # La risposta può essere lista diretta o nested
-    items = data if isinstance(data, list) else data.get("competitions", data.get("events", data.get("results", [])))
-
-    for item in items:
-        # Estrai slug — serve per nome e location come fallback
-        slug_raw = (item.get("slug") or item.get("url_slug") or
-                    item.get("id") or "")
-        slug_str = str(slug_raw).lower()
-
-        # Salta i Futures (controlla sia slug che nome)
-        nome_api = (item.get("title") or item.get("name") or
-                    item.get("competition_name") or item.get("event_name") or "")
-        if any(skip in slug_str for skip in SKIP_CATEGORIES) or            any(skip in nome_api.lower() for skip in SKIP_CATEGORIES):
-            print(f"    Skip Futures: {slug_str or nome_api}")
+    tornei = []
+    for item in per_id.values():
+        if is_excluded_type(item.get("type")):
             continue
-
-        # Ricava città e categoria dallo slug (sempre affidabile)
-        citta_slug, categoria_slug = parse_slug(slug_str) if slug_str else ("", "")
-        nome_da_slug = f"{citta_slug} {categoria_slug}".strip() if categoria_slug else citta_slug
-
-        # Nome: preferisci API ma fallback su slug
-        nome = nome_api or nome_da_slug
-
-        # Location: preferisci API ma fallback su città dallo slug
-        location = (item.get("location") or item.get("city") or
-                   item.get("venue") or item.get("country") or "")
-        if isinstance(location, dict):
-            location = location.get("city", "") or location.get("name", "")
-        if not location:
-            location = citta_slug  # fallback affidabile dallo slug
-
-        # Estrai date
-        date_start_str = (item.get("start_date") or item.get("date_start") or
-                         item.get("startDate") or item.get("start") or "")
-        date_end_str   = (item.get("end_date") or item.get("date_end") or
-                         item.get("endDate") or item.get("end") or "")
-
-        d_start = parse_api_date(date_start_str)
-        d_end   = parse_api_date(date_end_str)
-
-        # URL pagina torneo
-        slug = slug_raw  # già estratto sopra
-        url = (item.get("url") or item.get("link") or
-               f"https://en.volleyballworld.com/beachvolleyball/competitions/beach-pro-tour/events/{slug}/")
-
-        # Cerca presenza giocatore nella lista teams/players se disponibile
-        teams    = item.get("teams", item.get("players", item.get("athletes", [])))
-        teams_str = json.dumps(teams).lower() if teams else ""
-        found_in_api = any(term in teams_str for term in PLAYER_SEARCH_TERMS)
-
-        tournaments.append({
-            "nome":             nome,
-            "slug":             str(slug),
-            "url":              url,
-            "date_start":       d_start,
-            "date_end":         d_end,
-            "location":         location,
-            "gianluca_presente": found_in_api,
-            "raw":              item  # mantieni raw per debug
+        d_start = parse_iso_date(item.get("startDate"))
+        d_end   = parse_iso_date(item.get("endDate"))
+        if not d_start or not d_end:
+            continue
+        citta    = (item.get("city") or "").strip()
+        paese    = (item.get("country") or "").strip()
+        location = ", ".join(p for p in (citta, paese) if p) or "Location TBD"
+        tornei.append({
+            "no":                item["no"],
+            "nome":              item.get("name") or item.get("title") or item.get("code") or "Torneo",
+            "tipo":              item.get("type"),
+            "location":          location,
+            "date_start":        d_start,
+            "date_end":          d_end,
+            "gianluca_presente": False,
         })
 
-    print(f"    Tornei parsati (esclusi Futures): {len(tournaments)}")
-    return tournaments
+    print(f"    Tornei scaricati (esclusi tour nazionali/giovanili/multisport): {len(tornei)}")
+    return tornei
 
 
-def parse_api_date(date_str) -> date:
-    """Converte stringa data API in oggetto date. Gestisce stringhe e timestamp Unix."""
-    if not date_str:
-        return None
-    from datetime import datetime
-
-    # Se è già un oggetto date
-    if isinstance(date_str, date):
-        return date_str
-
-    # Timestamp Unix (int o float) — es. 1782864000
-    if isinstance(date_str, (int, float)):
-        try:
-            from datetime import timezone as _tz
-            return datetime.fromtimestamp(date_str, tz=_tz.utc).date()
-        except (ValueError, OSError, OverflowError):
-            print(f"      ATTENZIONE: timestamp Unix non valido: {date_str}")
-            return None
-
-    # Converti in stringa se necessario
-    date_str = str(date_str).strip()
-
-    # Gestisci anche stringa numerica pura (timestamp come stringa)
-    if date_str.isdigit() and len(date_str) >= 10:
-        try:
-            from datetime import timezone as _tz
-            return datetime.fromtimestamp(int(date_str), tz=_tz.utc).date()
-        except (ValueError, OSError, OverflowError):
-            pass
-
-    # Prova vari formati — dal più comune al meno comune
-    formats = [
-        "%Y-%m-%d",           # 2026-07-01
-        "%Y-%m-%dT%H:%M:%S",  # 2026-07-01T00:00:00
-        "%Y-%m-%dT%H:%M:%SZ", # 2026-07-01T00:00:00Z
-        "%Y-%m-%dT%H:%M:%S.%f", # con millisecondi
-        "%d/%m/%Y",
-        "%m/%d/%Y",
-        "%Y%m%d",
-        "%d-%m-%Y",
-        "%B %d, %Y",          # July 1, 2026
-        "%d %B %Y",           # 1 July 2026
-    ]
-
-    # Prima prova i primi 10 caratteri (data senza ora)
-    for fmt in formats:
-        try:
-            # Prova stringa completa
-            return datetime.strptime(date_str, fmt).date()
-        except ValueError:
-            pass
-        try:
-            # Prova solo i primi 10 caratteri
-            return datetime.strptime(date_str[:10], "%Y-%m-%d").date()
-        except ValueError:
-            pass
-
-    print(f"      ATTENZIONE: formato data non riconosciuto: '{date_str}'")
-    return None
-
-
-def scrape_tournament_details(page, tournament: dict) -> dict:
-    """
-    Entra nella pagina del singolo torneo e recupera:
-    - date precise
-    - location
-    - se "Dal Corso" è nella lista partecipanti
-    """
-    url = tournament["url"]
-    print(f"    Analizzo: {url}")
-
-    # Assicura URL assoluto
-    base_url = url
-    if base_url.startswith("/"):
-        base_url = "https://en.volleyballworld.com" + base_url
-    elif not base_url.startswith("http"):
-        base_url = "https://en.volleyballworld.com/" + base_url
-
-    # Vai direttamente alla pagina squadre maschili (dove appare "Cottafava/Dal Corso")
-    teams_url = base_url.rstrip("/") + "/teams/men/by-country/"
-
-    for check_url in [teams_url, base_url]:
-        try:
-            page.goto(check_url, wait_until="domcontentloaded", timeout=45000)
-            page.wait_for_timeout(3000)  # pausa anti-rate-limit
-        except PlaywrightTimeout:
-            print(f"      Timeout su {check_url}, skip")
-            page.wait_for_timeout(5000)  # pausa extra dopo timeout
-            continue
-
-        # Aspetta rendering JS lista squadre
-        try:
-            page.wait_for_selector("table, [class*='team'], [class*='player']", timeout=8000)
-        except Exception:
-            pass
-        page.wait_for_timeout(2000)
-
-        full_text = page.inner_text("body").lower()
-        found = any(term in full_text for term in PLAYER_SEARCH_TERMS)
-
-        if found:
-            matched = [t for t in PLAYER_SEARCH_TERMS if t in full_text]
-            print(f"      ✅ Trovato {matched} su {check_url}")
-            tournament["gianluca_presente"] = True
-            break
-    else:
-        tournament["gianluca_presente"] = False
-
-    # Estrai date dalla pagina — ma SOLO se non le abbiamo già dall'API
-    # Le date API sono affidabili; lo scraping HTML è fallback
-    if not tournament.get("date_start") or not tournament.get("date_end"):
-        d_s, d_e = extract_dates_from_page(page, full_text)
-        if d_s:
-            tournament["date_start"] = d_s
-        if d_e:
-            tournament["date_end"] = d_e
-
-    # Estrai location — priorità: API → scraping pagina → slug
-    if not tournament.get("location"):
-        tournament["location"] = extract_location_from_page(page, full_text, tournament["slug"])
-    else:
-        # Prova a migliorare location se è ancora vuota o troppo generica
-        loc = tournament.get("location", "")
-        if not loc or loc == "Location TBD":
-            tournament["location"] = extract_location_from_page(page, full_text, tournament["slug"])
-
-    return tournament
-
-
-def extract_dates_from_page(page, full_text: str):
-    """
-    Tenta di estrarre date start/end dalla pagina del torneo.
-    Restituisce (date_start, date_end) o (None, None).
-    """
-    import re
-    from datetime import datetime
-
-    MESI_EN = {
-        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
-        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
-        "january": 1, "february": 2, "march": 3, "april": 4, "june": 6,
-        "july": 7, "august": 8, "september": 9, "october": 10,
-        "november": 11, "december": 12
-    }
-
-    # Pattern: "15 - 20 Jul 2026" o "15-20 Jul 2026"
-    pattern1 = r'(\d{1,2})\s*[-–]\s*(\d{1,2})\s+([a-z]{3,9})\s+(\d{4})'
-    m = re.search(pattern1, full_text)
-    if m:
-        d_start, d_end, month_str, year = m.groups()
-        month = MESI_EN.get(month_str[:3].lower())
-        if month:
-            try:
-                return (
-                    date(int(year), month, int(d_start)),
-                    date(int(year), month, int(d_end))
-                )
-            except ValueError:
-                pass
-
-    # Pattern: "Jul 15 - 20, 2026"
-    pattern2 = r'([a-z]{3,9})\s+(\d{1,2})\s*[-–]\s*(\d{1,2}),?\s*(\d{4})'
-    m = re.search(pattern2, full_text)
-    if m:
-        month_str, d_start, d_end, year = m.groups()
-        month = MESI_EN.get(month_str[:3].lower())
-        if month:
-            try:
-                return (
-                    date(int(year), month, int(d_start)),
-                    date(int(year), month, int(d_end))
-                )
-            except ValueError:
-                pass
-
-    # Pattern: "15 Jul - 20 Jul 2026"
-    pattern3 = r'(\d{1,2})\s+([a-z]{3,9})\s*[-–]\s*(\d{1,2})\s+([a-z]{3,9})\s+(\d{4})'
-    m = re.search(pattern3, full_text)
-    if m:
-        d_start, m_start, d_end, m_end, year = m.groups()
-        month_s = MESI_EN.get(m_start[:3].lower())
-        month_e = MESI_EN.get(m_end[:3].lower())
-        if month_s and month_e:
-            try:
-                return (
-                    date(int(year), month_s, int(d_start)),
-                    date(int(year), month_e, int(d_end))
-                )
-            except ValueError:
-                pass
-
-    return None, None
-
-
-def extract_location_from_page(page, full_text: str, slug: str) -> str:
-    """
-    Estrae la location del torneo.
-    Prima prova elementi specifici, poi legge dallo slug URL.
-    """
-    # Prova a trovare la città in elementi h1/h2/title
-    location_el = page.query_selector("h1, h2, [class*='location'], [class*='city']")
-    if location_el:
-        text = location_el.inner_text().strip()
-        if len(text) < 60:
-            return text
-
-    # Estrai dalla slug URL: "bpt-elite16-hamburg-2026" → "Hamburg"
-    # Rimuovi prefissi noti, categorie e anno
-    slug_clean = re.sub(
-        r'bpt[-_]?|elite[-_]?\d*|elite\d*|challenger[-_]?|futures[-_]?|\d{4}[-_]?|[-_]\d{4}',
-        '', slug, flags=re.IGNORECASE
-    )
-    slug_clean = slug_clean.strip("-_ ").replace("-", " ").replace("_", " ").title()
-    if slug_clean:
-        return slug_clean
-
-    return "Location TBD"
+def check_player_in_tournament(no: int) -> bool:
+    """Controlla la lista iscritti del torneo per 'Dal Corso' / 'Cottafava'."""
+    try:
+        data = fetch_page_json(f"/tournaments/{no}")
+    except Exception as e:
+        print(f"      ATTENZIONE: impossibile leggere la pagina del torneo {no}: {e}")
+        return False
+    teams = data.get("props", {}).get("teams") or []
+    for team in teams:
+        blob = json.dumps(team).lower()
+        if any(term in blob for term in PLAYER_SEARCH_TERMS):
+            return True
+    return False
 
 
 # ─── CALCOLO PERIODI VIAGGIO ─────────────────────────────────────────────────────
@@ -448,15 +219,8 @@ def calcola_periodi(torneo: dict) -> dict:
     - rientro (giorno dopo fine)
     - riposo (2 giorni dopo rientro)
     """
-    # Assicura che le date siano oggetti date (potrebbero essere stringhe dall'API)
     d_start = torneo["date_start"]
     d_end   = torneo["date_end"]
-    if isinstance(d_start, str):
-        d_start = parse_api_date(d_start)
-    if isinstance(d_end, str):
-        d_end = parse_api_date(d_end)
-    if not d_start or not d_end:
-        raise ValueError(f"Date mancanti per torneo: {torneo.get('nome', '?')}")
     loc     = torneo["location"]
 
     anticipo   = 6 if is_oltreoceano(loc) else 4
@@ -615,62 +379,6 @@ def _aggiungi_weekend(lines, primo, ultimo, tornei):
         lines.append(f"   Sabati in trasferta/torneo: {giorni_str} {mese_abbr}")
 
 
-# ─── GOOGLE DRIVE ───────────────────────────────────────────────────────────────
-
-def get_drive_service():
-    creds_b64  = os.environ["GOOGLE_CREDENTIALS"]
-    creds_json = json.loads(base64.b64decode(creds_b64))
-    scopes     = ["https://www.googleapis.com/auth/drive"]
-    creds      = Credentials.from_service_account_info(creds_json, scopes=scopes)
-    return build("drive", "v3", credentials=creds)
-
-
-def drive_save_txt(service, content: str, filename: str, folder_id: str):
-    """
-    Salva il testo BPT su Drive come Google Doc nativo.
-    Usa mimeType nativo per evitare storageQuotaExceeded dei service account.
-    """
-    import io
-    from googleapiclient.http import MediaIoBaseUpload
-
-    # Cerca file esistente
-    query = f"name='{filename}' and '{folder_id}' in parents and trashed=false"
-    results = service.files().list(
-        q=query, fields="files(id)",
-        supportsAllDrives=True,
-        includeItemsFromAllDrives=True
-    ).execute()
-    existing = results.get("files", [])
-
-    # Carica come testo plain — il contenuto va nel body
-    media = MediaIoBaseUpload(
-        io.BytesIO(content.encode("utf-8")),
-        mimetype="text/plain",
-        resumable=False
-    )
-
-    if existing:
-        service.files().update(
-            fileId=existing[0]["id"],
-            media_body=media,
-            supportsAllDrives=True
-        ).execute()
-        print(f"    File aggiornato: {filename}")
-    else:
-        meta = {
-            "name": filename,
-            "parents": [folder_id],
-            "mimeType": "application/vnd.google-apps.document"
-        }
-        service.files().create(
-            body=meta,
-            media_body=media,
-            fields="id",
-            supportsAllDrives=True
-        ).execute()
-        print(f"    File creato: {filename}")
-
-
 # ─── SUPABASE ────────────────────────────────────────────────────────────────────
 
 def supabase_update_bpt(testo: str, n_tornei: int):
@@ -714,74 +422,36 @@ def supabase_update_bpt(testo: str, n_tornei: int):
 # ─── MAIN ─────────────────────────────────────────────────────────────────────────
 
 def main():
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=True)
-        page    = browser.new_page()
+    print(f"▶ BPT Calendar — mese da pianificare: {MESE_LABEL}")
 
-        # User agent realistico per evitare blocchi
-        page.set_extra_http_headers({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
-        })
+    tutti = scrape_all_tournaments()
 
-        # 1. Carica lista tornei BPT
-        tournaments = scrape_bpt_tournaments(page)
+    primo_mese  = date(ANNO, MESE_NUM, 1)
+    ultimo_mese = primo_mese + relativedelta(months=1) - timedelta(days=1)
 
-        if not tournaments:
-            print("  ATTENZIONE: nessun torneo trovato sul sito BPT")
-            testo = genera_testo_calendario([])
-            browser.close()
+    tornei_mese = []
+    for t in tutti:
+        anticipo      = 6 if is_oltreoceano(t["location"]) else 4
+        data_partenza = t["date_start"] - timedelta(days=anticipo)
+        data_riposo   = t["date_end"] + timedelta(days=3)
+
+        if not (data_riposo >= primo_mese and data_partenza <= ultimo_mese):
+            continue  # torneo fuori dal mese target
+
+        time.sleep(0.3)  # cortesia verso il server, non serve anti-rate-limit aggressivo
+        if check_player_in_tournament(t["no"]):
+            t["gianluca_presente"] = True
+            tornei_mese.append(t)
+            print(f"    ✅ {t['nome']} — {t['date_start']} → {t['date_end']} @ {t['location']}")
         else:
-            # 2. Filtra tornei nel mese da pianificare
-            # L'API può già includere i giocatori — se non li include,
-            # apre la pagina del torneo solo per quelli con date nel mese target
-            primo_mese  = date(ANNO, MESE_NUM, 1)
-            ultimo_mese = primo_mese + relativedelta(months=1) - timedelta(days=1)
+            print(f"    ✗  {t['nome']} ({t['tipo']}) — Dal Corso non trovato")
 
-            tornei_mese = []
-            for t in tournaments:
-                d_start = t.get("date_start")
-                d_end   = t.get("date_end")
+    testo = genera_testo_calendario(tornei_mese)
+    print(f"\n  Calendario generato — {len(tornei_mese)} torneo/i nel mese")
+    print("  " + "\n  ".join(testo.split("\n")[:8]))  # preview prime righe
 
-                if not d_start or not d_end:
-                    continue
-
-                # Calcola se il torneo interessa il mese target
-                anticipo      = 6 if is_oltreoceano(t.get("location", "")) else 4
-                data_partenza = d_start - timedelta(days=anticipo)
-                data_riposo   = d_end + timedelta(days=3)
-
-                if not (data_riposo >= primo_mese and data_partenza <= ultimo_mese):
-                    continue  # torneo fuori dal mese target
-
-                # Se l'API non ha già i giocatori, apri la pagina del torneo
-                if not t.get("gianluca_presente"):
-                    details = scrape_tournament_details(page, t)
-                    # Merge selettivo: aggiorna solo campi non-None e non già presenti
-                    # (evita di sovrascrivere date valide dall'API con None da scraping)
-                    for k, v in details.items():
-                        if v is not None or k not in t:
-                            t[k] = v
-
-                if t.get("gianluca_presente"):
-                    tornei_mese.append(t)
-                    print(f"    ✅ {t['nome']} — {d_start} → {d_end} @ {t['location']}")
-                else:
-                    print(f"    ✗  {t['nome']} — Dal Corso non trovato")
-
-                # Pausa anti-rate-limit tra un torneo e l'altro
-                page.wait_for_timeout(4000)
-
-        browser.close()
-
-        # 3. Genera testo calendario
-        testo = genera_testo_calendario(tornei_mese)
-        print(f"\n  Calendario generato — {len(tornei_mese)} torneo/i nel mese")
-        print("  " + "\n  ".join(testo.split("\n")[:8]))  # preview prime righe
-
-        # 4. Salva su Supabase (testo leggibile dalla webapp)
-        supabase_update_bpt(testo, len(tornei_mese))
-        # Nota: il testo è disponibile nella webapp tramite Supabase
-        # Non serve Drive per questo file — è testo breve
+    supabase_update_bpt(testo, len(tornei_mese))
+    # Nota: il testo è disponibile nella webapp tramite Supabase — non serve Drive
 
     print(f"\n✅ BPT Calendar completato — {MESE_LABEL}")
     print(f"   Tornei trovati: {len(tornei_mese)}")
