@@ -13,11 +13,14 @@ Step 27/28, ma quella rete scatta solo DOPO che qualcosa è già rotto).
 
 Questo script testa attivamente, senza modificare nulla, le tre
 credenziali più a rischio:
-  1. github_repo_dispatch_pat (Vault) — via RPC check_github_pat_health(),
-     che fa la stessa identica chiamata del trigger Postgres
-     (repository_dispatch con un event_type che non corrisponde a nessun
-     listener configurato, quindi non avvia alcun workflow) senza che il
-     PAT transiti mai fuori dal database.
+  1. github_repo_dispatch_pat (Vault) — via le RPC submit_github_pat_
+     healthcheck() + get_http_response_status(), che fanno la stessa
+     identica chiamata del trigger Postgres (repository_dispatch con un
+     event_type che non corrisponde a nessun listener configurato, quindi
+     non avvia alcun workflow) senza che il PAT transiti mai fuori dal
+     database. Due RPC separate (non una sola con polling interno via
+     pg_sleep) perché Supabase applica uno statement_timeout alle RPC che
+     un polling fatto dentro la funzione SQL supererebbe facilmente.
   2. Service account Google (Drive) — drive.about().get(), chiamata
      innocua che richiede solo credenziali valide.
   3. Refresh token Gmail — gmail.users().getProfile(), stesso principio.
@@ -39,6 +42,7 @@ Variabili d'ambiente richieste:
 
 import os
 import json
+import time
 import base64
 from datetime import datetime, timezone
 
@@ -81,17 +85,40 @@ def write_status(cred_id, ok, error_msg=None):
 
 
 def check_github_pat():
+    """
+    Il test vero e proprio (chiamata a GitHub con il PAT letto da Vault)
+    gira in una funzione Postgres via pg_net, senza farlo mai transitare
+    fuori dal database — ma pg_net è asincrono: la risposta arriva in
+    una tabella separata (net._http_response), non nella stessa chiamata.
+    Una prima versione faceva il polling con pg_sleep DENTRO la funzione
+    SQL: ha sbattuto contro lo statement_timeout imposto da Supabase alle
+    RPC (errore 57014) con una finestra anche solo di 12s. Soluzione:
+    submit (istantaneo) e poll (anch'esso istantaneo, ripetuto da qui in
+    Python, dove dormire non ha questo limite).
+    """
     print("[HEALTH] Controllo github_repo_dispatch_pat...")
     try:
         r = requests.post(
-            f"{SUPABASE_URL}/rest/v1/rpc/check_github_pat_health",
-            json={}, headers=supabase_headers(), timeout=15
+            f"{SUPABASE_URL}/rest/v1/rpc/submit_github_pat_healthcheck",
+            json={}, headers=supabase_headers(), timeout=10
         )
         if r.status_code != 200:
-            raise RuntimeError(f"RPC fallita: {r.status_code} {r.text}")
-        status_code = r.json().get('status_code')
+            raise RuntimeError(f"RPC submit fallita: {r.status_code} {r.text}")
+        request_id = r.json()
+
+        status_code = None
+        for _ in range(15):
+            time.sleep(1)
+            rp = requests.post(
+                f"{SUPABASE_URL}/rest/v1/rpc/get_http_response_status",
+                json={'request_id': request_id}, headers=supabase_headers(), timeout=10
+            )
+            if rp.status_code == 200 and rp.json() is not None:
+                status_code = rp.json()
+                break
+
         if status_code != 204:
-            raise RuntimeError(f"GitHub ha risposto {status_code} invece di 204 — PAT scaduto/revocato o permessi insufficienti.")
+            raise RuntimeError(f"GitHub ha risposto {status_code!r} invece di 204 — PAT scaduto/revocato o permessi insufficienti.")
         print(f"    ✅ OK (GitHub status {status_code})")
         write_status('github_repo_dispatch_pat', True)
         return True
