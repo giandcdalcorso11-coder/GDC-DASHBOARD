@@ -1,0 +1,39 @@
+name: Export Scheda PDF
+
+# Riceve il repository_dispatch inviato dal trigger Postgres su
+# scheda_pdf_requests (notify_scheda_pdf_requested) ogni volta che la
+# webapp chiede l'export PDF di una scheda azienda (A5.2). Nessun
+# agente né script esistente modificato per questo: il trigger vive in
+# Supabase, non in GitHub. Vedi scripts/export_scheda_pdf.py.
+
+on:
+  repository_dispatch:
+    types: [export-scheda-pdf]
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests playwright
+
+      - name: Install Chromium (Playwright)
+        run: playwright install --with-deps chromium
+
+      - name: Esporta PDF scheda azienda
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          REQUEST_ID:        ${{ github.event.client_payload.request_id }}
+          COMPANY_ID:        ${{ github.event.client_payload.company_id }}
+        run: python scripts/export_scheda_pdf.py

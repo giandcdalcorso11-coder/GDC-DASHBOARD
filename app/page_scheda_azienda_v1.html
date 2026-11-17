@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDC WORKSPACE — Scheda Azienda</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF;
+  --life:#C2193A; --life-bg:#F5E0E6;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;}
+@media(prefers-color-scheme:dark){
+  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+}
+body{ display:flex; flex-direction:column; }
+.topbar{ display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--bianco); border-bottom:1.5px solid var(--border); flex-wrap:wrap; }
+.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--carta); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; }
+.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.topbar-title{ font-weight:800; font-size:.86rem; flex:1; min-width:120px; }
+.export-btn{ font-family:inherit; font-size:.72rem; font-weight:700; border:1.5px solid var(--maker); background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:6px 14px; cursor:pointer; white-space:nowrap; }
+.export-btn:disabled{ opacity:.6; cursor:default; }
+.export-status{ font-size:.68rem; color:var(--grigio); white-space:nowrap; }
+.export-dl{ font-size:.72rem; font-weight:700; color:var(--maker); text-decoration:underline; white-space:nowrap; }
+.export-err{ font-size:.68rem; color:var(--life); }
+.scheda-frame{ flex:1; width:100%; border:none; min-height:calc(100vh - 54px); }
+.empty-state{ text-align:center; padding:60px 16px; color:var(--grigio); font-size:.82rem; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-btn" id="backBtn" href="../page_pipeline_v1.html">&#8592; Azienda</a>
+  <div class="topbar-title" id="topTitle">Scheda azienda</div>
+  <span class="export-status" id="exportStatus"></span>
+  <a class="export-dl" id="exportDl" href="#" target="_blank" style="display:none;">Scarica PDF &#8595;</a>
+  <button class="export-btn" id="exportBtn" onclick="exportPdf()">Esporta PDF</button>
+</div>
+
+<div id="emptyState" class="empty-state" style="display:none;">
+  Scheda non ancora prodotta da Agente 5.2 per questa azienda.
+</div>
+<iframe id="schedaFrame" class="scheda-frame" style="display:none;"></iframe>
+
+<script>
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+  let banner=document.getElementById('gdcSessionBanner');
+  if(!banner){ banner=document.createElement('div'); banner.id='gdcSessionBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent='Sessione scaduta — reindirizzamento al login...';
+  setTimeout(()=>{ window.location.href='../page_login_v6.html'; },1600);
+}
+async function sbFetch(url,options){
+  options=options||{};
+  const headers=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+gdcToken()},options.headers||{});
+  const res=await fetch(url,Object.assign({},options,{headers:headers}));
+  if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+const params = new URLSearchParams(window.location.search);
+const companyId = params.get('id');
+
+if(companyId){
+  document.getElementById('backBtn').href = '../page_company_v2.html?id=' + encodeURIComponent(companyId);
+}
+
+async function loadCompanyName(){
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/companies?id=eq.'+encodeURIComponent(companyId)+'&select=nome');
+    const rows = await r.json();
+    if(rows && rows[0]) document.getElementById('topTitle').textContent = 'Scheda — ' + rows[0].nome;
+  }catch(e){ console.error('Errore lettura nome azienda:', e); }
+}
+
+async function loadScheda(){
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/schede_aziendali?company_id=eq.'+encodeURIComponent(companyId)+'&select=html');
+    const rows = await r.json();
+    if(!rows || !rows[0]){
+      document.getElementById('emptyState').style.display='block';
+      document.getElementById('exportBtn').disabled = true;
+      return;
+    }
+    const frame = document.getElementById('schedaFrame');
+    frame.srcdoc = rows[0].html;
+    frame.style.display='block';
+  }catch(e){
+    console.error('Errore caricamento scheda:', e);
+    document.getElementById('emptyState').textContent = 'Impossibile caricare la scheda al momento.';
+    document.getElementById('emptyState').style.display='block';
+  }
+}
+
+let pollTimer = null;
+
+async function exportPdf(){
+  const btn = document.getElementById('exportBtn');
+  const status = document.getElementById('exportStatus');
+  const dl = document.getElementById('exportDl');
+  dl.style.display = 'none';
+  btn.disabled = true;
+  status.textContent = 'Generazione in corso...';
+  status.className = 'export-status';
+
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/scheda_pdf_requests', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({ company_id: companyId })
+    });
+    const rows = await r.json();
+    const requestId = rows && rows[0] && rows[0].id;
+    if(!requestId) throw new Error('Richiesta non creata');
+    pollRequest(requestId, 0);
+  }catch(e){
+    console.error('Errore avvio export PDF:', e);
+    status.textContent = '';
+    showError('Impossibile avviare la generazione — riprova.');
+    btn.disabled = false;
+  }
+}
+
+async function pollRequest(requestId, attempt){
+  const btn = document.getElementById('exportBtn');
+  const status = document.getElementById('exportStatus');
+  const dl = document.getElementById('exportDl');
+
+  if(attempt >= 40){
+    status.textContent = '';
+    showError('Ancora in corso dopo 2 minuti — riprova più tardi, potrebbe comunque completarsi.');
+    btn.disabled = false;
+    return;
+  }
+
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/scheda_pdf_requests?id=eq.'+encodeURIComponent(requestId)+'&select=status,pdf_url,error_message');
+    const rows = await r.json();
+    const row = rows && rows[0];
+    if(!row){ scheduleNext(requestId, attempt); return; }
+
+    if(row.status === 'done'){
+      status.textContent = '';
+      dl.href = row.pdf_url;
+      dl.style.display = 'inline';
+      btn.disabled = false;
+      btn.textContent = 'Esporta di nuovo';
+      return;
+    }
+    if(row.status === 'error'){
+      status.textContent = '';
+      showError(row.error_message || 'Errore durante la generazione.');
+      btn.disabled = false;
+      return;
+    }
+    status.textContent = 'Generazione in corso... (' + (attempt+1) + ')';
+    scheduleNext(requestId, attempt);
+  }catch(e){
+    console.error('Errore polling export PDF:', e);
+    scheduleNext(requestId, attempt);
+  }
+}
+
+function scheduleNext(requestId, attempt){
+  clearTimeout(pollTimer);
+  pollTimer = setTimeout(()=>pollRequest(requestId, attempt+1), 3000);
+}
+
+function showError(msg){
+  const status = document.getElementById('exportStatus');
+  status.textContent = msg;
+  status.className = 'export-status export-err';
+}
+
+if(!companyId){
+  document.getElementById('emptyState').textContent = 'Nessuna azienda indicata.';
+  document.getElementById('emptyState').style.display='block';
+} else if(!gdcToken()){
+  window.location.href='../page_login_v6.html';
+} else {
+  loadCompanyName();
+  loadScheda();
+}
+</script>
+</body>
+</html>
