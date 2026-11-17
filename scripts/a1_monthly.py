@@ -424,7 +424,8 @@ def fetch_mbs_reposts():
             send_push(
                 f"⚠ A1: MBS mancante — {MESE_LABEL}",
                 "Repost esclusi da questo giro. Carica il CSV quando puoi.",
-                upload_url
+                upload_url,
+                notif_key='a1_mbs'
             )
         return []
 
@@ -446,7 +447,8 @@ def fetch_mbs_reposts():
         send_push(
             f"✅ A1: MBS recuperato — {MESE_LABEL}",
             "Repost trovati ed elaborati.",
-            f"{WEBAPP_BASE}/app/page_home_v25.html"
+            f"{WEBAPP_BASE}/app/page_home_v25.html",
+            notif_key='a1_mbs'
         )
 
     data = supabase.storage.from_(MBS_BUCKET).download(path)
@@ -1284,8 +1286,42 @@ def delete_push_subscription(endpoint):
     requests.delete(url, headers=supabase_headers(), timeout=10)
 
 
-def send_push(title, body, link=None):
+_notif_prefs_cache = None
+
+
+def get_notification_prefs():
+    """Preferenze da user_settings (pagina Impostazioni). Fail-open: riga assente
+    o richiesta fallita = notifica considerata attiva."""
+    global _notif_prefs_cache
+    if _notif_prefs_cache is not None:
+        return _notif_prefs_cache
+    try:
+        r = requests.get(
+            f"{SUPA_URL}/rest/v1/user_settings?select=settings&order=updated_at.desc&limit=1",
+            headers=supabase_headers(), timeout=10
+        )
+        if r.status_code == 200 and r.json():
+            _notif_prefs_cache = (r.json()[0].get('settings') or {}).get('notifications') or {}
+        else:
+            _notif_prefs_cache = {}
+    except Exception as e:
+        print(f"    ⚠ Errore lettura user_settings: {e} — notifiche considerate attive (fail-open)")
+        _notif_prefs_cache = {}
+    return _notif_prefs_cache
+
+
+def notification_enabled(key):
+    prefs = get_notification_prefs()
+    if prefs.get('master') is False:
+        return False
+    return prefs.get(key) is not False
+
+
+def send_push(title, body, link=None, notif_key='a1_completato'):
     """Invia Web Push a tutti i dispositivi registrati (push_subscriptions)."""
+    if not notification_enabled(notif_key):
+        print(f"    Push: notifica '{notif_key}' disattivata nelle Impostazioni — skip.")
+        return
     subs = get_push_subscriptions()
     if not subs:
         print("    Push: nessun dispositivo registrato — skip.")

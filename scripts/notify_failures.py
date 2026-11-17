@@ -83,7 +83,42 @@ def delete_subscription(endpoint):
     requests.delete(url, headers=supabase_headers(), timeout=10)
 
 
+_notif_prefs_cache = None
+
+
+def get_notification_prefs():
+    """Preferenze da user_settings (pagina Impostazioni). Fail-open: riga assente
+    o richiesta fallita = notifica considerata attiva, per non silenziare per
+    errore una rete di sicurezza."""
+    global _notif_prefs_cache
+    if _notif_prefs_cache is not None:
+        return _notif_prefs_cache
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/user_settings?select=settings&order=updated_at.desc&limit=1",
+            headers=supabase_headers(), timeout=10
+        )
+        if r.status_code == 200 and r.json():
+            _notif_prefs_cache = (r.json()[0].get('settings') or {}).get('notifications') or {}
+        else:
+            _notif_prefs_cache = {}
+    except Exception as e:
+        print(f"⚠ Errore lettura user_settings: {e} — notifiche considerate attive (fail-open)")
+        _notif_prefs_cache = {}
+    return _notif_prefs_cache
+
+
+def notification_enabled(key):
+    prefs = get_notification_prefs()
+    if prefs.get('master') is False:
+        return False
+    return prefs.get(key) is not False
+
+
 def send_push_all():
+    if not notification_enabled('errore_automazione'):
+        print("    Push: notifica 'Errore automazione' disattivata nelle Impostazioni — skip.")
+        return
     subs = get_subscriptions()
     if not subs:
         print("    Push: nessun dispositivo registrato — skip "

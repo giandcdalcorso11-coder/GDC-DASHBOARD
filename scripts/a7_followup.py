@@ -319,7 +319,41 @@ def delete_subscription(endpoint):
                      headers=supabase_headers(), timeout=10)
 
 
-def send_push_all(title, body, url):
+_notif_prefs_cache = None
+
+
+def get_notification_prefs():
+    """Preferenze da user_settings (pagina Impostazioni). Fail-open: riga assente
+    o richiesta fallita = notifica considerata attiva."""
+    global _notif_prefs_cache
+    if _notif_prefs_cache is not None:
+        return _notif_prefs_cache
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/user_settings?select=settings&order=updated_at.desc&limit=1",
+            headers=supabase_headers(), timeout=10
+        )
+        if r.status_code == 200 and r.json():
+            _notif_prefs_cache = (r.json()[0].get('settings') or {}).get('notifications') or {}
+        else:
+            _notif_prefs_cache = {}
+    except Exception as e:
+        print(f"[A7-FU]   Errore lettura user_settings: {e} — notifiche considerate attive (fail-open)")
+        _notif_prefs_cache = {}
+    return _notif_prefs_cache
+
+
+def notification_enabled(key):
+    prefs = get_notification_prefs()
+    if prefs.get('master') is False:
+        return False
+    return prefs.get(key) is not False
+
+
+def send_push_all(title, body, url, notif_key):
+    if not notification_enabled(notif_key):
+        print(f"[A7-FU]   Push: notifica '{notif_key}' disattivata nelle Impostazioni — skip.")
+        return
     subs = get_push_subscriptions()
     if not subs:
         print("[A7-FU]   Push: nessun dispositivo registrato — skip.")
@@ -421,7 +455,7 @@ def main():
 
             link = f"{WEBAPP_BASE}/page_company_v2.html?id={co['id']}"
             log_activity('A7', f"{nome} — Follow-up {next_n}", "Bozza di sollecito pronta su Gmail.", link)
-            send_push_all(f"{nome} — Follow-up {next_n} pronto", "Apri Gmail e controlla prima di inviare.", link)
+            send_push_all(f"{nome} — Follow-up {next_n} pronto", "Apri Gmail e controlla prima di inviare.", link, 'a7_followup_pronto')
 
             processed += 1
 
@@ -445,7 +479,8 @@ def main():
         send_push_all(
             "Follow-up in attesa di testo",
             f"{len(missing_txt)} follow-up pronti per essere scritti: " + ", ".join(missing_txt[:5]),
-            f"{WEBAPP_BASE}/page_pipeline_v1.html"
+            f"{WEBAPP_BASE}/page_pipeline_v1.html",
+            'a7_followup_mancante'
         )
 
     # Un vero errore tecnico (Drive irraggiungibile, folder non risolta,
