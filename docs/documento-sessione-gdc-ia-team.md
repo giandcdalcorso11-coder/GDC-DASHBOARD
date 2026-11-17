@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 37
-**Ultimo aggiornamento:** 2026-11-17 13:45
+**Versione:** 38
+**Ultimo aggiornamento:** 2026-11-17 22:30
 
 ## Vision
 
@@ -243,7 +243,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 9 — Pagina Impostazioni/notifiche
 
-**Stato:** in corso — pagina reale pubblicata, manca il collegamento lato script
+**Stato:** completato
 
 **Obiettivo:** nuova pagina "Impostazioni" nella webapp con interruttori per attivare/disattivare le notifiche push, granulari per singola voce, più altre sezioni di utilità (dispositivi, stato automazioni, aspetto, account).
 
@@ -259,21 +259,72 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-12] Trovata `user_settings` durante l'audit Supabase generale. Non ancora deciso se riusarla.
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
 - [2026-11-17] Mockup iterato (struttura tab, poi dettaglio notifiche con master+sottomenù granulare, poi correzione pillola "Home" per coerenza con lo stile reale) e poi implementato nella pagina reale `app/page_settings_v1.html` con le 5 tab (Notifiche, Dispositivi, Automazioni, Aspetto, Account), tutte con dati reali tranne il collegamento lato script. Aggiunto un pulsante a icona (ingranaggio) sulla home come punto di accesso. Rimane da fare: far leggere le preferenze agli script che inviano le push (oggi salvate ma ignorate) e costruire il nuovo cron per le notifiche A2/A3/A4.
+- [2026-11-17, più tardi] **Step chiuso.** `a1_monthly.py`, `a7_followup.py`, `pipeline_notify.py` e `notify_failures.py` ora leggono `user_settings` (master + chiave specifica per ciascuna notifica) prima di ogni `webpush`, fail-open se la riga manca o la lettura fallisce. Costruito `scripts/a2a3a4_watcher.py` (cron orario, stesso principio di `pipeline_watcher.py`): confronta `agent_states.updated_at` con una nuova colonna di guardia `agent_states.last_notified_at` per A2/A3/A4 (che girano in sessione Claude Code, non via script — nessun evento su cui agganciarsi diversamente) e manda la push al primo completamento non ancora notificato. Verificato con due run reali su GitHub Actions: un run "pulito" (nessun output, corretto — i completamenti preesistenti erano stati marcati come già notificati in migrazione) e un run con un completamento simulato (disattivando temporaneamente `master` per non mandare una push fuorviante a Gianluca) che ha mostrato nei log esattamente il rilevamento + lo skip per preferenza disattivata attesi. Stato del database ripristinato dopo il test.
 
 ### Step 10 — Audit e miglioramento Team Commerciale (A5-A7)
 
-**Stato:** in corso — audit fatto, fix sospesi per dare priorità allo Step 9
+**Stato:** in corso — fragilità trovate risolte o attribuite consapevolmente; in corso la migrazione delle schede aziendali già prodotte (DOCX storici su Drive) verso il nuovo formato Supabase
 
 **Obiettivo:** individuare e risolvere le fragilità nel workflow del team commerciale (A5 Pipeline, A6 Media Kit, A7 Mail Generator); valutare poi se applicare alle pagine A5-A7 lo stesso redesign già fatto per A1-A4.
 
-**Decisioni progettuali:** nessuna sui fix veri e propri — solo diagnosi finora.
+**Decisioni progettuali:**
+- **"Pipeline Notify fermo da 52 giorni" non era un bug.** Verificato testando il PAT direttamente dal database (RPC temporanea via `pg_net`, stessa chiamata del trigger reale, mai transitato fuori da Postgres): GitHub risponde 204, il PAT funziona. L'ultimo cambio di step in assoluto in tutta la pipeline commerciale è del 25/09 (LiberNovo) — coincide esattamente con l'ultima run di Pipeline Notify. Causa reale: da 52 giorni non c'è stata nessuna attività commerciale, non un guasto tecnico.
+- **Fragilità A7 nota ma non corretta, su scelta esplicita di Gianluca:** `a7_gmail_drafter.py` (`find_pdf_for_attachment`), se il nome PDF nell'header `ATTACHMENT:` non combacia con nessun file in cartella, allega in silenzio il PDF più recente invece di segnalare un mismatch. Mai successo in pratica (struttura cartelle per azienda già protegge dal rischio più probabile) — lasciato com'è, rischio giudicato troppo teorico per giustificare la modifica.
+- **Notifiche "azienda bloccata da troppo tempo" (stuck-step reminder) scartate**, su indicazione di Gianluca: userebbe poco l'app in questo periodo, sarebbero notifiche quasi ignorate. Il vero problema del basso rendimento della pipeline non è la cadenza dei promemoria ma il tasso di risposta alle mail — già affrontato separatamente nei prompt A5.2/A6.2 (contatto nominativo invece di casella generica, canali multipli LinkedIn/Instagram, sequenza di follow-up automatici).
+- **Rischio credenziali generalizzato a tutta la catena**: stessa classe di rischio del PAT esiste anche per il service account Google e il refresh token Gmail — nessuno dei tre aveva un controllo proattivo prima di oggi.
+- **`agent_states` non scritto da A5.1, A5.2, A6.1** — stesso identico bug già trovato e corretto per A2 (v18)/A3 (v13)/A4, semplicemente mai riportato qui perché questi tre prompt precedono il fix. Confermato sui dati reali: entrambi fermi su `stato: sleep` da giorni nonostante lavoro reale nel frattempo.
+- **`agent_states` scartato esplicitamente per A6.2**: a differenza degli altri, A6.2 è una conversazione continuativa su una trattativa (si riaccumula nel tempo, spesso con più conversazioni attive insieme) — non ha un vero momento "done". Gianluca ha confermato: il pallino sarebbe comunque poco significativo per questo agente, non vale la complessità di un meccanismo a tempo. Lasciato senza segnalazione di stato.
+- **Scheda aziendale di A5.2: da DOCX+Drive a pagina HTML su Supabase**, stesso principio già adottato per i report A2/A3/A4 — motivato sia dalla scomodità del download-e-trascina (specialmente da iPad/telefono, dove i file scaricati non si aprono in formato nativo) sia dalla possibilità di offrire un export PDF on-demand per il caso raro ma reale di un collaboratore che ha bisogno del documento. Conseguenza riconosciuta e gestita: A6.1 e A6.2 leggevano la scheda da Drive — aggiornati anch'essi per leggerla da Supabase, altrimenti si sarebbero rotti al primo utilizzo dopo il cambio di A5.2.
+- **Media Kit di A6.1 lasciato invariato (PPTX + revisione manuale su Drive)**: a differenza della scheda, Gianluca corregge sempre a mano il PPTX in PowerPoint prima di esportarlo in PDF — un passaggio di editing reale, non solo una scomodità di formato. Convertirlo in HTML gli toglierebbe la possibilità di correggerlo come fa oggi.
+- **Schede già prodotte su Drive (16 aziende, verificato via query su `drive_folder_scheda`) da migrare al nuovo formato Supabase** — altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa già aperta (diverse sono a step 7-9, trattative potenzialmente ancora attive: Anthros, Sparco, Diablo Chairs, Secretlab, TCL Electronics, 24Bottles, Progetto Auto Srl, Hydro Flask). Non ancora eseguita — prossimo passo.
 
-**Criterio di completamento:** da definire quando si riprende (dipende da cosa si decide di correggere).
+**Criterio di completamento:** le fragilità trovate sono risolte o scartate con una motivazione esplicita (fatto); le 16 schede aziendali già su Drive sono migrate su Supabase senza perdita di contenuto, verificabile da A6.1/A6.2 su una trattativa reale già aperta (da fare).
 
 **Note (cronologia dello step):**
-- [2026-11-16] Audit eseguito su script e workflow GitHub Actions reali (a7_gmail_drafter.py, a7_followup.py, pipeline_watcher.py, pipeline_notify.py, notify_failures.py) più dati reali su Supabase. Trovato che "Pipeline Notify" (catena trigger Postgres → `pg_net` → PAT GitHub in Vault → `repository_dispatch`) non esegue da 52 giorni (ultima run 25/09) con zero segnalazione d'errore visibile in nessun log abituale — causa probabile un PAT scaduto/revocato, ma non verificata con certezza: coincide con un periodo in cui anche il resto della pipeline commerciale risulta fermo (nessun avanzamento step da fine settembre). Trovate anche 6 aziende bloccate allo step 3 (media kit in attesa di revisione/export PDF da parte di Gianluca) da luglio/inizio settembre — bottleneck di processo, non bug. Lavoro sospeso qui per passare allo Step 9.
+- [2026-11-16] Audit eseguito su script e workflow GitHub Actions reali (a7_gmail_drafter.py, a7_followup.py, pipeline_watcher.py, pipeline_notify.py, notify_failures.py) più dati reali su Supabase. Trovato che "Pipeline Notify" non esegue da 52 giorni, 6 aziende bloccate allo step 3 da luglio/inizio settembre (bottleneck di processo, non bug). Lavoro sospeso qui per passare allo Step 9.
+- [2026-11-17] Ripreso. Verificato (vedi sopra) che Pipeline Notify non è rotto. Costruito `scripts/credential_health_check.py` (cron giornaliero): testa PAT GitHub (via due RPC Postgres dedicate, `submit_github_pat_healthcheck` + `get_http_response_status` — una prima versione con un'unica RPC a polling sincrono via `pg_sleep` falliva contro lo `statement_timeout` di Supabase, risolto spostando il polling in Python), service account Google (`drive.about().get()`) e refresh token Gmail (`gmail.users().getProfile()`); scrive l'esito su `token_status` (stesso schema già usato per il token Instagram) e, se una fallisce, lascia che la rete di sicurezza `notify_failures.py` già esistente intercetti il workflow fallito — nessuna logica di push duplicata. Verificato con run reali su GitHub Actions dopo il fix.
+- [2026-11-17] Ricevuti e letti i prompt di A5.1 (v6), A5.2 (v8) e A6.1 (v7) — mai inviati prima perché l'aggiornamento della webapp era partito solo sui primi 4 agenti. Applicato il fix `agent_states` a tutti e tre (v6→v7, v8→v9, v7→v8): `Step 0` scrive `working` prima di iniziare, una riga aggiuntiva scrive `done` alla chiusura — stesso pattern di A2/A3/A4. File consegnati a Gianluca e salvati in `docs/prompts/`.
+- [2026-11-17] Ricevuti e letti i prompt di A6.1 (v7, già aggiornato sopra) e A6.2 (v10). Costruita l'infrastruttura per la scheda azienda in HTML: tabella `schede_aziendali` (company_id, html); caso "serve un PDF vero" gestito con tabella `scheda_pdf_requests` + trigger Postgres (`notify_scheda_pdf_requested`, stessa architettura del trigger pipeline già esistente) che avvisa GitHub via `repository_dispatch`; `scripts/export_scheda_pdf.py` (Playwright headless) renderizza la pagina, carica il PDF su un bucket Storage privato (`schede-pdf`) e scrive un link firmato (1h) sulla richiesta; nuova pagina webapp `app/page_scheda_azienda_v1.html` (visualizza la scheda, bottone "Esporta PDF" con polling); `page_company_v2.html` aggiornata (bottone "Scheda" al posto di "Cartella" per A5.2). Verificato con un test reale end-to-end (scheda finta, richiesta d'export, run GitHub Actions reale, PDF di 15KB caricato e scaricabile) — dati di test poi rimossi. Aggiornati di conseguenza i prompt: A5.2 v9→v10 (scrive la scheda su Supabase invece del DOCX, rimossa tutta la procedura cartella Drive), A6.1 v8→v9 e A6.2 v10→v11 (leggono la scheda da Supabase invece che da Drive). Tutto verificato con browser headless (nessun errore JS, bottone "Scheda" con link corretto) prima della consegna. File `.docx` inviati a Gianluca, versioni `.md` aggiornate in `docs/prompts/` (corretto anche un bug di conversione pre-esistente: alcune sottosezioni "Heading 2" sparivano silenziosamente invece di diventare intestazioni).
+- [2026-11-17, più tardi] Gianluca ha fatto notare che le 16 schede già prodotte su Drive (prima del cambio di formato) vanno migrate su Supabase altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa aperta — confermato con query diretta (vedi Decisioni progettuali). Non ancora eseguita, prossimo passo di questo step.
 
 ## Storico sessioni
+
+### [2026-11-17 22:30] Team Commerciale: notifiche collegate, credenziali sorvegliate, scheda A5.2 in HTML
+
+**Riepilogo:** Chiusa la pagina Impostazioni (Step 9: script collegati alle preferenze, cron per A2/A3/A4) e ripreso l'audit del Team Commerciale (Step 10) — chiarito che Pipeline Notify non era rotto, costruito un controllo di salute delle credenziali, corretto il buco di `agent_states` su A5.1/A5.2/A6.1, e spostata la scheda azienda di A5.2 da DOCX su Drive a pagina HTML su Supabase con export PDF on-demand (con la cascata di aggiornamenti su A6.1/A6.2 che ne consegue).
+
+**Cosa è stato fatto:**
+1. `a1_monthly.py`, `a7_followup.py`, `pipeline_notify.py`, `notify_failures.py` ora leggono `user_settings` prima di ogni push (fail-open su errore/riga mancante).
+2. Nuovo `scripts/a2a3a4_watcher.py` (cron orario): rileva i completamenti di A2/A3/A4 non ancora notificati confrontando `agent_states.updated_at` con la nuova colonna `agent_states.last_notified_at`, manda la push rispettando le preferenze.
+3. Verificato (RPC temporanea via `pg_net` dal database, mai esposta a GitHub Actions) che il PAT `github_repo_dispatch_pat` funziona: i 52 giorni di silenzio di Pipeline Notify erano dovuti a zero attività commerciale reale, non a un guasto.
+4. Nuovo `scripts/credential_health_check.py` (cron giornaliero): testa PAT GitHub, service account Google e refresh token Gmail, scrive l'esito su `token_status`, si appoggia alla rete di sicurezza `notify_failures.py` già esistente in caso di fallimento.
+5. Prompt A5.1 (v6→v7), A5.2 (v8→v9→v10) e A6.1 (v7→v8→v9) corretti per scrivere `agent_states` (`working`/`done`) — stesso pattern già in uso per A2/A3/A4.
+6. Scheda azienda di A5.2: nuova tabella `schede_aziendali` (pagina HTML al posto del DOCX), tabella `scheda_pdf_requests` + trigger Postgres + `scripts/export_scheda_pdf.py` (Playwright) per l'export PDF on-demand, nuova pagina webapp `app/page_scheda_azienda_v1.html`, `page_company_v2.html` aggiornata. A5.2 (v10) scrive la scheda su Supabase; A6.1 (v9) e A6.2 (v10→v11) aggiornati per leggerla da lì invece che da Drive.
+7. Aggiornato questo documento (Step 9 chiuso, Step 10 aggiornato con tutte le decisioni e i risultati dell'audit).
+
+**Decisioni prese:**
+- Contesto: "Pipeline Notify fermo da 52 giorni" sembrava un PAT scaduto/revocato (ipotesi dello Step 10 originale).
+  Decisione: verificato con un test diretto dal database — il PAT funziona, il vero problema è l'assenza di attività commerciale da fine settembre, non un bug.
+- Contesto: A6.1 produce un PPTX che Gianluca corregge sempre a mano prima di esportarlo in PDF.
+  Decisione: non convertito in HTML come la scheda di A5.2 — l'editing manuale in PowerPoint è un passaggio voluto, non solo una scomodità di formato.
+  Alternative scartate: stesso trattamento HTML+export della scheda — scartata perché toglierebbe la possibilità di correggere a mano.
+- Contesto: A6.2 (conversazione continuativa su una trattativa, spesso con più conversazioni attive insieme) non ha un vero momento "done".
+  Decisione: nessuna segnalazione di stato su `agent_states` per A6.2 — confermato da Gianluca, il pallino sarebbe comunque poco significativo per questo agente.
+  Alternative scartate: segnalazione a tempo fisso (es. "working" per N ore dopo ogni scrittura) — scartata per complessità non giustificata da un indicatore puramente cosmetico.
+- Contesto: cambiare il formato di output di A5.2 impatta chi legge quell'output.
+  Decisione: aggiornati anche A6.1 e A6.2 nella stessa sessione, non solo A5.2 — altrimenti si sarebbero rotti al primo uso dopo il cambio.
+- Da rivedere se: le 16 schede già prodotte su Drive (prima del cambio) non sono ancora state migrate su Supabase — se Gianluca riprende una trattativa già aperta prima che la migrazione sia fatta, A6.1/A6.2 non troverebbero la scheda. Prossimo passo esplicito.
+
+**File consegnati/modificati:**
+- Script: `scripts/a2a3a4_watcher.py` (nuovo), `scripts/credential_health_check.py` (nuovo), `scripts/export_scheda_pdf.py` (nuovo), `a1_monthly.py`/`a7_followup.py`/`pipeline_notify.py`/`notify_failures.py` (gate su `user_settings`).
+- Workflow: `.github/workflows/a2a3a4_watcher.yml`, `credential_health_check.yml`, `export_scheda_pdf.yml` (nuovi); `notify_failures.yml` aggiornato con i tre nuovi nella watch-list.
+- Webapp: `app/page_scheda_azienda_v1.html` (nuova), `page_company_v2.html` (bottone Scheda + messaggi di lancio aggiornati), `app/page_settings_v1.html` (nuovo workflow in tab Automazioni).
+- Supabase: tabelle `schede_aziendali`, `scheda_pdf_requests`, colonna `agent_states.last_notified_at`, bucket Storage `schede-pdf`, funzioni `notify_scheda_pdf_requested`, `submit_github_pat_healthcheck`, `get_http_response_status`.
+- Prompt (consegnati a Gianluca in .docx, salvati in `docs/prompts/` in .md): Agente 5.1 v7, Agente 5.2 v10, Agente 6.1 v9, Agente 6.2 v11.
+
+**Impatto su Vision/Pipeline:** Step 9 chiuso; Step 10 aggiornato con l'esito completo dell'audit e il lavoro di migrazione ancora aperto.
+
+---
 
 ### [2026-11-17 13:45] Home: pillole a icona, fix scroll calendario, saga del glitch header su iOS
 
