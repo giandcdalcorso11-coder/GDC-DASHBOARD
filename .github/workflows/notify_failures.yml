@@ -21,6 +21,7 @@ on:
       - "A7 Follow-up"
       - "Pipeline Watcher"
       - "Pipeline Notify"
+      - "A2/A3/A4 Watcher"
     types:
       - completed
 
