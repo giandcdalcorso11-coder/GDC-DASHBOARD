@@ -22,6 +22,7 @@ on:
       - "Pipeline Watcher"
       - "Pipeline Notify"
       - "A2/A3/A4 Watcher"
+      - "Credential Health Check"
     types:
       - completed
 
