@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 36
-**Ultimo aggiornamento:** 2026-11-17 11:20
+**Versione:** 37
+**Ultimo aggiornamento:** 2026-11-17 13:45
 
 ## Vision
 
@@ -274,6 +274,37 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-16] Audit eseguito su script e workflow GitHub Actions reali (a7_gmail_drafter.py, a7_followup.py, pipeline_watcher.py, pipeline_notify.py, notify_failures.py) più dati reali su Supabase. Trovato che "Pipeline Notify" (catena trigger Postgres → `pg_net` → PAT GitHub in Vault → `repository_dispatch`) non esegue da 52 giorni (ultima run 25/09) con zero segnalazione d'errore visibile in nessun log abituale — causa probabile un PAT scaduto/revocato, ma non verificata con certezza: coincide con un periodo in cui anche il resto della pipeline commerciale risulta fermo (nessun avanzamento step da fine settembre). Trovate anche 6 aziende bloccate allo step 3 (media kit in attesa di revisione/export PDF da parte di Gianluca) da luglio/inizio settembre — bottleneck di processo, non bug. Lavoro sospeso qui per passare allo Step 9.
 
 ## Storico sessioni
+
+### [2026-11-17 13:45] Home: pillole a icona, fix scroll calendario, saga del glitch header su iOS
+
+**Riepilogo:** Dopo la pagina Impostazioni, Gianluca ha chiesto alcune modifiche grafiche alla home (pillola notifiche a icona, riordino pillole, logo centrato con dinamica di scroll) — la parte sul logo ha richiesto tre tentativi prima di risolvere un bug di rendering su iOS, scoperto solo su dispositivo reale e non riproducibile in locale.
+
+**Cosa è stato fatto:**
+1. Pillola "Attiva notifiche" trasformata da pillola con testo a cerchio a icona (stesso stile di quello delle Impostazioni): campanella piena e colore neutro quando le notifiche sono attive su questo dispositivo, campanella barrata e colore rosso quando non lo sono.
+2. **Bug: pannello eventi del calendario non scorrimento con molti eventi nello stesso giorno**
+   - **Sintomo:** con molte attività nello stesso giorno, non si riusciva a scorrere la lista eventi nel popup calendario — lo scroll "passava attraverso" muovendo la pagina sotto invece del pannello.
+   - **Causa:** il popup non aveva un'altezza massima né un meccanismo di scroll indipendente per il pannello eventi.
+   - **Fix applicato:** pannello eventi reso scrollabile al suo interno (`overflow-y:auto`, `overscroll-behavior:contain`) e scroll della pagina bloccato (`body.style.overflow='hidden'`) finché il popup resta aperto. Verificato con 25 eventi finti nello stesso giorno via browser headless.
+3. Header riprogettato: logo GDC ingrandito (40→54px) e centrato, "Tutti i sistemi attivi" e pillola calendario ai due lati, con una dinamica di rimpicciolimento/dissolvenza del logo scorrendo verso il basso.
+4. **Bug: glitch di rendering sull'header su iOS (3 tentativi prima della soluzione)**
+   - **Sintomo:** su iPad reale, in modalità standalone con status bar `black-translucent`, scorrendo la home si vedeva per un istante il contenuto della pagina passare in una fascia sopra la riga di stato, come se l'header non coprisse correttamente quello spazio — segnalato da Gianluca con screenshot. Non riproducibile in Chromium headless (specifico di WebKit/iOS).
+   - **Causa:** non accertata nei dettagli interni di WebKit, ma empiricamente legata a qualunque header "ancorato" (sia `position:sticky` che `position:fixed` con spacer) in combinazione con lo scroll e la status bar translucida in modalità standalone.
+   - **Fix applicato (tentativi, in ordine):**
+     1. Animare il logo con `transform`/`opacity` invece di `height` dentro l'header `sticky` (per evitare reflow di layout ad ogni frame di scroll) — non ha risolto.
+     2. Sostituire `sticky` con `position:fixed` + uno spacer sotto per mantenere lo spazio nel flusso — non ha risolto nemmeno questo (stesso sintomo riconfermato da Gianluca con screenshot).
+     3. **Risolto** — su proposta di Gianluca: il contenuto di questa fascia non è essenziale da tenere sempre in vista, quindi niente ancoraggio. Header tornato a `position:static`, scorre via con il resto della pagina come ogni altro elemento — eliminando categoricamente la possibilità del bug (nessun layer fisso/incollato con cui lo scroll possa interferire). Il logo mantiene l'animazione di rimpicciolimento mentre esce dallo schermo, ora puramente cosmetica.
+5. Pillola calendario e "Tutti i sistemi attivi" riposizionate una seconda volta su richiesta di Gianluca: calendario di nuovo in alto a destra, stato a sinistra, logo al centro — layout finale confermato corretto.
+
+**Decisioni prese:**
+- Contesto: dopo due tentativi falliti di tenere l'header ancorato in cima durante lo scroll senza il glitch su iOS.
+- Decisione: non ancorare affatto questa fascia — torna in flusso normale, scorre via con il resto della pagina.
+- Alternative scartate: `position:sticky` con animazione via `height` (bug), `position:sticky` con animazione via `transform`/`opacity` (bug persiste), `position:fixed` + spacer sincronizzato via scroll (bug persiste comunque).
+- Da rivedere se: in futuro servisse davvero un header sempre visibile, andrebbe approfondita la causa specifica in WebKit (es. `viewport-fit=cover` + `env(safe-area-inset-top)`, o rinunciare a `black-translucent`) — non indagato oltre in questa sessione.
+
+**File consegnati/modificati:**
+- `app/page_home_v25.html`
+
+**Verifiche fatte:** parser HTML Python (nessun mismatch) e `node --check` dopo ogni modifica; verifica funzionale con browser headless Playwright ad ogni iterazione (posizione calcolata dell'header, valori di transform/opacity campionati durante lo scroll, popup calendario testato con 25 eventi finti nello stesso giorno). Il glitch specifico di iOS è stato confermato/escluso solo da Gianluca su dispositivo reale, non riproducibile in Chromium headless.
 
 ### [2026-11-17 11:20] Pagina Impostazioni: Notifiche granulari, Dispositivi, Automazioni, Aspetto, Account
 
