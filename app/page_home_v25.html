@@ -39,8 +39,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* Header sticky: il logo si rimpicciolisce/scompare scorrendo verso il
    basso (vedi script in fondo alla pagina) e la fascia resta ancorata
    sopra il contenuto invece di scorrere via subito. */
-.header{width:100%;max-width:540px;padding:14px 16px 8px;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;z-index:50;background:var(--carta);transition:padding .18s ease;}
+/* position:fixed invece di sticky: su iOS, in modalità standalone con status
+   bar black-translucent, un header position:sticky può "sfarfallare" durante
+   lo scroll (si intravede il contenuto sotto per un frame) — un fixed con
+   uno spacer sotto (altezza sincronizzata via ResizeObserver, vedi script)
+   evita il problema perché non dipende dal ricalcolo "sticky" di WebKit. */
+.header{width:100%;max-width:540px;padding:14px 16px 8px;display:flex;flex-direction:column;gap:8px;position:fixed;top:0;left:0;right:0;margin:0 auto;z-index:50;background:var(--carta);}
 .header.compact{padding:6px 16px 4px;}
+#headerSpacer{width:100%;flex-shrink:0;}
 .header-top{display:flex;align-items:center;gap:8px;}
 .header-top-side{flex:1;min-width:0;display:flex;align-items:center;}
 .header-top-side.right{justify-content:flex-end;}
@@ -349,6 +355,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 </div>
+<div id="headerSpacer"></div>
 <div style="width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:space-between;align-items:center;">
   <div class="pill-hub-wrap"><a class="pill-hub" href="page_hub_v1.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -1119,14 +1126,18 @@ function startA7Anim(){
 
 // ── LOGO: si rimpicciolisce/scompare scorrendo in basso, ricompare risalendo ──
 // Anima solo transform+opacity (mai height/width): sono proprietà
-// "composite-only", nessun reflow di layout. Cambiare una dimensione reale
-// dentro un header position:sticky ad ogni frame di scroll causava uno
-// strappo visivo su iOS Safari (si intravedeva il contenuto sotto, tra la
-// status bar e la fascia "Tutti i sistemi attivi").
+// "composite-only", nessun reflow di layout. L'header è position:fixed (non
+// sticky: su iOS standalone con status bar black-translucent, sticky può
+// "sfarfallare" durante lo scroll, si intravede il contenuto sotto) con uno
+// spacer sotto che tiene il posto — la sua altezza viene riletta da
+// header.offsetHeight ad ogni frame di scroll, nello stesso punto in cui si
+// decide lo stato "compact": un ResizeObserver da solo non basta, perché un
+// cambio di solo padding non altera la content-box e quindi non lo attiva.
 (function(){
   const wrap=document.getElementById('gdcLogoWrap');
   const header=document.querySelector('.header');
-  if(!wrap||!header) return;
+  const spacer=document.getElementById('headerSpacer');
+  if(!wrap||!header||!spacer) return;
   const DIST=80; // px di scroll per l'eclissi completa
   let ticking=false;
   function update(){
@@ -1134,16 +1145,16 @@ function startA7Anim(){
     const p=sc/DIST;
     wrap.style.transform='scale('+(1-p*0.85)+')';
     wrap.style.opacity=String(1-p);
-    // header "compact" solo oltre una soglia alta, con isteresi, per evitare
-    // di cambiare il padding (layout) ad ogni frame — un singolo cambio di
-    // classe con transition CSS, non un calcolo continuo via JS.
+    // header "compact" solo oltre una soglia alta, con isteresi.
     if(p>0.92) header.classList.add('compact');
     else if(p<0.6) header.classList.remove('compact');
+    spacer.style.height=header.offsetHeight+'px';
     ticking=false;
   }
   window.addEventListener('scroll',function(){
     if(!ticking){ ticking=true; requestAnimationFrame(update); }
   },{passive:true});
+  window.addEventListener('resize', update);
   update();
 })();
 
