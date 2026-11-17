@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 35
-**Ultimo aggiornamento:** 2026-11-16 22:10
+**Versione:** 36
+**Ultimo aggiornamento:** 2026-11-17 11:20
 
 ## Vision
 
@@ -243,21 +243,79 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 9 — Pagina Impostazioni/notifiche
 
-**Stato:** da fare — priorità più bassa
+**Stato:** in corso — pagina reale pubblicata, manca il collegamento lato script
 
-**Obiettivo:** nuova pagina "Impostazioni" nella webapp con interruttori per attivare/disattivare le notifiche push per categoria.
+**Obiettivo:** nuova pagina "Impostazioni" nella webapp con interruttori per attivare/disattivare le notifiche push, granulari per singola voce, più altre sezioni di utilità (dispositivi, stato automazioni, aspetto, account).
 
 **Decisioni progettuali:**
 - Idea originale di Gianluca, mai realizzata finora per la difficoltà di modificare la webapp dai Progetti Claude.ai — ora che si lavora da Claude Code con push/rimozione file diretta, è un buon momento per affrontarla.
 - Trovata su Supabase una tabella `user_settings` (user_id + campo `settings` jsonb) già esistente ma con 0 righe e non collegata a nulla nel codice attuale — possibile scaffolding abbandonato di un tentativo precedente. Confermato con Gianluca: si riusa questa tabella (ha già la forma giusta: user_id + jsonb) invece di costruirne una nuova.
+- Struttura scelta per le notifiche: un interruttore generale ("pausa" software, non disiscrizione reale del dispositivo) più un sottomenù con ogni notifica singola attivabile/disattivabile — inclusi A2/A3/A4 (prima assenti) e tutti i 13 step della pipeline commerciale singolarmente, ciascuno etichettato con chi lo esegue (A5.1/A5.2/A6.1/Pipeline Watcher/A6.2/A7).
+- Per A2/A3/A4 (che girano nella sessione Claude Code, non via script GitHub Action) deciso di NON estendere la stessa catena trigger Postgres→pg_net→PAT→repository_dispatch già fragile (vedi Step 10) per le loro notifiche push: si userà invece un cron GitHub Actions che controlla periodicamente agent_states/activity_log, stesso pattern già solido di pipeline_watcher.py — non ancora implementato.
 
-**Criterio di completamento:** da definire nel dettaglio quando si arriva allo step (categorie di notifiche da esporre, granularità).
+**Criterio di completamento:** gli script Python (a1_monthly.py, a7_followup.py, pipeline_notify.py, notify_failures.py) leggono le preferenze da `user_settings` prima di inviare una push, e il nuovo cron per A2/A3/A4 è stato scritto e collegato.
 
 **Note (cronologia dello step):**
 - [2026-11-12] Trovata `user_settings` durante l'audit Supabase generale. Non ancora deciso se riusarla.
 - [2026-11-13] Deciso: si riusa `user_settings` — confermato da Gianluca insieme alle altre risposte di default di questa sessione.
+- [2026-11-17] Mockup iterato (struttura tab, poi dettaglio notifiche con master+sottomenù granulare, poi correzione pillola "Home" per coerenza con lo stile reale) e poi implementato nella pagina reale `app/page_settings_v1.html` con le 5 tab (Notifiche, Dispositivi, Automazioni, Aspetto, Account), tutte con dati reali tranne il collegamento lato script. Aggiunto un pulsante a icona (ingranaggio) sulla home come punto di accesso. Rimane da fare: far leggere le preferenze agli script che inviano le push (oggi salvate ma ignorate) e costruire il nuovo cron per le notifiche A2/A3/A4.
+
+### Step 10 — Audit e miglioramento Team Commerciale (A5-A7)
+
+**Stato:** in corso — audit fatto, fix sospesi per dare priorità allo Step 9
+
+**Obiettivo:** individuare e risolvere le fragilità nel workflow del team commerciale (A5 Pipeline, A6 Media Kit, A7 Mail Generator); valutare poi se applicare alle pagine A5-A7 lo stesso redesign già fatto per A1-A4.
+
+**Decisioni progettuali:** nessuna sui fix veri e propri — solo diagnosi finora.
+
+**Criterio di completamento:** da definire quando si riprende (dipende da cosa si decide di correggere).
+
+**Note (cronologia dello step):**
+- [2026-11-16] Audit eseguito su script e workflow GitHub Actions reali (a7_gmail_drafter.py, a7_followup.py, pipeline_watcher.py, pipeline_notify.py, notify_failures.py) più dati reali su Supabase. Trovato che "Pipeline Notify" (catena trigger Postgres → `pg_net` → PAT GitHub in Vault → `repository_dispatch`) non esegue da 52 giorni (ultima run 25/09) con zero segnalazione d'errore visibile in nessun log abituale — causa probabile un PAT scaduto/revocato, ma non verificata con certezza: coincide con un periodo in cui anche il resto della pipeline commerciale risulta fermo (nessun avanzamento step da fine settembre). Trovate anche 6 aziende bloccate allo step 3 (media kit in attesa di revisione/export PDF da parte di Gianluca) da luglio/inizio settembre — bottleneck di processo, non bug. Lavoro sospeso qui per passare allo Step 9.
 
 ## Storico sessioni
+
+### [2026-11-17 11:20] Pagina Impostazioni: Notifiche granulari, Dispositivi, Automazioni, Aspetto, Account
+
+**Riepilogo:** Dopo l'audit del team commerciale (vedi voce precedente), Gianluca ha chiesto di dare priorità a una pagina Impostazioni mai realizzata finora, partendo dal tab Notifiche; costruita con mockup iterativo e poi implementata nella webapp reale con 5 tab.
+
+**Cosa è stato fatto:**
+1. Proposte di contenuto per la pagina (oltre alle Notifiche: Dispositivi, Stato automazioni, Aspetto, Account) — accettate da Gianluca.
+2. Notifiche: deciso un interruttore generale ("pausa" software) + sottomenù con ogni notifica singola, ricavando l'elenco reale dal codice (non inventato): A1/A2/A3/A4 completati, avvisi MBS, i 13 step della pipeline commerciale (etichettati con chi li esegue), A7 follow-up pronto/testo mancante, errore automazione.
+3. Punto architetturale sollevato e condiviso con Gianluca: A2/A3/A4 girano nella sessione Claude Code (non via script GitHub Action) — per le loro notifiche push, deciso di usare in futuro un cron watcher (stesso pattern solido di pipeline_watcher.py) invece di estendere la catena trigger Postgres→pg_net→PAT→repository_dispatch già fragile (Step 10) — non ancora implementato.
+4. 1 mockup (pagina completa a 5 tab), poi una correzione richiesta da Gianluca: la pillola "Home" doveva avere la stessa punta a sinistra/tonda a destra già usata in `page_home_v25.html` (clip-path a doppio livello), non una pillola arrotondata semplice.
+5. Implementata la pagina reale `app/page_settings_v1.html`: Notifiche e Aspetto persistiti su Supabase (tabella `user_settings`, mai usata finora, già con la forma giusta e RLS per-utente — upsert via `on_conflict=user_id`); Dispositivi con dati reali da `push_subscriptions` (attiva/disattiva/rimuovi); Automazioni con stato reale (ultima esecuzione + esito) letto dalla API pubblica di GitHub Actions per ciascun workflow (il repo è pubblico, nessun token necessario); Account con email reale dell'utente autenticato e logout.
+6. Aggiunto un pulsante a icona (ingranaggio) sulla home, accanto alla pillola "Attiva notifiche", come punto di accesso alla nuova pagina.
+7. Domanda di Gianluca su un possibile account multi-utente a permessi limitati (es. SMM) — risposta data (fattibile via ruoli + RLS, ma oggi tutta la webapp assuma un solo utente quindi è un retrofit, non un'aggiunta semplice), annotata per quando vorrà riprenderla, nessuna implementazione.
+
+**Decisioni prese:**
+- Contesto: come far rispettare le nuove preferenze di notifica dal lato server.
+- Decisione: gli script Python non sono stati ancora modificati per leggere `user_settings` prima di inviare una push — le preferenze oggi sono salvate ma ignorate. È il prossimo passo esplicito dello Step 9.
+- Alternative scartate: estendere la catena pg_net/PAT/repository_dispatch anche alle notifiche A2/A3/A4 — scartata perché è la stessa catena già trovata silenziosamente rotta nello Step 10.
+
+**File consegnati/modificati:**
+- `app/page_settings_v1.html` (nuovo)
+- `app/page_home_v25.html` (aggiunto pulsante ingranaggio nel pill-row)
+- mockup `mockup-settings-v1.html` (v1 e v2 con correzione pillola)
+
+**Verifiche fatte:** parser HTML Python su entrambi i file reali (nessun mismatch), `node --check` sugli script estratti (validi), controllo esistenza di tutti i link relativi (`page_login_v6.html`, `sw.js`, `manifest.json`, icone).
+
+### [2026-11-16 23:00] Audit workflow Team Commerciale (A5-A7)
+
+**Riepilogo:** Su richiesta di Gianluca di iniziare a lavorare sul team commerciale, eseguito un controllo del workflow reale (script + GitHub Actions + dati Supabase) prima di qualsiasi modifica — trovata una fragilità seria e concreta, non ancora risolta.
+
+**Cosa è stato fatto:**
+1. Letto per intero il codice reale di `a7_gmail_drafter.py`, `a7_followup.py`, `pipeline_watcher.py`, `pipeline_notify.py`, `notify_failures.py` e i rispettivi workflow GitHub Actions — architettura generale giudicata solida e ben documentata.
+2. **Bug: "Pipeline Notify" silenziosamente fermo da 52 giorni**
+   - **Sintomo:** nessuna notifica push/attività per avanzamenti della pipeline commerciale da fine settembre, scoperto confrontando la storia reale delle run GitHub Actions: Pipeline Watcher ha 1138 run regolari fino a oggi, ma Pipeline Notify non esegue dal 25/09 (52 giorni).
+   - **Causa:** non accertata con certezza. Il meccanismo (trigger Postgres `notify_company_step_change` → `pg_net` → PAT GitHub letto da Supabase Vault → `repository_dispatch`) non controlla mai l'esito della chiamata HTTP — se il PAT è scaduto o revocato, la chiamata fallisce e non lo sa nessuno, perché non viene nemmeno creata una run GitHub da cui `notify_failures` potrebbe accorgersene. Coincidenza non chiarita: nello stesso periodo (da fine settembre) anche il resto della pipeline commerciale risulta fermo (nessun cambio di step, manuale o automatico).
+   - **Fix applicato:** nessuno — in attesa di conferma da Gianluca se ha notato o no le notifiche mancanti, per capire se il PAT va rigenerato o se è solo assenza di eventi.
+3. Trovato un bottleneck di processo (non un bug): 6 aziende bloccate allo step 3 (media kit in attesa di revisione ed export PDF da parte di Gianluca) da luglio/inizio settembre — rilevato correttamente da Pipeline Watcher ogni ora, semplicemente in attesa della sua revisione manuale.
+4. Segnalate pagine `page_agent_a5_v1.html`/`a6`/`a7`/`page_company_v2.html` ancora al vecchio pattern (pre-redesign A1-A4) come candidate per un lavoro successivo, e un avviso minore del linter di sicurezza Supabase sulla funzione trigger (eseguibile come RPC da `anon`/`authenticated`, probabilmente innocuo ma da chiudere con un `REVOKE`).
+
+**File consegnati/modificati:** nessuno — solo diagnosi, nessuna modifica al codice in questa voce.
+
+**Impatto su Vision/Pipeline:** aggiunto lo Step 10 "Audit e miglioramento Team Commerciale (A5-A7)" alla Pipeline.
 
 ### [2026-11-16 22:10] Home: stacco visivo Team Social / Team Commerciale
 
