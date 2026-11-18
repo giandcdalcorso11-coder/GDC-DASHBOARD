@@ -26,6 +26,7 @@ body{
 @media(prefers-color-scheme:dark){
   :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
   .logo-rest{ background:#FAFAF5 !important; }
+  .a4-wrap.s-rest .doc-rect{stroke:#1C1C1C!important;}.a4-wrap.s-rest .lbl{fill:#1C1C1C!important;}
   .date-chip{ background:#2E2E2E; border-color:var(--border); }
   .hero-card,.section-card{ background:var(--bianco); border-color:var(--border); }
   .pill-hub{ background:var(--bianco); }
@@ -104,7 +105,7 @@ body{
 .page-content{ width:100%; max-width:540px; padding:0 16px; }
 
 /* ══ HERO ══ */
-.hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; }
+.hero-card{ background:var(--bianco); border:2px solid var(--athlete); border-radius:20px; overflow:hidden; margin-bottom:12px; transition:border-color .3s; }
 .hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
 .logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
 .logo-active{ background:var(--sabbia-bg) !important; }
@@ -121,7 +122,7 @@ body{
 .a4-wrap.s-done .doc-rect{stroke:#497B58!important;}.a4-wrap.s-done .bar{fill:#5D9C71!important;}.a4-wrap.s-done .cur-el{fill:#5D9C71!important;}.a4-wrap.s-done .lbl{fill:#497B58!important;}
 .a4-wrap.s-sleep .doc-rect{stroke:#2B5C8A!important;}.a4-wrap.s-sleep .bar{fill:#4A86C6!important;}.a4-wrap.s-sleep .cur-el{fill:#2B5C8A!important;}.a4-wrap.s-sleep .lbl{fill:#2B5C8A!important;}
 .hero-text{ flex:1; min-width:0; }
-.agent-name-big{ font-size:1.1rem; font-weight:800; line-height:1.15; margin-bottom:5px; color:var(--maker); transition:color .4s; }
+.agent-name-big{ font-size:1.1rem; font-weight:800; line-height:1.15; margin-bottom:5px; color:var(--athlete); transition:color .4s; }
 .agent-desc-big{ font-size:.71rem; color:var(--grigio); line-height:1.4; }
 .hero-meta{ display:flex; align-items:center; gap:7px; padding:0 16px 14px; flex-wrap:wrap; }
 .status-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:4px 10px; font-size:.67rem; font-weight:700; }
@@ -302,7 +303,7 @@ body{
 <div class="page-content">
 
   <!-- HERO -->
-  <div class="hero-card">
+  <div class="hero-card" id="heroCard">
     <div class="hero-inner">
       <div class="logo-box-hero logo-sleep" id="logoBoxHero"><div id="logoWrap" class="a4-wrap s-sleep">
         <svg id="svg-a4" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible">
@@ -683,6 +684,7 @@ function mapState(row){
   if(!row) return 'sleep';
   const st=row.stato||'';
   const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='error') return 'error';
   if(st==='working') return 'active';
   if(st==='ready'||st==='queued') return 'queued';
   if(st==='done') return age<THREE_DAYS?'done':'sleep';
@@ -695,8 +697,10 @@ const STATE_CFG={
   done:{badge:'badge-done',logo:'logo-done',lbl:'Completato'},
   rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
+  error:{badge:'badge-queued',logo:'logo-queued',lbl:'Errore'},
 };
-const TITLE_COLOR={active:'var(--sabbia-dk)',queued:'var(--life)',done:'var(--maker)',rest:'var(--grigio)',sleep:'var(--athlete)'};
+const TITLE_COLOR={active:'var(--sabbia-dk)',queued:'var(--life)',done:'var(--maker)',rest:'var(--nero)',sleep:'var(--athlete)',error:'var(--life)'};
+const BORDER_COLOR={active:'var(--sabbia)',queued:'var(--life)',done:'var(--maker)',rest:'var(--nero)',sleep:'var(--athlete)',error:'var(--life)'};
 
 /* ══ ANIMAZIONE ICONA — esatta dalla home, JS-driven ══ */
 var a4RAF=null;
@@ -745,11 +749,13 @@ async function loadA4(){
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
     const title=document.getElementById('agentTitle');
+    const heroCard=document.getElementById('heroCard');
     const stCat=mapState(a4), c=STATE_CFG[stCat];
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
     if(logoWrap) logoWrap.className='a4-wrap s-'+stCat;
     if(title) title.style.color=TITLE_COLOR[stCat];
+    if(heroCard) heroCard.style.borderColor=BORDER_COLOR[stCat];
     if(stCat==='active') startA4Anim(); else stopA4Anim();
     document.getElementById('lastRunLbl').textContent=a4&&a4.updated_at?('Ultimo aggiornamento: '+timeAgo(a4.updated_at)):'';
 

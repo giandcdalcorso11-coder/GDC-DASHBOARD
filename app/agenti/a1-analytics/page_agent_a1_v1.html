@@ -26,6 +26,7 @@ body{
 @media(prefers-color-scheme:dark){
   :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
   .logo-rest{ background:#FAFAF5 !important; }
+  .s-rest svg #a1-outer{fill:#1C1C1C;}.s-rest svg #a1-dot{fill:#1C1C1C;}
   .date-chip{ background:#2E2E2E; border-color:var(--border); }
   .hero-card,.section-card,.note-box{ background:var(--bianco); border-color:var(--border); }
   .pill-hub{ background:var(--bianco); }
@@ -108,7 +109,7 @@ body{
 .page-content{ width:100%; max-width:540px; padding:0 16px; }
 
 /* ══ HERO ══ */
-.hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; transition:border-color .3s; }
+.hero-card{ background:var(--bianco); border:2px solid var(--athlete); border-radius:20px; overflow:hidden; margin-bottom:12px; transition:border-color .3s; }
 .hero-card.st-warn{ border-color:var(--life); }
 .hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
 .logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
@@ -141,6 +142,7 @@ body{
 .badge-done{ color:var(--maker); border-color:var(--maker-bg); } .badge-done .badge-dot{ background:var(--maker); }
 .badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
 .badge-sleep{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-sleep .badge-dot{ background:var(--athlete); }
+.badge-rest{ color:var(--grigio); border-color:var(--border); } .badge-rest .badge-dot{ background:var(--grigio); }
 .badge-queued{ color:var(--life); border-color:var(--life-bg); } .badge-queued .badge-dot{ background:var(--life); }
 .badge-warn{ color:var(--life); border-color:var(--life-bg); background:var(--life-bg); } .badge-warn .badge-dot{ background:var(--life); }
 .type-tag-auto{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:999px; padding:4px 9px; }
@@ -698,6 +700,23 @@ function fmtDateTime(iso){
   return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 }
 
+const STATE_CFG={
+  active:{badge:'badge-active',logo:'logo-active',lbl:'In corso'},
+  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda'},
+  done:{badge:'badge-done',logo:'logo-done',lbl:'Completato di recente'},
+  rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo'},
+  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo — prossimo run automatico'},
+  error:{badge:'badge-queued',logo:'logo-queued',lbl:'Errore'},
+};
+const INK_CFG={
+  active:{border:'var(--sabbia)',title:'var(--sabbia-dk)'},
+  queued:{border:'var(--life)',title:'var(--life)'},
+  done:{border:'var(--maker)',title:'var(--maker)'},
+  rest:{border:'var(--nero)',title:'var(--nero)'},
+  sleep:{border:'var(--athlete)',title:'var(--athlete)'},
+  error:{border:'var(--life)',title:'var(--life)'},
+};
+
 async function loadA1(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a1,bpt_calendar)&select=agent_id,stato,updated_at,mese,n_post,n_stories,drive_folder,calendario_bpt,n_tornei,mbs_missing,mbs_missing_mese');
@@ -710,7 +729,7 @@ async function loadA1(){
     document.getElementById('sysMini').style.color='var(--maker)';
     document.getElementById('sysMini').title='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 
-    // Badge + logo stato + titolo (colore coerente con lo stato)
+    // Badge + logo stato + titolo + contorno (colore coerente con lo stato, stessa palette della home)
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
@@ -719,29 +738,25 @@ async function loadA1(){
     const st=a1?a1.stato:null;
     const age=a1&&a1.updated_at?Date.now()-new Date(a1.updated_at).getTime():Infinity;
     const THREE_DAYS=3*24*60*60*1000;
-    if(a1&&a1.mbs_missing){
-      badge.className='status-badge badge-warn'; lbl.textContent='MBS mancante — '+(a1.mbs_missing_mese||'');
-      if(logoBox) logoBox.className='logo-box-hero logo-warn';
-      if(logoWrap) logoWrap.className='logo-wrap s-queued';
-      if(title) title.style.color='var(--life)';
-      heroCard.classList.add('st-warn');
+    let stCat;
+    if(st==='error') stCat='error';
+    else if(st==='working') stCat='active';
+    else if(st==='ready'||st==='queued') stCat='queued';
+    else if(st==='done') stCat=age<THREE_DAYS?'done':'sleep';
+    else if(st==='riposo') stCat=age<THREE_DAYS?'rest':'sleep';
+    else stCat='sleep';
+    const mbsMissing=a1&&a1.mbs_missing;
+    if(mbsMissing) stCat='queued'; // priorità: file MBS mancante prevale su qualsiasi altro stato
+    const c=STATE_CFG[stCat];
+    badge.className='status-badge '+c.badge;
+    lbl.textContent=mbsMissing?('MBS mancante — '+(a1.mbs_missing_mese||'')):c.lbl;
+    if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    if(logoWrap) logoWrap.className='logo-wrap s-'+stCat;
+    if(title) title.style.color=INK_CFG[stCat].title;
+    if(heroCard) heroCard.style.borderColor=INK_CFG[stCat].border;
+    if(mbsMissing){
       document.getElementById('mbsBanner').classList.add('show');
       document.getElementById('mbsBannerText').textContent='Il file MBS Content Insights per '+(a1.mbs_missing_mese||'questo mese')+' non è ancora stato caricato. a1_mbs_watcher.py lo rileverà da solo ogni 30 min (giorno 2–10) una volta su Supabase Storage, oppure caricalo subito tu.';
-    } else if(st==='working'){
-      badge.className='status-badge badge-active'; lbl.textContent='In corso';
-      if(logoBox) logoBox.className='logo-box-hero logo-active';
-      if(logoWrap) logoWrap.className='logo-wrap s-active';
-      if(title) title.style.color='var(--sabbia-dk)';
-    } else if(st==='done'&&age<THREE_DAYS){
-      badge.className='status-badge badge-done'; lbl.textContent='Completato di recente';
-      if(logoBox) logoBox.className='logo-box-hero logo-done';
-      if(logoWrap) logoWrap.className='logo-wrap s-done';
-      if(title) title.style.color='var(--maker)';
-    } else {
-      badge.className='status-badge badge-sleep'; lbl.textContent='Inattivo — prossimo run automatico';
-      if(logoBox) logoBox.className='logo-box-hero logo-sleep';
-      if(logoWrap) logoWrap.className='logo-wrap s-sleep';
-      if(title) title.style.color='var(--athlete)';
     }
     document.getElementById('lastRunLbl').textContent=a1&&a1.updated_at?('Ultimo aggiornamento: '+timeAgo(a1.updated_at)):'';
 
