@@ -196,10 +196,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
 .arc-outer,.circ-mid,.dot-cent,.dash-line,.badge{transition:fill .6s,stroke .6s;}
 .s-rest .arc-outer{stroke:#9A9A9A;}.s-rest .circ-mid{stroke:#FFF;}.s-rest .dot-cent{fill:#FFF;}.s-rest .dash-line{stroke:#9A9A9A;}.s-rest .badge{fill:#9A9A9A;}.s-rest .a5-lbl{fill:#FFF;}
-.s-queued .arc-outer{stroke:#C2193A;}.s-queued .circ-mid{stroke:#E9415A;}.s-queued .dot-cent{fill:#C2193A;}.s-queued .dash-line{stroke:#E9415A;}.s-queued .badge{fill:#E9415A;}.s-queued .a5-lbl{fill:#C2193A;}
+.s-queued .arc-outer{stroke:#2B5C8A;}.s-queued .circ-mid{stroke:#4A86C6;}.s-queued .dot-cent{fill:#2B5C8A;}.s-queued .dash-line{stroke:#4A86C6;}.s-queued .badge{fill:#4A86C6;}.s-queued .a5-lbl{fill:#2B5C8A;}
 .s-active .arc-outer{stroke:#8A6D3B;}.s-active .circ-mid{stroke:#C4A865;}.s-active .dot-cent{fill:#8A6D3B;}.s-active .dash-line{stroke:#C4A865;}.s-active .badge{fill:#C4A865;}.s-active .a5-lbl{fill:transparent;}
 .s-done .arc-outer{stroke:#497B58;}.s-done .circ-mid{stroke:#5D9C71;}.s-done .dot-cent{fill:#497B58;}.s-done .dash-line{stroke:#5D9C71;}.s-done .badge{fill:#5D9C71;}.s-done .a5-lbl{fill:#497B58;}
-.s-sleep .arc-outer{stroke:#2B5C8A;}.s-sleep .circ-mid{stroke:#4A86C6;}.s-sleep .dot-cent{fill:#2B5C8A;}.s-sleep .dash-line{stroke:#4A86C6;}.s-sleep .badge{fill:#4A86C6;}.s-sleep .a5-lbl{fill:#2B5C8A;}
+.s-sleep .arc-outer{stroke:#9A9A9A;}.s-sleep .circ-mid{stroke:#FFF;}.s-sleep .dot-cent{fill:#FFF;}.s-sleep .dash-line{stroke:#9A9A9A;}.s-sleep .badge{fill:#9A9A9A;}.s-sleep .a5-lbl{fill:#FFF;}
 .a5-lbl{transition:fill .6s;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
 .badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
@@ -314,7 +314,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap" style="width:100%;height:100%">
+      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap">
         <svg id="svg-a5" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible" font-family="Jost,sans-serif">
           <path id="c-arc" class="arc-outer" d="M18.8 70 A44 44 0 1 1 97.2 70" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linecap="round" style="stroke-dasharray:192 84;stroke-dashoffset:0"/>
           <circle class="circ-mid" cx="58" cy="50" r="27" fill="none" stroke="#4A86C6" stroke-width="5.5"/>

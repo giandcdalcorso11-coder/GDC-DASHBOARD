@@ -204,10 +204,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
 .doc-path,.fold-path{transition:stroke .6s;}
 .s-rest .doc-path{stroke:#9A9A9A;}.s-rest .fold-path{stroke:#9A9A9A;}.s-rest .a6-lbl{fill:#FFF;}.s-rest .a6-bar{fill:#9A9A9A;}
-.s-queued .doc-path{stroke:#C2193A;}.s-queued .fold-path{stroke:#C2193A;}.s-queued .a6-lbl{fill:#C2193A;}.s-queued .a6-bar{fill:#E9415A;}
+.s-queued .doc-path{stroke:#2B5C8A;}.s-queued .fold-path{stroke:#2B5C8A;}.s-queued .a6-lbl{fill:#2B5C8A;}.s-queued .a6-bar{fill:#4A86C6;}
 .s-active .doc-path{stroke:#8A6D3B;}.s-active .fold-path{stroke:#8A6D3B;}.s-active .a6-lbl{fill:transparent;}.s-active .a6-bar{fill:#C4A865;}
 .s-done .doc-path{stroke:#497B58;}.s-done .fold-path{stroke:#497B58;}.s-done .a6-lbl{fill:#497B58;}.s-done .a6-bar{fill:#5D9C71;}
-.s-sleep .doc-path{stroke:#2B5C8A;}.s-sleep .fold-path{stroke:#2B5C8A;}.s-sleep .a6-lbl{fill:#2B5C8A;}.s-sleep .a6-bar{fill:#4A86C6;}
+.s-sleep .doc-path{stroke:#9A9A9A;}.s-sleep .fold-path{stroke:#9A9A9A;}.s-sleep .a6-lbl{fill:#FFF;}.s-sleep .a6-bar{fill:#9A9A9A;}
 .a6-lbl,.a6-bar{transition:fill .6s;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
 .badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
@@ -330,7 +330,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap" style="width:100%;height:100%">
+      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap">
         <svg id="svg-a6" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible" font-family="Jost,sans-serif">
           <path class="doc-path" d="M21 9 H85 L104 28 V107 H21 Z" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linejoin="round"/>
           <path id="c-fold" class="fold-path" d="M85 9 L85 28 L104 28" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linejoin="round"/>

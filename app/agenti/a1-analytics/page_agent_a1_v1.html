@@ -121,13 +121,13 @@ body{
 /* ══ ICONA — esatta dalla home, per-forma + animazioni ══ */
 .logo-wrap svg #a1-outer,.logo-wrap svg #a1-inner,.logo-wrap svg #a1-dot,.logo-wrap svg #a1-label{transition:fill .6s;}
 .s-rest svg #a1-outer{fill:#FFF;}.s-rest svg #a1-inner{fill:#9A9A9A;}.s-rest svg #a1-dot{fill:#FFF;}.s-rest svg #a1-label{fill:#9A9A9A;}
-.s-queued svg #a1-outer{fill:#C2193A;}.s-queued svg #a1-inner{fill:#E9415A;}.s-queued svg #a1-dot{fill:#C2193A;}.s-queued svg #a1-label{fill:#E9415A;}
+.s-queued svg #a1-outer{fill:#2B5C8A;}.s-queued svg #a1-inner{fill:#4A86C6;}.s-queued svg #a1-dot{fill:#2B5C8A;}.s-queued svg #a1-label{fill:#4A86C6;}
 .s-active svg #a1-outer{fill:#8A6D3B;animation:spinCW1 6s linear infinite;transform-origin:307.72px 403.14px;}
 .s-active svg #a1-inner{fill:#C4A865;animation:spinCCW1 4s linear infinite;transform-origin:307.72px 403.14px;}
 .s-active svg #a1-dot{fill:#8A6D3B;animation:a1DP 1.4s ease-in-out infinite;transform-origin:307.72px 403.14px;}
 .s-active svg #a1-label{fill:transparent;}
 .s-done svg #a1-outer{fill:#497B58;}.s-done svg #a1-inner{fill:#5D9C71;}.s-done svg #a1-dot{fill:#497B58;}.s-done svg #a1-label{fill:#5D9C71;}
-.s-sleep svg #a1-outer{fill:#2B5C8A;}.s-sleep svg #a1-inner{fill:#4A86C6;}.s-sleep svg #a1-dot{fill:#2B5C8A;}.s-sleep svg #a1-label{fill:#4A86C6;}
+.s-sleep svg #a1-outer{fill:#FFF;}.s-sleep svg #a1-inner{fill:#9A9A9A;}.s-sleep svg #a1-dot{fill:#FFF;}.s-sleep svg #a1-label{fill:#9A9A9A;}
 @keyframes spinCW1{to{transform:rotate(360deg)}}
 @keyframes spinCCW1{to{transform:rotate(-360deg)}}
 @keyframes a1DP{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
@@ -140,6 +140,7 @@ body{
 .badge-done{ color:var(--maker); border-color:var(--maker-bg); } .badge-done .badge-dot{ background:var(--maker); }
 .badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
 .badge-sleep{ color:var(--grigio); border-color:var(--border); } .badge-sleep .badge-dot{ background:var(--grigio); }
+.badge-queued{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-queued .badge-dot{ background:var(--athlete); }
 .badge-warn{ color:var(--life); border-color:var(--life-bg); background:var(--life-bg); } .badge-warn .badge-dot{ background:var(--life); }
 .type-tag-auto{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:999px; padding:4px 9px; }
 .last-run-lbl{ font-size:.65rem; color:var(--grigio); }
