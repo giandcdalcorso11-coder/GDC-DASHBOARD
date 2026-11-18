@@ -85,7 +85,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .info-row{padding:10px 10px 4px;display:flex;flex-direction:column;gap:4px;}
 .agent-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 6px;}
 .agent-name{font-weight:800;font-size:1rem;transition:color .4s;}
-.static-link-inline{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;border:1.5px solid var(--border);background:var(--carta);font-size:.54rem;font-weight:700;color:var(--nero);text-decoration:none;flex-shrink:0;white-space:nowrap;}
 .status-chip{display:inline-flex;align-items:center;gap:4px;font-size:.67rem;font-weight:700;border-radius:999px;padding:2px 8px;margin-top:2px;}
 .chip-done{background:var(--maker-bg);color:var(--maker);}.chip-working{background:var(--sabbia-bg);color:var(--sabbia-dk);}.chip-queued{background:var(--life-bg);color:var(--life);opacity:.7;}.chip-sleep{background:var(--athlete-bg);color:var(--athlete);}
 .spinner-dot{width:5px;height:5px;border-radius:50%;background:var(--sabbia-dk);animation:spPulse 1.3s ease-in-out infinite;}
@@ -113,7 +112,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .agent-row-btns{display:flex;gap:4px;flex-shrink:0;}
 .agent-mini-btn{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:7px;border:1.5px solid var(--border);background:var(--bianco);font-size:.56rem;font-weight:700;color:var(--nero);cursor:pointer;text-decoration:none;font-family:'Jost',sans-serif;white-space:nowrap;}
 .actions-wrap{padding:4px 10px 9px;}
-.pipeline-pill-wide{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;color:var(--sabbia-dk);text-decoration:none;margin-bottom:14px;}
+.pipeline-pill-wide{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;color:var(--nero);text-decoration:none;margin-bottom:14px;}
 .team-band .ciclo-pill{margin-bottom:14px;}
 .stato-pill:hover{background:rgba(255,255,255,.7);color:var(--nero);}
 .stato-pill.sp-active{border-color:currentColor;background:rgba(255,255,255,.75);box-shadow:0 1px 4px rgba(28,28,28,.1);}
@@ -224,9 +223,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .s-done .env-rect{stroke:#497B58;}.s-done .env-v{stroke:#5D9C71;}.s-done .env-dot{fill:#497B58;}.s-done .a7-lbl{fill:#497B58;}
 .s-sleep .env-rect{stroke:#2B5C8A;}.s-sleep .env-v{stroke:#4A86C6;}.s-sleep .env-dot{fill:#2B5C8A;}.s-sleep .a7-lbl{fill:#2B5C8A;}
 .a7-lbl{transition:fill .6s;}
-.legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.67rem;color:var(--grigio);padding:4px 16px 0;}
-.leg{display:flex;align-items:center;gap:4px;}
-.legdot{width:8px;height:8px;border-radius:50%;border:1.5px solid transparent;}
 
 /* ══ Pillola Hub: punta a sinistra ("torna indietro"), tonda a destra.
    Niente CSS border (si taglierebbe sulla punta): due livelli sovrapposti
@@ -249,7 +245,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 
 /* ══ Ciclo editoriale mensile: pillola unica, estremi a specchio ══ */
 .ciclo-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:50px;padding:5px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);}
-.ciclo-end{flex-shrink:0;height:40px;display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 14px;border-radius:999px;background:var(--athlete-bg);color:var(--athlete);border:none;cursor:pointer;text-decoration:none;transition:transform .12s,opacity .2s;}
+.ciclo-end{flex-shrink:0;width:134px;height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 8px;border-radius:999px;background:var(--carta);color:var(--nero);border:1.5px solid var(--border);cursor:pointer;text-decoration:none;transition:transform .12s,opacity .2s;}
 .ciclo-end:active{transform:scale(.97);}
 .ciclo-end.ciclo-disabled{opacity:.4;pointer-events:none;}
 .ciclo-end svg{width:15px;height:15px;flex-shrink:0;}
@@ -337,7 +333,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 </div>
-<div style="width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:space-between;align-items:center;">
+<div style="width:100%;max-width:540px;padding:0 16px 18px;display:flex;justify-content:space-between;align-items:center;">
   <div class="pill-hub-wrap"><a class="pill-hub" href="page_hub_v1.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Hub</span>
@@ -479,7 +475,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div class="team-band">
   <span class="team-band-lbl">Team Commerciale</span>
   <a class="pipeline-pill-wide" href="../page_pipeline_v1.html">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/></svg>
     Pipeline Sponsorizzazioni
   </a>
   <!-- A5 -->
@@ -497,7 +492,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       </div></div>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span><a class="static-link-inline" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;">DB</span>Supabase Pipeline</a></div>
+      <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span></div>
     </div>
     <div class="actions-wrap">
       <div class="agent-row"><span class="agent-row-name">A5.1 &#x2014; Ricerca azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank">&#128172; Apri chat</a></div></div>
@@ -521,7 +516,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       </div></div>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span><a class="static-link-inline" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank"><span class="fmt-badge fmt-gslide">Slide</span>Drive A6</a></div>
+      <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span></div>
     </div>
     <div class="actions-wrap">
       <div class="agent-row"><span class="agent-row-name">A6.1 &#x2014; Media kit</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">&#128172; Apri chat</a></div></div>
@@ -554,13 +549,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div></div>
   </div>
-</div>
-<div class="legend">
-  <div class="leg"><div class="legdot" style="background:#C7DFCF;border-color:#4A7C59"></div>Completato</div>
-  <div class="leg"><div class="legdot" style="background:#F5E0E6;border-color:#C2193A"></div>In coda</div>
-  <div class="leg"><div class="legdot" style="background:#E9DFC9;border-color:#C4A865"></div>In corso</div>
-  <div class="leg"><div class="legdot" style="background:#1C1C1C"></div>Riposo</div>
-  <div class="leg"><div class="legdot" style="background:#D9E6F3;border-color:#2B5C8A"></div>Inattivo</div>
 </div>
 <script>
 const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
@@ -829,7 +817,7 @@ function setLogoState(id,st){
   if(box) box.className='logo-box '+c.bg;
   if(lbl) lbl.textContent=c.lbl;
   if(chip) chip.innerHTML=c.chip;
-  if(card) card.className='acard '+c.card;
+  if(card) card.className='acard acard-logo-round '+c.card;
   if(id==='a4'){
     if(wrap) wrap.className='a4-wrap '+c.css;
     if(st==='active') startA4Anim();
