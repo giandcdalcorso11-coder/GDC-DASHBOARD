@@ -19,24 +19,20 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 @media(prefers-color-scheme:dark){
   :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}
   .date-chip{background:#2E2E2E;border-color:var(--border);}
-  .hero-card,.section-card,.sub-card{background:var(--bianco);border-color:var(--border);}
+  .hero-card,.section-card{background:var(--bianco);border-color:var(--border);}
   .pill-hub{background:var(--bianco);}
-  .pill-notif.on{background:var(--bianco);}
   .tab-btn{background:#2E2E2E;}
   .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}
   .io-block{background:#1A1A1A;}
   .lg-btn{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);}
   .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 100%);}
   .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,0.12);}
-  .lg-sabbia{background:rgba(196,168,101,.18);border-color:rgba(196,168,101,.35);color:var(--sabbia);}
-  .lg-cta{background:var(--nero);color:var(--carta);border-color:var(--nero);}
   .cal-popup,.msg-popup{background:#242424;border-color:var(--border);}
   .cal-day.has-event{background:#2E2E2E;}.cal-day.has-event:hover{background:#3A3A3A;}
   .cal-events-panel,.cal-event-item{border-color:var(--border);}
   #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
   #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
   .state-chip{background:#2E2E2E;}
-  .sub-card{background:var(--bianco);}
 }
 
 /* ══ HEADER ══ */
@@ -100,28 +96,26 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* ══ PAGE LAYOUT ══ */
 .page-content{width:100%;max-width:540px;padding:0 16px;}
 
-/* ══ HERO ══ */
+/* ══ HERO — A5.1/A5.2 uniti alla scheda principale, affiancati ══ */
 .hero-card{background:var(--bianco);border:2px solid var(--sabbia);border-radius:20px;overflow:hidden;margin-bottom:12px;}
 .hero-inner{display:flex;align-items:center;gap:14px;padding:14px 16px 10px;}
 .logo-box-hero{flex-shrink:0;width:80px;height:80px;border-radius:14px;background:var(--maker-bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .hero-text{flex:1;min-width:0;}
-.agent-id-lbl{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grigio);margin-bottom:2px;}
 .agent-name-big{font-size:1.15rem;font-weight:800;line-height:1.1;margin-bottom:5px;color:var(--sabbia-dk);}
 .agent-desc-big{font-size:.71rem;color:var(--grigio);line-height:1.4;}
-.hero-meta{display:flex;align-items:center;gap:7px;padding:0 16px 14px;flex-wrap:wrap;}
 .status-badge{display:inline-flex;align-items:center;gap:5px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:4px 10px;font-size:.67rem;font-weight:700;}
 .badge-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .badge-done{color:var(--maker);border-color:var(--maker-bg);}
 .badge-done .badge-dot{background:var(--maker);}
 .type-tag{font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--sabbia-bg);color:var(--sabbia-dk);border-radius:999px;padding:4px 9px;}
-.last-run-lbl{font-size:.65rem;color:var(--grigio);}
-
-/* ══ SUB-AGENT CARDS ══ */
-.sub-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.sub-card{background:var(--bianco);border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;}
-.sub-id{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:3px;}
-.sub-name{font-size:.8rem;font-weight:800;color:var(--sabbia-dk);margin-bottom:3px;}
-.sub-desc{font-size:.63rem;color:var(--grigio);line-height:1.4;}
+.hero-subrow-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1.5px solid var(--border);}
+.hero-sub-col{padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0;}
+.hero-sub-col:first-child{border-right:1.5px solid var(--border);}
+.hero-sub-name{font-size:.76rem;font-weight:800;color:var(--sabbia-dk);line-height:1.25;}
+.hero-sub-desc{font-size:.62rem;color:var(--grigio);line-height:1.35;}
+.hero-sub-meta{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:2px;}
+.hero-sub-meta .status-badge{padding:3px 8px;font-size:.58rem;}
+.hero-sub-meta .type-tag{font-size:.5rem;padding:3px 7px;white-space:nowrap;}
 
 /* ══ TABS ══ */
 .tabs-row{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
@@ -141,34 +135,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .sc-body{padding:12px 14px;}
 
 /* ══ LIQUID GLASS BUTTONS ══ */
-.action-row{display:flex;flex-direction:column;gap:8px;}
+.action-pair{display:flex;flex-direction:column;gap:8px;}
 .lg-btn{position:relative;display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:14px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;text-align:left;line-height:1.2;text-decoration:none;border:1px solid rgba(255,255,255,.7);overflow:hidden;background:rgba(255,255,255,0.55);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 1px 3px rgba(28,28,28,.08),inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(28,28,28,.06);color:var(--nero);transition:transform .12s,box-shadow .15s,background .15s;width:100%;}
 .lg-btn::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.1) 50%,transparent 100%);pointer-events:none;}
 .lg-btn:hover:not(.lg-disabled){transform:translateY(-1px) scale(1.01);box-shadow:0 4px 12px rgba(28,28,28,.12),inset 0 1px 0 rgba(255,255,255,.9);background:rgba(255,255,255,.72);}
 .lg-btn:active:not(.lg-disabled){transform:scale(.98);}
-.lg-sabbia{background:rgba(196,168,101,.12);border-color:rgba(196,168,101,.28);color:var(--sabbia-dk);box-shadow:0 1px 3px rgba(196,168,101,.1),inset 0 1px 0 rgba(255,255,255,.7);}
-.lg-sabbia:hover:not(.lg-disabled){background:rgba(196,168,101,.2);}
-.lg-cta{background:var(--nero);color:var(--carta);border-color:var(--nero);box-shadow:0 2px 8px rgba(28,28,28,.2);}
-.lg-cta:hover:not(.lg-disabled){background:#333;transform:translateY(-1px);}
-.lg-cta::before{display:none;}
 .btn-icon{font-size:1.1rem;flex-shrink:0;width:22px;text-align:center;}
 .btn-text{flex:1;}
 .btn-title{font-size:.8rem;font-weight:700;}
 .btn-sub{font-size:.62rem;font-weight:500;opacity:.65;margin-top:1px;}
 .btn-arr{font-size:.85rem;opacity:.35;flex-shrink:0;}
-
-/* ══ FILE LIST ══ */
-.file-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--nero);transition:opacity .15s;}
-.file-item:last-child{border-bottom:none;}
-.file-item:hover{opacity:.7;}
-.file-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
-.fi-xlsx{background:#e8f4e8;}
-.fi-slide{background:#fff3e0;}
-.fi-doc{background:#e8f0fe;}
-.file-info{flex:1;min-width:0;}
-.file-name{font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.file-sub{font-size:.62rem;color:var(--grigio);margin-top:1px;}
-.file-arr{font-size:.85rem;color:var(--grigio);flex-shrink:0;}
 
 /* ══ PIPELINE STATES ══ */
 .pipe-flow{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:0;}
@@ -229,10 +205,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
 .badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
 
-/* ══ MINI-STATO SUB-AGENTI ══ */
-.sub-status{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;margin-top:5px;}
-.sub-status .sd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-
 /* ══ NAVIGAZIONE — stesso pattern di page_home_v25.html / A1-A4 ══ */
 .pill-row{width:100%;max-width:540px;padding:0 16px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
 .pill-hub-wrap{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
@@ -240,8 +212,17 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .pill-hub{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px 0 18px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
   clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%);}
 .pill-hub svg{width:12px;height:12px;flex-shrink:0;}
-.pill-notif{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px;border-radius:999px;border:1.5px solid var(--athlete);background:var(--athlete);color:#fff;cursor:pointer;transition:background .2s,color .2s,border-color .2s;}
-.pill-notif.on{background:var(--bianco);border-color:var(--border);color:var(--nero);}
+.pill-hub-wrap-r{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);transition:background .2s;}
+.pill-hub-r{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;height:32px;padding:0 18px 0 14px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
+  clip-path:polygon(0 0,calc(100% - 12.5px) 0,100% 50%,calc(100% - 12.5px) 100%,0 100%);}
+
+/* ══ WORKFLOW — copia messaggio -> incolla -> produce (tab Lavoro) ══ */
+.flow-steps{display:flex;flex-direction:column;gap:0;}
+.flow-step{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);}
+.flow-step:last-child{border-bottom:none;}
+.flow-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--athlete);color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.flow-desc{font-size:.72rem;line-height:1.4;color:var(--nero);}
 
 /* ══ ATTIVITÀ ══ */
 .run-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
@@ -319,20 +300,13 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
 </div>
 <div class="pill-row">
-  <div style="display:flex;gap:8px;">
-    <div class="pill-hub-wrap"><a class="pill-hub" href="app/page_home_v25.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Home</span>
-    </a></div>
-    <div class="pill-hub-wrap"><a class="pill-hub" href="page_pipeline_v1.html" style="color:var(--sabbia-dk);">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/></svg>
-      <span>Pipeline</span>
-    </a></div>
-  </div>
-  <button id="pushBtn" class="pill-notif" onclick="togglePushNotifications()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    <span id="pushBtnLabel">Attiva notifiche</span>
-  </button>
+  <div class="pill-hub-wrap"><a class="pill-hub" href="app/page_home_v25.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a></div>
+  <div class="pill-hub-wrap-r"><a class="pill-hub-r" href="page_pipeline_v1.html" style="color:var(--sabbia-dk);">
+    <span>Pipeline</span>
+  </a></div>
 </div>
 
 <!-- ══ PAGE CONTENT ══ -->
@@ -351,190 +325,143 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </svg>
       </div></div>
       <div class="hero-text">
-        <div class="agent-id-lbl">Agente 5</div>
-        <div class="agent-name-big">Pipeline Manager</div>
+        <div class="agent-name-big">AGENTE 5 — Pipeline</div>
         <div class="agent-desc-big">Gestisce la pipeline sponsorizzazioni su Supabase: ricerca aziende target (A5.1) e produce schede approfondite per ogni prospect (A5.2).</div>
       </div>
     </div>
-    <div class="hero-meta">
-      <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
-      <span class="type-tag">&#9729;&#65039; Claude.ai</span>
-      <span class="last-run-lbl" id="lastRunLbl">On-demand — continuo</span>
-    </div>
-  </div>
-
-  <!-- SUB-AGENT CARDS -->
-  <div class="sub-cards">
-    <div class="sub-card">
-      <div class="sub-id">A5.1</div>
-      <div class="sub-name">Gestione Pipeline</div>
-      <div class="sub-desc">Ricerca, valuta e scrive nuove aziende target direttamente su Supabase (tabella companies).</div>
-      <div class="sub-status" id="statA51"><span class="sd" style="background:var(--grigio);"></span><span>Caricamento...</span></div>
-    </div>
-    <div class="sub-card">
-      <div class="sub-id">A5.2</div>
-      <div class="sub-name">Scheda Azienda</div>
-      <div class="sub-desc">Produce la scheda approfondita di un'azienda dalla pipeline — input per A6.</div>
-      <div class="sub-status" id="statA52"><span class="sd" style="background:var(--grigio);"></span><span>Caricamento...</span></div>
+    <div class="hero-subrow-grid">
+      <div class="hero-sub-col">
+        <div class="hero-sub-name">A5.1 — Gestione Pipeline</div>
+        <div class="hero-sub-desc">Ricerca, valuta e scrive nuove aziende target direttamente su Supabase.</div>
+        <div class="hero-sub-meta">
+          <span class="status-badge badge-sleep" id="statusA51Badge"><span class="badge-dot"></span><span id="statusA51Lbl">Caricamento...</span></span>
+          <span class="type-tag">Progetto in Claude.ai</span>
+        </div>
+      </div>
+      <div class="hero-sub-col">
+        <div class="hero-sub-name">A5.2 — Scheda Azienda</div>
+        <div class="hero-sub-desc">Produce la scheda approfondita — input per A6.</div>
+        <div class="hero-sub-meta">
+          <span class="status-badge badge-sleep" id="statusA52Badge"><span class="badge-dot"></span><span id="statusA52Lbl">Caricamento...</span></span>
+          <span class="type-tag">Progetto in Claude.ai</span>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs-row">
     <button class="tab-btn active" onclick="switchTab('azioni',this)">Azioni</button>
-    <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
-    <button class="tab-btn" onclick="switchTab('pipeline',this)">Pipeline</button>
     <button class="tab-btn" onclick="switchTab('run',this)">Attività</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
   <!-- TAB: AZIONI -->
   <div id="panel-azioni" class="panel active">
-    <div class="action-row">
-
-      <a class="lg-btn lg-cta" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank">
-        <span class="btn-icon">&#9889;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri A5.1 — Gestione Pipeline</div>
-          <div class="btn-sub">Ricerca aziende · scrive su Supabase · Mod. A/B/C</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-sabbia" onclick="openMsg('A5_1')">
-        <span class="btn-icon">&#128203;</span>
-        <div class="btn-text">
-          <div class="btn-title">Copia messaggio A5.1</div>
-          <div class="btn-sub">Launcher — ricerca azienda su Supabase</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </button>
-
-      <a class="lg-btn lg-cta" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank">
-        <span class="btn-icon">&#128196;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri A5.2 — Scheda Azienda</div>
-          <div class="btn-sub">Analisi approfondita singola azienda · input per A6</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-sabbia" onclick="openMsg('A5_2')">
-        <span class="btn-icon">&#128203;</span>
-        <div class="btn-text">
-          <div class="btn-title">Copia messaggio A5.2</div>
-          <div class="btn-sub">Launcher — scheda aziendale + link Drive</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </button>
-
-      <a class="lg-btn" href="page_pipeline_v1.html">
-        <span class="btn-icon">&#128200;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri Pipeline aziende</div>
-          <div class="btn-sub">Lista completa — tutti gli step 1-13 — apri la scheda di ognuna</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- TAB: DOCUMENTI -->
-  <div id="panel-file" class="panel">
     <div class="section-card">
-      <div class="sc-head">
-        <span class="sc-label">&#128193; Drive A5 — Area di lavoro</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr" target="_blank">Apri &#8599;</a>
-      </div>
-      <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr" target="_blank">
-          <div class="file-icon fi-doc">&#128193;</div>
-          <div class="file-info">
-            <div class="file-name">Cartella A5 — root</div>
-            <div class="file-sub">Area di lavoro generale di A5</div>
+      <div class="sc-head"><span class="sc-label">A5.1 — Gestione Pipeline</span></div>
+      <div class="sc-body action-pair">
+        <a class="lg-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank">
+          <span class="btn-icon">&#128172;</span>
+          <div class="btn-text">
+            <div class="btn-title">Apri progetto</div>
+            <div class="btn-sub">Ricerca aziende · scrive su Supabase · Mod. A/B/C</div>
           </div>
-          <span class="file-arr">&#8599;</span>
+          <span class="btn-arr">&#8594;</span>
         </a>
-        <a class="file-item" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">
-          <div class="file-icon fi-doc">&#128196;</div>
-          <div class="file-info">
-            <div class="file-name">Schede aziendali — archivio storico</div>
-            <div class="file-sub">DOCX pre-migrazione. A5.2 scrive ora la scheda su Supabase (tabella schede_aziendali) — vedi "Scheda" nella pagina dell'azienda</div>
+        <button class="lg-btn" onclick="openMsg('A5_1')">
+          <span class="btn-icon">&#128203;</span>
+          <div class="btn-text">
+            <div class="btn-title">Copia messaggio</div>
+            <div class="btn-sub">Launcher — ricerca azienda su Supabase</div>
           </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+          <span class="btn-arr">&#8594;</span>
+        </button>
       </div>
     </div>
+
     <div class="section-card">
-      <div class="sc-head">
-        <span class="sc-label">&#128202; Input — Report A2 (Mm1 + Mm2)</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">Apri &#8599;</a>
-      </div>
-      <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide">&#128203;</div>
-          <div class="file-info">
-            <div class="file-name" id="repMm1Lbl">report_GDC_[mese-1]_[anno]</div>
-            <div class="file-sub">KPI IG: follower, ER, reach — Mm1</div>
+      <div class="sc-head"><span class="sc-label">A5.2 — Scheda Azienda</span></div>
+      <div class="sc-body action-pair">
+        <a class="lg-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank">
+          <span class="btn-icon">&#128172;</span>
+          <div class="btn-text">
+            <div class="btn-title">Apri progetto</div>
+            <div class="btn-sub">Analisi approfondita singola azienda · input per A6</div>
           </div>
-          <span class="file-arr">&#8599;</span>
+          <span class="btn-arr">&#8594;</span>
         </a>
-        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide">&#128203;</div>
-          <div class="file-info">
-            <div class="file-name" id="repMm2Lbl">report_GDC_[mese-2]_[anno]</div>
-            <div class="file-sub">KPI IG mese precedente — Mm2</div>
+        <button class="lg-btn" onclick="openMsg('A5_2')">
+          <span class="btn-icon">&#128203;</span>
+          <div class="btn-text">
+            <div class="btn-title">Copia messaggio</div>
+            <div class="btn-sub">Launcher — scheda aziendale</div>
           </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+          <span class="btn-arr">&#8594;</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- TAB: LAVORO -->
+  <!-- TAB: LAVORO (ex Lavoro + Pipeline, unite) -->
   <div id="panel-lavoro" class="panel">
+
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128161; Come funziona, in breve</span></div>
+      <div class="sc-body">
+        <p style="font-size:.72rem;line-height:1.5;margin-bottom:10px;">A5 non è uno script automatico: è un progetto Claude.ai dedicato con cui si lavora in chat, a richiesta. Il flusso è sempre lo stesso, sia per A5.1 sia per A5.2:</p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-num">1</div><div class="flow-desc">Dalla tab <strong>Azioni</strong>, copi il messaggio precompilato del sotto-agente che ti serve.</div></div>
+          <div class="flow-step"><div class="flow-num">2</div><div class="flow-desc">Apri il progetto Claude.ai corrispondente ("Apri progetto") e incolli il messaggio nella chat.</div></div>
+          <div class="flow-step"><div class="flow-num">3</div><div class="flow-desc">L'agente lavora nella chat — ricerca, analizza, scrive il risultato direttamente su Supabase.</div></div>
+          <div class="flow-step"><div class="flow-num">4</div><div class="flow-desc">Ti conferma in chat cosa ha scritto: azienda, punteggio, step della pipeline — pronto per il passo successivo.</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128100; A5.1 — Gestione Pipeline</span></div>
       <div class="sc-body">
+        <p style="font-size:.71rem;line-height:1.5;margin-bottom:8px;">Trova e qualifica aziende italiane o internazionali da contattare per sponsorizzazioni. Lavora in 3 modalità, a seconda di cosa scrivi nel messaggio:</p>
         <div class="work-step">
           <div class="work-num sub1">A</div>
-          <div><div class="work-desc">Modalità A — Ricerca libera</div><div class="work-sub">Default. Analizza coda DA ANALIZZARE o cerca nuove aziende (settori: Lifestyle/Fitness, Tech/3D, Internazionale)</div></div>
+          <div><div class="work-desc">Modalità A — Ricerca libera</div><div class="work-sub">Default. Analizza la coda "da analizzare" o cerca nuove aziende (settori: Lifestyle/Fitness, Tech/3D, Internazionale)</div></div>
         </div>
         <div class="work-step">
           <div class="work-num sub1">B</div>
-          <div><div class="work-desc">Modalità B — Segnalazione diretta</div><div class="work-sub">Indica tu un'azienda specifica da analizzare — ricerca approfondita + score + tag 📌 SEGNALATA</div></div>
+          <div><div class="work-desc">Modalità B — Segnalazione diretta</div><div class="work-sub">Indichi tu un'azienda specifica da analizzare — ricerca approfondita + punteggio + tag "Segnalata"</div></div>
         </div>
         <div class="work-step">
           <div class="work-num sub1">C</div>
-          <div><div class="work-desc">Modalità C — Esplorazione categoria</div><div class="work-sub">Indica un settore merciologico — comparativa in chat prima di aggiornare l'Excel</div></div>
+          <div><div class="work-desc">Modalità C — Esplorazione categoria</div><div class="work-sub">Indichi un settore merceologico — l'agente ti propone un confronto in chat prima di scrivere</div></div>
         </div>
+        <p style="font-size:.68rem;color:var(--grigio);line-height:1.5;margin-top:8px;">Risultato: una riga nuova o aggiornata nella tabella <code>companies</code> su Supabase — nome, punteggio e <code>step_attuale = 1</code> (Trovata).</p>
       </div>
     </div>
+
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128196; A5.2 — Scheda Azienda</span></div>
       <div class="sc-body">
+        <p style="font-size:.71rem;line-height:1.5;margin-bottom:8px;">Approfondisce un'azienda già trovata da A5.1 e produce la scheda che userà A6 per scrivere mail e media kit.</p>
         <div class="work-step">
           <div class="work-num sub2">1</div>
-          <div><div class="work-desc">Scegli un'azienda a step 1 (Trovata) dalla pipeline</div><div class="work-sub">Vedi lista in Company Page o Pipeline completa (tab Azioni)</div></div>
+          <div><div class="work-desc">Scegli un'azienda a step 1 (Trovata) dalla pipeline</div><div class="work-sub">Vedi la lista nella tab Azioni → "Apri Pipeline aziende"</div></div>
         </div>
         <div class="work-step">
           <div class="work-num sub2">2</div>
-          <div><div class="work-desc">Fornisci ad A5.2: nome azienda + ultimi 2 report A2</div><div class="work-sub">L'agente legge la riga già su Supabase e produce scheda in 4 sezioni: Profilo · Fit · Contesto · Proposta</div></div>
+          <div><div class="work-desc">Fornisci ad A5.2 il nome dell'azienda</div><div class="work-sub">L'agente legge la riga già su Supabase e produce la scheda in 4 sezioni: Profilo · Analisi Fit · Contesto fiscale · Brief per A6</div></div>
         </div>
         <div class="work-step">
           <div class="work-num sub2">3</div>
-          <div><div class="work-desc">Scheda pronta → input per A6</div><div class="work-sub">A6.1 usa la scheda per produrre la mail e il media kit personalizzati</div></div>
+          <div><div class="work-desc">Scheda pronta → input per A6</div><div class="work-sub">A6.1 la usa per il media kit, A6.2 per la mail di proposta</div></div>
         </div>
+        <p style="font-size:.68rem;color:var(--grigio);line-height:1.5;margin-top:8px;">Risultato: una pagina HTML scritta su Supabase (tabella <code>schede_aziendali</code>), <code>step_attuale = 2</code>. Visibile dal bottone "Scheda" nella pagina dell'azienda.</p>
       </div>
     </div>
-  </div>
 
-  <!-- TAB: PIPELINE -->
-  <div id="panel-pipeline" class="panel">
     <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128200; Flusso reale — 13 step (companies.step_attuale)</span></div>
+      <div class="sc-head"><span class="sc-label">&#128200; La pipeline — 13 step</span></div>
       <div class="sc-body">
         <div class="pipe-flow">
           <span class="state-chip active-chip">1 Trovata</span>
@@ -586,6 +513,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <div class="config-row"><span class="config-key">1–4</span><span class="config-val" style="color:var(--grigio);">Basso fit o bassa fattibilità</span></div>
       </div>
     </div>
+
   </div>
 
   <!-- TAB: ATTIVITÀ -->
@@ -605,8 +533,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-body">
         <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai — progetto dedicato</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">On-demand — a richiesta</span></div>
-        <div class="config-row"><span class="config-key">Output</span><span class="config-val">Pipeline_Sponsorizzazioni.xlsx aggiornato</span></div>
-        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1fT6ODMAbEFslDxhE6JMG8Qi8278TmhRr</span></div>
+        <div class="config-row"><span class="config-key">Output</span><span class="config-val">Riga aggiornata/inserita su Supabase (tabella companies)</span></div>
+        <div class="config-row"><span class="config-key">Supabase table</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">companies</span></div>
         <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019dd5f6-7930-7711-857d-481ddf34ca1f</span></div>
       </div>
     </div>
@@ -624,7 +552,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
         <div class="config-row"><span class="cfg-dot cfg-ok" id="depSupaDot"></span><span style="flex:1;font-size:.7rem;">Connessione Supabase (tabella companies)</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;" id="depSupaLbl">Verifica in corso...</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm1 + Mm2 disponibili in Drive</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Report A2 (ultimi 2 mesi) disponibili su Supabase (report_mensili)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
         <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">A5.2 richiede A5.1 già eseguita (ordine di processo)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificato qui</span></div>
       </div>
     </div>
@@ -633,20 +561,13 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 </div>
 
 <script>
-const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 const MESI_S=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const now=new Date();
 const DD=String(now.getDate()).padStart(2,'0');
 const MM=String(now.getMonth()+1).padStart(2,'0');
 const YY=now.getFullYear();
-const mm1d=new Date(now.getFullYear(),now.getMonth()-1,1);
-const Mm1=MESI[mm1d.getMonth()]; const Am1=mm1d.getFullYear();
-const mm2d=new Date(now.getFullYear(),now.getMonth()-2,1);
-const Mm2=MESI[mm2d.getMonth()]; const Am2=mm2d.getFullYear();
 
 document.getElementById('dateChipText').textContent=`${DD}/${MM}/${YY}`;
-document.getElementById('repMm1Lbl').textContent=`report_GDC_${Mm1}_${Am1}`;
-document.getElementById('repMm2Lbl').textContent=`report_GDC_${Mm2}_${Am2}`;
 
 /* ══ MESSAGGI — stessi testi reali usati in page_home_v25.html ══ */
 const MSGS={
@@ -765,74 +686,6 @@ async function sbFetch(url,options){
   return res;
 }
 
-/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html) ══ */
-const VAPID_PUBLIC_KEY='BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
-function urlBase64ToUint8Array(base64String){
-  const padding='='.repeat((4-base64String.length%4)%4);
-  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
-  const rawData=atob(base64); const outputArray=new Uint8Array(rawData.length);
-  for(let i=0;i<rawData.length;i++) outputArray[i]=rawData.charCodeAt(i);
-  return outputArray;
-}
-function guessDeviceLabel(){
-  const ua=navigator.userAgent||''; let device='Dispositivo';
-  if(/iPad/.test(ua)) device='iPad'; else if(/iPhone/.test(ua)) device='iPhone';
-  else if(/Android/.test(ua)) device='Android'; else if(/Macintosh/.test(ua)) device='Mac';
-  else if(/Windows/.test(ua)) device='PC Windows';
-  const d=new Date(); return device+' — '+d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
-}
-async function getExistingPushSubscription(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return null;
-  const reg=await navigator.serviceWorker.getRegistration(); if(!reg) return null;
-  return await reg.pushManager.getSubscription();
-}
-async function updatePushButtonUI(){
-  const label=document.getElementById('pushBtnLabel'); if(!label) return;
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
-  const sub=await getExistingPushSubscription();
-  label.textContent=sub?'Notifiche attive':'Attiva notifiche';
-}
-let pushToggleInProgress=false;
-async function togglePushNotifications(){
-  if(pushToggleInProgress) return;
-  pushToggleInProgress=true;
-  const label=document.getElementById('pushBtnLabel');
-  const btn=document.getElementById('pushBtn');
-  if(btn) btn.disabled=true;
-  const prevLabel=label?label.textContent:'';
-  if(label) label.textContent='Attivazione in corso...';
-  try{
-    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
-      if(label) label.textContent=prevLabel; return;
-    }
-    const existing=await getExistingPushSubscription();
-    if(existing){
-      try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
-      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
-    }
-    try{
-      const permission=await Notification.requestPermission();
-      if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
-      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
-      const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
-      const subJson=sub.toJSON();
-      await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-        body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
-      if(label) label.textContent='Notifiche attive';
-    }catch(e){
-      console.error('Errore attivazione notifiche:',e);
-      const realSub=await getExistingPushSubscription();
-      if(realSub){ if(label) label.textContent='Notifiche attive'; }
-      else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
-    }
-  } finally {
-    if(btn) btn.disabled=false;
-    pushToggleInProgress=false;
-  }
-}
-document.addEventListener('DOMContentLoaded',updatePushButtonUI);
-
 /* ══ DATI REALI — agent_states (a5_1 + a5_2) + conteggi pipeline ══ */
 function timeAgo(iso){
   if(!iso) return '';
@@ -910,27 +763,26 @@ async function loadA5(){
     document.getElementById('depSupaLbl').textContent='OK — connessione riuscita';
     document.getElementById('depSupaLbl').style.color='var(--maker)';
 
-    // Badge/logo hero — stato peggiore tra A5.1/A5.2 (stessa logica della home)
-    const st=worstState([a51,a52]), c=STATE_CFG[st];
-    const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
+    // Logo hero — stato peggiore tra A5.1/A5.2 (c'è un'unica icona condivisa)
+    const st=worstState([a51,a52]);
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
-    badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
-    if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    if(logoBox) logoBox.className='logo-box-hero '+STATE_CFG[st].logo;
     if(logoWrap) logoWrap.className='s-'+st;
     if(st==='active') startA5Anim(); else stopA5Anim();
-    const latest=[a51,a52].filter(Boolean).sort((x,y)=>new Date(y.updated_at)-new Date(x.updated_at))[0];
-    document.getElementById('lastRunLbl').textContent=latest?('Ultimo aggiornamento: '+timeAgo(latest.updated_at)):'Nessun dato ancora';
 
-    // Mini-stato per sotto-agente
+    // Badge per sotto-agente — indipendenti
     const cA51=STATE_CFG[mapState(a51)], cA52=STATE_CFG[mapState(a52)];
-    document.getElementById('statA51').innerHTML=`<span class="sd" style="background:${cA51.dot};"></span><span style="color:${cA51.dot};">${cA51.lbl}${a51&&a51.updated_at?' · '+timeAgo(a51.updated_at):''}</span>`;
-    document.getElementById('statA52').innerHTML=`<span class="sd" style="background:${cA52.dot};"></span><span style="color:${cA52.dot};">${cA52.lbl}${a52&&a52.updated_at?' · '+timeAgo(a52.updated_at):''}</span>`;
+    const badgeA51=document.getElementById('statusA51Badge'), lblA51=document.getElementById('statusA51Lbl');
+    badgeA51.className='status-badge '+cA51.badge; lblA51.textContent=cA51.lbl+(a51&&a51.updated_at?' · '+timeAgo(a51.updated_at):'');
+    const badgeA52=document.getElementById('statusA52Badge'), lblA52=document.getElementById('statusA52Lbl');
+    badgeA52.className='status-badge '+cA52.badge; lblA52.textContent=cA52.lbl+(a52&&a52.updated_at?' · '+timeAgo(a52.updated_at):'');
   }catch(e){
     console.error('Errore caricamento A5:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
     document.getElementById('sysLabel').style.color='var(--grigio)';
-    document.getElementById('statusBadgeLbl').textContent='Non disponibile';
+    document.getElementById('statusA51Lbl').textContent='Non disponibile';
+    document.getElementById('statusA52Lbl').textContent='Non disponibile';
     document.getElementById('depSupaDot').style.background='var(--life)';
     document.getElementById('depSupaLbl').textContent='Errore connessione';
     document.getElementById('depSupaLbl').style.color='var(--life)';
