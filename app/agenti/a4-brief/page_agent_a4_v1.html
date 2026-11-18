@@ -9,7 +9,7 @@
 :root{
   --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
   --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
-  --athlete:#2B5F9E; --athlete-bg:#D9E6F3;
+  --athlete:#2B5C8A; --athlete-bg:#D9E6F3;
   --life:#C2193A; --life-bg:#F5E0E6; --life-mid:#E9415A;
   --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
   --grigio:#6B6B6B; --border:#ddd6cb;
@@ -25,6 +25,7 @@ body{
 }
 @media(prefers-color-scheme:dark){
   :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+  .logo-rest{ background:#FAFAF5 !important; }
   .date-chip{ background:#2E2E2E; border-color:var(--border); }
   .hero-card,.section-card{ background:var(--bianco); border-color:var(--border); }
   .pill-hub{ background:var(--bianco); }
@@ -105,20 +106,20 @@ body{
 /* ══ HERO ══ */
 .hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; }
 .hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
-.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; background:var(--carta); display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
+.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
 .logo-active{ background:var(--sabbia-bg) !important; }
 .logo-queued{ background:var(--life-bg) !important; }
 .logo-done{ background:var(--maker-bg) !important; }
-.logo-sleep{ background:var(--carta) !important; }
-.logo-rest{ background:var(--carta) !important; }
+.logo-sleep{ background:var(--athlete-bg) !important; }
+.logo-rest{ background:#1C1C1C !important; }
 
 /* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
 .doc-rect,.bar,.cur-el,.lbl{transition:fill .6s,stroke .6s;}
 .a4-wrap.s-rest .doc-rect{stroke:#FFF!important;}.a4-wrap.s-rest .bar{fill:#9A9A9A!important;}.a4-wrap.s-rest .cur-el{fill:#9A9A9A!important;}.a4-wrap.s-rest .lbl{fill:#FFF!important;}
-.a4-wrap.s-queued .doc-rect{stroke:#2B5C8A!important;}.a4-wrap.s-queued .bar{fill:#4A86C6!important;}.a4-wrap.s-queued .cur-el{fill:#4A86C6!important;}.a4-wrap.s-queued .lbl{fill:#2B5C8A!important;}
+.a4-wrap.s-queued .doc-rect{stroke:#C2193A!important;}.a4-wrap.s-queued .bar{fill:#E9415A!important;}.a4-wrap.s-queued .cur-el{fill:#E9415A!important;}.a4-wrap.s-queued .lbl{fill:#C2193A!important;}
 .a4-wrap.s-active .doc-rect{stroke:#8A6D3B!important;}.a4-wrap.s-active .bar{fill:#C4A865!important;}.a4-wrap.s-active .cur-el{fill:#C4A865!important;}.a4-wrap.s-active .lbl{fill:transparent!important;}
 .a4-wrap.s-done .doc-rect{stroke:#497B58!important;}.a4-wrap.s-done .bar{fill:#5D9C71!important;}.a4-wrap.s-done .cur-el{fill:#5D9C71!important;}.a4-wrap.s-done .lbl{fill:#497B58!important;}
-.a4-wrap.s-sleep .doc-rect{stroke:#FFF!important;}.a4-wrap.s-sleep .bar{fill:#9A9A9A!important;}.a4-wrap.s-sleep .cur-el{fill:#9A9A9A!important;}.a4-wrap.s-sleep .lbl{fill:#FFF!important;}
+.a4-wrap.s-sleep .doc-rect{stroke:#2B5C8A!important;}.a4-wrap.s-sleep .bar{fill:#4A86C6!important;}.a4-wrap.s-sleep .cur-el{fill:#2B5C8A!important;}.a4-wrap.s-sleep .lbl{fill:#2B5C8A!important;}
 .hero-text{ flex:1; min-width:0; }
 .agent-name-big{ font-size:1.1rem; font-weight:800; line-height:1.15; margin-bottom:5px; color:var(--maker); transition:color .4s; }
 .agent-desc-big{ font-size:.71rem; color:var(--grigio); line-height:1.4; }
@@ -127,8 +128,9 @@ body{
 .badge-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 .badge-done{ color:var(--maker); border-color:var(--maker-bg); } .badge-done .badge-dot{ background:var(--maker); }
 .badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
-.badge-queued{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-queued .badge-dot{ background:var(--athlete); }
-.badge-sleep{ color:var(--grigio); border-color:var(--border); } .badge-sleep .badge-dot{ background:var(--grigio); }
+.badge-queued{ color:var(--life); border-color:var(--life-bg); } .badge-queued .badge-dot{ background:var(--life); }
+.badge-sleep{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-sleep .badge-dot{ background:var(--athlete); }
+.badge-rest{ color:var(--grigio); border-color:var(--border); } .badge-rest .badge-dot{ background:var(--grigio); }
 .type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:999px; padding:4px 9px; }
 .last-run-lbl{ font-size:.65rem; color:var(--grigio); }
 .empty-note{ font-size:.72rem; color:var(--grigio); line-height:1.5; padding:6px 0; }
@@ -302,7 +304,7 @@ body{
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div id="logoWrap" class="a4-wrap s-sleep">
+      <div class="logo-box-hero logo-sleep" id="logoBoxHero"><div id="logoWrap" class="a4-wrap s-sleep">
         <svg id="svg-a4" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible">
           <rect id="c-doc" class="doc-rect" x="16" y="8" width="88" height="104" rx="12" fill="none" stroke="#2B5C8A" stroke-width="6.5" style="stroke-dasharray:390;stroke-dashoffset:0"/>
           <rect id="c-r0" class="bar" x="30" y="29" width="60" height="6" rx="3" fill="#4A86C6" style="transform-origin:30px 32px;transform:scaleX(1)"/>
@@ -691,10 +693,10 @@ const STATE_CFG={
   active:{badge:'badge-active',logo:'logo-active',lbl:'In corso'},
   queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda'},
   done:{badge:'badge-done',logo:'logo-done',lbl:'Completato'},
-  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
+  rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
 };
-const TITLE_COLOR={active:'var(--sabbia-dk)',queued:'var(--athlete)',done:'var(--maker)',rest:'var(--grigio)',sleep:'var(--grigio)'};
+const TITLE_COLOR={active:'var(--sabbia-dk)',queued:'var(--life)',done:'var(--maker)',rest:'var(--grigio)',sleep:'var(--athlete)'};
 
 /* ══ ANIMAZIONE ICONA — esatta dalla home, JS-driven ══ */
 var a4RAF=null;

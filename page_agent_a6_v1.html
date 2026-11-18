@@ -9,7 +9,7 @@
 :root{
   --carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;
   --maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;
-  --athlete:#2B5F9E;--athlete-bg:#D9E6F3;
+  --athlete:#2B5C8A;--athlete-bg:#D9E6F3;
   --life:#C2193A;--life-bg:#F5E0E6;
   --sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;
   --grigio:#6B6B6B;--border:#ddd6cb;
@@ -18,6 +18,7 @@
 body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
 @media(prefers-color-scheme:dark){
   :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}
+  .logo-rest{background:#FAFAF5 !important;}
   .system-bar,.date-chip{background:#2E2E2E;border-color:var(--border);}
   .hero-card,.section-card,.sub-card{background:var(--bianco);border-color:var(--border);}
   .back-btn{background:#2E2E2E;border-color:var(--border);}
@@ -91,7 +92,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* ══ HERO ══ */
 .hero-card{background:var(--bianco);border:2px solid var(--sabbia);border-radius:20px;overflow:hidden;margin-bottom:12px;}
 .hero-inner{display:flex;align-items:center;gap:14px;padding:14px 16px 10px;}
-.logo-box-hero{flex-shrink:0;width:80px;height:80px;border-radius:14px;background:var(--carta);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.logo-box-hero{flex-shrink:0;width:80px;height:80px;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .hero-text{flex:1;min-width:0;}
 .agent-id-lbl{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grigio);margin-bottom:2px;}
 .agent-name-big{font-size:1.15rem;font-weight:800;line-height:1.1;margin-bottom:5px;color:var(--sabbia-dk);}
@@ -198,20 +199,21 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .logo-active{background:var(--sabbia-bg) !important;}
 .logo-queued{background:var(--life-bg) !important;}
 .logo-done{background:var(--maker-bg) !important;}
-.logo-sleep{background:var(--carta) !important;}
-.logo-rest{background:var(--carta) !important;}
+.logo-sleep{background:var(--athlete-bg) !important;}
+.logo-rest{background:#1C1C1C !important;}
 
 /* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
 .doc-path,.fold-path{transition:stroke .6s;}
 .s-rest .doc-path{stroke:#9A9A9A;}.s-rest .fold-path{stroke:#9A9A9A;}.s-rest .a6-lbl{fill:#FFF;}.s-rest .a6-bar{fill:#9A9A9A;}
-.s-queued .doc-path{stroke:#2B5C8A;}.s-queued .fold-path{stroke:#2B5C8A;}.s-queued .a6-lbl{fill:#2B5C8A;}.s-queued .a6-bar{fill:#4A86C6;}
+.s-queued .doc-path{stroke:#C2193A;}.s-queued .fold-path{stroke:#C2193A;}.s-queued .a6-lbl{fill:#C2193A;}.s-queued .a6-bar{fill:#E9415A;}
 .s-active .doc-path{stroke:#8A6D3B;}.s-active .fold-path{stroke:#8A6D3B;}.s-active .a6-lbl{fill:transparent;}.s-active .a6-bar{fill:#C4A865;}
 .s-done .doc-path{stroke:#497B58;}.s-done .fold-path{stroke:#497B58;}.s-done .a6-lbl{fill:#497B58;}.s-done .a6-bar{fill:#5D9C71;}
-.s-sleep .doc-path{stroke:#9A9A9A;}.s-sleep .fold-path{stroke:#9A9A9A;}.s-sleep .a6-lbl{fill:#FFF;}.s-sleep .a6-bar{fill:#9A9A9A;}
+.s-sleep .doc-path{stroke:#2B5C8A;}.s-sleep .fold-path{stroke:#2B5C8A;}.s-sleep .a6-lbl{fill:#2B5C8A;}.s-sleep .a6-bar{fill:#4A86C6;}
 .a6-lbl,.a6-bar{transition:fill .6s;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
-.badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
-.badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
+.badge-queued{color:var(--life);border-color:var(--life-bg);}.badge-queued .badge-dot{background:var(--life);}
+.badge-sleep{color:var(--athlete);border-color:var(--athlete-bg);}.badge-sleep .badge-dot{background:var(--athlete);}
+.badge-rest{color:var(--grigio);border-color:var(--border);}.badge-rest .badge-dot{background:var(--grigio);}
 
 /* ══ MINI-STATO SUB-AGENTI ══ */
 .sub-status{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;margin-top:5px;}
@@ -330,7 +332,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <!-- HERO -->
   <div class="hero-card">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap">
+      <div class="logo-box-hero logo-sleep" id="logoBoxHero"><div class="s-sleep" id="logoWrap">
         <svg id="svg-a6" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible" font-family="Jost,sans-serif">
           <path class="doc-path" d="M21 9 H85 L104 28 V107 H21 Z" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linejoin="round"/>
           <path id="c-fold" class="fold-path" d="M85 9 L85 28 L104 28" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linejoin="round"/>
@@ -883,10 +885,10 @@ function mapState(row){
 function worstState(rows){ let b='sleep'; rows.forEach(r=>{ if(!r) return; const s=mapState(r); if((PRI[s]||0)>(PRI[b]||0)) b=s; }); return b; }
 const STATE_CFG={
   active:{badge:'badge-active',logo:'logo-active',lbl:'In corso',dot:'var(--sabbia-dk)'},
-  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda',dot:'var(--athlete)'},
+  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda',dot:'var(--life)'},
   done:{badge:'badge-done',logo:'logo-done',lbl:'Completato',dot:'var(--maker)'},
-  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo',dot:'var(--grigio)'},
-  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo',dot:'var(--grigio)'},
+  rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo',dot:'var(--grigio)'},
+  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo',dot:'var(--athlete)'},
 };
 /* ══ ANIMAZIONE ICONA — esatta dalla home ══ */
 var a6RAF=null;
