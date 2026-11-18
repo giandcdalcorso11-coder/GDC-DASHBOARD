@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 38
-**Ultimo aggiornamento:** 2026-11-17 22:30
+**Versione:** 39
+**Ultimo aggiornamento:** 2026-11-18 07:30
 
 ## Vision
 
@@ -276,9 +276,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - **`agent_states` scartato esplicitamente per A6.2**: a differenza degli altri, A6.2 è una conversazione continuativa su una trattativa (si riaccumula nel tempo, spesso con più conversazioni attive insieme) — non ha un vero momento "done". Gianluca ha confermato: il pallino sarebbe comunque poco significativo per questo agente, non vale la complessità di un meccanismo a tempo. Lasciato senza segnalazione di stato.
 - **Scheda aziendale di A5.2: da DOCX+Drive a pagina HTML su Supabase**, stesso principio già adottato per i report A2/A3/A4 — motivato sia dalla scomodità del download-e-trascina (specialmente da iPad/telefono, dove i file scaricati non si aprono in formato nativo) sia dalla possibilità di offrire un export PDF on-demand per il caso raro ma reale di un collaboratore che ha bisogno del documento. Conseguenza riconosciuta e gestita: A6.1 e A6.2 leggevano la scheda da Drive — aggiornati anch'essi per leggerla da Supabase, altrimenti si sarebbero rotti al primo utilizzo dopo il cambio di A5.2.
 - **Media Kit di A6.1 lasciato invariato (PPTX + revisione manuale su Drive)**: a differenza della scheda, Gianluca corregge sempre a mano il PPTX in PowerPoint prima di esportarlo in PDF — un passaggio di editing reale, non solo una scomodità di formato. Convertirlo in HTML gli toglierebbe la possibilità di correggerlo come fa oggi.
-- **Schede già prodotte su Drive (16 aziende, verificato via query su `drive_folder_scheda`) da migrare al nuovo formato Supabase** — altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa già aperta (diverse sono a step 7-9, trattative potenzialmente ancora attive: Anthros, Sparco, Diablo Chairs, Secretlab, TCL Electronics, 24Bottles, Progetto Auto Srl, Hydro Flask). Non ancora eseguita — prossimo passo.
+- **Schede già prodotte su Drive da migrare al nuovo formato Supabase** — altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa già aperta. Stima iniziale sbagliata: la query su `drive_folder_scheda` ne indicava solo 16, ma un audit diretto della cartella Drive "Schede aziendali" ha trovato **38 sottocartelle aziendali reali** — le 22 mancanti risalgono a prima che A5.2 iniziasse a scrivere quella colonna, quindi invisibili da Supabase. **Migrate 36 su 38**; le uniche 2 senza scheda (LiberNovo, Commerciale Teatina Srl) hanno la cartella Drive vuota — nessun DOCX mai arrivato, segnalato a Gianluca come dato di fatto, non colmato con contenuto inventato.
 
-**Criterio di completamento:** le fragilità trovate sono risolte o scartate con una motivazione esplicita (fatto); le 16 schede aziendali già su Drive sono migrate su Supabase senza perdita di contenuto, verificabile da A6.1/A6.2 su una trattativa reale già aperta (da fare).
+**Criterio di completamento:** le fragilità trovate sono risolte o scartate con una motivazione esplicita (fatto); le schede aziendali già su Drive sono migrate su Supabase senza perdita di contenuto (fatto, 36/38 — le 2 restanti non hanno mai avuto un DOCX reale), verificabile da A6.1/A6.2 su una trattativa reale già aperta (da fare).
 
 **Note (cronologia dello step):**
 - [2026-11-16] Audit eseguito su script e workflow GitHub Actions reali (a7_gmail_drafter.py, a7_followup.py, pipeline_watcher.py, pipeline_notify.py, notify_failures.py) più dati reali su Supabase. Trovato che "Pipeline Notify" non esegue da 52 giorni, 6 aziende bloccate allo step 3 da luglio/inizio settembre (bottleneck di processo, non bug). Lavoro sospeso qui per passare allo Step 9.
@@ -286,8 +286,35 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-17] Ricevuti e letti i prompt di A5.1 (v6), A5.2 (v8) e A6.1 (v7) — mai inviati prima perché l'aggiornamento della webapp era partito solo sui primi 4 agenti. Applicato il fix `agent_states` a tutti e tre (v6→v7, v8→v9, v7→v8): `Step 0` scrive `working` prima di iniziare, una riga aggiuntiva scrive `done` alla chiusura — stesso pattern di A2/A3/A4. File consegnati a Gianluca e salvati in `docs/prompts/`.
 - [2026-11-17] Ricevuti e letti i prompt di A6.1 (v7, già aggiornato sopra) e A6.2 (v10). Costruita l'infrastruttura per la scheda azienda in HTML: tabella `schede_aziendali` (company_id, html); caso "serve un PDF vero" gestito con tabella `scheda_pdf_requests` + trigger Postgres (`notify_scheda_pdf_requested`, stessa architettura del trigger pipeline già esistente) che avvisa GitHub via `repository_dispatch`; `scripts/export_scheda_pdf.py` (Playwright headless) renderizza la pagina, carica il PDF su un bucket Storage privato (`schede-pdf`) e scrive un link firmato (1h) sulla richiesta; nuova pagina webapp `app/page_scheda_azienda_v1.html` (visualizza la scheda, bottone "Esporta PDF" con polling); `page_company_v2.html` aggiornata (bottone "Scheda" al posto di "Cartella" per A5.2). Verificato con un test reale end-to-end (scheda finta, richiesta d'export, run GitHub Actions reale, PDF di 15KB caricato e scaricabile) — dati di test poi rimossi. Aggiornati di conseguenza i prompt: A5.2 v9→v10 (scrive la scheda su Supabase invece del DOCX, rimossa tutta la procedura cartella Drive), A6.1 v8→v9 e A6.2 v10→v11 (leggono la scheda da Supabase invece che da Drive). Tutto verificato con browser headless (nessun errore JS, bottone "Scheda" con link corretto) prima della consegna. File `.docx` inviati a Gianluca, versioni `.md` aggiornate in `docs/prompts/` (corretto anche un bug di conversione pre-esistente: alcune sottosezioni "Heading 2" sparivano silenziosamente invece di diventare intestazioni).
 - [2026-11-17, più tardi] Gianluca ha fatto notare che le 16 schede già prodotte su Drive (prima del cambio di formato) vanno migrate su Supabase altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa aperta — confermato con query diretta (vedi Decisioni progettuali). Non ancora eseguita, prossimo passo di questo step.
+- [2026-11-17/18] **Correzione importante**: Gianluca ha segnalato che la stima di 16 schede era sbagliata ("sono molte più di 16, controlla a fondo Drive"). Confermato: un audit diretto della cartella "Schede aziendali" su Drive (listando le sottocartelle, non interrogando `drive_folder_scheda`) ha trovato 38 sottocartelle aziendali reali. Migrate con 3 fork in sequenza (uno perso a metà da un riavvio del container, ripreso senza perdita di dati verificando prima cosa fosse già su Supabase) più 1 azienda completata a mano dopo essere stata per errore omessa da una lista. Risultato finale: 36/38 migrate, 2 (LiberNovo, Commerciale Teatina Srl) con cartella Drive confermata vuota — nessuna scheda mai prodotta per quelle due, segnalato a Gianluca. Step 10 chiuso su questo fronte; resta da fare la verifica con una trattativa reale (A6.1/A6.2 su un'azienda a step 7-9) prima di considerare l'intero step completato.
 
 ## Storico sessioni
+
+### [2026-11-18 07:30] Migrazione completa delle schede aziendali Drive→Supabase (38, non 16)
+
+**Riepilogo:** La stima di 16 schede da migrare (Step 10) era sbagliata — un audit diretto della cartella Drive "Schede aziendali" ha trovato 38 sottocartelle aziendali reali, non solo le 16 tracciate dalla colonna `companies.drive_folder_scheda`. Migrate 36 su 38 nella tabella `schede_aziendali`; le 2 restanti (LiberNovo, Commerciale Teatina Srl) hanno la cartella Drive vuota — nessun DOCX mai prodotto, segnalato a Gianluca senza inventare contenuto.
+
+**Cosa è stato fatto:**
+- Corretta la stima iniziale: interrogata direttamente la cartella Drive "Schede aziendali" (`parentId`/listato tutte le sottocartelle) invece di fidarsi della colonna Supabase `drive_folder_scheda`, che risale solo a dopo il fix storico di A5.2 — le aziende create prima di quel fix non vi comparivano mai. Trovate 38 sottocartelle totali contro le 16 attese.
+- Migrazione eseguita con 3 fork Claude in sequenza (ciascuno: legge il DOCX da Drive, lo convertisce in pagina HTML fedele riusando la stessa palette/font del sito, fa upsert in `schede_aziendali`, aggiorna `companies.drive_folder_scheda` per le aziende trovate solo con l'audit):
+  1. Prima ondata (16 aziende già note): 14 migrate, 2 (LiberNovo, Commerciale Teatina Srl) con cartella vuota.
+  2. Seconda ondata (22 aziende scoperte con l'audit): interrotta da un riavvio del container a metà — verificato via query diretta su Supabase che 12 erano già state scritte prima dell'interruzione (nessuna perdita di lavoro), poi completate le 9 rimanenti con un nuovo fork.
+  3. 1 azienda (Action Italia) omessa per errore dalla lista della seconda ondata, scoperta con un controllo finale di coerenza (confronto tra l'elenco completo delle 38 cartelle e le righe effettivamente presenti in `schede_aziendali`) e migrata a mano.
+- Verifica finale: `SELECT count(*) FROM schede_aziendali` → 36; controllo di coerenza che ogni company_id con una cartella Drive non vuota sia presente, confermando che le uniche 2 mancanti sono le 2 cartelle genuinamente vuote.
+
+**Decisioni prese:**
+- Contesto: la lista di 16 aziende da migrare, usata per lanciare il primo fork, si è rivelata incompleta subito dopo il lancio (segnalazione di Gianluca).
+  Decisione: non fidarsi più della colonna `drive_folder_scheda` come censimento — fare un audit diretto della cartella Drive parent, trattando la lista Supabase come indizio, non come fonte di verità.
+  Da rivedere se: in futuro si creano nuove aziende con cartelle scheda create fuori dal flusso standard di A5.2 (stesso rischio di disallineamento Drive/Supabase).
+
+**File consegnati/modificati:**
+- Tabella `schede_aziendali`: 36 righe (company_id, html, updated_at).
+- `companies.drive_folder_scheda`: aggiornata per le 22 aziende scoperte solo con l'audit.
+- `docs/documento-sessione-gdc-ia-team.md` (Step 10: corretta la stima 16→38, criterio di completamento aggiornato, nuove note).
+
+**Impatto su Vision/Pipeline:** Step 10 — criterio di completamento sulla migrazione schede soddisfatto (36/38, le 2 restanti senza DOCX reale); resta aperta la verifica con una trattativa reale (A6.1/A6.2 su un'azienda a step 7-9) prima di considerare l'intero Step 10 completato.
+
+---
 
 ### [2026-11-17 22:30] Team Commerciale: notifiche collegate, credenziali sorvegliate, scheda A5.2 in HTML
 
