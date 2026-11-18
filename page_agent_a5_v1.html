@@ -95,7 +95,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .hero-subrow-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1.5px solid var(--border);}
 .hero-sub-col{padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0;}
 .hero-sub-col:first-child{border-right:1.5px solid var(--border);}
-.hero-sub-name{font-size:.76rem;font-weight:800;color:var(--athlete);line-height:1.25;}
+.hero-sub-name{font-size:.76rem;font-weight:800;color:var(--athlete);line-height:1.25;transition:color .3s;}
 .hero-sub-desc{font-size:.62rem;color:var(--grigio);line-height:1.35;}
 .hero-sub-meta{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:2px;}
 .hero-sub-meta .status-badge{padding:3px 8px;font-size:.58rem;}
@@ -316,7 +316,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="hero-subrow-grid">
       <div class="hero-sub-col">
-        <div class="hero-sub-name">A5.1 — Gestione Pipeline</div>
+        <div class="hero-sub-name" id="subNameA51">A5.1 — Gestione Pipeline</div>
         <div class="hero-sub-desc">Ricerca, valuta e scrive nuove aziende target direttamente su Supabase.</div>
         <div class="hero-sub-meta">
           <span class="status-badge badge-sleep" id="statusA51Badge"><span class="badge-dot"></span><span id="statusA51Lbl">Caricamento...</span></span>
@@ -324,7 +324,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </div>
       </div>
       <div class="hero-sub-col">
-        <div class="hero-sub-name">A5.2 — Scheda Azienda</div>
+        <div class="hero-sub-name" id="subNameA52">A5.2 — Scheda Azienda</div>
         <div class="hero-sub-desc">Produce la scheda approfondita — input per A6.</div>
         <div class="hero-sub-meta">
           <span class="status-badge badge-sleep" id="statusA52Badge"><span class="badge-dot"></span><span id="statusA52Lbl">Caricamento...</span></span>
@@ -771,11 +771,15 @@ async function loadA5(){
     if(st==='active') startA5Anim(); else stopA5Anim();
 
     // Badge per sotto-agente — indipendenti
-    const cA51=STATE_CFG[mapState(a51)], cA52=STATE_CFG[mapState(a52)];
+    const stA51=mapState(a51), stA52=mapState(a52);
+    const cA51=STATE_CFG[stA51], cA52=STATE_CFG[stA52];
     const badgeA51=document.getElementById('statusA51Badge'), lblA51=document.getElementById('statusA51Lbl');
     badgeA51.className='status-badge '+cA51.badge; lblA51.textContent=cA51.lbl+(a51&&a51.updated_at?' · '+timeAgo(a51.updated_at):'');
     const badgeA52=document.getElementById('statusA52Badge'), lblA52=document.getElementById('statusA52Lbl');
     badgeA52.className='status-badge '+cA52.badge; lblA52.textContent=cA52.lbl+(a52&&a52.updated_at?' · '+timeAgo(a52.updated_at):'');
+    const subNameA51=document.getElementById('subNameA51'), subNameA52=document.getElementById('subNameA52');
+    if(subNameA51) subNameA51.style.color=INK_CFG[stA51].title;
+    if(subNameA52) subNameA52.style.color=INK_CFG[stA52].title;
   }catch(e){
     console.error('Errore caricamento A5:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';

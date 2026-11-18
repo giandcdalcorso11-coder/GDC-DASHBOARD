@@ -95,7 +95,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .hero-subrow-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1.5px solid var(--border);}
 .hero-sub-col{padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0;}
 .hero-sub-col:first-child{border-right:1.5px solid var(--border);}
-.hero-sub-name{font-size:.76rem;font-weight:800;color:var(--athlete);line-height:1.25;}
+.hero-sub-name{font-size:.76rem;font-weight:800;color:var(--athlete);line-height:1.25;transition:color .3s;}
 .hero-sub-desc{font-size:.62rem;color:var(--grigio);line-height:1.35;}
 .hero-sub-meta{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:2px;}
 .hero-sub-meta .status-badge{padding:3px 8px;font-size:.58rem;}
@@ -322,7 +322,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="hero-subrow-grid">
       <div class="hero-sub-col">
-        <div class="hero-sub-name">A6.1 — Media Kit</div>
+        <div class="hero-sub-name" id="subNameA61">A6.1 — Media Kit</div>
         <div class="hero-sub-desc">Genera il media kit PPTX 8 slide personalizzato, partendo dalla scheda A5.2.</div>
         <div class="hero-sub-meta">
           <span class="status-badge badge-sleep" id="statusA61Badge"><span class="badge-dot"></span><span id="statusA61Lbl">Caricamento...</span></span>
@@ -330,7 +330,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </div>
       </div>
       <div class="hero-sub-col">
-        <div class="hero-sub-name">A6.2 — Relazioni Commerciali</div>
+        <div class="hero-sub-name" id="subNameA62">A6.2 — Relazioni Commerciali</div>
         <div class="hero-sub-desc">Gestisce mail, follow-up, proposta e trattativa con l'azienda.</div>
         <div class="hero-sub-meta">
           <span class="status-badge badge-sleep" id="statusA62Badge"><span class="badge-dot"></span><span id="statusA62Lbl">Caricamento...</span></span>
@@ -812,11 +812,15 @@ async function loadA6(){
     if(st==='active') startA6Anim(); else stopA6Anim();
 
     // Badge per sotto-agente — indipendenti
-    const cA61=STATE_CFG[mapState(a61)], cA62=STATE_CFG[mapState(a62)];
+    const stA61=mapState(a61), stA62=mapState(a62);
+    const cA61=STATE_CFG[stA61], cA62=STATE_CFG[stA62];
     const badgeA61=document.getElementById('statusA61Badge'), lblA61=document.getElementById('statusA61Lbl');
     badgeA61.className='status-badge '+cA61.badge; lblA61.textContent=cA61.lbl+(a61&&a61.updated_at?' · '+timeAgo(a61.updated_at):'');
     const badgeA62=document.getElementById('statusA62Badge'), lblA62=document.getElementById('statusA62Lbl');
     badgeA62.className='status-badge '+cA62.badge; lblA62.textContent=cA62.lbl+(a62&&a62.updated_at?' · '+timeAgo(a62.updated_at):'');
+    const subNameA61=document.getElementById('subNameA61'), subNameA62=document.getElementById('subNameA62');
+    if(subNameA61) subNameA61.style.color=INK_CFG[stA61].title;
+    if(subNameA62) subNameA62.style.color=INK_CFG[stA62].title;
   }catch(e){
     console.error('Errore caricamento A6:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
