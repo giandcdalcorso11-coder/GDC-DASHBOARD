@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
 <title>GDC WORKSPACE — Home</title>
 <link rel="manifest" href="../manifest.json">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -16,25 +17,7 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html{background:var(--carta);}
 body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:52px;}
-@media(prefers-color-scheme:dark){
-  :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}
-  .acard{background:var(--bianco);border-color:var(--border);}
-  .acard.st-done{border-color:var(--maker);}.acard.st-queued{border-color:var(--life);}.acard.st-working{border-color:var(--sabbia);}.acard.st-sleep{border-color:#3A3A3A;}
-  .date-chip{background:#2E2E2E;border-color:var(--border);color:var(--nero);}
-  .cal-popup{background:#242424;border-color:var(--border);}
-  .cal-day.has-event{background:#2E2E2E;}.cal-day.has-event:hover{background:#3A3A3A;}
-  .cal-events-panel{border-color:var(--border);}.cal-event-item{border-color:var(--border);}
-  .msg-popup{background:#242424;}.msg-head{border-color:var(--border);}.msg-text{background:#1A1A1A;color:var(--nero);}
-  .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}
-  .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}
-  .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}
-  .lg-primary{background:rgba(194,25,58,.18);border-color:rgba(194,25,58,.35);color:#E9415A;}
-  .lg-done{background:rgba(74,124,89,.18);border-color:rgba(74,124,89,.35);color:#5D9C71;}
-  .lg-disabled{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:#555;}
-  .chip-done{background:rgba(74,124,89,.25);}.chip-working{background:rgba(138,109,59,.25);}.chip-queued{background:rgba(194,25,58,.2);}.chip-sleep{background:rgba(43,92,138,.2);}
-  .bg-rest{background:#FAFAF5!important;}
-  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,#hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root:not([data-theme="light"]) .acard{background:var(--bianco);border-color:var(--border);}:root:not([data-theme="light"]) .acard.st-done{border-color:var(--maker);}:root:not([data-theme="light"]) .acard.st-queued{border-color:var(--life);}:root:not([data-theme="light"]) .acard.st-working{border-color:var(--sabbia);}:root:not([data-theme="light"]) .acard.st-sleep{border-color:#3A3A3A;}:root:not([data-theme="light"]) .date-chip{background:#2E2E2E;border-color:var(--border);color:var(--nero);}:root:not([data-theme="light"]) .cal-popup{background:#242424;border-color:var(--border);}:root:not([data-theme="light"]) .cal-day.has-event{background:#2E2E2E;}:root:not([data-theme="light"]) .cal-day.has-event:hover{background:#3A3A3A;}:root:not([data-theme="light"]) .cal-events-panel{border-color:var(--border);}:root:not([data-theme="light"]) .cal-event-item{border-color:var(--border);}:root:not([data-theme="light"]) .msg-popup{background:#242424;}:root:not([data-theme="light"]) .msg-head{border-color:var(--border);}:root:not([data-theme="light"]) .msg-text{background:#1A1A1A;color:var(--nero);}:root:not([data-theme="light"]) .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}:root:not([data-theme="light"]) .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}:root:not([data-theme="light"]) .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}:root:not([data-theme="light"]) .lg-primary{background:rgba(194,25,58,.18);border-color:rgba(194,25,58,.35);color:#E9415A;}:root:not([data-theme="light"]) .lg-done{background:rgba(74,124,89,.18);border-color:rgba(74,124,89,.35);color:#5D9C71;}:root:not([data-theme="light"]) .lg-disabled{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:#555;}:root:not([data-theme="light"]) .chip-done{background:rgba(74,124,89,.25);}:root:not([data-theme="light"]) .chip-working{background:rgba(138,109,59,.25);}:root:not([data-theme="light"]) .chip-queued{background:rgba(194,25,58,.2);}:root:not([data-theme="light"]) .chip-sleep{background:rgba(43,92,138,.2);}:root:not([data-theme="light"]) .bg-rest{background:#FAFAF5!important;}:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{fill:#F0EBE1;}}:root[data-theme="dark"]{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root[data-theme="dark"] .acard{background:var(--bianco);border-color:var(--border);}:root[data-theme="dark"] .acard.st-done{border-color:var(--maker);}:root[data-theme="dark"] .acard.st-queued{border-color:var(--life);}:root[data-theme="dark"] .acard.st-working{border-color:var(--sabbia);}:root[data-theme="dark"] .acard.st-sleep{border-color:#3A3A3A;}:root[data-theme="dark"] .date-chip{background:#2E2E2E;border-color:var(--border);color:var(--nero);}:root[data-theme="dark"] .cal-popup{background:#242424;border-color:var(--border);}:root[data-theme="dark"] .cal-day.has-event{background:#2E2E2E;}:root[data-theme="dark"] .cal-day.has-event:hover{background:#3A3A3A;}:root[data-theme="dark"] .cal-events-panel{border-color:var(--border);}:root[data-theme="dark"] .cal-event-item{border-color:var(--border);}:root[data-theme="dark"] .msg-popup{background:#242424;}:root[data-theme="dark"] .msg-head{border-color:var(--border);}:root[data-theme="dark"] .msg-text{background:#1A1A1A;color:var(--nero);}:root[data-theme="dark"] .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}:root[data-theme="dark"] .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}:root[data-theme="dark"] .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}:root[data-theme="dark"] .lg-primary{background:rgba(194,25,58,.18);border-color:rgba(194,25,58,.35);color:#E9415A;}:root[data-theme="dark"] .lg-done{background:rgba(74,124,89,.18);border-color:rgba(74,124,89,.35);color:#5D9C71;}:root[data-theme="dark"] .lg-disabled{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:#555;}:root[data-theme="dark"] .chip-done{background:rgba(74,124,89,.25);}:root[data-theme="dark"] .chip-working{background:rgba(138,109,59,.25);}:root[data-theme="dark"] .chip-queued{background:rgba(194,25,58,.2);}:root[data-theme="dark"] .chip-sleep{background:rgba(43,92,138,.2);}:root[data-theme="dark"] .bg-rest{background:#FAFAF5!important;}:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{fill:#F0EBE1;}
 /* Header in flusso normale (non più sticky/fixed): sia position:sticky che
    position:fixed+spacer hanno dato lo stesso glitch su iOS in standalone con
    status bar black-translucent (si intravede il contenuto sotto durante lo
@@ -155,7 +138,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .msg-reset-btn{font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;background:none;border:1px solid var(--border);color:var(--grigio);border-radius:8px;padding:5px 12px;cursor:pointer;transition:border-color .15s;}
 .msg-reset-btn:hover{border-color:var(--grigio);}
 .msg-edit-hint{font-size:.62rem;color:var(--grigio);font-style:italic;}
-@media(prefers-color-scheme:dark){.msg-textarea{background:#1A1A1A;color:var(--nero);}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .msg-textarea{background:#1A1A1A;color:var(--nero);}}:root[data-theme="dark"] .msg-textarea{background:#1A1A1A;color:var(--nero);}
 /* A7 Picker */
 .a7-picker-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;padding-bottom:24px;}
 .a7-picker-overlay.open{display:flex;}
@@ -172,7 +155,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .a7-launch-btn:hover{opacity:.88;}
 .a7-launch-btn:disabled{background:#ccc;cursor:not-allowed;opacity:.6;}
 .a7-status-msg{font-size:.72rem;color:var(--grigio);text-align:center;margin-top:10px;min-height:18px;}
-@media(prefers-color-scheme:dark){.a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}:root[data-theme="dark"] .a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}
 .st-queued{border-color:var(--life);opacity:.65;}.st-queued .agent-name{color:var(--life);}
 .st-working{border-color:var(--sabbia);}.st-working .agent-name{color:var(--sabbia-dk);}
 .st-done{border-color:var(--maker);}.st-done .agent-name{color:var(--maker);}
@@ -263,7 +246,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .pill-icon-btn.notif-off{background:var(--life-bg);border-color:var(--life);color:var(--life);}
 #pushBtnSlash{display:none;}
 .pill-icon-btn.notif-off #pushBtnSlash{display:inline;}
-@media(prefers-color-scheme:dark){.pill-hub{background:var(--bianco);}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill-hub{background:var(--bianco);}}:root[data-theme="dark"] .pill-hub{background:var(--bianco);}
 
 /* ══ Ciclo editoriale mensile: pillola unica, estremi a specchio ══ */
 .ciclo-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:50px;padding:5px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);}

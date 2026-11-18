@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
 <title>GDC WORKSPACE — Azienda</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -28,17 +29,7 @@
   --fu-14: #D4701A;   /* arancione — 14gg */
   --fu-30: #C41E5A;   /* rosso — 30gg */
 }
-@media(prefers-color-scheme:dark){
-  :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--bordo:#3A3A3A;--grigio:#9A9A9A;}
-  .header{background:transparent;}
-  .date-chip,.back-btn{background:#2E2E2E;border-color:#3A3A3A;}
-  .back-btn{color:#9A9A9A;}
-  .section,.company-header{background:#242424;border-color:#3A3A3A;}
-  .doc-item,.note-item,.note-new,.popup-card{background:#1A1A1A;border-color:#3A3A3A;}
-  .popup-textarea{background:#1A1A1A;border-color:#3A3A3A;}
-  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
-  #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--bordo:#3A3A3A;--grigio:#9A9A9A;}:root:not([data-theme="light"]) .header{background:transparent;}:root:not([data-theme="light"]) .date-chip,:root:not([data-theme="light"]) .back-btn{background:#2E2E2E;border-color:#3A3A3A;}:root:not([data-theme="light"]) .back-btn{color:#9A9A9A;}:root:not([data-theme="light"]) .section,:root:not([data-theme="light"]) .company-header{background:#242424;border-color:#3A3A3A;}:root:not([data-theme="light"]) .doc-item,:root:not([data-theme="light"]) .note-item,:root:not([data-theme="light"]) .note-new,:root:not([data-theme="light"]) .popup-card{background:#1A1A1A;border-color:#3A3A3A;}:root:not([data-theme="light"]) .popup-textarea{background:#1A1A1A;border-color:#3A3A3A;}:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{fill:#F0EBE1;}}:root[data-theme="dark"]{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--bordo:#3A3A3A;--grigio:#9A9A9A;}:root[data-theme="dark"] .header{background:transparent;}:root[data-theme="dark"] .date-chip,:root[data-theme="dark"] .back-btn{background:#2E2E2E;border-color:#3A3A3A;}:root[data-theme="dark"] .back-btn{color:#9A9A9A;}:root[data-theme="dark"] .section,:root[data-theme="dark"] .company-header{background:#242424;border-color:#3A3A3A;}:root[data-theme="dark"] .doc-item,:root[data-theme="dark"] .note-item,:root[data-theme="dark"] .note-new,:root[data-theme="dark"] .popup-card{background:#1A1A1A;border-color:#3A3A3A;}:root[data-theme="dark"] .popup-textarea{background:#1A1A1A;border-color:#3A3A3A;}:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{fill:#F0EBE1;}
 *{ box-sizing:border-box; margin:0; padding:0; }
 body{
   font-family:'Jost',sans-serif; background:var(--carta); color:var(--nero);
@@ -295,11 +286,7 @@ body{
 .msg-reset-btn{ font-family:'Jost',sans-serif; font-size:.68rem; font-weight:700; background:none; border:1px solid var(--bordo); color:var(--grigio); border-radius:8px; padding:5px 12px; cursor:pointer; transition:border-color .15s; }
 .msg-reset-btn:hover{ border-color:var(--grigio); }
 .msg-edit-hint{ font-size:.62rem; color:var(--grigio); font-style:italic; }
-@media(prefers-color-scheme:dark){
-  .agent-row{ background:#1A1A1A; }
-  .agent-mini-btn{ background:#242424; }
-  .msg-textarea{ background:#1A1A1A; }
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .agent-row{ background:#1A1A1A; }:root:not([data-theme="light"]) .agent-mini-btn{ background:#242424; }:root:not([data-theme="light"]) .msg-textarea{ background:#1A1A1A; }}:root[data-theme="dark"] .agent-row{ background:#1A1A1A; }:root[data-theme="dark"] .agent-mini-btn{ background:#242424; }:root[data-theme="dark"] .msg-textarea{ background:#1A1A1A; }
 .mail-textarea{
   width:100%; min-height:120px; padding:12px;
   font-family:'Jost',sans-serif; font-size:.8rem; line-height:1.5;
