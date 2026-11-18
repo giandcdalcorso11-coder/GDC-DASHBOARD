@@ -25,7 +25,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   .cal-day.has-event{background:#2E2E2E;}.cal-day.has-event:hover{background:#3A3A3A;}
   .cal-events-panel{border-color:var(--border);}.cal-event-item{border-color:var(--border);}
   .msg-popup{background:#242424;}.msg-head{border-color:var(--border);}.msg-text{background:#1A1A1A;color:var(--nero);}
-  .agent-tag{background:#333;color:#9A9A9A;}
   .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}
   .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}
   .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}
@@ -99,13 +98,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .logo-col:hover{opacity:.82;}
 .logo-box{width:150px;height:150px;border-radius:20px;display:flex;align-items:center;justify-content:center;padding:12px;overflow:hidden;transition:background .5s ease;}
 .logo-box svg{width:100%;height:100%;overflow:visible;}
-.logo-state-label{font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);text-align:center;}
 .right-col{flex:1;min-width:0;display:flex;flex-direction:column;}
 .info-row{padding:10px 10px 4px;display:flex;flex-direction:column;gap:4px;}
-.agent-title{display:flex;align-items:center;gap:6px;}
+.agent-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 6px;}
 .agent-name{font-weight:800;font-size:1rem;transition:color .4s;}
-.agent-tag{font-size:.62rem;font-weight:700;border-radius:999px;padding:2px 7px;background:var(--border);color:var(--grigio);flex-shrink:0;margin-left:auto;}
-.agent-desc{font-size:.64rem;color:var(--grigio);line-height:1.35;}
+.static-link-inline{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;border:1.5px solid var(--border);background:var(--carta);font-size:.54rem;font-weight:700;color:var(--nero);text-decoration:none;flex-shrink:0;white-space:nowrap;}
 .status-chip{display:inline-flex;align-items:center;gap:4px;font-size:.67rem;font-weight:700;border-radius:999px;padding:2px 8px;margin-top:2px;}
 .chip-done{background:var(--maker-bg);color:var(--maker);}.chip-working{background:var(--sabbia-bg);color:var(--sabbia-dk);}.chip-queued{background:var(--life-bg);color:var(--life);opacity:.7;}.chip-sleep{background:var(--athlete-bg);color:var(--athlete);}
 .spinner-dot{width:5px;height:5px;border-radius:50%;background:var(--sabbia-dk);animation:spPulse 1.3s ease-in-out infinite;}
@@ -125,8 +122,17 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .cat-count{position:absolute;top:-6px;right:-6px;display:none;align-items:center;justify-content:center;background:var(--life);color:#fff;font-size:.56rem;font-weight:800;min-width:16px;height:16px;border-radius:999px;padding:0 4px;box-shadow:0 1px 3px rgba(0,0,0,.25);}
 .lg-stato{background:rgba(196,168,101,.12);border-color:rgba(196,168,101,.3);color:var(--sabbia-dk);}
 .lg-stato:hover:not(.lg-disabled){background:rgba(196,168,101,.2);}
-.stato-row{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:0 10px 10px;border-top:1px solid var(--border);margin-top:2px;padding-top:7px;}
-.stato-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 1px 4px;border-radius:9px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.44rem;font-weight:700;text-align:center;line-height:1.15;border:1.5px solid transparent;background:rgba(255,255,255,.4);color:var(--grigio);transition:all .15s;}
+.stato-row{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:0 10px 7px;border-top:1px solid var(--border);margin-top:1px;padding-top:5px;}
+.stato-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 1px 3px;border-radius:8px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.44rem;font-weight:700;text-align:center;line-height:1.1;border:1.5px solid transparent;background:rgba(255,255,255,.4);color:var(--grigio);transition:all .15s;}
+.agent-row{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:10px;background:var(--carta);border:1.5px solid var(--border);margin-bottom:4px;}
+.agent-row:last-child{margin-bottom:0;}
+.agent-row-name{flex:1;font-size:.64rem;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agent-row-btns{display:flex;gap:4px;flex-shrink:0;}
+.agent-mini-btn{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:7px;border:1.5px solid var(--border);background:var(--bianco);font-size:.56rem;font-weight:700;color:var(--nero);cursor:pointer;text-decoration:none;font-family:'Jost',sans-serif;white-space:nowrap;}
+.agent-mini-btn.copy{color:var(--athlete);border-color:var(--athlete-bg);}
+.actions-wrap{padding:4px 10px 9px;}
+.pipeline-pill-wide{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;color:var(--sabbia-dk);text-decoration:none;margin-bottom:14px;}
+.team-band .ciclo-pill{margin-bottom:14px;}
 .stato-pill:hover{background:rgba(255,255,255,.7);color:var(--nero);}
 .stato-pill.sp-active{border-color:currentColor;background:rgba(255,255,255,.75);box-shadow:0 1px 4px rgba(28,28,28,.1);}
 .stato-pill .sp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
@@ -363,19 +369,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </a>
   </div>
 </div>
-<div style="width:100%;max-width:540px;padding:0 16px 10px;">
-  <div class="ciclo-pill">
-    <a class="ciclo-end ciclo-disabled" id="cicloOpenBtn" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Caricamento stato...">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 7 4 12 9 17"/><polyline points="15 7 20 12 15 17"/></svg>
-      <span>Apri sessione</span>
-    </a>
-    <span class="ciclo-label">Ciclo editoriale mensile</span>
-    <button class="ciclo-end" onclick="copyCicloMsg(this)">
-      <span>Copia messaggio</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-    </button>
-  </div>
-</div>
 <div class="list-wrap">
   <svg style="display:none"><defs>
     <symbol id="ic-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
@@ -387,6 +380,17 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </defs></svg>
   <div class="team-band">
   <span class="team-band-lbl">Team Social</span>
+  <div class="ciclo-pill">
+    <a class="ciclo-end ciclo-disabled" id="cicloOpenBtn" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Caricamento stato...">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 7 4 12 9 17"/><polyline points="15 7 20 12 15 17"/></svg>
+      <span>Apri sessione</span>
+    </a>
+    <span class="ciclo-label">Ciclo editoriale mensile</span>
+    <button class="ciclo-end" onclick="copyCicloMsg(this)">
+      <span>Copia messaggio</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+    </button>
+  </div>
   <!-- A1 -->
   <div class="acard acard-logo-round" id="card-a1"><div class="acard-body">
     <a class="logo-col" href="agenti/a1-analytics/page_agent_a1_v1.html" title="Vai alla pagina A1">
@@ -492,8 +496,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
   <div class="team-band">
   <span class="team-band-lbl">Team Commerciale</span>
+  <a class="pipeline-pill-wide" href="../page_pipeline_v1.html">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/></svg>
+    Pipeline Sponsorizzazioni
+  </a>
   <!-- A5 -->
-  <div class="acard" id="card-a5"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a5"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a5')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a5"><div class="s-sleep" id="wrap-a5" style="width:100%;height:100%">
         <svg id="svg-a5" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -505,27 +513,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text class="a5-lbl" x="24" y="102" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1">A5</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a5">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Pipeline sponsorizzazioni &#x2014; ricerca e qualifica aziende target.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span><a class="static-link-inline" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;">DB</span>Supabase Pipeline</a></div>
     </div>
-    <div style="padding:0 10px 6px;">
-      <a class="lg-btn" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;margin:0">DB</span><span>Supabase Pipeline</span></a>
-    </div>
-    <div class="actions" id="actions-a5" style="grid-template-columns:1fr 1fr;">
-      <button class="lg-btn" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.1</span></button>
-      <button class="lg-btn" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.2</span></button>
-      <a class="lg-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.1 Claude</span></a>
-      <a class="lg-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.2 Claude</span></a>
+    <div class="actions-wrap">
+      <div class="agent-row"><span class="agent-row-name">A5.1 &#x2014; Ricerca azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A5.2 &#x2014; Scheda azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank">&#128172; Apri chat</a></div></div>
     </div>
     <div class="stato-row" id="stato-row-a5"></div>
     </div>
   </div></div>
   <!-- A6 -->
-  <div class="acard" id="card-a6"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a6"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a6')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a6"><div class="s-sleep" id="wrap-a6" style="width:100%;height:100%">
         <svg id="svg-a6" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -537,27 +537,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <rect id="c-r2-a6" class="a6-bar" x="34" y="88" width="52" height="6" rx="3" style="transform-origin:34px 91px"/>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a6">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Genera media kit e gestisce le relazioni commerciali per azienda.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span><a class="static-link-inline" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank"><span class="fmt-badge fmt-gslide">Slide</span>Drive A6</a></div>
     </div>
-    <div style="padding:0 10px 6px;">
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gslide" style="margin:0">Slide</span><span>Drive A6 &#x2192; Output</span></a>
-    </div>
-    <div class="actions" id="actions-a6" style="grid-template-columns:1fr 1fr;">
-      <button class="lg-btn" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.1</span></button>
-      <button class="lg-btn" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.2</span></button>
-      <a class="lg-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.1 Claude</span></a>
-      <a class="lg-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.2 Claude</span></a>
+    <div class="actions-wrap">
+      <div class="agent-row"><span class="agent-row-name">A6.1 &#x2014; Media kit</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A6.2 &#x2014; Mail e trattativa</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank">&#128172; Apri chat</a></div></div>
     </div>
     <div class="stato-row" id="stato-row-a6"></div>
     </div>
   </div></div>
   <!-- A7 -->
-  <div class="acard" id="card-a7"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a7"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a7')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a7"><div class="s-sleep" id="wrap-a7" style="width:100%;height:100%">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -567,12 +559,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text class="a7-lbl" x="60" y="74" font-family="Jost,sans-serif" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1">A7</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a7">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span><span class="agent-tag">&#x25B6; Manuale</span></div>
-      <div class="agent-desc">Genera bozza Gmail con TXT + PDF da Drive. Lancio manuale per azienda.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span></div>
     </div>
     <div class="actions" id="actions-a7">
       <button class="lg-btn lg-primary" id="btn-a7-launch" onclick="openA7Picker()"><svg><use href="#ic-play"/></svg><span>Crea Bozza</span></button>
@@ -590,12 +579,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div class="leg"><div class="legdot" style="background:#E9DFC9;border-color:#C4A865"></div>In corso</div>
   <div class="leg"><div class="legdot" style="background:#1C1C1C"></div>Riposo</div>
   <div class="leg"><div class="legdot" style="background:#D9E6F3;border-color:#2B5C8A"></div>Inattivo</div>
-</div>
-<div style="display:flex;justify-content:center;padding:12px 16px 4px;">
-  <a href="../page_pipeline_v1.html" style="display:inline-flex;align-items:center;gap:7px;background:var(--bianco);border:1.5px solid var(--border);border-radius:10px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;color:var(--sabbia-dk);text-decoration:none;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='var(--sabbia)';this.style.boxShadow='0 4px 14px rgba(196,168,101,.18)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/></svg>
-    Pipeline Sponsorizzazioni
-  </a>
 </div>
 <script>
 const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
