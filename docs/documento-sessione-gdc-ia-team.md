@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 39
-**Ultimo aggiornamento:** 2026-11-18 07:30
+**Versione:** 40
+**Ultimo aggiornamento:** 2026-11-18 12:00
 
 ## Vision
 
@@ -263,7 +263,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ### Step 10 — Audit e miglioramento Team Commerciale (A5-A7)
 
-**Stato:** in corso — fragilità trovate risolte o attribuite consapevolmente; in corso la migrazione delle schede aziendali già prodotte (DOCX storici su Drive) verso il nuovo formato Supabase
+**Stato:** in corso — fragilità trovate risolte o attribuite consapevolmente; migrazione schede aziendali completata (36/38); risolti i bug di coerenza emersi dalla migrazione (link rotto, messaggi/prompt ancora puntati su Drive); redesign grafico A1-A4→A5-A7 completato per la home (card A5/A6/A7) e per la pagina di A5; A6 e A7 ancora da fare
 
 **Obiettivo:** individuare e risolvere le fragilità nel workflow del team commerciale (A5 Pipeline, A6 Media Kit, A7 Mail Generator); valutare poi se applicare alle pagine A5-A7 lo stesso redesign già fatto per A1-A4.
 
@@ -278,7 +278,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - **Media Kit di A6.1 lasciato invariato (PPTX + revisione manuale su Drive)**: a differenza della scheda, Gianluca corregge sempre a mano il PPTX in PowerPoint prima di esportarlo in PDF — un passaggio di editing reale, non solo una scomodità di formato. Convertirlo in HTML gli toglierebbe la possibilità di correggerlo come fa oggi.
 - **Schede già prodotte su Drive da migrare al nuovo formato Supabase** — altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa già aperta. Stima iniziale sbagliata: la query su `drive_folder_scheda` ne indicava solo 16, ma un audit diretto della cartella Drive "Schede aziendali" ha trovato **38 sottocartelle aziendali reali** — le 22 mancanti risalgono a prima che A5.2 iniziasse a scrivere quella colonna, quindi invisibili da Supabase. **Migrate 36 su 38**; le uniche 2 senza scheda (LiberNovo, Commerciale Teatina Srl) hanno la cartella Drive vuota — nessun DOCX mai arrivato, segnalato a Gianluca come dato di fatto, non colmato con contenuto inventato.
 
-**Criterio di completamento:** le fragilità trovate sono risolte o scartate con una motivazione esplicita (fatto); le schede aziendali già su Drive sono migrate su Supabase senza perdita di contenuto (fatto, 36/38 — le 2 restanti non hanno mai avuto un DOCX reale), verificabile da A6.1/A6.2 su una trattativa reale già aperta (da fare).
+**Criterio di completamento:** le fragilità trovate sono risolte o scartate con una motivazione esplicita (fatto); le schede aziendali già su Drive sono migrate su Supabase senza perdita di contenuto (fatto, 36/38 — le 2 restanti non hanno mai avuto un DOCX reale), verificabile da A6.1/A6.2 su una trattativa reale già aperta (da fare); i bug di coerenza introdotti dalla migrazione sono risolti (fatto — vedi nota 2026-11-18); il redesign grafico già fatto per A1-A4 è valutato e applicato pagina per pagina ad A5-A7 (fatto per home+A5, da fare per A6/A7).
 
 **Note (cronologia dello step):**
 - [2026-11-16] Audit eseguito su script e workflow GitHub Actions reali (a7_gmail_drafter.py, a7_followup.py, pipeline_watcher.py, pipeline_notify.py, notify_failures.py) più dati reali su Supabase. Trovato che "Pipeline Notify" non esegue da 52 giorni, 6 aziende bloccate allo step 3 da luglio/inizio settembre (bottleneck di processo, non bug). Lavoro sospeso qui per passare allo Step 9.
@@ -287,8 +287,58 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-17] Ricevuti e letti i prompt di A6.1 (v7, già aggiornato sopra) e A6.2 (v10). Costruita l'infrastruttura per la scheda azienda in HTML: tabella `schede_aziendali` (company_id, html); caso "serve un PDF vero" gestito con tabella `scheda_pdf_requests` + trigger Postgres (`notify_scheda_pdf_requested`, stessa architettura del trigger pipeline già esistente) che avvisa GitHub via `repository_dispatch`; `scripts/export_scheda_pdf.py` (Playwright headless) renderizza la pagina, carica il PDF su un bucket Storage privato (`schede-pdf`) e scrive un link firmato (1h) sulla richiesta; nuova pagina webapp `app/page_scheda_azienda_v1.html` (visualizza la scheda, bottone "Esporta PDF" con polling); `page_company_v2.html` aggiornata (bottone "Scheda" al posto di "Cartella" per A5.2). Verificato con un test reale end-to-end (scheda finta, richiesta d'export, run GitHub Actions reale, PDF di 15KB caricato e scaricabile) — dati di test poi rimossi. Aggiornati di conseguenza i prompt: A5.2 v9→v10 (scrive la scheda su Supabase invece del DOCX, rimossa tutta la procedura cartella Drive), A6.1 v8→v9 e A6.2 v10→v11 (leggono la scheda da Supabase invece che da Drive). Tutto verificato con browser headless (nessun errore JS, bottone "Scheda" con link corretto) prima della consegna. File `.docx` inviati a Gianluca, versioni `.md` aggiornate in `docs/prompts/` (corretto anche un bug di conversione pre-esistente: alcune sottosezioni "Heading 2" sparivano silenziosamente invece di diventare intestazioni).
 - [2026-11-17, più tardi] Gianluca ha fatto notare che le 16 schede già prodotte su Drive (prima del cambio di formato) vanno migrate su Supabase altrimenti A6.1/A6.2 non le troverebbero più riprendendo una trattativa aperta — confermato con query diretta (vedi Decisioni progettuali). Non ancora eseguita, prossimo passo di questo step.
 - [2026-11-17/18] **Correzione importante**: Gianluca ha segnalato che la stima di 16 schede era sbagliata ("sono molte più di 16, controlla a fondo Drive"). Confermato: un audit diretto della cartella "Schede aziendali" su Drive (listando le sottocartelle, non interrogando `drive_folder_scheda`) ha trovato 38 sottocartelle aziendali reali. Migrate con 3 fork in sequenza (uno perso a metà da un riavvio del container, ripreso senza perdita di dati verificando prima cosa fosse già su Supabase) più 1 azienda completata a mano dopo essere stata per errore omessa da una lista. Risultato finale: 36/38 migrate, 2 (LiberNovo, Commerciale Teatina Srl) con cartella Drive confermata vuota — nessuna scheda mai prodotta per quelle due, segnalato a Gianluca. Step 10 chiuso su questo fronte; resta da fare la verifica con una trattativa reale (A6.1/A6.2 su un'azienda a step 7-9) prima di considerare l'intero step completato.
+- [2026-11-18] **Bug di coerenza trovati dopo la migrazione.** Link "Scheda" rotto su `page_company_v2.html`: mancava il prefisso `app/` nell'href (la pagina vive in `app/page_scheda_azienda_v1.html`, non in root) — fix immediato. Più seria: una **seconda fonte di staleness Drive→Supabase**, indipendente da quella delle schede. A2 ha smesso di scrivere i report mensili su Drive (migrato a Supabase `report_mensili` allo Step 5), ma i prompt di A5.2 (v10) e A6.1 (v9) istruivano ancora a leggere "Report A2" da una cartella Drive morta da settembre 2026 (confermato controllando l'ultimo file modificato nella cartella). Corretti via fork dedicato: A5.2 v10→v11, A6.1 v9→v10 (sezione di lettura riscritta con la query SQL `SELECT mese, html FROM report_mensili WHERE agente='a2' ORDER BY anno DESC, mese_num DESC LIMIT 2`). Lo stesso fork ha segnalato di propria iniziativa un'eco dello stesso bug nei messaggi precompilati — trovati e corretti altri 4 punti (`page_home_v25.html`, `page_company_v2.html`, `page_agent_a5_v1.html`, `page_agent_a6_v1.html`) che citavano ancora il link Drive morto invece dell'istruzione Supabase.
+- [2026-11-18] **Redesign grafico home: card A5/A6/A7 allineate allo stile già fatto per A1-A4.** Workflow mockup-first su Artifact (richiesto esplicitamente da Gianluca, con l'iPad come riferimento per verificare gli angoli concentrici schede/loghi). Rimossi descrizione/tag/etichetta "Caricamento..." morta; introdotto il pattern `agent-row`/`agent-mini-btn` (riga con 📋 Messaggio / 💬 Apri chat) per i sotto-agenti di A5/A6, già usato in `page_company_v2.html`; pillola "Pipeline Sponsorizzazioni" spostata dentro la banda Team Commerciale (sotto il titolo) su richiesta di Gianluca, con la stessa soluzione per "Ciclo editoriale" nella banda Team Social; corretto un bug di wrapping titolo su mobile (`.agent-title` ora va a riga quando serve invece di stringere/nascondere la pillola Supabase/Drive). Applicato alla pagina reale (`app/page_home_v25.html`).
+- [2026-11-18] **Redesign completo della pagina di A5, in due passate.** Prima passata (diretta sul file reale): chrome di navigazione allineato ad A1-A4 (pillola Hub, sys-mini, pillola notifiche) — in corso ha anche corretto un bug collaterale (`sysMeta` referenziato da `loadA5()` ma rimosso dall'header, causava un falso stato "Offline"). Gianluca ha chiesto di tornare al workflow mockup-first per una revisione più profonda ("quello che hai fatto ora va quasi bene, ma riprendiamo il workflow con il mockup"). Seconda passata, su `mockup_a5_page_base.html` (6 iterazioni), con il feedback di Gianluca:
+  - pillola Pipeline: forma a specchio (puntava a sinistra come "torna indietro", sbagliato per un'azione in avanti) spostata a destra, senza icona, testo ingrandito — nuove classi `.pill-hub-wrap-r`/`.pill-hub-r`;
+  - pillola notifiche rimossa dalla pagina di A5 (gestione centralizzata da Impostazioni) — segnalato esplicitamente da Gianluca che va fatto anche su A1-A4/A6/A7, non ancora eseguito altrove;
+  - hero card: A5.1 e A5.2 affiancate invece che una sotto l'altra, etichetta "Progetto in Claude.ai" al posto di "Claude.ai" generico, titolo uniformato alle altre pagine ("AGENTE 5 — Pipeline");
+  - tab Azioni: colori neutralizzati (confusionari secondo Gianluca), raggruppata per sotto-agente come già fatto nella home, rimosso il pulsante "Apri Pipeline aziende" (duplicato della pillola in alto), icone "Apri progetto" uniformate (erano diverse tra A5.1 e A5.2);
+  - tab Documenti rimossa (puntava solo a Drive, contenuti già raggiungibili altrove — proposta di Claude, confermata da Gianluca);
+  - tab Lavoro e Pipeline unite, con una nuova card introduttiva "Come funziona" che spiega il workflow copia-messaggio→apri progetto→l'agente lavora→conferma risultato, e le card A5.1/A5.2 espanse con una riga "Risultato:" di chiusura.
+  Mockup approvato, applicato interamente a `page_agent_a5_v1.html`: oltre ai punti sopra, corrette anche (stessa classe di bug delle note precedenti) le righe residue del tab Config che citavano ancora output/cartella su Drive per A5.1, e pulito il JS (`loadA5()` aggiornata ai nuovi id badge indipendenti per sotto-agente, rimossi `repMm1Lbl`/`repMm2Lbl` e l'intero blocco morto delle push notifications). Verificato con `node --check` sugli script estratti e un controllo automatico dei link relativi (0 rotti) prima di commit/push/merge su main.
 
 ## Storico sessioni
+
+### [2026-11-18 12:00] Bug di coerenza post-migrazione risolti + redesign grafico home e pagina A5
+
+**Riepilogo:** Dopo la migrazione delle schede (voce precedente), trovati e risolti due bug di coerenza nella webapp causati dal passaggio Drive→Supabase (link "Scheda" rotto, prompt/messaggi che leggevano ancora "Report A2" da una cartella Drive morta da settembre); poi completato il redesign grafico delle card A5/A6/A7 in home e, con un secondo giro di workflow mockup-first più approfondito richiesto da Gianluca, il redesign completo della pagina di A5 (navigazione, hero, tab Azioni/Lavoro/Pipeline/Config).
+
+**Cosa è stato fatto:**
+
+**Bug: link "Scheda" non funzionante dalla pagina azienda**
+**Sintomo:** da `page_company_v2.html`, il link "📄 Scheda" non apriva nulla di utile.
+**Causa:** href senza il prefisso `app/` — la pagina `page_scheda_azienda_v1.html` vive in `app/`, non in root.
+**Fix applicato:** corretto l'href. Verificato.
+
+**Bug: A5.2 e A6.1 leggono ancora "Report A2" da una cartella Drive morta**
+**Sintomo:** nessun sintomo visibile finora (non ancora rieseguiti dopo settembre) — scoperto rileggendo la tab Documenti di A5 su segnalazione di Gianluca ("la tab documenti punta tutta al drive, va controllata").
+**Causa:** A2 ha smesso di scrivere i report mensili su Drive a partire dallo Step 5 (ora scrive su Supabase `report_mensili`), ma i prompt di A5.2 (v10) e A6.1 (v9) non erano stati aggiornati per questo aspetto — confermato controllando la data dell'ultimo file nella cartella Drive (settembre 2026).
+**Fix applicato:** A5.2 v10→v11, A6.1 v9→v10 — sezione di lettura riscritta con query SQL su `report_mensili`. Trovata e corretta anche l'eco dello stesso bug (stesso testo Drive) nei messaggi precompilati di `page_home_v25.html`, `page_company_v2.html`, `page_agent_a5_v1.html`, `page_agent_a6_v1.html`. Verificato (prompt consegnati come .docx + .md, messaggi committati e mergiati).
+
+- Redesign card A5/A6/A7 in home (`app/page_home_v25.html`), via mockup-first su Artifact, per uniformarle allo stile già applicato ad A1-A4: rimossi descrizione/tag/stato morto, introdotto il pattern riga-con-2-pulsanti per i sotto-agenti, pillole "Pipeline Sponsorizzazioni"/"Ciclo editoriale" riposizionate dentro le rispettive bande di team, corretto il wrapping del titolo su mobile.
+- Redesign completo di `page_agent_a5_v1.html`: prima passata diretta (chrome di navigazione), poi — su richiesta esplicita di Gianluca di tornare al mockup prima di proseguire — una seconda passata più profonda su `mockup_a5_page_base.html` (6 iterazioni), approvata e applicata alla pagina reale: pillola Pipeline a specchio e riposizionata, pillola notifiche rimossa, hero con A5.1/A5.2 affiancate, tab Azioni neutralizzata e raggruppata (rimosso un pulsante duplicato), tab Documenti rimossa, tab Lavoro+Pipeline unite con una spiegazione del workflow pensata per un lettore esterno, Config corretta sugli stessi residui Drive del bug sopra, JS pulito dai riferimenti morti.
+
+**Decisioni prese:**
+- Contesto: la pillola "Pipeline" nella pagina di A5 riusava la stessa forma a "freccia verso sinistra" della pillola Hub (azione "torna alla home"), ma Pipeline è un'azione in avanti.
+  Decisione: creata una variante speculare dedicata (`.pill-hub-wrap-r`/`.pill-hub-r`, punta a destra) invece di riusare la forma sbagliata.
+- Contesto: la pillola notifiche esiste oggi su tutte le pagine agente (A1-A7) ma la gestione reale delle notifiche è centralizzata in Impostazioni/home.
+  Decisione: rimossa dalla pagina di A5 come prima applicazione.
+  Da rivedere se: va ancora fatto lo stesso su A1-A4, A6, A7 — non ancora eseguito, pendente.
+- Contesto: la tab Documenti di A5 puntava solo a Drive ed era percepita come ridondante (schede già raggiungibili dalla pipeline/company page, report già in A2).
+  Decisione: rimossa interamente invece di solo aggiornarne i link.
+
+**File consegnati/modificati:**
+- `page_company_v2.html` — fix link Scheda, fix messaggio A5.2/A6.1.
+- `app/page_home_v25.html` — redesign card A5/A6/A7, fix messaggio A5.2/A6.1.
+- `page_agent_a5_v1.html` — redesign completo (nav, hero, tab Azioni/Lavoro/Config, JS).
+- `page_agent_a6_v1.html` — fix messaggio A6.1, relabeling card input scheda.
+- `docs/prompts/Agente5_2_auto_prompt_v10.md` → `v11.md`, `docs/prompts/Agente6_1_auto_prompt_v9.md` → `v10.md` (+ `.docx` consegnati a Gianluca).
+- Mockup Artifact: `mockup_team_commerciale.html`, `mockup_home_full.html`, `mockup_a5_page_base.html`.
+
+**Impatto su Vision/Pipeline:** Step 10 — aggiunto il criterio "bug di coerenza dalla migrazione risolti" (fatto) e tracciato separatamente il redesign grafico A5-A7 (fatto per home+A5, A6/A7 ancora da fare).
+
+---
 
 ### [2026-11-18 07:30] Migrazione completa delle schede aziendali Drive→Supabase (38, non 16)
 
