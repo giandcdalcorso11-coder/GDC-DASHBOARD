@@ -1545,7 +1545,7 @@ function renderAgentQuick(co){
         <a class="agent-mini-btn" href="${a.url}" target="_blank">💬 Apri chat</a>
         <button class="agent-mini-btn copy" onclick="openMsg('${a.id}','Messaggio ${a.label}',MSGS['${a.id}'])">📋 Messaggio</button>
         ${a.scheda
-          ? `<a class="agent-mini-btn" href="page_scheda_azienda_v1.html?id=${encodeURIComponent(co.id)}">📄 Scheda</a>`
+          ? `<a class="agent-mini-btn" href="app/page_scheda_azienda_v1.html?id=${encodeURIComponent(co.id)}">📄 Scheda</a>`
           : `<a class="agent-mini-btn" href="${a.folder}" target="_blank">📁 Cartella</a>`}
       </div>
     </div>

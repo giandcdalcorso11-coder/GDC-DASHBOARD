@@ -483,18 +483,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128196; Input — Schede aziendali (A5.2)</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">Apri &#8599;</a>
+        <span class="sc-label">&#128196; Input — Scheda azienda (A5.2)</span>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">
-          <div class="file-icon fi-doc">&#128196;</div>
-          <div class="file-info">
-            <div class="file-name">[azienda]/scheda_[azienda].docx</div>
-            <div class="file-sub">A5.2 — 4 sezioni: Profilo · Fit · Fiscale · Brief A6.1</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+        <div class="config-row"><span class="config-key">Fonte</span><span class="config-val">Supabase — tabella schede_aziendali (pagina HTML, non più DOCX su Drive)</span></div>
+        <div class="config-row"><span class="config-key">Contenuto</span><span class="config-val">4 sezioni: Profilo · Fit · Fiscale · Brief A6.1</span></div>
       </div>
     </div>
     <div class="section-card">
@@ -676,9 +669,8 @@ const MSGS={
   A6_1:`Ciao A6.1.
 Produci il Media Kit per: [NOME AZIENDA]
 
-Scheda azienda (A5.2) in Drive A5:
-Entra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),
-cerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.
+Scheda azienda (A5.2) su Supabase:
+Leggi la pagina HTML dalla tabella schede_aziendali per questa azienda.
 
 Report A2 (ultimi 2 mesi) in Drive:
 https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC
@@ -695,9 +687,8 @@ Nota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — 
   A6_2:`Ciao A6.2.
 Produci la mail di proposta sponsorizzazione per: [NOME AZIENDA]
 
-Scheda azienda (A5.2) in Drive A5:
-Entra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),
-cerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.
+Scheda azienda (A5.2) su Supabase:
+Leggi la pagina HTML dalla tabella schede_aziendali per questa azienda.
 
 Media Kit (A6.1) in Drive A6 — opzionale ma consigliato:
 Cerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].
