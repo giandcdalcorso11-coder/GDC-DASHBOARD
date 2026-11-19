@@ -19,6 +19,9 @@ html,body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero
 .page-content{ width:100%; max-width:560px; margin:0 auto; padding:20px 16px; }
 .back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:14px; }
 .back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px; clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; margin-bottom:14px; }
+.pill-hub{ display:inline-flex; align-items:center; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--grigio); cursor:pointer; text-decoration:none; border:none; border-radius:999px; transition:color .15s; clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
+.pill-hub:hover{ color:var(--nero); }
 .page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
 .page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
 .month-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--bianco); border:1.5px solid var(--border); border-radius:14px; padding:13px 16px; margin-bottom:8px; text-decoration:none; color:var(--nero); transition:opacity .15s; }
@@ -29,20 +32,20 @@ html,body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero
 
 body.report-view{ display:flex; flex-direction:column; }
 .report-bar{ display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--bianco); border-bottom:1.5px solid var(--border); }
-.report-bar .back-btn{ margin-bottom:0; }
+.report-bar .back-btn,.report-bar .pill-hub-wrap{ margin-bottom:0; }
 .report-frame{ flex:1; width:100%; border:none; min-height:calc(100vh - 54px); }
 </style>
 </head>
 <body>
 <div id="listView" class="page-content" style="display:none;">
-  <a class="back-btn" href="page_agent_a4_v1.html">&#8592; Agente 4</a>
+  <div class="pill-hub-wrap"><a class="pill-hub" href="page_agent_a4_v1.html">Agente 4</a></div>
   <div class="page-title">Brief mensili</div>
   <div class="page-sub">Lo stesso brief che prima veniva consegnato in PDF, ora come pagina HTML — stesso contenuto, stessa struttura.</div>
   <div id="monthList"></div>
 </div>
 
 <div id="reportBar" class="report-bar" style="display:none;">
-  <a class="back-btn" href="brief.html">&#8592; Brief mensili</a>
+  <div class="pill-hub-wrap"><a class="pill-hub" href="brief.html">Brief mensili</a></div>
 </div>
 <iframe id="reportFrame" class="report-frame" style="display:none;"></iframe>
 
@@ -102,7 +105,7 @@ async function loadReport(mese){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows = await res.json();
     if(!rows.length){
-      document.body.innerHTML = '<div class="page-content"><a class="back-btn" href="brief.html">&#8592; Brief mensili</a><div class="empty-state">Brief non disponibile per '+mese+'.</div></div>';
+      document.body.innerHTML = '<div class="page-content"><div class="pill-hub-wrap"><a class="pill-hub" href="brief.html">Brief mensili</a></div><div class="empty-state">Brief non disponibile per '+mese+'.</div></div>';
       return;
     }
     frame.srcdoc = rows[0].html;

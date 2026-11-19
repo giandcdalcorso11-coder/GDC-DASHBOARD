@@ -20,6 +20,9 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .page-content{ width:100%; max-width:560px; padding:20px 16px; }
 .back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:14px; }
 .back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px; clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; margin-bottom:14px; }
+.pill-hub{ display:inline-flex; align-items:center; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--grigio); cursor:pointer; text-decoration:none; border:none; border-radius:999px; transition:color .15s; clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
+.pill-hub:hover{ color:var(--nero); }
 .page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
 .page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
 .month-group{ margin-bottom:22px; }
@@ -58,7 +61,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 </head>
 <body>
 <div class="page-content">
-  <a class="back-btn" href="page_agent_a1_v1.html">&#8592; Agente 1</a>
+  <div class="pill-hub-wrap"><a class="pill-hub" href="page_agent_a1_v1.html">Agente 1</a></div>
   <div class="page-title">Categorizza post</div>
   <div class="page-sub">Categoria Primaria e Secondaria dei post ORIGINALE del mese — stesso dato che prima si compilava a mano sulle celle gialle dello spreadsheet. Gli episodi di "Capiamo la Sabbia" sono già classificati automaticamente e non compaiono qui.</div>
 
