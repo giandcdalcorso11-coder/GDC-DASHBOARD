@@ -261,43 +261,6 @@ body{
 .doc-date{ font-size:.65rem; color:var(--grigio); }
 .doc-arrow{ color:var(--grigio); font-size:.85rem; flex-shrink:0; }
 
-/* ── AZIONI CONTESTUALI ── */
-.azioni-list{ display:flex; flex-direction:column; gap:8px; }
-.az-btn{
-  display:flex; align-items:center; gap:10px;
-  padding:11px 14px; border-radius:12px; border:2px solid;
-  font-family:'Jost',sans-serif; font-size:.82rem; font-weight:600;
-  cursor:pointer; text-align:left; width:100%;
-  transition:transform .1s, opacity .15s;
-}
-.az-btn:active{ transform:scale(.98); }
-.az-primary{ background:var(--maker); border-color:var(--maker); color:#fff; }
-.az-primary:hover{ background:var(--maker-dk); border-color:var(--maker-dk); }
-.az-secondary{ background:transparent; border-color:var(--sabbia); color:var(--nero); }
-.az-secondary:hover{ background:var(--sab-bg); }
-.az-ghost{ background:transparent; border-color:var(--bordo); color:var(--grigio); }
-.az-ghost:hover{ border-color:var(--grigio); color:var(--nero); }
-.az-icon{ font-size:1rem; flex-shrink:0; }
-.az-text{ display:flex; flex-direction:column; gap:1px; }
-.az-label{ font-size:.82rem; font-weight:600; }
-.az-sub  { font-size:.65rem; font-weight:400; opacity:.7; }
-
-/* ── PULSANTE A7 — 3 STATI ── */
-.az-btn.az-a7-disabled{
-  background:transparent; border-color:var(--bordo); color:#BBB4A8;
-  cursor:default; pointer-events:none;
-}
-.az-btn.az-a7-disabled .az-sub{ opacity:.6; }
-.az-btn.az-a7-active{
-  background:rgba(93,156,113,.1); border-color:#5D9C71; color:#3A6145;
-}
-.az-btn.az-a7-active:hover{ background:rgba(93,156,113,.18); }
-.az-btn.az-a7-done{
-  background:rgba(93,156,113,.06); border-color:rgba(93,156,113,.3); color:rgba(58,97,69,.55);
-  cursor:default; pointer-events:none;
-}
-.az-btn.az-a7-done .az-label{ font-weight:600; }
-
 /* ── CAMPO TESTO MAIL ── */
 .mail-field{
   display:flex; flex-direction:column; gap:10px;
@@ -743,7 +706,6 @@ function populatePage(co) {
   document.title = 'GDC — ' + (co.nome || 'Azienda');
 
   // Azioni dinamiche
-  renderAzioni(step);
   renderAgentQuick(co);
   buildA7Btn(co);
 
@@ -1007,7 +969,6 @@ function setStep(n){
     if (n === 8) currentCompanyData.step8_azione_richiesta = true; // default: nuova risposta, si presume serva un'azione
   }
   renderFollowUp(currentCompanyData || {});
-  renderAzioni(n);
   renderPipelineRami(currentCompanyData || {});
 }
 
@@ -1397,66 +1358,8 @@ function redrawPipLines(lanes){
 
 window.addEventListener('resize', function(){ if (currentCompanyData) redrawPipLines(pipLanes(currentCompanyData)); });
 
-/* ── Azioni: avanzamento step ── */
-let MSGS = {};
-
-function azBtn(icon, label, sub, action, style=''){
-  return `<button class="az-btn az-secondary" onclick="openPopupThen('${action}')" style="${style}">
-    <span class="az-icon">${icon}</span>
-    <div class="az-text"><span class="az-label">${label}</span><span class="az-sub">${sub}</span></div>
-  </button>`;
-}
-function azRefuse(){
-  return `<button class="az-btn az-ghost" onclick="openPopupThen('step13')" style="border-color:var(--life);color:var(--life);">
-    <span class="az-icon">✕</span>
-    <div class="az-text"><span class="az-label">Archivia come rifiutato</span><span class="az-sub">Step 13 — archiviato con note</span></div>
-  </button>`;
-}
-
-function renderAzioni(step){
-  const title = document.getElementById('azioni-title');
-  const list  = document.getElementById('azioni-list');
-  if (!title || !list) return;
-  title.textContent = 'Avanzamento — Step ' + step;
-  let html = '';
-  if (step <= 2) {
-    html += azBtn('✓','Scheda completata — avanza a Step 2','Segna A5.2 come fatto','step2');
-    html += azRefuse();
-  } else if (step === 3) {
-    html += azBtn('✓','Media kit approvato — avanza a Step 4','Scheda + media kit pronti','step4');
-    html += azRefuse();
-  } else if (step === 4) {
-    html += azBtn('✓','Testo mail pronto — avanza a Step 5','TXT salvato in Drive A6','step5');
-    html += azRefuse();
-  } else if (step === 5) {
-    html += azBtn('✓','Bozza pronta — avanza a Step 6','Gmail draft creata','step6');
-    html += azRefuse();
-  } else if (step === 6) {
-    html += azBtn('✓','Mail inviata — avanza a Step 7','Segna come inviata','step7');
-    html += azRefuse();
-  } else if (step === 7) {
-    html += azBtn('✓','Risposta ricevuta — avanza a Step 8','Hanno risposto','step8');
-    html += azRefuse();
-  } else if (step === 8) {
-    html += azBtn('✓','Risposta gestita — avanza a Step 9','','step9');
-    html += azBtn('🤝','Salta a In trattativa — Step 10','Avanza direttamente','step10');
-    html += azRefuse();
-  } else if (step === 9) {
-    html += azBtn('🤝','In trattativa — avanza a Step 10','','step10');
-    html += azRefuse();
-  } else if (step === 10) {
-    html += azBtn('✓','Accordo raggiunto — avanza a Step 11','','step11');
-    html += azRefuse();
-  } else if (step === 11) {
-    html += azBtn('✓','Contratto firmato — avanza a Step 12','','step12');
-    html += azRefuse();
-  } else if (step >= 12) {
-    html += '<div style="font-size:.78rem;color:var(--maker);padding:8px 0;font-weight:600;">✓ Pipeline completata per questa azienda.</div>';
-  }
-  list.innerHTML = html;
-}
-
 /* ── Accesso rapido agenti — sempre visibile, indipendente dallo step ── */
+let MSGS = {};
 const PROJ = {
   A51: 'https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f',
   A52: 'https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b',
