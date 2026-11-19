@@ -121,6 +121,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .logout-btn{width:100%;background:none;border:1.5px solid var(--life);color:var(--life);border-radius:12px;padding:11px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;}
 .logout-btn:hover{background:var(--life-bg);}
 
+/* ── Amministrazione (solo is_admin) ── */
+.collab-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 2px;border-bottom:1px solid var(--border);}
+.collab-row:last-child{border-bottom:none;}
+.collab-email{font-weight:700;font-size:.76rem;flex:1 1 100%;}
+.collab-roles{display:flex;gap:10px;flex-wrap:wrap;flex:1 1 auto;}
+.collab-role-lbl{display:flex;flex-direction:column;gap:3px;font-size:.58rem;font-weight:800;color:var(--grigio);text-transform:uppercase;letter-spacing:.05em;}
+.collab-select{font-family:'Jost',sans-serif;font-size:.74rem;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;background:var(--carta);color:var(--nero);}
+.collab-hint{font-size:.6rem;color:var(--maker);font-weight:700;min-width:50px;}
+
 .section-note{font-size:.66rem;color:var(--grigio);line-height:1.5;margin-bottom:14px;}
 .save-hint{font-size:.6rem;color:var(--grigio);text-align:center;margin-top:2px;min-height:14px;}
 </style>
@@ -308,6 +317,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <!-- ══════════════════ TAB ACCOUNT ══════════════════ -->
   <div class="tab-panel" id="panel-acc">
     <div id="accBox"><div class="section-note">Caricamento...</div></div>
+
+    <div id="adminBox" style="display:none;">
+      <div class="grp-band">
+        <div class="grp-band-lbl">Amministrazione</div>
+        <div class="section-note">Ruolo dei collaboratori per area — nessuno/osservatore/operatore. Gli account si creano altrove (Supabase, non da qui): appena esiste un nuovo account, compare qui.</div>
+        <div id="collabList"><div class="section-note">Caricamento...</div></div>
+      </div>
+    </div>
+
     <button class="logout-btn" onclick="doLogout()">Esci</button>
   </div>
 
@@ -578,6 +596,8 @@ async function loadWorkflowStatus(){
 }
 
 /* ══ ACCOUNT ══ */
+const ROLE_LBL={nessuno:'Nessuno',osservatore:'Osservatore',operatore:'Operatore'};
+
 async function loadAccount(){
   const box=document.getElementById('accBox');
   try{
@@ -585,10 +605,83 @@ async function loadAccount(){
     const user=await r.json();
     const email=user&&user.email?user.email:'—';
     const initial=email.charAt(0).toUpperCase();
-    box.innerHTML='<div class="acc-row"><div class="acc-avatar">'+initial+'</div><div><div class="acc-email">'+email+'</div><div class="acc-sub">Amministratore — accesso completo, GDC WORKSPACE</div></div></div>';
+
+    let profile={is_admin:false,ia_team_ruolo:'nessuno',studio_ruolo:'nessuno'};
+    try{
+      const pr=await sbFetch(SUPA_URL+'/rest/v1/profiles?user_id=eq.'+encodeURIComponent(user.id)+'&select=is_admin,ia_team_ruolo,studio_ruolo');
+      const prRows=pr.ok?await pr.json():[];
+      if(prRows.length) profile=prRows[0];
+    }catch(e){ console.error('Errore caricamento profilo:',e); }
+
+    const sub=profile.is_admin
+      ? 'Amministratore — accesso completo, GDC WORKSPACE'
+      : 'GDC IA TEAM: '+ROLE_LBL[profile.ia_team_ruolo]+' · GDC Studio: '+ROLE_LBL[profile.studio_ruolo];
+    box.innerHTML='<div class="acc-row"><div class="acc-avatar">'+initial+'</div><div><div class="acc-email">'+email+'</div><div class="acc-sub">'+sub+'</div></div></div>';
+
+    if(profile.is_admin){
+      document.getElementById('adminBox').style.display='block';
+      loadCollaborators();
+    }
   }catch(e){
     console.error('Errore caricamento account:',e);
     box.innerHTML='<div class="section-note">Errore nel caricamento dell\'account.</div>';
+  }
+}
+
+async function loadCollaborators(){
+  const list=document.getElementById('collabList');
+  try{
+    const r=await sbFetch(SUPA_URL+'/rest/v1/profiles?is_admin=eq.false&select=user_id,email,ia_team_ruolo,studio_ruolo&order=email');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const rows=await r.json();
+    if(!rows.length){
+      list.innerHTML='<div class="section-note">Nessun collaboratore ancora. Crea un nuovo account Supabase Auth e comparirà qui automaticamente.</div>';
+      return;
+    }
+    list.innerHTML=rows.map(function(p){
+      return '<div class="collab-row">'
+        +'<div class="collab-email">'+(p.email||p.user_id)+'</div>'
+        +'<div class="collab-roles">'
+        +roleSelect(p.user_id,'ia_team_ruolo','IA TEAM',p.ia_team_ruolo)
+        +roleSelect(p.user_id,'studio_ruolo','Studio',p.studio_ruolo)
+        +'</div>'
+        +'<div class="collab-hint" id="hint-'+p.user_id+'"></div>'
+        +'</div>';
+    }).join('');
+  }catch(e){
+    console.error('Errore caricamento collaboratori:',e);
+    list.innerHTML='<div class="section-note">Errore nel caricamento dei collaboratori.</div>';
+  }
+}
+
+function roleSelect(uid,field,label,current){
+  const opts=['nessuno','osservatore','operatore'].map(function(v){
+    return '<option value="'+v+'"'+(v===current?' selected':'')+'>'+ROLE_LBL[v]+'</option>';
+  }).join('');
+  return '<label class="collab-role-lbl">'+label
+    +'<select class="collab-select" onchange="onRoleChange(this)" data-uid="'+uid+'" data-field="'+field+'">'+opts+'</select>'
+    +'</label>';
+}
+
+async function onRoleChange(sel){
+  const uid=sel.dataset.uid, field=sel.dataset.field, value=sel.value;
+  const hint=document.getElementById('hint-'+uid);
+  sel.disabled=true;
+  if(hint) hint.textContent='Salvataggio...';
+  try{
+    const body={}; body[field]=value;
+    const res=await sbFetch(SUPA_URL+'/rest/v1/profiles?user_id=eq.'+encodeURIComponent(uid),{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    if(hint){ hint.textContent='Salvato ✓'; setTimeout(function(){ hint.textContent=''; },1600); }
+  }catch(e){
+    console.error('Errore salvataggio ruolo:',e);
+    if(hint) hint.textContent='Errore.';
+  }finally{
+    sel.disabled=false;
   }
 }
 function doLogout(){
