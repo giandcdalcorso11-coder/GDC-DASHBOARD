@@ -23,6 +23,8 @@
   --sab-bg:   #E9DFC9;
   --athlete:  #2B5F9E;
   --ath-bg:   #D9E6F3;
+  --rifiuto:  #B23A48;
+  --rifiuto-bg: #F3DADC;
 }
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--bordo:#3A3A3A;--grigio:#9A9A9A;}:root:not([data-theme="light"]) .header{background:transparent;}:root:not([data-theme="light"]) .date-chip,:root:not([data-theme="light"]) .back-btn{background:#2E2E2E;border-color:#3A3A3A;}:root:not([data-theme="light"]) .back-btn{color:#9A9A9A;}:root:not([data-theme="light"]) .section,:root:not([data-theme="light"]) .company-header{background:#242424;border-color:#3A3A3A;}:root:not([data-theme="light"]) .doc-item,:root:not([data-theme="light"]) .note-item,:root:not([data-theme="light"]) .note-new,:root:not([data-theme="light"]) .popup-card{background:#1A1A1A;border-color:#3A3A3A;}:root:not([data-theme="light"]) .popup-textarea{background:#1A1A1A;border-color:#3A3A3A;}:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{fill:#F0EBE1;}}:root[data-theme="dark"]{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--bordo:#3A3A3A;--grigio:#9A9A9A;}:root[data-theme="dark"] .header{background:transparent;}:root[data-theme="dark"] .date-chip,:root[data-theme="dark"] .back-btn{background:#2E2E2E;border-color:#3A3A3A;}:root[data-theme="dark"] .back-btn{color:#9A9A9A;}:root[data-theme="dark"] .section,:root[data-theme="dark"] .company-header{background:#242424;border-color:#3A3A3A;}:root[data-theme="dark"] .doc-item,:root[data-theme="dark"] .note-item,:root[data-theme="dark"] .note-new,:root[data-theme="dark"] .popup-card{background:#1A1A1A;border-color:#3A3A3A;}:root[data-theme="dark"] .popup-textarea{background:#1A1A1A;border-color:#3A3A3A;}:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{fill:#F0EBE1;}
 *{ box-sizing:border-box; margin:0; padding:0; }
@@ -122,65 +124,71 @@ body{
 }
 .sec-body{ padding:14px 16px; }
 
-/* ── PIPELINE TIMELINE — colonna verticale ── */
-.pipeline-col{ display:flex; flex-direction:column; }
-.pip-row{ display:flex; gap:12px; cursor:pointer; border-radius:10px; transition:background .15s; padding:0 4px; }
-.pip-row:hover{ background:var(--carta); }
-.pip-rail{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:26px; padding-top:2px; }
-.pip-dot{
-  width:26px; height:26px; border-radius:50%; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:.65rem; font-weight:700;
-  border:2px solid var(--bordo); color:var(--grigio); background:var(--carta);
-  transition:all .2s;
-}
-.pip-dot.done    { background:var(--maker-bg); border-color:var(--maker); color:var(--maker-dk); }
-.pip-dot.active  { background:var(--sabbia); border-color:#9A7835; color:var(--nero);
-                   box-shadow:0 0 0 3px rgba(196,168,101,.25); }
-.pip-dot.pending { background:var(--carta); border-color:var(--bordo); color:#AAA; }
-.pip-dot.refused { background:var(--life-bg); border-color:var(--life); color:var(--life); }
-.pip-line{ width:2px; flex:1; min-height:18px; background:var(--bordo); margin:2px 0; }
+/* ── PIPELINE A RAMI — tronco 1-4/10-13 + rami (Mail/Instagram/LinkedIn/+custom) 5-9.
+   Vedi renderPipelineRami(). Il ramo Mail è "a ponte": legge/scrive step_5..step_9,
+   step_N_date, step_notes[N] esattamente come prima — nessuna modifica all'automazione
+   A6/A7. Gli altri rami vivono in companies.lanes (jsonb). Step 13 è indipendente
+   (companies.rejected), non tocca più step_attuale. ── */
+#trunkTop,#trunkBottom{ position:relative; z-index:2; }
+#trunkBottom{ margin-top:18px; }
+#pipSecBody{ --branch-w:112px; padding:10px 10px 6px; overflow-x:auto; }
+.edit-toggle{ display:flex; align-items:center; gap:5px; font-size:.62rem; font-weight:700; color:var(--grigio); background:var(--carta); border:1.5px solid var(--bordo); border-radius:999px; padding:4px 10px; cursor:pointer; user-select:none; }
+.edit-toggle.on{ background:var(--sab-bg); border-color:var(--sabbia); color:#8A6D3B; }
+.edit-hint{ font-size:.64rem; color:var(--grigio); padding:7px 16px; background:var(--carta); border-bottom:1.5px solid var(--bordo); }
+.edit-hint.on{ color:#8A6D3B; background:var(--sab-bg); }
+.pip-row{ display:flex; padding:0 4px; }
+.pip-row.gap-before{ margin-top:18px; }
+.branch-area{ flex-shrink:0; width:var(--branch-w); display:flex; justify-content:center; }
+.pip-rail{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; width:28px; padding-top:2px; }
+.pip-dot{ width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:700; border:2px solid var(--bordo); color:var(--grigio); background:var(--carta); transition:all .2s; }
+.pip-dot.done{ background:var(--maker-bg); border-color:var(--maker); color:var(--maker-dk); }
+.pip-dot.active{ background:var(--sabbia); border-color:#9A7835; color:var(--nero); }
+.pip-dot.unlocked{ cursor:pointer; box-shadow:0 0 0 3px var(--sab-bg); }
+.pip-dot.unlocked.gated{ box-shadow:0 0 0 3px var(--bordo); opacity:.6; }
+.pip-dot.rejected{ background:var(--rifiuto-bg); border-color:var(--rifiuto); color:var(--rifiuto); }
+.pip-line{ width:2px; flex:1; min-height:14px; background:var(--bordo); }
 .pip-line.done{ background:var(--maker); }
-.pip-content{ flex:1; min-width:0; padding:4px 0 16px; }
-.pip-top-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.pip-name{ font-size:.8rem; font-weight:700; color:var(--nero); }
-.pip-date{ font-size:.62rem; font-weight:600; color:var(--grigio); white-space:nowrap; flex-shrink:0; }
-.pip-note{ font-size:.68rem; color:var(--grigio); line-height:1.35; flex:1; min-width:0; }
-.pip-note.empty{ opacity:.5; font-style:italic; }
-.pip-note-row{ display:flex; align-items:flex-start; gap:6px; margin-top:3px; }
-/* ── Canali di contatto (LinkedIn/Instagram) — sezione a sé, indipendente dalla mail,
-   vedi renderChannels(). Puntino = identità canale, badge = stato/urgenza (stessa scala
-   verde/sabbia/sospesa/rosso della mail e di page_pipeline_v1.html). ── */
-.chan-detail-card{ background:var(--carta); border:1.5px solid var(--bordo); border-radius:12px; padding:4px; }
-.chan-row-full{ display:flex; align-items:flex-start; gap:12px; padding:12px 10px; border-radius:10px; cursor:pointer; transition:background .15s; }
-.chan-row-full:hover{ background:var(--bianco); }
-.chan-row-full + .chan-row-full{ border-top:1.5px solid var(--bordo); }
-.chan-dot-big{ width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:800; flex-shrink:0; border:2px solid var(--bordo); color:#AAA; background:var(--bianco); }
-.chan-dot-big.linkedin{ border-color:var(--athlete); color:var(--athlete); background:var(--ath-bg); }
-.chan-dot-big.instagram{ border-color:var(--life); color:var(--life); background:var(--life-bg); }
-.chan-dot-big.urgent{ background:var(--life); border-color:#8E1440; color:#fff; animation:fuPulse 1.4s ease-in-out infinite; }
-.chan-full-content{ flex:1; min-width:0; }
-.chan-full-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:3px; }
-.chan-full-name{ font-size:.78rem; font-weight:700; color:var(--nero); }
-.chan-full-badge{ font-size:.62rem; font-weight:700; padding:2px 8px; border-radius:999px; white-space:nowrap; }
-.chan-full-badge.none{ color:#AAA; font-style:italic; font-weight:600; background:none; }
-.chan-full-badge.attesa{ background:var(--maker-bg); color:var(--maker-dk); }
-.chan-full-badge.silenzio{ background:var(--sab-bg); color:#8A6D3B; }
-.chan-full-badge.sospesa{ background:var(--nero); color:var(--bianco); }
-.chan-full-badge.tocca{ background:var(--life); color:#fff; font-weight:800; }
-.chan-full-badge.gestito{ background:var(--bordo); color:var(--grigio); }
-.chan-dates{ display:flex; flex-direction:column; gap:1px; margin-top:1px; }
-.chan-date-row{ font-size:.64rem; color:var(--grigio); }
-.chan-date-row b{ color:var(--nero); font-weight:700; }
-.chan-edit{ font-size:.85rem; color:var(--grigio); opacity:.6; flex-shrink:0; margin-left:4px; }
-.chan-note{ font-size:.64rem; color:var(--grigio); line-height:1.35; margin-top:4px; }
-.chan-note.empty{ opacity:.5; font-style:italic; }
+.pip-body{ flex:1; min-width:0; padding:4px 0 14px; display:flex; flex-direction:column; }
+.step-head{ display:flex; align-items:center; }
+.step-name{ flex-shrink:0; width:140px; margin-left:12px; padding:4px 0; text-align:left; font-size:.8rem; font-weight:700; color:var(--nero); align-self:center; cursor:pointer; }
+.step-count{ flex-shrink:0; min-width:28px; margin-left:auto; padding:4px 4px 0 6px; align-self:center; }
+.trunk-expand-box{ margin-top:7px; padding:8px 10px; border:1.5px solid var(--bordo); border-radius:10px; background:var(--carta); }
 
-.pip-note-edit{
-  flex-shrink:0; border:none; background:none; cursor:pointer;
-  font-size:.68rem; color:var(--grigio); opacity:.5; padding:0 2px; line-height:1.35;
-}
-.pip-note-edit:hover{ opacity:1; color:var(--maker); }
+.lanes-wrap{ padding:0 4px; position:relative; }
+#laneLabels{ position:relative; z-index:2; }
+.lane-labels{ display:flex; padding-left:2px; }
+.lane-label-cell{ width:28px; flex-shrink:0; text-align:center; font-size:.52rem; font-weight:700; color:var(--grigio); text-transform:uppercase; white-space:nowrap; }
+.lane-tag{ display:inline-block; padding:2px 5px; border-radius:999px; border:1.3px solid; font-size:.48rem; font-weight:800; letter-spacing:.03em; line-height:1.3; }
+.lines-svg{ position:absolute; left:0; top:0; pointer-events:none; z-index:0; overflow:visible; }
+.stage-row{ display:flex; align-items:flex-start; min-height:28px; position:relative; z-index:1; }
+.stage-row:not(:last-child){ margin-bottom:10px; }
+.lane-cell{ width:28px; flex-shrink:0; display:flex; justify-content:center; }
+.lane-dot{ width:28px; height:28px; border-radius:50%; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:700; border:2px solid var(--bordo); color:var(--grigio); background:var(--carta); cursor:pointer; }
+.lane-dot.reached{ background:var(--maker-bg); border-color:var(--maker); color:var(--maker-dk); }
+.lane-dot.current{ background:var(--sabbia); border-color:#9A7835; color:var(--nero); }
+.lane-dot.plus{ border-style:dashed; color:var(--maker); }
+.lane-dot.unlocked{ box-shadow:0 0 0 3px var(--sab-bg); }
+.merge-unit{ display:flex; align-items:flex-start; flex:1 1 auto; min-width:170px; margin:2px 6px 2px 0; padding:6px; border:2px solid; border-radius:14px; background:var(--carta); }
+.merge-unit .lane-dot{ margin:0 8px 0 0; box-shadow:none; }
+.expand-box{ flex:1 1 auto; min-width:0; padding:2px 2px 0 0; }
+.expand-head{ display:flex; align-items:flex-start; gap:6px; margin-bottom:6px; }
+.expand-title{ font-size:.72rem; font-weight:800; flex:1; padding-top:2px; }
+.expand-close{ border:none; background:none; color:var(--grigio); cursor:pointer; font-size:.75rem; padding:2px 4px; flex-shrink:0; }
+.hist-entry{ display:flex; gap:7px; padding:4px 0; border-bottom:1px solid var(--bordo); }
+.hist-entry:last-of-type{ border-bottom:none; }
+.hist-entry-date{ font-size:.58rem; font-weight:700; color:var(--grigio); flex-shrink:0; width:38px; }
+.hist-entry-text{ font-size:.66rem; line-height:1.4; }
+.hist-entry.legacy .hist-entry-text{ font-style:italic; }
+.hist-empty{ font-size:.66rem; color:var(--grigio); font-style:italic; padding:3px 0; }
+.hist-add{ display:flex; gap:5px; margin-top:7px; }
+.hist-add input{ flex:1; min-width:0; font-family:'Jost',sans-serif; font-size:.68rem; padding:6px 8px; border:1.5px solid var(--bordo); border-radius:7px; background:var(--bianco); color:var(--nero); outline:none; }
+.hist-add button{ font-family:'Jost',sans-serif; font-size:.64rem; font-weight:700; padding:6px 10px; border:none; border-radius:7px; background:var(--maker); color:#fff; cursor:pointer; flex-shrink:0; }
+.hist-count{ font-size:.56rem; font-weight:700; color:var(--grigio); background:var(--carta); border:1px solid var(--bordo); border-radius:999px; padding:1px 6px; }
+.add-lane-fields input{ width:100%; font-family:'Jost',sans-serif; font-size:.72rem; padding:7px 9px; border:1.5px solid var(--bordo); border-radius:8px; background:var(--bianco); color:var(--nero); outline:none; margin-bottom:6px; box-sizing:border-box; }
+.add-lane-fields button{ width:100%; font-family:'Jost',sans-serif; font-size:.68rem; font-weight:700; padding:7px; border:none; border-radius:7px; background:var(--maker); color:#fff; cursor:pointer; }
+
+.pip-toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(8px); max-width:88%; background:var(--nero); color:var(--carta); font-size:.68rem; font-weight:700; line-height:1.4; text-align:center; padding:10px 16px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.28); opacity:0; pointer-events:none; transition:opacity .18s,transform .18s; z-index:500; }
+.pip-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
 .pip-legend{
   display:flex; gap:10px; flex-wrap:wrap;
@@ -355,11 +363,6 @@ body{
 }
 .popup-textarea:focus{ border-color:var(--maker); }
 .popup-actions{ display:flex; gap:8px; }
-.chan-state-picker{ display:flex; gap:6px; margin-bottom:12px; }
-.chan-state-opt{ flex:1; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; padding:8px 4px; border-radius:9px; border:1.5px solid var(--bordo); background:var(--carta); color:var(--grigio); cursor:pointer; transition:border-color .15s,background .15s,color .15s; }
-.chan-state-opt.sel[data-state="in_attesa"]{ background:var(--maker-bg); border-color:var(--maker); color:var(--maker-dk); }
-.chan-state-opt.sel[data-state="tocca_a_te"]{ background:var(--life); border-color:#8E1440; color:#fff; }
-.chan-state-opt.sel[data-state="gestito"]{ background:var(--bordo); border-color:var(--grigio); color:var(--nero); }
 .popup-skip{
   flex:1; padding:10px; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:600;
   background:transparent; border:1.5px solid var(--bordo); color:var(--grigio); border-radius:10px; cursor:pointer;
@@ -453,229 +456,28 @@ body{
     </div>
   </div>
 
-  <!-- ② PIPELINE TIMELINE -->
+  <!-- ② PIPELINE A RAMI — tronco 1-4/10-13 + rami (Mail/Instagram/LinkedIn/+custom) 5-9.
+       Il ramo Mail resta a ponte con step_5..step_9 (letti/scritti anche da A6/A7).
+       Vedi renderPipelineRami(). -->
   <div class="section">
     <div class="sec-header">
       <span class="sec-title">Pipeline · Step 1–13</span>
-      <span style="font-size:.68rem;color:var(--grigio);">Tocca per aggiornare</span>
+      <div class="edit-toggle" id="editToggle" onclick="toggleEdit()">&#9998; <span id="editToggleLbl">Bloccato</span></div>
     </div>
-    <div class="sec-body">
-      <div class="pipeline-col">
-        <div class="pip-row" onclick="setStep(1)" title="Azienda trovata">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s1">1</div>
-            <div class="pip-line done"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">1 · Trovata</span>
-              <span class="pip-date" id="sd1">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn1">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(1, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(2)" title="Scheda generata">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s2">2</div>
-            <div class="pip-line done"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">2 · Scheda</span>
-              <span class="pip-date" id="sd2">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn2">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(2, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(3)" title="Media kit generato">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s3">3</div>
-            <div class="pip-line done"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">3 · Media kit</span>
-              <span class="pip-date" id="sd3">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn3">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(3, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(4)" title="Media kit approvato">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s4">4</div>
-            <div class="pip-line done"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">4 · Approvato</span>
-              <span class="pip-date" id="sd4">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn4">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(4, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(5)" title="Testo mail generato">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s5">5</div>
-            <div class="pip-line done"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">5 · Testo mail</span>
-              <span class="pip-date" id="sd5">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn5">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(5, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(6)" title="Bozza Gmail pronta">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s6">6</div>
-            <div class="pip-line done"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">6 · Bozza</span>
-              <span class="pip-date" id="sd6">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn6">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(6, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(7)" title="Mail inviata">
-          <div class="pip-rail">
-            <div class="pip-dot done" id="s7">7</div>
-            <div class="pip-line"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">7 · Inviata</span>
-              <span class="pip-date" id="sd7">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn7">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(7, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(8)" title="Risposta ricevuta">
-          <div class="pip-rail">
-            <div class="pip-dot active" id="s8">8</div>
-            <div class="pip-line"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">8 · Risposta</span>
-              <span class="pip-date" id="sd8">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn8">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(8, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(9)" title="Risposta gestita">
-          <div class="pip-rail">
-            <div class="pip-dot pending" id="s9">9</div>
-            <div class="pip-line"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">9 · Gestita</span>
-              <span class="pip-date" id="sd9">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn9">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(9, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(10)" title="In trattativa">
-          <div class="pip-rail">
-            <div class="pip-dot pending" id="s10">10</div>
-            <div class="pip-line"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">10 · Trattativa</span>
-              <span class="pip-date" id="sd10">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn10">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(10, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(11)" title="Accordo raggiunto">
-          <div class="pip-rail">
-            <div class="pip-dot pending" id="s11">11</div>
-            <div class="pip-line"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">11 · Accordo</span>
-              <span class="pip-date" id="sd11">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn11">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(11, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(12)" title="Contratto firmato">
-          <div class="pip-rail">
-            <div class="pip-dot pending" id="s12">12</div>
-            <div class="pip-line"></div>
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">12 · Contratto</span>
-              <span class="pip-date" id="sd12">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn12">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(12, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
-        <div class="pip-row" onclick="setStep(13)" title="Rifiutato">
-          <div class="pip-rail">
-            <div class="pip-dot pending refused" id="s13">✕</div>
-            
-          </div>
-          <div class="pip-content">
-            <div class="pip-top-row">
-              <span class="pip-name">13 · Rifiutato</span>
-              <span class="pip-date" id="sd13">—</span>
-            </div>
-            <div class="pip-note-row">
-              <div class="pip-note empty" id="sn13">Nessuna nota</div>
-              <button class="pip-note-edit" onclick="openNoteEditor(13, event)" title="Modifica nota">&#9998;</button>
-            </div>
-          </div>
-        </div>
+    <div class="edit-hint" id="editHint">&#128274; I pallini 1–13 sono gestiti da A6. Tocca la matita per modificarli a mano.</div>
+    <div class="sec-body" id="pipSecBody">
+      <div id="trunkTop"></div>
+      <div class="lanes-wrap" id="lanesWrap">
+        <svg id="linesSvg" class="lines-svg"></svg>
+        <div id="laneLabels"></div>
+        <div id="lanesZone"></div>
       </div>
-      <!-- Legend -->
+      <div id="trunkBottom"></div>
       <div class="pip-legend">
         <span><i class="ld" style="background:var(--maker)"></i> Completato</span>
         <span><i class="ld" style="background:var(--sabbia)"></i> Step attuale</span>
         <span><i class="ld" style="background:var(--bordo)"></i> In attesa</span>
-        <span><i class="ld" style="background:var(--life-bg);border:1.5px solid var(--life)"></i> Rifiutato</span>
+        <span><i class="ld" style="background:var(--rifiuto-bg);border:1.5px solid var(--rifiuto)"></i> Rifiutato</span>
       </div>
     </div>
   </div>
@@ -697,43 +499,7 @@ body{
     </div>
   </div>
 
-  <!-- ④ CANALI DI CONTATTO — LinkedIn/Instagram, indipendenti dalla mail, vedi renderChannels() -->
-  <div class="section">
-    <div class="sec-header">
-      <span class="sec-title">Canali di contatto</span>
-      <span style="font-size:.68rem;color:var(--grigio);">Tocca per aggiornare</span>
-    </div>
-    <div class="sec-body">
-      <div class="chan-detail-card">
-        <div class="chan-row-full" onclick="openChannelEditor('linkedin', event)" title="Contatto LinkedIn">
-          <div class="chan-dot-big linkedin" id="chdot-linkedin">in</div>
-          <div class="chan-full-content">
-            <div class="chan-full-top">
-              <span class="chan-full-name">LinkedIn</span>
-              <span class="chan-full-badge none" id="chbadge-linkedin">Non contattato</span>
-            </div>
-            <div class="chan-dates" id="chdates-linkedin"></div>
-            <div class="chan-note empty" id="channote-linkedin">Nessuna nota</div>
-          </div>
-          <span class="chan-edit">&#9998;</span>
-        </div>
-        <div class="chan-row-full" onclick="openChannelEditor('instagram', event)" title="Contatto Instagram">
-          <div class="chan-dot-big instagram" id="chdot-instagram">IG</div>
-          <div class="chan-full-content">
-            <div class="chan-full-top">
-              <span class="chan-full-name">Instagram</span>
-              <span class="chan-full-badge none" id="chbadge-instagram">Non contattato</span>
-            </div>
-            <div class="chan-dates" id="chdates-instagram"></div>
-            <div class="chan-note empty" id="channote-instagram">Nessuna nota</div>
-          </div>
-          <span class="chan-edit">&#9998;</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ⑤ NOTE -->
+  <!-- ④ NOTE -->
   <div class="section">
     <div class="sec-header">
       <span class="sec-title">Note</span>
@@ -778,37 +544,6 @@ body{
   </div>
 </div>
 
-<!-- POPUP MODIFICA CANALE (LinkedIn/Instagram) -->
-<div class="popup-overlay" id="channelPopup">
-  <div class="popup-card">
-    <div class="popup-title">Contatto <span id="chanPopupLabel"></span></div>
-    <div class="popup-sub" id="chanPopupSub">Primo contatto: —</div>
-    <div class="chan-state-picker" id="chanStatePicker">
-      <button type="button" class="chan-state-opt" data-state="in_attesa" onclick="selectChannelState('in_attesa')">In attesa</button>
-      <button type="button" class="chan-state-opt" data-state="tocca_a_te" onclick="selectChannelState('tocca_a_te')">Tocca a te</button>
-      <button type="button" class="chan-state-opt" data-state="gestito" onclick="selectChannelState('gestito')">Gestito</button>
-    </div>
-    <textarea class="popup-textarea" id="chanEditText" placeholder="Nota sul contatto (cosa hai scritto, quando ha risposto...)"></textarea>
-    <div class="popup-actions">
-      <button class="popup-skip"    onclick="closeChannelPopup(false)">Annulla</button>
-      <button class="popup-confirm" onclick="closeChannelPopup(true)">Salva</button>
-    </div>
-  </div>
-</div>
-
-<!-- POPUP MODIFICA NOTA STEP -->
-<div class="popup-overlay" id="notePopup">
-  <div class="popup-card">
-    <div class="popup-title">Modifica nota — Step <span id="noteStepLabel"></span></div>
-    <div class="popup-sub">Salvando, la data mostrata per questo step si aggiorna a oggi.</div>
-    <textarea class="popup-textarea" id="noteEditText" placeholder="Scrivi una nota per questo step…"></textarea>
-    <div class="popup-actions">
-      <button class="popup-skip"    onclick="closeNotePopup(false)">Annulla</button>
-      <button class="popup-confirm" onclick="closeNotePopup(true)">Salva</button>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ── SUPABASE CONFIG ── */
 const SUPA_URL = 'https://pnzabwfsgkvejnrtrjcp.supabase.co';
@@ -845,7 +580,7 @@ async function sbFetch(url, options){
 
 const STEP_NAMES = {
   1:'Trovata', 2:'Scheda', 3:'Media kit', 4:'Approvato',
-  5:'Testo mail', 6:'Bozza Gmail', 7:'Mail inviata', 8:'Risposta',
+  5:'Testo', 6:'Bozza Gmail', 7:'Mail inviata', 8:'Risposta',
   9:'Gestita', 10:'Trattativa', 11:'Accordo', 12:'Contratto', 13:'Rifiutato'
 };
 
@@ -899,12 +634,12 @@ function populatePage(co) {
     contactLabel.innerHTML = personIcon + ' Contatto non trovato';
   }
 
-  // Step attuale
+  // Step attuale (lo step 13 "Rifiutato" è indipendente — vedi co.rejected)
   const step = co.step_attuale || 1;
   currentStep = step;
-  document.querySelector('.step-num').textContent = step === 13 ? '✕' : step;
-  document.querySelector('.step-label').textContent = STEP_NAMES[step] || '—';
-  document.querySelector('.step-sub').textContent = step === 13 ? 'Chiusa' : 'Step ' + step + ' di 12';
+  document.querySelector('.step-num').textContent = co.rejected ? '✕' : step;
+  document.querySelector('.step-label').textContent = co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—');
+  document.querySelector('.step-sub').textContent = co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12';
 
   // Score badge
   const scoreBadge = document.querySelector('.topbar-badge.tag-score');
@@ -913,42 +648,8 @@ function populatePage(co) {
   // Follow-up badge + toggle "serve risposta" (vedi renderFollowUp)
   renderFollowUp(co);
 
-  // Sotto-passi canale — LinkedIn/Instagram, indipendenti dallo step mail (vedi renderChannels)
-  renderChannels(co);
-
-  // Pipeline step dots + data/nota per step (step_N_date + step_notes JSONB, scritti dagli agenti o modificati a mano — vedi openNoteEditor/saveStepNote)
-  for (let i = 1; i <= 13; i++) {
-    const dot = document.getElementById('s' + i);
-    if (!dot) continue;
-    const completed = co['step_' + i];
-    const isCurrent = i === step;
-    dot.className = 'pip-dot' + (completed ? ' done' : '') + (isCurrent ? ' current' : '') + (i === 13 ? ' refused' : '');
-
-    const dateEl = document.getElementById('sd' + i);
-    if (dateEl) {
-      const rawDate = co['step_' + i + '_date'];
-      if (rawDate) {
-        try {
-          dateEl.textContent = new Date(rawDate).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' });
-        } catch(e) { dateEl.textContent = '—'; }
-      } else {
-        dateEl.textContent = '—';
-      }
-    }
-
-    const noteEl = document.getElementById('sn' + i);
-    if (noteEl) {
-      const stepNote = co.step_notes && co.step_notes[i];
-      if (stepNote) {
-        noteEl.textContent = stepNote;
-        noteEl.classList.remove('empty');
-      } else {
-        noteEl.textContent = 'Nessuna nota';
-        noteEl.classList.add('empty');
-      }
-    }
-  }
-  updateConnectors(step);
+  // Pipeline a rami — tronco 1-4/10-13 + rami Mail(a ponte)/Instagram/LinkedIn/custom
+  renderPipelineRami(co);
 
   // Note
   const noteEl = document.querySelector('.note-text-display');
@@ -995,14 +696,6 @@ function populatePage(co) {
   } else if (noteList) {
     noteList.innerHTML = '<div style="font-size:.72rem;color:var(--grigio);padding:4px 0;">Nessuna nota.</div>';
   }
-}
-
-function updateConnectors(step) {
-  const connectors = document.querySelectorAll('.pip-line');
-  connectors.forEach((el, i) => {
-    // connector i sits between dot i+1 and dot i+2
-    el.classList.toggle('done', (i + 1) < step);
-  });
 }
 
 function flagEmoji(lingua) {
@@ -1222,13 +915,10 @@ async function updateStep(n) {
   } catch(e) { console.error('updateStep error:', e); }
 }
 
-/* ── VISUAL step update ── */
+/* ── VISUAL step update ──
+   Usata sia per il tronco 1-4/10-12 sia (a ponte, invariata) per il ramo Mail 5-9:
+   stessa identica scrittura su Supabase di sempre, così A6/A7 restano compatibili. */
 function setStep(n){
-  document.querySelectorAll('.pip-dot').forEach((el, i) => {
-    const s = i + 1;
-    el.className = 'pip-dot' + (s < n ? ' done' : s === n ? ' active' : '') + (s === 13 ? ' refused' : '');
-  });
-  updateConnectors(n);
   currentStep = n;
   const stepNum = document.querySelector('.step-num');
   const stepLabel = document.querySelector('.step-label');
@@ -1241,10 +931,12 @@ function setStep(n){
   if (currentCompanyData) {
     currentCompanyData.step_attuale = n;
     currentCompanyData['step_' + n + '_date'] = new Date().toISOString();
+    for (let i = 1; i <= 13; i++) currentCompanyData['step_' + i] = (i <= n);
     if (n === 8) currentCompanyData.step8_azione_richiesta = true; // default: nuova risposta, si presume serva un'azione
   }
   renderFollowUp(currentCompanyData || {});
   renderAzioni(n);
+  renderPipelineRami(currentCompanyData || {});
 }
 
 /* ── Popup nota rapida ── */
@@ -1264,204 +956,374 @@ document.getElementById('popup').addEventListener('click', function(e){
   if(e.target === this) closePopup(false);
 });
 
-/* ── Popup modifica nota di uno step (manuale, da webapp) ──
-   A differenza di step_attuale/step_N (booleani), qui la data non
-   segue più la logica "prima volta" (COALESCE) usata dagli agenti:
-   ogni salvataggio manuale aggiorna step_N_date a ORA, perché la data
-   mostrata rappresenta l'ultimo aggiornamento della nota, non il primo
-   raggiungimento dello step. */
-let _editingStepNote = null;
+/* ══════════════════════════════════════════════════════════════════
+   PIPELINE A RAMI — tronco 1-4/10-13 + rami (Mail a ponte + lanes jsonb)
+   ══════════════════════════════════════════════════════════════════
+   Il ramo Mail è "a ponte" con l'automazione esistente: legge/scrive
+   step_5..step_9, step_N_date, step_notes[N] — stessi campi di sempre,
+   così A6/A7 continuano a funzionare senza nessuna modifica. Gli altri
+   rami (Instagram, LinkedIn, rami manuali) vivono in companies.lanes
+   (jsonb). Gli step 1-4/10-12 restano su step_attuale/step_N come
+   sempre; il loro storico eventi extra vive in companies.trunk_events
+   (jsonb), IN AGGIUNTA alla nota singola legacy step_notes[N] (mai
+   sovrascritta da qui). Lo step 13 "Rifiutato" è indipendente —
+   companies.rejected — e non tocca più step_attuale (fix del bug per
+   cui rifiutare segnava per errore come "fatti" tutti gli step prima). */
 
-function openNoteEditor(stepIndex, event){
-  if (event) event.stopPropagation(); // non deve attivare anche setStep() sulla riga
-  if (!currentCompanyId) return;
-  _editingStepNote = stepIndex;
-  document.getElementById('noteStepLabel').textContent = stepIndex;
-  const current = (currentCompanyData && currentCompanyData.step_notes && currentCompanyData.step_notes[stepIndex]) || '';
-  document.getElementById('noteEditText').value = current;
-  document.getElementById('notePopup').classList.add('open');
+const STAGE_LABELS_MAIL = ['Testo','Bozza','Inviata','Risposta','Gestita'];
+const STAGE_LABELS_DEF  = ['Testo','Bozza','Contattato','Risposta','Gestito'];
+const ROW_TITLES = ['5 · Testo','6 · Bozza','7 · Inviata','8 · Risposta','9 · Gestita'];
+const TRUNK_NAMES = {1:'Trovata',2:'Scheda',3:'Media kit',4:'Approvato',10:'Trattativa',11:'Accordo',12:'Contratto',13:'Rifiutato'};
+const CUSTOM_PALETTE = ['#8A6D3B','#6B6B6B','#2B5F9E','#C41E5A','#4A7C59'];
+
+let pipExpandedKey = null;
+let pipAddingLaneAt = null;
+let pipEditOn = false;
+let pipToastTimer = null;
+
+function fmtShort(iso){
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit' }); }
+  catch(e) { return ''; }
 }
 
-function closeNotePopup(save){
-  const text = document.getElementById('noteEditText').value.trim();
-  document.getElementById('notePopup').classList.remove('open');
-  if (save && _editingStepNote) saveStepNote(_editingStepNote, text);
-  _editingStepNote = null;
-}
-
-document.getElementById('notePopup').addEventListener('click', function(e){
-  if (e.target === this) closeNotePopup(false);
-});
-
-async function saveStepNote(stepIndex, text){
-  if (!currentCompanyId) return;
-  const notes = Object.assign({}, (currentCompanyData && currentCompanyData.step_notes) || {});
-  if (text) notes[stepIndex] = text; else delete notes[stepIndex];
-  const nowIso = new Date().toISOString();
-  const body = { step_notes: notes };
-  body['step_' + stepIndex + '_date'] = nowIso;
-  try {
-    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify(body)
-    });
-    if (currentCompanyData) {
-      currentCompanyData.step_notes = notes;
-      currentCompanyData['step_' + stepIndex + '_date'] = nowIso;
-    }
-    const noteEl = document.getElementById('sn' + stepIndex);
-    if (noteEl) {
-      if (text) { noteEl.textContent = text; noteEl.classList.remove('empty'); }
-      else { noteEl.textContent = 'Nessuna nota'; noteEl.classList.add('empty'); }
-    }
-    const dateEl = document.getElementById('sd' + stepIndex);
-    if (dateEl) {
-      dateEl.textContent = new Date(nowIso).toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'2-digit' });
-    }
-  } catch(e) { console.error('saveStepNote error:', e); }
-}
-
-/* ── Canali di contatto (LinkedIn/Instagram) — indipendenti dallo step mail ──
-   Due date distinte per canale: "primo contatto" (<canale>_primo_contatto_date, impostata
-   una sola volta, mai sovrascritta) e "ultimo cambio di stato" (<canale>_contattato_date,
-   usata per il contatore giorni — vedi saveChannelNote(), che la aggiorna SOLO quando lo
-   stato cambia davvero, non a ogni modifica della nota). Nessuna automazione di invio — è
-   solo traccia manuale di ciò che Gianluca ha già fatto a mano su questi canali. */
-const CHAN_LABELS = { linkedin: 'LinkedIn', instagram: 'Instagram' };
-const CHAN_STATE_LABELS = { in_attesa: 'In attesa', tocca_a_te: 'Tocca a te', gestito: 'Gestito' };
-
-function fmtDateFull(iso){
-  return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function renderChannels(co){
-  ['linkedin', 'instagram'].forEach(function(canale){
-    const stato = co[canale + '_stato'] || null;
-    const dateRaw = co[canale + '_contattato_date'] || null;   // ultimo cambio di stato
-    const primoRaw = co[canale + '_primo_contatto_date'] || null; // primo contatto, fisso
-    const note = (co.step_notes && co.step_notes[canale]) || '';
-
-    const dot = document.getElementById('chdot-' + canale);
-    const badge = document.getElementById('chbadge-' + canale);
-    const datesEl = document.getElementById('chdates-' + canale);
-    const noteEl = document.getElementById('channote-' + canale);
-
-    const days = dateRaw ? Math.max(0, Math.floor((Date.now() - new Date(dateRaw).getTime()) / 86400000)) : 0;
-
-    let cls, label;
-    if (!stato) { cls = 'none'; label = 'Non contattato'; }
-    else if (stato === 'gestito') { cls = 'gestito'; label = CHAN_STATE_LABELS.gestito; }
-    else if (stato === 'tocca_a_te') { cls = 'tocca'; label = CHAN_STATE_LABELS.tocca_a_te; }
-    else { // in_attesa: la scala verde/sabbia/sospesa dipende dai giorni dall'ultimo cambio
-      const tier = dayTier(days);
-      cls = tier === 'suspended' ? 'sospesa' : tier === 'silence' ? 'silenzio' : 'attesa';
-      label = tier === 'suspended' ? 'Sospesa' : tier === 'silence' ? 'Silenzio' : CHAN_STATE_LABELS.in_attesa;
-    }
-
-    if (dot) dot.classList.toggle('urgent', stato === 'tocca_a_te');
-
-    if (badge) {
-      badge.className = 'chan-full-badge ' + cls;
-      badge.textContent = (cls === 'none' || cls === 'gestito') ? label : label + ' · ' + days + 'gg';
-    }
-
-    if (datesEl) {
-      let html = '';
-      if (primoRaw) html += '<span class="chan-date-row">Primo contatto: <b>' + fmtDateFull(primoRaw) + '</b></span>';
-      if (stato && stato !== 'gestito') html += '<span class="chan-date-row">In questo stato da <b>' + days + 'gg</b></span>';
-      datesEl.innerHTML = html || '<span class="chan-date-row">—</span>';
-    }
-
-    if (noteEl) {
-      if (note) { noteEl.textContent = note; noteEl.classList.remove('empty'); }
-      else { noteEl.textContent = 'Nessuna nota'; noteEl.classList.add('empty'); }
-    }
-  });
-}
-
-let _editingChannel = null;
-let _channelPendingState = null;
-
-function openChannelEditor(canale, event){
-  if (event) event.stopPropagation(); // non deve attivare setStep(7) sulla riga sopra
-  if (!currentCompanyId) return;
-  _editingChannel = canale;
-  const co = currentCompanyData || {};
-  const existingStato = co[canale + '_stato'] || 'in_attesa';
-  const primoRaw = co[canale + '_primo_contatto_date'];
-
-  document.getElementById('chanPopupLabel').textContent = CHAN_LABELS[canale] || canale;
-  document.getElementById('chanPopupSub').textContent = primoRaw
-    ? 'Primo contatto: ' + fmtDateFull(primoRaw)
-    : 'Non ancora contattato — salvando qui registri il primo contatto';
-  document.getElementById('chanEditText').value = (co.step_notes && co.step_notes[canale]) || '';
-
-  selectChannelState(existingStato);
-  document.getElementById('channelPopup').classList.add('open');
-}
-
-function selectChannelState(state){
-  _channelPendingState = state;
-  document.querySelectorAll('#chanStatePicker .chan-state-opt').forEach(function(btn){
-    btn.classList.toggle('sel', btn.dataset.state === state);
-  });
-}
-
-function closeChannelPopup(save){
-  const text = document.getElementById('chanEditText').value.trim();
-  document.getElementById('channelPopup').classList.remove('open');
-  if (save && _editingChannel) saveChannelNote(_editingChannel, text, _channelPendingState || 'in_attesa');
-  _editingChannel = null;
-  _channelPendingState = null;
-}
-
-document.getElementById('channelPopup').addEventListener('click', function(e){
-  if (e.target === this) closeChannelPopup(false);
-});
-
-async function saveChannelNote(canale, text, state){
-  if (!currentCompanyId) return;
-  const notes = Object.assign({}, (currentCompanyData && currentCompanyData.step_notes) || {});
-  if (text) notes[canale] = text; else delete notes[canale];
-  const prevStato = currentCompanyData ? (currentCompanyData[canale + '_stato'] || null) : null;
-  const stateChanged = prevStato !== state;
-  const hasPrimoContatto = !!(currentCompanyData && currentCompanyData[canale + '_primo_contatto_date']);
-  const nowIso = new Date().toISOString();
-  const body = { step_notes: notes };
-  body[canale + '_stato'] = state;
-  // Il contatore giorni si aggiorna solo quando lo stato cambia davvero, non a ogni
-  // modifica della nota — questo è il fix del bug che confondeva "primo contatto" e
-  // "ultima modifica". Il primo contatto si registra una sola volta (mai sovrascritto).
-  if (stateChanged) body[canale + '_contattato_date'] = nowIso;
-  if (!hasPrimoContatto) body[canale + '_primo_contatto_date'] = nowIso;
-  try {
-    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify(body)
-    });
-    if (currentCompanyData) {
-      currentCompanyData.step_notes = notes;
-      currentCompanyData[canale + '_stato'] = state;
-      if (stateChanged) currentCompanyData[canale + '_contattato_date'] = nowIso;
-      if (!hasPrimoContatto) currentCompanyData[canale + '_primo_contatto_date'] = nowIso;
-    }
-    renderChannels(currentCompanyData || {});
-  } catch(e) { console.error('saveChannelNote error:', e); }
-}
-
-function execAction(action, note){
-  if(action === 'openA62'){
-    window.open('https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0','_blank');
-  } else if(action === 'step9')  { setStep(9);  updateStep(9);  if(note) saveNoteText(note); }
-  else if(action === 'step10') { setStep(10); updateStep(10); if(note) saveNoteText(note); }
-  else if(action === 'step13') {
-    setStep(13); updateStep(13);
-    document.querySelectorAll('.pip-dot')[12].className = 'pip-dot refused';
-    if(note) saveNoteText(note);
+// Ramo Mail "a ponte": stage/eventi derivati dal vivo da step_5..step_9, non salvati altrove.
+function mailLaneFromCo(co){
+  let stage = -1;
+  const events = [[],[],[],[],[]];
+  for (let i=0;i<5;i++){
+    const n = 5+i;
+    if (co['step_'+n]) stage = i;
+    const d = co['step_'+n+'_date'];
+    const note = co.step_notes && co.step_notes[n];
+    if (d || note) events[i] = [{ date: fmtShort(d), text: note || '(nessuna nota)', legacy:true }];
   }
+  return { id:'mail', label:'Mail', short:'MAIL', color:'var(--sabbia)', stage:stage, events:events, bridged:true };
 }
+function pipLanes(co){ return [mailLaneFromCo(co)].concat((co && co.lanes) || []); }
+
+function pipTrunkEvents(co, n){
+  const extra = (co.trunk_events && co.trunk_events[n]) || [];
+  const legacyNote = co.step_notes && co.step_notes[n];
+  const legacy = legacyNote ? [{ date: fmtShort(co['step_'+n+'_date']), text: legacyNote, legacy:true }] : [];
+  return legacy.concat(extra);
+}
+
+function pipAnyLaneGestita(co){ return pipLanes(co).some(function(l){ return l.stage >= 4; }); }
+
+function pipShowToast(msg){
+  let el = document.getElementById('pipToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'pipToast';
+    el.className = 'pip-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(pipToastTimer);
+  pipToastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+}
+
+async function pipPatchCompany(body){
+  if (!currentCompanyId) return;
+  try {
+    await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    Object.assign(currentCompanyData, body);
+    renderPipelineRami(currentCompanyData);
+  } catch(e) { console.error('pipPatchCompany error:', e); }
+}
+
+function renderPipelineRami(co){
+  if (!co) return;
+  const lanes = pipLanes(co);
+  const pipSecBody = document.getElementById('pipSecBody');
+  if (pipSecBody) pipSecBody.style.setProperty('--branch-w', ((lanes.length+1)*28)+'px');
+  renderTrunkRange(co, lanes, 1, 4, 'trunkTop');
+  renderTrunkRange(co, lanes, 10, 13, 'trunkBottom');
+  renderLaneLabels(lanes);
+  renderLanesZone(co, lanes);
+  redrawPipLines(lanes);
+  // Tiene allineato il riepilogo in testata (es. dopo il toggle "rifiutato", che non passa da setStep)
+  const step = co.step_attuale || 1;
+  const stepNum = document.querySelector('.step-num');
+  const stepLabel = document.querySelector('.step-label');
+  const stepSub = document.querySelector('.step-sub');
+  if (stepNum) stepNum.textContent = co.rejected ? '✕' : step;
+  if (stepLabel) stepLabel.textContent = co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—');
+  if (stepSub) stepSub.textContent = co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12';
+}
+
+function renderTrunkRange(co, lanes, fromN, toN, targetId){
+  let html='';
+  const gateOpen = lanes.some(function(l){ return l.stage>=4; });
+  const rawStep = co.step_attuale || 1;
+  const trunkStep = (rawStep>=5 && rawStep<=9) ? 4 : (rawStep===13 ? 4 : rawStep);
+  for (let n=fromN; n<=toN; n++){
+    let cls;
+    if (n===13){ cls = co.rejected ? 'rejected' : ''; }
+    else { const done = trunkStep>n, active = trunkStep===n; cls = done?'done':(active?'active':''); }
+    const hasLine = (n!==12 && n!==13); // nessun collegamento 12→13: step alternativo, non sequenziale
+    const gated = (n>=10 && n<=12 && !gateOpen);
+    const gapBefore = (n===13) ? ' gap-before' : '';
+    const isExp = pipExpandedKey === 'trunk:'+n;
+    const entries = pipTrunkEvents(co, n);
+    html += '<div class="pip-row'+gapBefore+'"><div class="branch-area"><div class="pip-rail"><div class="pip-dot '+cls+' '+(pipEditOn?'unlocked':'')+' '+(gated?'gated':'')+'" data-step="'+n+'" onclick="onPipTrunkClick('+n+')">'+n+'</div>'
+      + (hasLine ? '<div class="pip-line '+(cls==='done'?'done':'')+'"></div>' : '')
+      + '</div></div><div class="pip-body"><div class="step-head"><span class="step-name" onclick="onPipTrunkClick('+n+')">'+n+' · '+TRUNK_NAMES[n]+'</span><span class="step-count">'+(entries.length?('<span class="hist-count">'+entries.length+'</span>'):'')+'</span></div>'
+      + (isExp ? renderTrunkExpand(n, entries) : '') + '</div></div>';
+  }
+  const target = document.getElementById(targetId);
+  if (target) target.innerHTML = html;
+}
+
+function renderTrunkExpand(n, entries){
+  let html = '<div class="trunk-expand-box">';
+  html += '<div class="expand-head"><span class="expand-title">'+n+' · '+TRUNK_NAMES[n]+'</span><button class="expand-close" onclick="pipCloseExpand()">&#10005;</button></div>';
+  if (entries.length){
+    entries.forEach(function(e){ html += '<div class="hist-entry'+(e.legacy?' legacy':'')+'"><span class="hist-entry-date">'+e.date+'</span><span class="hist-entry-text">'+e.text+'</span></div>'; });
+  } else {
+    html += '<div class="hist-empty">Nessun evento per questo step.</div>';
+  }
+  html += '<div class="hist-add"><input type="text" id="pipAddEvtInput" placeholder="Aggiungi evento..." onkeydown="if(event.key===\'Enter\')pipAddHistoryEvent()"><button onclick="pipAddHistoryEvent()">+</button></div>';
+  html += '</div>';
+  return html;
+}
+
+function onPipTrunkClick(n){
+  if (pipEditOn){
+    if (n===13){
+      pipExpandedKey = null;
+      pipPatchCompany({ rejected: !(currentCompanyData && currentCompanyData.rejected) });
+      return;
+    }
+    if (n>=10 && n<=12 && !pipAnyLaneGestita(currentCompanyData||{})){
+      pipShowToast('Almeno un canale deve essere a step 9 · Gestita per proseguire.');
+      return;
+    }
+    pipExpandedKey = null;
+    setStep(n); // riusa la scrittura esistente (automazione-safe) per 1-4/10-12
+    return;
+  }
+  pipExpandedKey = (pipExpandedKey === 'trunk:'+n) ? null : 'trunk:'+n;
+  renderPipelineRami(currentCompanyData);
+}
+
+function pipCloseExpand(){ pipExpandedKey = null; pipAddingLaneAt = null; renderPipelineRami(currentCompanyData); }
+
+function renderLaneLabels(lanes){
+  let html = '<div class="lane-labels">';
+  lanes.forEach(function(l){
+    html += '<div class="lane-label-cell"><span class="lane-tag" style="background:color-mix(in srgb,'+l.color+' 22%, var(--carta));color:'+l.color+';border-color:'+l.color+';">'+(l.short||l.label)+'</span></div>';
+  });
+  html += '</div>';
+  const el = document.getElementById('laneLabels');
+  if (el) el.innerHTML = html;
+}
+
+function renderLanesZone(co, lanes){
+  let html = '';
+  for (let s=0; s<5; s++){
+    html += '<div class="stage-row">';
+    lanes.forEach(function(lane){
+      const st = lane.stage;
+      const reached = st >= s;
+      const current = st === s;
+      const isExp = pipExpandedKey === lane.id+':'+s;
+      const borderStyle = (!isExp && reached) ? ('border-color:'+lane.color+';') : '';
+      const dot = '<div class="lane-dot '+(reached?'reached':'')+' '+(current?'current':'')+' '+(pipEditOn?'unlocked':'')+'" data-lane="'+lane.id+'" data-stage="'+s+'" style="'+borderStyle+'" onclick="onPipDotClick(\''+lane.id+'\','+s+')">'+(5+s)+'</div>';
+      if (isExp){
+        html += '<div class="merge-unit" style="border-color:'+lane.color+'">'+dot+renderPipExpandBox(lane, s)+'</div>';
+      } else {
+        html += '<div class="lane-cell">'+dot+'</div>';
+      }
+    });
+    if (s===0){
+      const addOpen = pipAddingLaneAt === s;
+      const plusDot = '<div class="lane-dot plus" onclick="onPipPlusClick('+s+')">+</div>';
+      if (addOpen){
+        html += '<div class="merge-unit" style="border-color:var(--maker)">'+plusDot+renderPipAddLaneBox()+'</div>';
+      } else {
+        html += '<div class="lane-cell">'+plusDot+'</div>';
+      }
+    } else {
+      html += '<div class="lane-cell"></div>'; // allinea le colonne con la riga "5" che ha il "+"
+    }
+    const cnt = lanes.reduce(function(sum,l){ return sum + l.events[s].length; }, 0);
+    html += '<span class="step-name">'+ROW_TITLES[s]+'</span><span class="step-count">'+(cnt?('<span class="hist-count">'+cnt+'</span>'):'')+'</span>';
+    html += '</div>';
+  }
+  const el = document.getElementById('lanesZone');
+  if (el) el.innerHTML = html;
+}
+
+function renderPipExpandBox(lane, s){
+  const labels = lane.id==='mail' ? STAGE_LABELS_MAIL : STAGE_LABELS_DEF;
+  const entries = lane.events[s];
+  let html = '<div class="expand-box">';
+  html += '<div class="expand-head"><span class="expand-title">'+lane.label+' · '+labels[s]+'</span><button class="expand-close" onclick="pipCloseExpand()">&#10005;</button></div>';
+  if (entries.length){
+    entries.forEach(function(e){ html += '<div class="hist-entry'+(e.legacy?' legacy':'')+'"><span class="hist-entry-date">'+e.date+'</span><span class="hist-entry-text">'+e.text+'</span></div>'; });
+  } else {
+    html += '<div class="hist-empty">Nessun evento per questo stadio.</div>';
+  }
+  const placeholder = lane.bridged ? 'Aggiorna nota di questo stadio...' : 'Aggiungi evento...';
+  html += '<div class="hist-add"><input type="text" id="pipAddEvtInput" placeholder="'+placeholder+'" onkeydown="if(event.key===\'Enter\')pipAddHistoryEvent()"><button onclick="pipAddHistoryEvent()">+</button></div>';
+  html += '</div>';
+  return html;
+}
+
+function renderPipAddLaneBox(){
+  return '<div class="expand-box">'
+    + '<div class="expand-head"><span class="expand-title">Nuovo ramo</span><button class="expand-close" onclick="pipCloseExpand()">&#10005;</button></div>'
+    + '<div class="add-lane-fields">'
+    + '<input type="text" id="newLaneName" placeholder="Nome del ramo (es. Contatto personale)">'
+    + '<button onclick="pipConfirmAddLane()">Crea ramo</button>'
+    + '</div></div>';
+}
+
+function onPipDotClick(id, s){
+  if (pipEditOn){
+    pipExpandedKey = null;
+    if (id==='mail'){
+      setStep(5+s); // automazione-safe: stessa scrittura di sempre su step_5..step_9
+      return;
+    }
+    const co = currentCompanyData;
+    const lanes = (co.lanes||[]).slice();
+    const idx = lanes.findIndex(function(l){ return l.id===id; });
+    if (idx<0) return;
+    lanes[idx] = Object.assign({}, lanes[idx], { stage: s });
+    const patch = { lanes: lanes };
+    if ((co.step_attuale||1) < 4) patch.step_attuale = 4; // consistenza visiva: un ramo avanzato implica aver superato il bivio
+    pipPatchCompany(patch);
+    return;
+  }
+  pipAddingLaneAt = null;
+  pipExpandedKey = (pipExpandedKey===id+':'+s) ? null : id+':'+s;
+  renderPipelineRami(currentCompanyData);
+}
+
+function onPipPlusClick(s){
+  pipExpandedKey = null;
+  pipAddingLaneAt = (pipAddingLaneAt===s) ? null : s;
+  renderPipelineRami(currentCompanyData);
+  if (pipAddingLaneAt!==null){ const el=document.getElementById('newLaneName'); if (el) el.focus(); }
+}
+
+function pipConfirmAddLane(){
+  const input = document.getElementById('newLaneName');
+  const name = input.value.trim();
+  if (!name) return;
+  const co = currentCompanyData;
+  const existing = co.lanes || [];
+  const idx = existing.length % CUSTOM_PALETTE.length;
+  const id = 'custom'+Date.now();
+  const newLane = { id:id, label:name, short:name.slice(0,4).toUpperCase(), color:CUSTOM_PALETTE[idx], stage:-1, events:[[],[],[],[],[]] };
+  pipAddingLaneAt = null;
+  pipPatchCompany({ lanes: existing.concat([newLane]) });
+}
+
+function pipAddHistoryEvent(){
+  const input = document.getElementById('pipAddEvtInput');
+  const text = input.value.trim();
+  if (!text || !pipExpandedKey) return;
+  const nowIso = new Date().toISOString();
+  const d = fmtShort(nowIso);
+  if (pipExpandedKey.indexOf('trunk:')===0){
+    const n = parseInt(pipExpandedKey.slice(6), 10);
+    const te = Object.assign({}, currentCompanyData.trunk_events || {});
+    te[n] = (te[n]||[]).concat([{date:d, text:text}]);
+    pipPatchCompany({ trunk_events: te });
+    return;
+  }
+  const parts = pipExpandedKey.split(':');
+  const laneId = parts[0], s = parseInt(parts[1],10);
+  if (laneId === 'mail'){
+    // Ramo a ponte: una sola nota per stadio (step_notes[N]), stesso meccanismo di sempre.
+    const n = 5+s;
+    const notes = Object.assign({}, currentCompanyData.step_notes || {});
+    notes[n] = text;
+    const patch = { step_notes: notes };
+    patch['step_'+n+'_date'] = nowIso;
+    pipPatchCompany(patch);
+    return;
+  }
+  const lanes = (currentCompanyData.lanes||[]).slice();
+  const idx = lanes.findIndex(function(l){ return l.id===laneId; });
+  if (idx<0) return;
+  const laneCopy = Object.assign({}, lanes[idx]);
+  laneCopy.events = laneCopy.events.map(function(arr,i){ return i===s ? arr.concat([{date:d,text:text}]) : arr; });
+  lanes[idx] = laneCopy;
+  pipPatchCompany({ lanes: lanes });
+}
+
+function toggleEdit(){
+  pipEditOn = !pipEditOn;
+  pipExpandedKey = null;
+  const toggle = document.getElementById('editToggle');
+  if (toggle) toggle.classList.toggle('on', pipEditOn);
+  const lbl = document.getElementById('editToggleLbl');
+  if (lbl) lbl.textContent = pipEditOn ? 'Sblocco attivo' : 'Bloccato';
+  const hint = document.getElementById('editHint');
+  if (hint){
+    hint.classList.toggle('on', pipEditOn);
+    hint.innerHTML = pipEditOn
+      ? '&#128275; Modifica manuale attiva — tocca un pallino 1–13 o di un ramo per attivarlo direttamente.'
+      : '&#128274; I pallini 1–13 sono gestiti da A6. Tocca la matita per modificarli a mano.';
+  }
+  renderPipelineRami(currentCompanyData);
+}
+
+// Disegna le linee dei rami leggendo le posizioni REALI dei pallini dopo ogni render,
+// così seguono sempre eventuali schede aperte che spingono le colonne (vedi merge-unit).
+function redrawPipLines(lanes){
+  const wrap = document.getElementById('lanesWrap');
+  const step4 = document.querySelector('[data-step="4"]');
+  const step10 = document.querySelector('[data-step="10"]');
+  const svg = document.getElementById('linesSvg');
+  if (!wrap || !svg) return;
+  if (!step4 || !step10){ svg.innerHTML=''; return; }
+
+  const wrapRect = wrap.getBoundingClientRect();
+  const s4r = step4.getBoundingClientRect();
+  const s10r = step10.getBoundingClientRect();
+  const originLeft = wrapRect.left;
+  const originTop = s4r.top;
+  const totalH = (s10r.bottom - originTop);
+  const totalW = wrapRect.width;
+
+  svg.style.top = (originTop - wrapRect.top) + 'px';
+  svg.style.width = totalW + 'px';
+  svg.style.height = totalH + 'px';
+  svg.setAttribute('width', totalW);
+  svg.setAttribute('height', totalH);
+  svg.setAttribute('viewBox', '0 0 ' + totalW + ' ' + totalH);
+
+  function pt(el){
+    const r = el.getBoundingClientRect();
+    return { x: (r.left+r.right)/2 - originLeft, y: (r.top+r.bottom)/2 - originTop };
+  }
+  const p4 = pt(step4), p10 = pt(step10);
+  let html = '';
+  lanes.forEach(function(l){
+    const pts = [p4];
+    for (let s=0; s<5; s++){
+      const el = document.querySelector('.lane-dot[data-lane="'+l.id+'"][data-stage="'+s+'"]');
+      if (el) pts.push(pt(el));
+    }
+    pts.push(p10);
+    const d = pts.map(function(p,i){ return (i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ');
+    html += '<path d="'+d+'" stroke="'+l.color+'" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+  });
+  svg.innerHTML = html;
+}
+
+window.addEventListener('resize', function(){ if (currentCompanyData) redrawPipLines(pipLanes(currentCompanyData)); });
 
 /* ── Azioni: avanzamento step ── */
 let MSGS = {};
@@ -1612,9 +1474,21 @@ function renderAgentQuick(co){
   `;
 }
 
-/* ── execAction aggiornato ── */
+/* ── execAction aggiornato ──
+   step13 è indipendente (companies.rejected, non più setStep). step10 richiede che
+   almeno un ramo (Mail o altro) sia a "9 · Gestita" prima di poter avanzare — stessa
+   regola applicata ai pallini della pipeline a rami, vedi onPipTrunkClick(). ── */
 function execAction(action, note){
-  const stepMap = {step2:2,step4:4,step5:5,step6:6,step7:7,step8:8,step9:9,step10:10,step11:11,step12:12,step13:13};
+  const stepMap = {step2:2,step4:4,step5:5,step6:6,step7:7,step8:8,step9:9,step10:10,step11:11,step12:12};
+  if (action === 'step13') {
+    pipPatchCompany({ rejected: true });
+    if (note) saveNoteText(note);
+    return;
+  }
+  if (action === 'step10' && !pipAnyLaneGestita(currentCompanyData || {})) {
+    pipShowToast('Almeno un canale deve essere a step 9 · Gestita per proseguire.');
+    return;
+  }
   if (stepMap[action] !== undefined) {
     setStep(stepMap[action]);
     if(note) saveNoteText(note);
