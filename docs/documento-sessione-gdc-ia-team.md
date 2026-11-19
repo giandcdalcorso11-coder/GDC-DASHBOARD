@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 42
-**Ultimo aggiornamento:** 2026-11-18 22:14
+**Versione:** 43
+**Ultimo aggiornamento:** 2026-11-19 10:36
 
 ## Vision
 
@@ -319,7 +319,55 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
   - **Rischio di manutenzione:** la logica di calcolo giorni/follow-up (`calcFollowup`/`renderFollowUp`) è duplicata quasi identica tra i due file, sincronizzata solo da un commento nel codice ("Allineato 1:1"), non da una funzione condivisa.
   Findings presentati a Gianluca in chat; **nessuna decisione presa in questa sessione** su quale direzione intraprendere (automatizzare il rilevamento risposte mail via Gmail, correggere il bug delle date social, ripensare il tracking LinkedIn/Instagram) — discussione in corso, da riprendere.
 
+### Step 11 — Ruoli e permessi per collaboratori (osservatore/operatore)
+
+**Stato:** da fare — modello di permessi completamente deciso e documentato, implementazione non ancora iniziata (di proposito: Gianluca ha chiesto di affrontarlo dopo aver chiuso lo Step 10, in particolare l'audit funzionale di pipeline/azienda).
+
+**Obiettivo:** permettere a Gianluca di far entrare un collaboratore nella webapp con un account separato dal proprio, con accesso limitato per area (GDC IA TEAM / GDC Studio) e per ruolo (osservatore = solo vedere, operatore = può anche agire), gestibile da una pagina di amministrazione che solo lui vede.
+
+**Decisioni progettuali:**
+- **Due ruoli soli, non di più**: osservatore e operatore. Nessuna granularità più fine richiesta da Gianluca (es. per singolo agente) — solo per area.
+- **Ruolo indipendente per area**: una persona può essere operatore su un'area e osservatore sull'altra (es. operatore su Studio, osservatore su IA TEAM). Non un ruolo unico valido ovunque.
+- **Modello dati proposto**: tabella `profiles` (una riga per account Supabase Auth) con `is_admin` (solo Gianluca — accesso operatore automatico ovunque + unico che vede la pagina di amministrazione), `ia_team_ruolo` e `studio_ruolo` (nessuno/osservatore/operatore ciascuno).
+- **Pagina di amministrazione**: dentro Impostazioni → Account, visibile solo a `is_admin`. **Solo gestione permessi su account già esistenti** — niente flusso di invito via email per ora (creare un nuovo account Supabase Auth in sicurezza richiede la service_role key, che non può stare lato client come il resto della webapp oggi; gli account li crea Gianluca altrove quando serve).
+- **GDC IA TEAM — osservatore**: vede tutto (stato agenti, report, pipeline, schede azienda, calendario). Ogni pulsante che scrive su Supabase o lancia un agente resta **visibile ma disattivato** (stesso pattern già in uso in alcuni punti della webapp, es. classe `.lg-disabled`) — scelta esplicita di Gianluca, niente nascosto, solo non cliccabile.
+- **GDC IA TEAM — operatore**: tutto attivo tranne la pagina di amministrazione. **Limite noto, non bloccante**: i pulsanti "Messaggio"/"Apri chat"/"Apri sessione" portano ai progetti Claude.ai di Gianluca — un collaboratore operatore non potrebbe usarli davvero senza accesso al suo account Claude. Risolto con una soluzione semplice: aggiungere un link per scaricare l'md/docx del prompt di ogni agente (già esistenti in `docs/prompts/`) nella **tab Azioni della pagina di ciascun agente** (non in home — Gianluca ha chiesto esplicitamente di non toccare la grafica della home, sistemata a più riprese in questa stessa sessione), così il collaboratore può creare lo stesso progetto sul proprio profilo Claude.
+- **Pulsanti di stato-test** (forzatura manuale di `agent_states.stato`, usati finora solo per i test manuali di Gianluca): visibili e usabili **solo da `is_admin`**, mai da operatore o osservatore — sono uno strumento di debug, non un'azione operativa reale.
+- **GDC Studio — i dati restano di Gianluca**, non si duplicano per account. Un collaboratore con un ruolo Studio assegnato opera sui dati di Gianluca (le query puntano al suo `user_id` invece che al proprio) invece che sul proprio spazio separato. La strada attuale ("ogni account ha il proprio Studio indipendente", già così oggi via `_userId = sessionStorage.gdc_uid`) resta disponibile e non va rimossa — Gianluca vuole tenerla per un possibile uso futuro (collegato al discorso Step 2/template, vedi sotto), ma la priorità ora è la prima.
+- **GDC Studio — osservatore**: accesso e visualizzazione completa (ordini, filamenti, spese, hardware, progetti), nessuna modifica, **unica eccezione il Calcolatore Prezzi**: può calcolare un prezzo e salvarlo come progetto bozza (`saveProjCalc`, resta dentro il calcolatore); **non può "Invia a ordini"** (`sendToOrders`, crea un ordine vero con cliente — considerato a tutti gli effetti una modifica dati commerciali reali, stessa categoria delle altre azioni vietate). Confermato esplicitamente da Gianluca.
+- **"Ampliamento template" (far usare la webapp, col proprio profilo, a persone esterne al tutto) discusso ma rimandato esplicitamente** — non scartato, solo non prioritario ora. Gianluca: "mi sembra molto complicato... il lato personalizzazione apre molti punti di rottura potenziali". Causa identificata insieme: la complessità del suo stesso sistema non è stata scrivere l'HTML ma decidere cosa ogni agente fa e come si incastra nel suo processo reale — conoscenza specifica del suo business, non riducibile a un wizard di configurazione. Due strade tecniche individuate per il futuro, da scegliere quando si riprenderà il discorso: (a) ognuno clona il repo e configura la propria copia (fattibile con l'architettura attuale, richiede solo un wizard/checklist che compili dati oggi scritti a mano nell'HTML), oppure (b) un'unica installazione condivisa multi-tenant (richiederebbe una riscrittura sostanziale: i segreti non potrebbero più stare nell'HTML statico, servirebbe un vero backend).
+
+**Criterio di completamento:** tabella `profiles` creata con RLS; pagina di amministrazione funzionante (Impostazioni → Account); ogni pagina IA TEAM e Studio rispetta il ruolo dell'utente loggato (osservatore = sola visualizzazione salvo le eccezioni sopra, operatore = pieno accesso eccetto amministrazione); verificato con almeno un account di test per ciascun ruolo.
+
+**Note (cronologia dello step):**
+- [2026-11-19] Discussione completa sul modello di permessi, su iniziativa di Gianluca ("parliamone prima di lavorare sull'altro fronte"). Nessuna riga di codice scritta — solo design, vedi Decisioni progettuali sopra. Scoperta rilevante durante la discussione: il login della webapp è già vera autenticazione Supabase (`/auth/v1/token`), non una password condivisa — la base per account multipli esiste già, manca solo il livello di ruoli/permessi.
+
 ## Storico sessioni
+
+### [2026-11-19 10:36] Progettato il modello di ruoli/permessi per collaboratori (osservatore/operatore, per area)
+
+**Riepilogo:** sessione di sola discussione/progettazione su richiesta di Gianluca, prima di riprendere il lavoro tecnico su pipeline/azienda: definito nel dettaglio il modello di ruoli per far accedere collaboratori alla webapp con permessi limitati, e discusso (e rimandato) il tema più ampio di renderla un template personalizzabile per terzi.
+
+**Cosa è stato fatto:**
+- Esplorato lo stato attuale dell'autenticazione: il login usa già Supabase Auth reale (non una password condivisa), quindi account multipli sono già possibili — manca solo un livello di ruoli/permessi.
+- Definito con Gianluca, a domande mirate, il modello completo per i collaboratori: due ruoli (osservatore/operatore) indipendenti per area (GDC IA TEAM / GDC Studio), tabella `profiles` con flag admin, pagina di amministrazione in Impostazioni → Account (solo gestione permessi, niente inviti via email per ora), comportamento pulsante-per-pulsante per l'osservatore su IA TEAM (visibile ma disattivato) e su Studio (sola visualizzazione, eccetto il Calcolatore Prezzi che può calcolare/salvare bozza ma non creare un ordine vero), pulsanti di stato-test riservati solo all'amministratore, e una soluzione per il limite "i link Claude.ai portano al profilo di Gianluca" (link di download del prompt md/docx di ogni agente, nella tab Azioni di ciascuna pagina agente, non in home).
+- Discusso il tema più ampio — rendere la webapp un template personalizzabile da altre persone — e deciso di **rimandarlo esplicitamente**: non scartato, ma riconosciuto come molto più complesso (richiede ripensare decisioni di business specifiche, non solo un wizard di configurazione), con due strade tecniche già individuate per quando verrà ripreso (clone-e-configura vs vero multi-tenant).
+- Dettagli completi del modello nello Step 11 della Pipeline (nuovo).
+
+**Decisioni prese:**
+- Contesto: come gestire l'accesso di un collaboratore con ruolo "operatore" ai pulsanti "Messaggio"/"Apri chat"/"Apri sessione", che aprono i progetti Claude.ai personali di Gianluca.
+- Decisione: aggiungere un link di download del prompt (md/docx, già esistenti in `docs/prompts/`) nella tab Azioni di ogni pagina agente — non in home, per non toccare la grafica della home già sistemata più volte in questa sessione.
+- Contesto: cosa può fare un osservatore su GDC Studio, dove esiste un'unica azione che scrive dati (il Calcolatore Prezzi).
+- Decisione: può calcolare e salvare come progetto bozza, non può "Invia a ordini" (creazione di un ordine reale con cliente).
+- Contesto: punto più ampio, rendere la webapp un template per altre persone.
+- Decisione: rimandato, non scartato — priorità resta chiudere lo Step 10 (audit pipeline/azienda) e poi lo Step 11 (ruoli) prima di riaffrontarlo.
+- Alternative scartate: nessuna per lo Step 11 (prima proposta, niente da scartare); per il template, scartata l'idea di affrontarlo subito — troppa complessità di business logic da ripensare, non solo di infrastruttura.
+
+**File consegnati/modificati:** nessuno — sessione di sola discussione/progettazione, nessuna modifica al codice.
+
+**Impatto su Vision/Pipeline:** aggiunto un nuovo Step 11 alla Pipeline ("Ruoli e permessi per collaboratori").
+
+---
 
 ### [2026-11-18 22:14] A7 approvato e applicato, fix trasversale riposo/home, rifiniture home/hub, avviato audit funzionale pipeline/azienda
 
