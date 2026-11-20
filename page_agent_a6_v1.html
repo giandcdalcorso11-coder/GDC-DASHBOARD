@@ -70,6 +70,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .msg-popup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .msg-popup-title{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sabbia-dk);}
 .msg-popup-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .msg-popup-close:hover{background:var(--border);}
 .msg-textarea{width:100%;background:var(--carta);border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:.72rem;color:var(--nero);padding:12px 13px;resize:none;outline:none;min-height:180px;line-height:1.6;}
 .msg-actions{display:flex;gap:8px;margin-top:10px;}
@@ -268,6 +276,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 </div>
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
 
 <!-- ══ HEADER ══ -->
 <div class="header">
@@ -354,7 +370,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">A6.1 — Media Kit</span></div>
       <div class="sc-body action-pair">
-        <a class="lg-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">
+        <a class="lg-btn" data-gate="ia" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.1 per lanciare l\'agente.')">
           <span class="btn-icon">&#128172;</span>
           <div class="btn-text">
             <div class="btn-title">Apri progetto</div>
@@ -362,7 +378,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           </div>
           <span class="btn-arr">&#8594;</span>
         </a>
-        <button class="lg-btn" onclick="openMsg('A6_1')">
+        <button class="lg-btn" data-gate="ia" onclick="openMsg('A6_1')">
           <span class="btn-icon">&#128203;</span>
           <div class="btn-text">
             <div class="btn-title">Copia messaggio</div>
@@ -376,7 +392,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">A6.2 — Relazioni Commerciali</span></div>
       <div class="sc-body action-pair">
-        <a class="lg-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank">
+        <a class="lg-btn" data-gate="ia" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.2 per lanciare l\'agente.')">
           <span class="btn-icon">&#128172;</span>
           <div class="btn-text">
             <div class="btn-title">Apri progetto</div>
@@ -384,7 +400,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           </div>
           <span class="btn-arr">&#8594;</span>
         </a>
-        <button class="lg-btn" onclick="openMsg('A6_2')">
+        <button class="lg-btn" data-gate="ia" onclick="openMsg('A6_2')">
           <span class="btn-icon">&#128203;</span>
           <div class="btn-text">
             <div class="btn-title">Copia messaggio</div>
@@ -640,6 +656,7 @@ function switchTab(id,el){
   el.classList.add('active');
 }
 function openMsg(id){
+  if (!gateIa('Copia il messaggio da incollare in Claude.ai per avviare l\'agente — fa parte del lanciare un\'azione, non della sola visualizzazione.')) return;
   document.getElementById('msgText').value=MSGS[id];
   document.getElementById('msgPopupTitle').innerHTML=MSG_META[id].title;
   const link=document.getElementById('msgOpenLink');
@@ -712,6 +729,35 @@ async function sbFetch(url,options){
   const res=await fetch(url,Object.assign({},options,{headers:headers}));
   if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+function gateIaLink(e, msg){
+  if (!canActIa()){ e.preventDefault(); showRoleInfo(msg); return false; }
+  return true;
 }
 
 /* ══ DATI REALI — agent_states (a6_1 + a6_2) + conteggi pipeline ══ */
@@ -871,6 +917,7 @@ async function loadActivity(){
 if(!gdcToken()){
   window.location.href='page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadA6();
   loadPipelineCounts();
   loadActivity();
