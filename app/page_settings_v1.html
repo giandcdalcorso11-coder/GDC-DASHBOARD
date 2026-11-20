@@ -130,6 +130,18 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .collab-select{font-family:'Jost',sans-serif;font-size:.74rem;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;background:var(--carta);color:var(--nero);}
 .collab-hint{font-size:.6rem;color:var(--maker);font-weight:700;min-width:50px;}
 
+/* ── Crea nuovo account (solo is_admin) ── */
+.new-acc-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.new-acc-input{flex:1 1 160px;font-family:'Jost',sans-serif;font-size:.78rem;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;background:var(--carta);color:var(--nero);outline:none;min-width:0;}
+.new-acc-input:focus{border-color:var(--sabbia);}
+.new-acc-gen{font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bianco);color:var(--grigio);cursor:pointer;white-space:nowrap;}
+.new-acc-gen:hover{border-color:var(--nero);color:var(--nero);}
+.new-acc-btn{width:100%;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;padding:10px;border:none;border-radius:10px;background:var(--nero);color:var(--carta);cursor:pointer;}
+.new-acc-btn:disabled{opacity:.5;cursor:default;}
+.new-acc-status{font-size:.68rem;margin-top:8px;line-height:1.5;}
+.new-acc-status.ok{color:var(--maker);}
+.new-acc-status.err{color:var(--life);}
+
 .section-note{font-size:.66rem;color:var(--grigio);line-height:1.5;margin-bottom:14px;}
 .save-hint{font-size:.6rem;color:var(--grigio);text-align:center;margin-top:2px;min-height:14px;}
 </style>
@@ -320,8 +332,22 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 
     <div id="adminBox" style="display:none;">
       <div class="grp-band">
+        <div class="grp-band-lbl">Nuovo account</div>
+        <div class="section-note">Crea un account per un collaboratore. Appena creato comparirà nell'elenco qui sotto per assegnargli un ruolo.</div>
+        <div class="new-acc-row">
+          <input type="email" class="new-acc-input" id="newAccEmail" placeholder="email@esempio.com" autocomplete="off">
+        </div>
+        <div class="new-acc-row">
+          <input type="text" class="new-acc-input" id="newAccPassword" placeholder="Password" autocomplete="off">
+          <button type="button" class="new-acc-gen" onclick="generateNewAccPassword()">Genera</button>
+        </div>
+        <button class="new-acc-btn" id="newAccBtn" onclick="createAccount()">Crea account</button>
+        <div class="new-acc-status" id="newAccStatus"></div>
+      </div>
+
+      <div class="grp-band">
         <div class="grp-band-lbl">Amministrazione</div>
-        <div class="section-note">Ruolo dei collaboratori per area — nessuno/osservatore/operatore. Gli account si creano altrove (Supabase, non da qui): appena esiste un nuovo account, compare qui.</div>
+        <div class="section-note">Ruolo dei collaboratori per area — nessuno/osservatore/operatore.</div>
         <div id="collabList"><div class="section-note">Caricamento...</div></div>
       </div>
     </div>
@@ -625,6 +651,48 @@ async function loadAccount(){
   }catch(e){
     console.error('Errore caricamento account:',e);
     box.innerHTML='<div class="section-note">Errore nel caricamento dell\'account.</div>';
+  }
+}
+
+function generateNewAccPassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pwd='';
+  for(let i=0;i<12;i++) pwd+=chars[Math.floor(Math.random()*chars.length)];
+  document.getElementById('newAccPassword').value=pwd;
+}
+
+async function createAccount(){
+  const email=document.getElementById('newAccEmail').value.trim();
+  const password=document.getElementById('newAccPassword').value;
+  const btn=document.getElementById('newAccBtn');
+  const status=document.getElementById('newAccStatus');
+  if(!email||!password){
+    status.className='new-acc-status err';
+    status.textContent='Inserisci email e password.';
+    return;
+  }
+  btn.disabled=true;
+  status.className='new-acc-status';
+  status.textContent='Creazione in corso...';
+  try{
+    const r=await sbFetch(SUPA_URL+'/functions/v1/admin-create-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||('HTTP '+r.status));
+    status.className='new-acc-status ok';
+    status.textContent='Account creato: '+data.email+' — comunica a questa persona email e password per accedere.';
+    document.getElementById('newAccEmail').value='';
+    document.getElementById('newAccPassword').value='';
+    loadCollaborators();
+  }catch(e){
+    console.error('Errore creazione account:',e);
+    status.className='new-acc-status err';
+    status.textContent='Errore: '+e.message;
+  }finally{
+    btn.disabled=false;
   }
 }
 
