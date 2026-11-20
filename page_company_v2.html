@@ -282,6 +282,14 @@ body{
 /* ── POPUP MESSAGGIO PRECOMPILATO ── */
 .msg-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:300; display:none; align-items:flex-end; justify-content:center; }
 .msg-overlay.open{ display:flex; }
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .msg-popup{ background:var(--bianco); border-radius:20px 20px 0 0; width:100%; max-width:540px; max-height:70vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 -4px 24px rgba(28,28,28,.18); }
 .msg-head{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; border-bottom:1px solid var(--bordo); }
 .msg-title{ font-weight:800; font-size:.92rem; }
@@ -449,10 +457,10 @@ body{
         <div class="fu-dot"></div>
         —
       </div>
-      <button class="fu-toggle-btn" id="fuToggleBtn" onclick="toggleAzioneRichiesta()"></button>
-      <button class="fu-toggle-btn" id="fuStopBtn" onclick="toggleFollowUpStop()"></button>
-      <button class="fu-toggle-btn" id="fuResetBtn" onclick="setManualContactToday()"></button>
-      <button class="fu-toggle-btn" id="fuClearBtn" onclick="clearManualContact()"></button>
+      <button class="fu-toggle-btn" id="fuToggleBtn" data-gate="ia" onclick="toggleAzioneRichiesta()"></button>
+      <button class="fu-toggle-btn" id="fuStopBtn" data-gate="ia" onclick="toggleFollowUpStop()"></button>
+      <button class="fu-toggle-btn" id="fuResetBtn" data-gate="ia" onclick="setManualContactToday()"></button>
+      <button class="fu-toggle-btn" id="fuClearBtn" data-gate="ia" onclick="clearManualContact()"></button>
     </div>
   </div>
 
@@ -462,7 +470,7 @@ body{
   <div class="section">
     <div class="sec-header">
       <span class="sec-title">Pipeline · Step 1–13</span>
-      <div class="edit-toggle" id="editToggle" onclick="toggleEdit()">&#9998; <span id="editToggleLbl">Bloccato</span></div>
+      <div class="edit-toggle" id="editToggle" data-gate="ia" onclick="toggleEdit()">&#9998; <span id="editToggleLbl">Bloccato</span></div>
     </div>
     <div class="edit-hint" id="editHint">&#128274; I pallini 1–13 sono gestiti da A6. Tocca la matita per modificarli a mano.</div>
     <div class="sec-body" id="pipSecBody">
@@ -508,7 +516,7 @@ body{
     <div class="sec-body">
       <div class="note-list" id="noteList"></div>
       <textarea class="note-new" id="newNote" placeholder="Aggiungi una nota…"></textarea>
-      <button class="note-save" onclick="saveNote()">Salva nota</button>
+      <button class="note-save" data-gate="ia" onclick="saveNote()">Salva nota</button>
     </div>
   </div>
 
@@ -531,6 +539,14 @@ body{
   </div>
 </div>
 
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
 
 <script>
 /* ── SUPABASE CONFIG ── */
@@ -564,6 +580,38 @@ async function sbFetch(url, options){
   const res = await fetch(url, Object.assign({}, options, { headers: headers }));
   if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  applyRoleGateUI();
+}
+function applyRoleGateUI(){
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+function gateIaLink(e, msg){
+  if (!canActIa()){ e.preventDefault(); showRoleInfo(msg); return false; }
+  return true;
 }
 
 const STEP_NAMES = {
@@ -831,6 +879,7 @@ function renderFollowUp(co) {
    (es. l'azienda risponde via DM/telefono con una nuova mail, mentre lo
    step_attuale è già avanzato oltre il normale step 7 "mail inviata"). */
 async function setManualContactToday() {
+  if (!gateIa('Segna un contatto manuale avvenuto oggi, fuori dal flusso automatico.')) return;
   if (!currentCompanyId || !currentCompanyData) return;
   const nowIso = new Date().toISOString();
   try {
@@ -844,6 +893,7 @@ async function setManualContactToday() {
   } catch(e) { console.error('setManualContactToday error:', e); }
 }
 async function clearManualContact() {
+  if (!gateIa('Cancella la sovrascrittura manuale della data di contatto.')) return;
   if (!currentCompanyId || !currentCompanyData) return;
   try {
     await sbFetch(SUPA_URL + '/rest/v1/companies?id=eq.' + currentCompanyId, {
@@ -858,6 +908,7 @@ async function clearManualContact() {
 
 /* ── Toggle manuale: ferma/riattiva i follow-up automatici (step 7) ── */
 async function toggleFollowUpStop() {
+  if (!gateIa('Sospende o riattiva i follow-up automatici per questa azienda.')) return;
   if (!currentCompanyId || !currentCompanyData) return;
   const newValue = !currentCompanyData.followup_stopped;
   try {
@@ -871,6 +922,7 @@ async function toggleFollowUpStop() {
   } catch(e) { console.error('toggleFollowUpStop error:', e); }
 }
 async function toggleAzioneRichiesta() {
+  if (!gateIa('Segna se questa azienda ha bisogno di una risposta da parte tua nel follow-up.')) return;
   if (!currentCompanyId || !currentCompanyData) return;
   const current = currentCompanyData.step8_azione_richiesta !== false;
   const newValue = !current;
@@ -1031,6 +1083,7 @@ function renderPipelineRami(co){
   if (stepNum) stepNum.textContent = co.rejected ? '✕' : step;
   if (stepLabel) stepLabel.textContent = co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—');
   if (stepSub) stepSub.textContent = co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12';
+  applyRoleGateUI();
 }
 
 function renderTrunkRange(co, lanes, fromN, toN, targetId){
@@ -1064,7 +1117,7 @@ function renderTrunkExpand(n, entries){
   } else {
     html += '<div class="hist-empty">Nessun evento per questo step.</div>';
   }
-  html += '<div class="hist-add"><input type="text" id="pipAddEvtInput" placeholder="Aggiungi evento..." onkeydown="if(event.key===\'Enter\')pipAddHistoryEvent()"><button onclick="pipAddHistoryEvent()">+</button></div>';
+  html += '<div class="hist-add"><input type="text" id="pipAddEvtInput" placeholder="Aggiungi evento..." onkeydown="if(event.key===\'Enter\')pipAddHistoryEvent()"><button data-gate="ia" onclick="pipAddHistoryEvent()">+</button></div>';
   html += '</div>';
   return html;
 }
@@ -1119,7 +1172,7 @@ function renderLanesZone(co, lanes){
     });
     if (s===0){
       const addOpen = pipAddingLaneAt === s;
-      const plusDot = '<div class="lane-dot plus" onclick="onPipPlusClick('+s+')">+</div>';
+      const plusDot = '<div class="lane-dot plus" data-gate="ia" onclick="onPipPlusClick('+s+')">+</div>';
       if (addOpen){
         html += '<div class="merge-unit" style="border-color:var(--maker)">'+plusDot+renderPipAddLaneBox()+'</div>';
       } else {
@@ -1147,7 +1200,7 @@ function renderPipExpandBox(lane, s){
     html += '<div class="hist-empty">Nessun evento per questo stadio.</div>';
   }
   const placeholder = lane.bridged ? 'Aggiorna nota di questo stadio...' : 'Aggiungi evento...';
-  html += '<div class="hist-add"><input type="text" id="pipAddEvtInput" placeholder="'+placeholder+'" onkeydown="if(event.key===\'Enter\')pipAddHistoryEvent()"><button onclick="pipAddHistoryEvent()">+</button></div>';
+  html += '<div class="hist-add"><input type="text" id="pipAddEvtInput" placeholder="'+placeholder+'" onkeydown="if(event.key===\'Enter\')pipAddHistoryEvent()"><button data-gate="ia" onclick="pipAddHistoryEvent()">+</button></div>';
   html += '</div>';
   return html;
 }
@@ -1157,7 +1210,7 @@ function renderPipAddLaneBox(){
     + '<div class="expand-head"><span class="expand-title">Nuovo ramo</span><button class="expand-close" onclick="pipCloseExpand()">&#10005;</button></div>'
     + '<div class="add-lane-fields">'
     + '<input type="text" id="newLaneName" placeholder="Nome del ramo (es. Contatto personale)">'
-    + '<button onclick="pipConfirmAddLane()">Crea ramo</button>'
+    + '<button data-gate="ia" onclick="pipConfirmAddLane()">Crea ramo</button>'
     + '</div></div>';
 }
 
@@ -1184,6 +1237,7 @@ function onPipDotClick(id, s){
 }
 
 function onPipPlusClick(s){
+  if (!gateIa('Crea un nuovo ramo personalizzato nella pipeline.')) return;
   pipExpandedKey = null;
   pipAddingLaneAt = (pipAddingLaneAt===s) ? null : s;
   renderPipelineRami(currentCompanyData);
@@ -1191,6 +1245,7 @@ function onPipPlusClick(s){
 }
 
 function pipConfirmAddLane(){
+  if (!gateIa('Crea un nuovo ramo personalizzato nella pipeline.')) return;
   const input = document.getElementById('newLaneName');
   const name = input.value.trim();
   if (!name) return;
@@ -1204,6 +1259,7 @@ function pipConfirmAddLane(){
 }
 
 function pipAddHistoryEvent(){
+  if (!gateIa('Aggiunge un evento allo storico di questo stadio.')) return;
   const input = document.getElementById('pipAddEvtInput');
   const text = input.value.trim();
   if (!text || !pipExpandedKey) return;
@@ -1238,6 +1294,7 @@ function pipAddHistoryEvent(){
 }
 
 function toggleEdit(){
+  if (!gateIa('Attiva la modifica manuale: tocca un pallino per far avanzare la pipeline o un ramo.')) return;
   pipEditOn = !pipEditOn;
   pipExpandedKey = null;
   const toggle = document.getElementById('editToggle');
@@ -1359,8 +1416,8 @@ function renderAgentQuick(co){
     <div class="agent-row">
       <span class="agent-row-name">${a.label}</span>
       <div class="agent-row-btns">
-        <a class="agent-mini-btn" href="${a.url}" target="_blank">💬 Apri chat</a>
-        <button class="agent-mini-btn copy" onclick="openMsg('${a.id}','Messaggio ${a.label}',MSGS['${a.id}'])">📋 Messaggio</button>
+        <a class="agent-mini-btn" data-gate="ia" href="${a.url}" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di ${a.label} per lanciare l\\'agente.')">💬 Apri chat</a>
+        <button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('${a.id}','Messaggio ${a.label}',MSGS['${a.id}'])">📋 Messaggio</button>
         ${a.scheda
           ? `<a class="agent-mini-btn" href="app/page_scheda_azienda_v1.html?id=${encodeURIComponent(co.id)}">📄 Scheda</a>`
           : `<a class="agent-mini-btn" href="${a.folder}" target="_blank">📁 Cartella</a>`}
@@ -1370,16 +1427,16 @@ function renderAgentQuick(co){
     <div class="agent-row">
       <span class="agent-row-name">LinkedIn — Modalità F</span>
       <div class="agent-row-btns">
-        <a class="agent-mini-btn" href="${PROJ.A62}" target="_blank">💬 Apri chat</a>
-        <button class="agent-mini-btn copy" onclick="openMsg('A6_2_LI','Messaggio LinkedIn',MSGS['A6_2_LI'])">📋 Messaggio</button>
+        <a class="agent-mini-btn" data-gate="ia" href="${PROJ.A62}" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.2 per lanciare l\\'agente.')">💬 Apri chat</a>
+        <button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A6_2_LI','Messaggio LinkedIn',MSGS['A6_2_LI'])">📋 Messaggio</button>
         <a class="agent-mini-btn${linkedinUrl ? '' : ' disabled'}" href="${linkedinUrl || '#'}" target="_blank">🔗 Profilo</a>
       </div>
     </div>
     <div class="agent-row">
       <span class="agent-row-name">Instagram — Modalità F</span>
       <div class="agent-row-btns">
-        <a class="agent-mini-btn" href="${PROJ.A62}" target="_blank">💬 Apri chat</a>
-        <button class="agent-mini-btn copy" onclick="openMsg('A6_2_IG','Messaggio Instagram',MSGS['A6_2_IG'])">📋 Messaggio</button>
+        <a class="agent-mini-btn" data-gate="ia" href="${PROJ.A62}" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.2 per lanciare l\\'agente.')">💬 Apri chat</a>
+        <button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A6_2_IG','Messaggio Instagram',MSGS['A6_2_IG'])">📋 Messaggio</button>
         <a class="agent-mini-btn${instagramUrl ? '' : ' disabled'}" href="${instagramUrl || '#'}" target="_blank">🔗 Profilo</a>
       </div>
     </div>
@@ -1389,6 +1446,7 @@ function renderAgentQuick(co){
       <div class="agent-row-btns" id="a7-btn-wrap"></div>
     </div>
   `;
+  applyRoleGateUI();
 }
 
 /* ── Note ── */
@@ -1425,6 +1483,7 @@ async function saveNoteText(text){
   document.getElementById('noteList').prepend(renderNote(text));
 }
 function saveNote(){
+  if (!gateIa('Salva una nuova nota per questa azienda.')) return;
   const text = document.getElementById('newNote').value.trim();
   if(!text) return;
   saveNoteText(text);
@@ -1449,17 +1508,19 @@ function buildA7Btn(co){
     if(a7at){
       try{ dateStr = new Date(a7at).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit'}); } catch(e){}
     }
-    genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" onclick="onGeneraBozza()">🔄 Rigenera bozza' + (dateStr ? ' (' + dateStr + ')' : '') + '</button>';
+    genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" data-gate="ia" onclick="onGeneraBozza()">🔄 Rigenera bozza' + (dateStr ? ' (' + dateStr + ')' : '') + '</button>';
   } else {
-    genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" onclick="onGeneraBozza()">📨 Genera bozza</button>';
+    genBtn = '<button class="agent-mini-btn copy" id="btn-genera-bozza" data-gate="ia" onclick="onGeneraBozza()">📨 Genera bozza</button>';
   }
 
   wrap.innerHTML = genBtn +
     '<a class="agent-mini-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank">📧 Gmail Bozze</a>' +
     '<a class="agent-mini-btn" href="' + folderAzienda + '" target="_blank">📁 Cartella</a>';
+  applyRoleGateUI();
 }
 
 function saveGhToken(){
+  if (!gateIa('Salva il token GitHub necessario per lanciare A7.')) return;
   const val = document.getElementById('a7TokenInput').value.trim();
   if (!val) return;
   localStorage.setItem('gdc_gh_token', val);
@@ -1469,6 +1530,7 @@ function saveGhToken(){
 }
 
 async function onGeneraBozza(){
+  if (!gateIa('Lancia A7 e genera una bozza mail reale su Gmail per questa azienda.')) return;
   if (!currentCompanyData) return;
   const nome = currentCompanyData.nome;
   const btn = document.getElementById('btn-genera-bozza');
@@ -1529,6 +1591,7 @@ function resetMsg(){
   setTimeout(() => document.getElementById('msgEditHint').textContent = 'Modificabile — le modifiche vengono salvate', 1500);
 }
 function openMsg(id, title, msg){
+  if (!gateIa('Copia il messaggio da incollare in Claude.ai per avviare l\'agente — fa parte del lanciare un\'azione, non della sola visualizzazione.')) return;
   _curMsgId = id; _defaultMsg = msg;
   const saved = getSavedMsg(id);
   const txt = saved || msg;
@@ -1602,6 +1665,7 @@ renderDate();
 if (!gdcToken()) {
   window.location.href = 'page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadCompany();
 }
 </script>
