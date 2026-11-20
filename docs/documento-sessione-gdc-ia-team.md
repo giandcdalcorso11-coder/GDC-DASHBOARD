@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 49
-**Ultimo aggiornamento:** 2026-11-20 14:07
+**Versione:** 50
+**Ultimo aggiornamento:** 2026-11-20 14:24
 
 ## Vision
 
@@ -391,9 +391,9 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 
 ## Storico sessioni
 
-### [2026-11-20 14:07] Step 11: enforcement ruoli completato su tutte le 17 pagine GDC IA TEAM, più creazione account da webapp
+### [2026-11-20 14:24] Step 11: enforcement ruoli completato su tutte le 17 pagine GDC IA TEAM, più creazione e reset password account da webapp
 
-**Riepilogo:** dopo aver scelto di affrontare prima IA TEAM e poi GDC Studio, fatto un inventario pagina per pagina di ogni azione che scrive su Supabase o lancia un agente, confermato con Gianluca il modello a 3 stati (amministratore/operatore/osservatore) e il requisito che i pulsanti bloccati mostrino un popup esplicativo al click, poi implementato e verificato l'enforcement su tutte le 17 pagine IA TEAM. A seguire, aggiunta anche la creazione di nuovi account collaboratore direttamente dalla pagina di amministrazione (prima possibile solo dalla dashboard Supabase).
+**Riepilogo:** dopo aver scelto di affrontare prima IA TEAM e poi GDC Studio, fatto un inventario pagina per pagina di ogni azione che scrive su Supabase o lancia un agente, confermato con Gianluca il modello a 3 stati (amministratore/operatore/osservatore) e il requisito che i pulsanti bloccati mostrino un popup esplicativo al click, poi implementato e verificato l'enforcement su tutte le 17 pagine IA TEAM. A seguire, aggiunta anche la creazione di nuovi account collaboratore direttamente dalla pagina di amministrazione (prima possibile solo dalla dashboard Supabase), e infine — dopo che Gianluca ha creato un account di prova senza salvare la password — anche il reset password dalla stessa pagina.
 
 **Cosa è stato fatto:**
 - Chiarito un fraintendimento iniziale: Gianluca pensava Studio fosse "il lavoro piccolo" perché è un solo file — in realtà è il file più grande e più delicato (dati commerciali reali); IA TEAM ha più pagine ma ciascuna più semplice. Confermato con Gianluca: si parte da IA TEAM.
@@ -405,6 +405,7 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - **Bug/codice morto scoperto e risolto**: `openPopupThen`/`closePopup`/`execAction` e il popup "Vuoi aggiungere una nota?" in `page_company_v2.html` erano orfani — stesso tipo di dead code di `renderAzioni` (risolto in una sessione precedente), dimenticato nella stessa pulizia. Rimossi insieme alla CSS associata, verificato che nessun punto del file li richiamasse più.
 - Verificato con Playwright, pagina per pagina: per l'osservatore, pulsante visivamente smorzato, popup mostrato con il testo corretto, nessuna scrittura né navigazione eseguita (incluso il blocco della navigazione su link `target="_blank"`); per l'operatore e l'admin, comportamento normale e invariato rispetto a prima.
 - **Creazione account aggiunta alla pagina di amministrazione**: Gianluca ha chiesto da dove aggiungere un nuovo account, poi se si potesse fare dalla webapp invece che dalla dashboard Supabase. Creata la Edge Function `admin-create-user` (stesso pattern di `upsert_company`, già presente nel progetto): verifica `is_admin` lato server con la service_role key (mai esposta al browser) prima di creare l'account Supabase Auth; il trigger esistente gli assegna poi automaticamente il profilo. In webapp, modulo "Nuovo account" (email, password con generatore, pulsante "Crea account") sopra l'elenco collaboratori, che si aggiorna subito dopo la creazione. Verificato con Playwright: creazione riuscita ed errore (email duplicata) gestito correttamente.
+- **Password persa su un account appena creato**: Gianluca ha creato un account di prova (`test.collaboratore@gdciateam.it`) ma non ha salvato la password in tempo, chiedendo di "recuperarla da Supabase". Spiegato che una password non è mai recuperabile (Supabase la salva solo come hash salato, non in chiaro) — la sola via è impostarne una nuova. Identificato l'account con una query di sola lettura su `profiles`/`auth.users` ordinata per data di creazione, poi reimpostata subito la password via SQL diretto (`crypt()`/`gen_salt('bf')` di pgcrypto su `auth.users.encrypted_password`, compatibile con l'hashing bcrypt usato da Supabase Auth) per dare accesso immediato, dato che l'account era appena stato creato e la situazione era bloccante. In parallelo, estesa la Edge Function `admin-create-user` per accettare anche `{user_id, password}` (reset di un account esistente via `PUT /auth/v1/admin/users/{id}`, stesso controllo `is_admin` lato server) invece di solo `{email, password}` (creazione), e aggiunto in webapp un pulsante "Reimposta password" per ogni collaboratore nell'elenco, con generatore di password e password mostrata una sola volta a schermo dopo il reset.
 
 **Decisioni prese:**
 - Contesto: come gestire il fallimento del caricamento del ruolo (es. problema di rete con Supabase).
@@ -416,8 +417,11 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - Contesto: come permettere la creazione di account dalla webapp, visto che serve la service_role key (mai lato client).
 - Decisione: Supabase Edge Function con verifica `is_admin` lato server. Supera la decisione iniziale dello Step 11 ("gli account si creano altrove") — vedi nota nel blocco Step 11 della Pipeline.
 - Alternative scartate: invito via email vero e proprio — richiederebbe configurare l'invio email sul progetto Supabase, non fatto; si comunica la password direttamente invece.
+- Contesto: come sbloccare subito un account con password persa, senza accesso diretto alla rete Supabase da riga di comando in questa sessione (il proxy di rete del sandbox blocca le chiamate dirette a `*.supabase.co`, vedi Problemi aperti/errori sessioni precedenti).
+- Decisione: per lo sblocco immediato, SQL diretto su `auth.users.encrypted_password` con `crypt()`/`gen_salt('bf')` di pgcrypto (tecnica nota e supportata per Supabase self-service, compatibile con l'hash bcrypt che Auth si aspetta). Per l'uso futuro, invece, meccanismo "ufficiale" via Edge Function (Admin API), così resta coerente con il resto del sistema e non richiede più accesso diretto al database.
+- Da rivedere se: in futuro serve anche poter resettare la password di un admin da webapp (oggi il pulsante "Reimposta password" compare solo per i collaboratori non-admin, coerente con l'elenco `is_admin=eq.false` già usato altrove nella pagina).
 
-**File consegnati/modificati:** `app/page_home_v25.html`, `page_pipeline_v1.html`, `page_company_v2.html`, `app/page_scheda_azienda_v1.html`, `app/agenti/a1-analytics/categorizza.html`, `app/agenti/a1-analytics/carica_mbs.html`, `page_agent_a5_v1.html`, `page_agent_a6_v1.html`, `page_agent_a7_v1.html`, `app/page_settings_v1.html`; Edge Function Supabase `admin-create-user` (non versionata nel repo, come le altre Edge Function del progetto).
+**File consegnati/modificati:** `app/page_home_v25.html`, `page_pipeline_v1.html`, `page_company_v2.html`, `app/page_scheda_azienda_v1.html`, `app/agenti/a1-analytics/categorizza.html`, `app/agenti/a1-analytics/carica_mbs.html`, `page_agent_a5_v1.html`, `page_agent_a6_v1.html`, `page_agent_a7_v1.html`, `app/page_settings_v1.html`; Edge Function Supabase `admin-create-user` (non versionata nel repo, come le altre Edge Function del progetto); reset una tantum via SQL della password dell'account `test.collaboratore@gdciateam.it`.
 
 **Impatto su Vision/Pipeline:** Step 11 ora quasi completo — resta solo l'enforcement su GDC Studio (deliberatamente rimandato) prima di poter dire lo step concluso.
 
