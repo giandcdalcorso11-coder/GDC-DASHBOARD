@@ -201,6 +201,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .a7-picker-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
 .a7-picker-title{font-weight:800;font-size:.88rem;}
 .a7-picker-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--grigio);padding:4px 8px;border-radius:6px;}
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .a7-picker-close:hover{background:var(--border);}
 .a7-picker-body{padding:14px 16px;}
 .a7-picker-label{font-size:.72rem;font-weight:700;color:var(--grigio);margin-bottom:8px;}
@@ -256,6 +264,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <div style="font-size:.62rem;color:var(--grigio);margin-top:6px;line-height:1.5;">Token GitHub con scope <strong>workflow</strong>. Salvato solo nel tuo browser.</div>
       </div>
     </div>
+  </div>
+</div>
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
   </div>
 </div>
 
@@ -330,7 +346,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">Crea Bozza Gmail</span></div>
       <div class="sc-body action-pair">
-        <button class="lg-btn" onclick="openA7Picker()">
+        <button class="lg-btn" data-gate="ia" onclick="openA7Picker()">
           <span class="btn-icon">&#9993;&#65039;</span>
           <div class="btn-text">
             <div class="btn-title">Crea Bozza Gmail</div>
@@ -592,6 +608,31 @@ async function sbFetch(url,options){
   return res;
 }
 
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+
 /* ══ DATI REALI — agent_states (a7) ══ */
 function timeAgo(iso){
   if(!iso) return '';
@@ -743,6 +784,7 @@ async function loadA7Companies(){
   }
 }
 function openA7Picker(){
+  if (!gateIa('Avvia la generazione di una bozza mail reale su Gmail tramite l\'agente A7.')) return;
   document.getElementById('a7PickerOverlay').classList.add('open');
   document.getElementById('a7StatusMsg').textContent='';
   document.getElementById('a7LaunchBtn').disabled=true;
@@ -753,6 +795,7 @@ function openA7Picker(){
 function closeA7Picker(){ document.getElementById('a7PickerOverlay').classList.remove('open'); }
 function closeA7PickerIfBg(e){ if(e.target===document.getElementById('a7PickerOverlay')) closeA7Picker(); }
 function saveGhToken(){
+  if (!gateIa('Salva il token GitHub necessario per lanciare A7.')) return;
   const val=document.getElementById('a7TokenInput').value.trim();
   if(!val) return;
   localStorage.setItem('gdc_gh_token',val);
@@ -761,6 +804,7 @@ function saveGhToken(){
   document.getElementById('a7TokenInput').value='';
 }
 async function launchA7(){
+  if (!gateIa('Lancia A7 e genera una bozza mail reale su Gmail per l\'azienda selezionata.')) return;
   const sel=document.getElementById('a7CompanySelect');
   const company=sel.value;
   if(!company) return;
@@ -795,6 +839,7 @@ async function launchA7(){
 if(!gdcToken()){
   window.location.href='page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadA7();
   loadActivity();
 }
