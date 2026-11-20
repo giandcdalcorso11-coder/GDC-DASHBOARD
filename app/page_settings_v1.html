@@ -141,6 +141,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .new-acc-status{font-size:.68rem;margin-top:8px;line-height:1.5;}
 .new-acc-status.ok{color:var(--maker);}
 .new-acc-status.err{color:var(--life);}
+.collab-reset-btn{font-family:'Jost',sans-serif;font-size:.6rem;font-weight:700;padding:5px 9px;border:1.5px solid var(--border);border-radius:8px;background:var(--bianco);color:var(--grigio);cursor:pointer;white-space:nowrap;}
+.collab-reset-btn:hover{border-color:var(--nero);color:var(--nero);}
+.collab-reset-btn:disabled{opacity:.5;cursor:default;}
+.collab-pwd-reveal{flex:1 1 100%;font-size:.68rem;font-weight:700;padding:8px 10px;border-radius:8px;margin-top:4px;}
+.collab-pwd-reveal.ok{background:rgba(0,0,0,.04);color:var(--nero);}
+.collab-pwd-reveal.err{color:var(--life);}
 
 .section-note{font-size:.66rem;color:var(--grigio);line-height:1.5;margin-bottom:14px;}
 .save-hint{font-size:.6rem;color:var(--grigio);text-align:center;margin-top:2px;min-height:14px;}
@@ -714,6 +720,8 @@ async function loadCollaborators(){
         +roleSelect(p.user_id,'studio_ruolo','Studio',p.studio_ruolo)
         +'</div>'
         +'<div class="collab-hint" id="hint-'+p.user_id+'"></div>'
+        +'<button type="button" class="collab-reset-btn" id="resetBtn-'+p.user_id+'" onclick="resetCollabPassword(\''+p.user_id+'\',\''+(p.email||'').replace(/'/g,"\\'")+'\')">Reimposta password</button>'
+        +'<div class="collab-pwd-reveal" id="pwdReveal-'+p.user_id+'" style="display:none"></div>'
         +'</div>';
     }).join('');
   }catch(e){
@@ -750,6 +758,33 @@ async function onRoleChange(sel){
     if(hint) hint.textContent='Errore.';
   }finally{
     sel.disabled=false;
+  }
+}
+async function resetCollabPassword(uid,email){
+  if(!confirm('Generare una nuova password per '+email+'?\nQuella attuale smette di funzionare subito.')) return;
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  let pwd=''; for(let i=0;i<12;i++) pwd+=chars[Math.floor(Math.random()*chars.length)];
+  const btn=document.getElementById('resetBtn-'+uid);
+  const reveal=document.getElementById('pwdReveal-'+uid);
+  btn.disabled=true;
+  try{
+    const r=await sbFetch(SUPA_URL+'/functions/v1/admin-create-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:uid,password:pwd})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||('HTTP '+r.status));
+    reveal.className='collab-pwd-reveal ok';
+    reveal.style.display='block';
+    reveal.textContent='Nuova password per '+email+': '+pwd+' — comunicala ora, non sarà più recuperabile da qui.';
+  }catch(e){
+    console.error('Errore reset password:',e);
+    reveal.className='collab-pwd-reveal err';
+    reveal.style.display='block';
+    reveal.textContent='Errore: '+e.message;
+  }finally{
+    btn.disabled=false;
   }
 }
 function doLogout(){
