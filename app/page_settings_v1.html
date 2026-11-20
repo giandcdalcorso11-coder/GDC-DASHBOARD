@@ -144,6 +144,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .collab-reset-btn{font-family:'Jost',sans-serif;font-size:.6rem;font-weight:700;padding:5px 9px;border:1.5px solid var(--border);border-radius:8px;background:var(--bianco);color:var(--grigio);cursor:pointer;white-space:nowrap;}
 .collab-reset-btn:hover{border-color:var(--nero);color:var(--nero);}
 .collab-reset-btn:disabled{opacity:.5;cursor:default;}
+.collab-delete-btn{font-family:'Jost',sans-serif;font-size:.6rem;font-weight:700;padding:5px 9px;border:1.5px solid var(--life);border-radius:8px;background:var(--bianco);color:var(--life);cursor:pointer;white-space:nowrap;}
+.collab-delete-btn:hover{background:var(--life);color:var(--bianco);}
+.collab-delete-btn:disabled{opacity:.5;cursor:default;}
+.collab-actions{flex:1 1 100%;display:flex;gap:8px;flex-wrap:wrap;}
+.collab-row-banned{opacity:.6;}
+.collab-banned-badge{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--life);border:1px solid var(--life);border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:middle;}
 .collab-pwd-reveal{flex:1 1 100%;font-size:.68rem;font-weight:700;padding:8px 10px;border-radius:8px;margin-top:4px;}
 .collab-pwd-reveal.ok{background:rgba(0,0,0,.04);color:var(--nero);}
 .collab-pwd-reveal.err{color:var(--life);}
@@ -702,10 +708,65 @@ async function createAccount(){
   }
 }
 
+async function toggleCollabBan(uid,email,currentlyBanned){
+  const action=currentlyBanned?'unban':'ban';
+  const msg=currentlyBanned
+    ? 'Riattivare l\'account di '+email+'? Potrà di nuovo accedere con le sue credenziali.'
+    : 'Disabilitare l\'account di '+email+'? Non potrà più accedere, ma resterà nell\'elenco e potrai riattivarlo in qualsiasi momento.';
+  if(!confirm(msg)) return;
+  const banBtn=document.getElementById('banBtn-'+uid);
+  const resetBtn=document.getElementById('resetBtn-'+uid);
+  const hint=document.getElementById('hint-'+uid);
+  banBtn.disabled=true; if(resetBtn) resetBtn.disabled=true;
+  if(hint) hint.textContent=currentlyBanned?'Riattivazione...':'Disabilitazione...';
+  try{
+    const r=await sbFetch(SUPA_URL+'/functions/v1/admin-create-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action,user_id:uid})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||('HTTP '+r.status));
+    if(hint){ hint.textContent='Fatto ✓'; setTimeout(function(){ hint.textContent=''; },1600); }
+    loadCollaborators();
+  }catch(e){
+    console.error('Errore cambio stato account:',e);
+    if(hint) hint.textContent='Errore: '+e.message;
+    banBtn.disabled=false; if(resetBtn) resetBtn.disabled=false;
+  }
+}
+
+async function deleteCollab(uid,email){
+  const typed=prompt('Questa azione è definitiva: l\'account di '+email+' e il suo profilo verranno cancellati per sempre, non più recuperabili.\n\nPer confermare, scrivi la sua email qui sotto:');
+  if(typed===null) return;
+  if(typed.trim().toLowerCase()!==email.toLowerCase()){
+    alert('Email non corrispondente, eliminazione annullata.');
+    return;
+  }
+  const delBtn=document.getElementById('delBtn-'+uid);
+  const hint=document.getElementById('hint-'+uid);
+  delBtn.disabled=true;
+  if(hint) hint.textContent='Eliminazione...';
+  try{
+    const r=await sbFetch(SUPA_URL+'/functions/v1/admin-create-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'delete',user_id:uid})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||('HTTP '+r.status));
+    loadCollaborators();
+  }catch(e){
+    console.error('Errore eliminazione account:',e);
+    if(hint) hint.textContent='Errore: '+e.message;
+    delBtn.disabled=false;
+  }
+}
+
 async function loadCollaborators(){
   const list=document.getElementById('collabList');
   try{
-    const r=await sbFetch(SUPA_URL+'/rest/v1/profiles?is_admin=eq.false&select=user_id,email,ia_team_ruolo,studio_ruolo&order=email');
+    const r=await sbFetch(SUPA_URL+'/rest/v1/profiles?is_admin=eq.false&select=user_id,email,ia_team_ruolo,studio_ruolo,banned&order=email');
     if(!r.ok) throw new Error('HTTP '+r.status);
     const rows=await r.json();
     if(!rows.length){
@@ -713,14 +774,19 @@ async function loadCollaborators(){
       return;
     }
     list.innerHTML=rows.map(function(p){
-      return '<div class="collab-row">'
-        +'<div class="collab-email">'+(p.email||p.user_id)+'</div>'
+      const emailEsc=(p.email||'').replace(/'/g,"\\'");
+      return '<div class="collab-row'+(p.banned?' collab-row-banned':'')+'">'
+        +'<div class="collab-email">'+(p.email||p.user_id)+(p.banned?' <span class="collab-banned-badge">Disabilitato</span>':'')+'</div>'
         +'<div class="collab-roles">'
         +roleSelect(p.user_id,'ia_team_ruolo','IA TEAM',p.ia_team_ruolo)
         +roleSelect(p.user_id,'studio_ruolo','Studio',p.studio_ruolo)
         +'</div>'
         +'<div class="collab-hint" id="hint-'+p.user_id+'"></div>'
-        +'<button type="button" class="collab-reset-btn" id="resetBtn-'+p.user_id+'" onclick="resetCollabPassword(\''+p.user_id+'\',\''+(p.email||'').replace(/'/g,"\\'")+'\')">Reimposta password</button>'
+        +'<div class="collab-actions">'
+        +'<button type="button" class="collab-reset-btn" id="resetBtn-'+p.user_id+'" onclick="resetCollabPassword(\''+p.user_id+'\',\''+emailEsc+'\')">Reimposta password</button>'
+        +'<button type="button" class="collab-reset-btn" id="banBtn-'+p.user_id+'" onclick="toggleCollabBan(\''+p.user_id+'\',\''+emailEsc+'\','+(p.banned?'true':'false')+')">'+(p.banned?'Riattiva':'Disabilita')+'</button>'
+        +'<button type="button" class="collab-delete-btn" id="delBtn-'+p.user_id+'" onclick="deleteCollab(\''+p.user_id+'\',\''+emailEsc+'\')">Elimina definitivamente</button>'
+        +'</div>'
         +'<div class="collab-pwd-reveal" id="pwdReveal-'+p.user_id+'" style="display:none"></div>'
         +'</div>';
     }).join('');
