@@ -343,37 +343,6 @@ body{
 }
 .note-save:hover{ background:var(--maker-bg); }
 
-/* ── POPUP NOTA RAPIDA ── */
-.popup-overlay{
-  position:fixed; inset:0; background:rgba(28,28,28,.45);
-  display:none; align-items:flex-end; justify-content:center;
-  z-index:200; backdrop-filter:blur(2px);
-}
-.popup-overlay.open{ display:flex; }
-.popup-card{
-  width:100%; max-width:480px; background:var(--bianco);
-  border-radius:20px 20px 0 0; padding:20px 20px 32px;
-  border-top:1.5px solid var(--bordo);
-}
-.popup-title{ font-size:.9rem; font-weight:700; margin-bottom:4px; }
-.popup-sub  { font-size:.75rem; color:var(--grigio); margin-bottom:14px; }
-.popup-textarea{
-  width:100%; min-height:80px; padding:10px 12px;
-  font-family:'Jost',sans-serif; font-size:.78rem; line-height:1.5;
-  background:var(--carta); border:1.5px solid var(--bordo); border-radius:10px;
-  color:var(--nero); resize:none; outline:none; margin-bottom:12px;
-  transition:border-color .2s;
-}
-.popup-textarea:focus{ border-color:var(--maker); }
-.popup-actions{ display:flex; gap:8px; }
-.popup-skip{
-  flex:1; padding:10px; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:600;
-  background:transparent; border:1.5px solid var(--bordo); color:var(--grigio); border-radius:10px; cursor:pointer;
-}
-.popup-confirm{
-  flex:2; padding:10px; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:700;
-  background:var(--maker); border:none; color:#fff; border-radius:10px; cursor:pointer;
-}
 </style>
 </head>
 <body>
@@ -562,18 +531,6 @@ body{
   </div>
 </div>
 
-<!-- POPUP NOTA RAPIDA -->
-<div class="popup-overlay" id="popup">
-  <div class="popup-card">
-    <div class="popup-title">Vuoi aggiungere una nota?</div>
-    <div class="popup-sub">Aggiungi un contesto prima di procedere. Puoi saltare.</div>
-    <textarea class="popup-textarea" id="popupNote" placeholder="Es. Ho chiamato Marco, disponibile il 20 giugno…"></textarea>
-    <div class="popup-actions">
-      <button class="popup-skip"    onclick="closePopup(false)">Salta</button>
-      <button class="popup-confirm" onclick="closePopup(true)">Salva e procedi</button>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ── SUPABASE CONFIG ── */
@@ -973,21 +930,6 @@ function setStep(n){
 }
 
 /* ── Popup nota rapida ── */
-let _pendingAction = null;
-function openPopupThen(action){
-  _pendingAction = action;
-  document.getElementById('popupNote').value = '';
-  document.getElementById('popup').classList.add('open');
-}
-function closePopup(save){
-  const note = document.getElementById('popupNote').value.trim();
-  document.getElementById('popup').classList.remove('open');
-  if(_pendingAction) execAction(_pendingAction, save ? note : null);
-  _pendingAction = null;
-}
-document.getElementById('popup').addEventListener('click', function(e){
-  if(e.target === this) closePopup(false);
-});
 
 /* ══════════════════════════════════════════════════════════════════
    PIPELINE A RAMI — tronco 1-4/10-13 + rami (Mail a ponte + lanes jsonb)
@@ -1447,27 +1389,6 @@ function renderAgentQuick(co){
       <div class="agent-row-btns" id="a7-btn-wrap"></div>
     </div>
   `;
-}
-
-/* ── execAction aggiornato ──
-   step13 è indipendente (companies.rejected, non più setStep). step10 richiede che
-   almeno un ramo (Mail o altro) sia a "9 · Gestita" prima di poter avanzare — stessa
-   regola applicata ai pallini della pipeline a rami, vedi onPipTrunkClick(). ── */
-function execAction(action, note){
-  const stepMap = {step2:2,step4:4,step5:5,step6:6,step7:7,step8:8,step9:9,step10:10,step11:11,step12:12};
-  if (action === 'step13') {
-    pipPatchCompany({ rejected: true });
-    if (note) saveNoteText(note);
-    return;
-  }
-  if (action === 'step10' && !pipAnyLaneGestita(currentCompanyData || {})) {
-    pipShowToast('Almeno un canale deve essere a step 9 · Gestita per proseguire.');
-    return;
-  }
-  if (stepMap[action] !== undefined) {
-    setStep(stepMap[action]);
-    if(note) saveNoteText(note);
-  }
 }
 
 /* ── Note ── */
