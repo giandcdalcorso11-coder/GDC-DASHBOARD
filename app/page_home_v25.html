@@ -154,6 +154,16 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .a7-launch-btn:disabled{background:#ccc;cursor:not-allowed;opacity:.6;}
 .a7-status-msg{font-size:.72rem;color:var(--grigio);text-align:center;margin-top:10px;min-height:18px;}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}:root[data-theme="dark"] .a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}
+/* ── Ruoli collaboratori (Step 11) — pulsanti che scrivono/lanciano agenti,
+   smorzati per l'osservatore; al click, popup esplicativo invece dell'azione ── */
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .st-queued{border-color:var(--life);opacity:.65;}.st-queued .agent-name{color:var(--life);}
 .st-working{border-color:var(--sabbia);}.st-working .agent-name{color:var(--sabbia-dk);}
 .st-done{border-color:var(--maker);}.st-done .agent-name{color:var(--maker);}
@@ -293,6 +303,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 </div>
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon" id="roleInfoIcon">&#128065;</div>
+    <div class="role-info-title" id="roleInfoTitle">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
 <div class="cal-overlay" id="calOverlay" onclick="closeCalIfBg(event)">
   <div class="cal-popup">
     <div class="cal-head">
@@ -359,12 +377,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div class="team-band">
   <span class="team-band-lbl">Team Social</span>
   <div class="ciclo-pill">
-    <a class="ciclo-end ciclo-disabled" id="cicloOpenBtn" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Caricamento stato...">
+    <a class="ciclo-end ciclo-disabled" id="cicloOpenBtn" data-gate="ia" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Caricamento stato..." onclick="return gateIaLink(event,'Apre la sessione Claude Code del ciclo editoriale mensile.')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 7 4 12 9 17"/><polyline points="15 7 20 12 15 17"/></svg>
       <span>Apri sessione</span>
     </a>
     <span class="ciclo-label">Ciclo editoriale mensile</span>
-    <button class="ciclo-end" onclick="copyCicloMsg(this)">
+    <button class="ciclo-end" data-gate="ia" onclick="copyCicloMsg(this)">
       <span>Copia messaggio</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
     </button>
@@ -495,8 +513,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span></div>
     </div>
     <div class="actions-wrap">
-      <div class="agent-row"><span class="agent-row-name">A5.1 &#x2014; Ricerca azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank">&#128172; Apri chat</a></div></div>
-      <div class="agent-row"><span class="agent-row-name">A5.2 &#x2014; Scheda azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A5.1 &#x2014; Ricerca azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A5.1 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A5.2 &#x2014; Scheda azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A5.2 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
     </div>
     <div class="stato-row" id="stato-row-a5"></div>
     </div>
@@ -519,8 +537,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span></div>
     </div>
     <div class="actions-wrap">
-      <div class="agent-row"><span class="agent-row-name">A6.1 &#x2014; Media kit</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">&#128172; Apri chat</a></div></div>
-      <div class="agent-row"><span class="agent-row-name">A6.2 &#x2014; Mail e trattativa</span><div class="agent-row-btns"><button class="agent-mini-btn copy" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)">&#128203; Messaggio</button><a class="agent-mini-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A6.1 &#x2014; Media kit</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.1 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A6.2 &#x2014; Mail e trattativa</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.2 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
     </div>
     <div class="stato-row" id="stato-row-a6"></div>
     </div>
@@ -541,7 +559,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span></div>
     </div>
     <div class="actions" id="actions-a7">
-      <button class="lg-btn lg-primary" id="btn-a7-launch" onclick="openA7Picker()"><svg><use href="#ic-play"/></svg><span>Crea Bozza</span></button>
+      <button class="lg-btn lg-primary" id="btn-a7-launch" data-gate="ia" onclick="openA7Picker()"><svg><use href="#ic-play"/></svg><span>Crea Bozza</span></button>
       <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank"><svg><use href="#ic-mail"/></svg><span>&#x2192; Gmail Bozze</span></a>
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
     </div>
@@ -613,6 +631,52 @@ async function sbFetch(url, options){
   const res = await fetch(url, Object.assign({}, options, { headers: headers }));
   if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) ──
+   ia_team_ruolo letto da profiles: 'operatore' (o is_admin) può agire,
+   'osservatore'/'nessuno' vede ma non scrive/lancia agenti — al click,
+   popup esplicativo invece dell'azione. Fail-open su errore di rete
+   (resta operatore) per non bloccare l'unico utente reale di oggi. */
+let IA_TEAM_ROLE = 'operatore';
+let IS_ADMIN = true;
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IS_ADMIN = !!p.is_admin;
+    IA_TEAM_ROLE = IS_ADMIN ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  applyRoleGateUI();
+}
+function applyRoleGateUI(){
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+  document.querySelectorAll('[data-gate="admin"]').forEach(function(el){ el.classList.toggle('role-disabled', !IS_ADMIN); });
+}
+function showRoleInfo(msg, adminOnly){
+  document.getElementById('roleInfoTitle').textContent = adminOnly ? 'Azione riservata all\'amministratore' : 'Azione non disponibile in modalità visualizzatore';
+  document.getElementById('roleInfoIcon').textContent = adminOnly ? '\u{1F512}' : '\u{1F441}️';
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg, false);
+  return false;
+}
+function gateAdmin(msg){
+  if (IS_ADMIN) return true;
+  showRoleInfo(msg, true);
+  return false;
+}
+function gateIaLink(e, msg){
+  if (!canActIa()){ e.preventDefault(); showRoleInfo(msg, false); return false; }
+  return true;
 }
 
 /* ── PUSH NOTIFICATIONS ──
@@ -845,11 +909,13 @@ function renderStatoRow(id, supaStato){
   const cur=supaStato||'sleep';
   row.innerHTML=STATO_PILLS.map(p=>{
     const isActive=(p.supaKey===cur)||(p.supaKey==='sleep'&&(cur==='sleep'||cur===''||!cur));
-    return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
+    return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" data-gate="admin" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
   }).join('');
+  applyRoleGateUI();
 }
 
 async function setStatoRaw(agentId, newStato){
+  if (!gateAdmin('Forza manualmente lo stato di un agente — strumento di debug riservato all\'amministratore.')) return;
   const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
   try{
     await Promise.all(ids.map(aid=>
@@ -957,6 +1023,7 @@ function resetMsg(){
   setTimeout(()=>document.getElementById('msgEditHint').textContent=EDITABLE_IDS.includes(_curMsgId)?'Modificabile — le modifiche vengono salvate':'',1500);
 }
 function openMsg(id,title,msg){
+  if (!gateIa('Copia il messaggio da incollare in Claude.ai per avviare l\'agente — fa parte del lanciare un\'azione, non della sola visualizzazione.')) return;
   _curMsgId=id; _defaultMsg=msg;
   const saved=EDITABLE_IDS.includes(id)?getSavedMsg(id):null;
   const txt=saved||msg;
@@ -986,6 +1053,7 @@ function copyMsgPopup(){
   setTimeout(()=>{btn.textContent='Copia';btn.className='msg-copy-btn';},2000);
 }
 function copyCicloMsg(btn){
+  if (!gateIa('Copia il messaggio di avvio del ciclo editoriale mensile da incollare in Claude Code.')) return;
   navigator.clipboard&&navigator.clipboard.writeText(MSG_CICLO).catch(()=>{});
   const span=btn.querySelector('span');
   const orig=span.textContent;
@@ -1221,6 +1289,7 @@ async function loadA7Companies() {
 }
 
 function openA7Picker() {
+  if (!gateIa('Avvia la generazione di una bozza mail reale su Gmail tramite l\'agente A7.')) return;
   document.getElementById('a7PickerOverlay').classList.add('open');
   document.getElementById('a7StatusMsg').textContent = '';
   document.getElementById('a7LaunchBtn').disabled = true;
@@ -1232,6 +1301,7 @@ function closeA7Picker() { document.getElementById('a7PickerOverlay').classList.
 function closeA7PickerIfBg(e) { if(e.target === document.getElementById('a7PickerOverlay')) closeA7Picker(); }
 
 function saveGhToken() {
+  if (!gateIa('Salva il token GitHub necessario per lanciare A7.')) return;
   const val = document.getElementById('a7TokenInput').value.trim();
   if (!val) return;
   localStorage.setItem('gdc_gh_token', val);
@@ -1241,6 +1311,7 @@ function saveGhToken() {
 }
 
 async function launchA7() {
+  if (!gateIa('Lancia A7 e genera una bozza mail reale su Gmail per l\'azienda selezionata.')) return;
   const sel = document.getElementById('a7CompanySelect');
   const company = sel.value;
   if (!company) return;
@@ -1293,6 +1364,7 @@ async function launchA7() {
 if (!gdcToken()) {
   window.location.href = '../page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadStates();
   loadLatestReports();
   loadCategorizePending();
