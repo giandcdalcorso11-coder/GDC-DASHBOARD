@@ -23,6 +23,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px; clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; margin-bottom:14px; }
 .pill-hub{ display:inline-flex; align-items:center; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--grigio); cursor:pointer; text-decoration:none; border:none; border-radius:999px; transition:color .15s; clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
 .pill-hub:hover{ color:var(--nero); }
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
 .page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
 .month-group{ margin-bottom:22px; }
@@ -68,6 +76,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   <div id="list"></div>
 </div>
 
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
+
 <script>
 const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
@@ -96,6 +113,34 @@ async function sbFetch(url, options){
   const res = await fetch(url, Object.assign({}, options, { headers: headers }));
   if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  applyRoleGateUI();
+}
+function applyRoleGateUI(){
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
 }
 
 function escapeHtml(s){
@@ -182,6 +227,7 @@ function render(){
       ${list.map(p=>postCardHtml(p)).join('')}
     </div>`;
   }).join('');
+  applyRoleGateUI();
 }
 
 function postCardHtml(p){
@@ -205,7 +251,7 @@ function postCardHtml(p){
       <select id="sec-${p.id}" onchange="onSecChange('${p.id}')">${secondaryOptionsHtml(p.id, state.primaria, p.categoria_secondaria)}</select>
     </div>
     <div class="save-row">
-      <button type="button" class="save-btn${!isPending?' is-saved':''}" id="savebtn-${p.id}" onclick="savePost('${p.id}')" ${state.primaria?'':'disabled'}>${isPending?'Salva':'Aggiornato ✓'}</button>
+      <button type="button" class="save-btn${!isPending?' is-saved':''}" id="savebtn-${p.id}" data-gate="ia" onclick="savePost('${p.id}')" ${state.primaria?'':'disabled'}>${isPending?'Salva':'Aggiornato ✓'}</button>
       <span class="save-status" id="status-${p.id}"></span>
     </div>
   </div>`;
@@ -257,6 +303,7 @@ function updateSaveEnabled(postId){
 }
 
 async function savePost(postId){
+  if (!gateIa('Salva la categoria scelta per questo post.')) return;
   const post = POSTS.find(p=>p.id===postId);
   const primaria = post._pendingPrimaria || post.categoria_primaria;
   const secondaria = document.getElementById('sec-'+postId).value;
@@ -289,6 +336,7 @@ async function savePost(postId){
 
 async function init(){
   if (!gdcToken()) { window.location.href = '../../../page_login_v6.html'; return; }
+  loadIaTeamRole();
   try {
     await Promise.all([loadVocab(), loadPosts()]);
     render();

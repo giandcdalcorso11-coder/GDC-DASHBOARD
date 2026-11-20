@@ -23,6 +23,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px; clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; margin-bottom:14px; }
 .pill-hub{ display:inline-flex; align-items:center; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--grigio); cursor:pointer; text-decoration:none; border:none; border-radius:999px; transition:color .15s; clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
 .pill-hub:hover{ color:var(--nero); }
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .page-title{ font-size:1.25rem; font-weight:800; margin-bottom:4px; }
 .page-sub{ font-size:.76rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
 .section-card{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; padding:16px; margin-bottom:14px; }
@@ -66,11 +74,20 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
     <input type="file" id="fileInput" accept=".csv,text/csv">
 
-    <button class="upload-btn" id="uploadBtn" disabled>Carica</button>
+    <button class="upload-btn" id="uploadBtn" data-gate="ia" disabled>Carica</button>
     <div class="status-msg" id="statusMsg"></div>
   </div>
 
   <div class="note">Nota: questo file sostituisce il passaggio "esporta → carica su Drive in una cartella precisa". Il caricamento su Supabase è attivo da subito; la lettura automatica da parte di A1 Monthly (oggi ancora dalla cartella Drive) viene aggiornata in un passaggio successivo per leggere da qui.</div>
+</div>
+
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
 </div>
 
 <script>
@@ -100,6 +117,31 @@ async function sbFetch(url, options){
   const res = await fetch(url, Object.assign({}, options, { headers: headers }));
   if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
 }
 
 // Mese di riferimento di default = mese precedente (stesso Mm1 usato nel resto della webapp)
@@ -132,6 +174,7 @@ fileInput.addEventListener('change', e=>setFile(e.target.files[0]));
 dropZone.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) setFile(f); });
 
 uploadBtn.addEventListener('click', async ()=>{
+  if (!gateIa('Carica il file CSV esportato da Meta Business Suite su Supabase.')) return;
   if(!selectedFile) return;
   uploadBtn.disabled=true;
   uploadBtn.textContent='Caricamento...';
@@ -160,6 +203,8 @@ uploadBtn.addEventListener('click', async ()=>{
 
 if (!gdcToken()) {
   window.location.href = '../../../page_login_v6.html';
+} else {
+  loadIaTeamRole();
 }
 </script>
 </body>
