@@ -4,8 +4,8 @@ GDC IA TEAM — A2/A3/A4 Watcher
 
 A2, A3 e A4 non girano come workflow GitHub schedulati: sono sessioni
 Claude Code che Gianluca avvia lui stesso, e al termine la sessione
-stessa scrive 'agent_states' -> 'done' (vedi docs/prompts/Agente{2,3,4}_
-auto_prompt_*.md, sez. Chiusura) e 'activity_log' (già fatto in sessione,
+stessa scrive 'agent_states' -> 'done' (vedi docs/prompts/{a2-analyst,
+a3-planner,a4-brief}.md, sez. Chiusura) e 'activity_log' (già fatto in sessione,
 questo script non lo tocca). Nessuno però manda una push quando succede:
 a differenza della pipeline commerciale (companies -> trigger Postgres ->
 repository_dispatch -> pipeline_notify.py), qui non esiste nessun evento
