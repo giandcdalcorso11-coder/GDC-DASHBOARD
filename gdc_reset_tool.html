@@ -44,6 +44,15 @@ h1{font-size:1.15rem;font-weight:800;margin-bottom:4px;}
 <h1>🛠️ GDC Reset Tool</h1>
 <p class="sub">Gestione dati salvati nel browser (localStorage) per GDC WORKSPACE.<br>Usa le sezioni qui sotto quando la webapp si comporta in modo "bloccato" — es. non ti richiede più un campo che dovrebbe chiederti.</p>
 
+<div id="accessDenied" style="display:none;max-width:480px;text-align:center;padding:40px 16px;">
+  <div style="font-size:2rem;margin-bottom:10px;">🔒</div>
+  <div style="font-weight:800;font-size:.95rem;margin-bottom:8px;">Accesso riservato</div>
+  <div style="font-size:.78rem;color:#6B6B6B;line-height:1.5;margin-bottom:16px;">Questo strumento è visibile solo per l'amministratore.</div>
+  <a href="app/page_hub_v1.html" style="display:inline-block;padding:10px 20px;border-radius:10px;background:#C4A865;color:#1C1C1C;font-weight:700;font-size:.78rem;text-decoration:none;">← Torna all'hub</a>
+</div>
+
+<div id="toolBody" style="display:none;width:100%;max-width:480px;">
+
 <!-- SEZIONE 1 — TOKEN GITHUB -->
 <div class="card">
   <div class="card-head"><span class="card-icon">🔑</span><span class="card-title">Token GitHub (A7 — Genera bozza)</span></div>
@@ -126,6 +135,8 @@ h1{font-size:1.15rem;font-weight:800;margin-bottom:4px;}
     3. "0 elementi trovati" in una sezione è normale: significa che quel dato non è (ancora) salvato su questo dispositivo — se un problema persiste, la causa è altrove (es. connessione, permessi del token su GitHub).<br><br>
     4. Dopo un reset, torna semplicemente su GDC WORKSPACE e ripeti l'azione che stavi facendo (login, generazione bozza, apertura messaggio) — la webapp ti riproporrà il campo da compilare.
   </p>
+</div>
+
 </div>
 
 <script>
@@ -289,10 +300,38 @@ function resetEverything() {
   refresh();
 }
 
+/* ── ACCESSO RISERVATO ──
+   Questo tool non tocca mai dati reali (ordini, filamenti, aziende...):
+   svuota solo localStorage/sessionStorage del browser (token GitHub,
+   sessione di login, messaggi precompilati). Non è quindi distruttivo
+   verso i dati di Supabase — ma può comunque disconnettere o far perdere
+   modifiche locali a chiunque lo apra, quindi resta riservato a chi
+   amministra l'account. */
+const SB_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SB_KEY='sb_publishable_DCzX82HTZ1avt-NJxGAz4Q_6ZlxMudV';
+
+async function checkAccessAndInit(){
+  const token=sessionStorage.getItem('gdc_token');
+  const uid=sessionStorage.getItem('gdc_uid');
+  if(!token||!uid){ document.getElementById('accessDenied').style.display='block'; return; }
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/profiles?user_id=eq.'+encodeURIComponent(uid)+'&select=is_admin',{headers:{apikey:SB_KEY,Authorization:'Bearer '+token}});
+    const rows=r.ok?await r.json():[];
+    const isAdmin=!!(rows[0]&&rows[0].is_admin);
+    if(!isAdmin){ document.getElementById('accessDenied').style.display='block'; return; }
+  }catch(e){
+    console.error('Controllo accesso fallito:',e);
+    document.getElementById('accessDenied').style.display='block';
+    return;
+  }
+  document.getElementById('toolBody').style.display='block';
+  renderTokenStatus();
+  renderSessionStatus();
+  refresh();
+}
+
 /* ── INIT ── */
-renderTokenStatus();
-renderSessionStatus();
-refresh();
+checkAccessAndInit();
 </script>
 </body>
 </html>

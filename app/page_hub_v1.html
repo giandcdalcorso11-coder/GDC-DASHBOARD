@@ -166,6 +166,18 @@ body{
 }
 .hub-footer-link:active{ opacity:1; }
 .hub-footer-sep{ color:var(--border); font-size:.68rem; }
+.hub-footer-admin-row{ margin-top:16px; }
+.hub-footer-admin-link{ font-size:.6rem; opacity:.45; }
+
+/* ══ RUOLI — card smorzata ma cliccabile, popup invece di bloccare in silenzio ══ */
+.role-disabled{ opacity:.5; filter:saturate(.6); }
+.role-info-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:400; display:none; align-items:center; justify-content:center; padding:24px; }
+.role-info-overlay.open{ display:flex; }
+.role-info-card{ background:var(--bianco); border-radius:18px; max-width:380px; width:100%; padding:22px 20px; text-align:center; box-shadow:0 8px 32px rgba(28,28,28,.18); }
+.role-info-icon{ font-size:1.6rem; margin-bottom:10px; }
+.role-info-title{ font-weight:800; font-size:.92rem; margin-bottom:8px; }
+.role-info-text{ font-size:.8rem; color:var(--grigio); line-height:1.5; margin-bottom:18px; }
+.role-info-close{ width:100%; font-family:'Jost',sans-serif; font-size:.8rem; font-weight:700; padding:11px; border:none; border-radius:12px; background:var(--nero); color:var(--carta); cursor:pointer; }
 
 .agent-icon{
   flex-shrink:0;
@@ -429,7 +441,7 @@ body{
   </a>
 
   <!-- ─── CARD GDC STUFF STUDIO ─── -->
-  <a class="hub-card card-studio" href="../gdc_studio.html" id="card-studio">
+  <a class="hub-card card-studio" href="../gdc_studio.html" id="card-studio" data-gate="studio" onclick="return gateStudioLink(event)">
     <div class="card-top">
       <div class="card-title">GDC STUDIO</div>
       <div class="card-arrow">
@@ -488,9 +500,19 @@ body{
 <div class="hub-footer">
   GDC WEBAPP &nbsp;·&nbsp; uso privato
   <div class="hub-footer-links">
-    <a class="hub-footer-link" href="../gdc_reset_tool.html">Reset dati</a>
-    <span class="hub-footer-sep">·</span>
     <button class="hub-footer-link" onclick="hubLogout()" type="button">Logout</button>
+  </div>
+  <div class="hub-footer-admin-row" id="adminToolsRow" style="display:none;">
+    <a class="hub-footer-link hub-footer-admin-link" href="../gdc_reset_tool.html">Reset dati (solo amministratore)</a>
+  </div>
+</div>
+
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Accesso non disponibile</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
   </div>
 </div>
 
@@ -502,6 +524,41 @@ function hubLogout(){
   sessionStorage.removeItem('gdc_uid');
   window.location.href = '../page_login_v6.html';
 }
+
+/* ══ RUOLI — solo per decidere se la card Studio è raggiungibile e se
+   mostrare il link "Reset dati" (riservato all'amministratore). Niente
+   da verificare per la card IA TEAM: lì 'nessuno' equivale a osservatore
+   (si entra comunque), qui invece 'nessuno' significa nessun accesso. ══ */
+const SUPA_URL = 'https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY = 'sb_publishable_DCzX82HTZ1avt-NJxGAz4Q_6ZlxMudV';
+let IS_ADMIN = false, STUDIO_ROLE = 'nessuno';
+function canOpenStudio(){ return IS_ADMIN || STUDIO_ROLE !== 'nessuno'; }
+async function loadHubRole(){
+  try{
+    const token = sessionStorage.getItem('gdc_token');
+    const uid = sessionStorage.getItem('gdc_uid');
+    if(!token || !uid) return;
+    const r = await fetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,studio_ruolo', { headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + token } });
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, studio_ruolo: 'nessuno' };
+    IS_ADMIN = !!p.is_admin;
+    STUDIO_ROLE = IS_ADMIN ? 'operatore' : (p.studio_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo hub:', e); }
+  document.querySelectorAll('[data-gate="studio"]').forEach(function(el){ el.classList.toggle('role-disabled', !canOpenStudio()); });
+  const adminRow = document.getElementById('adminToolsRow');
+  if (adminRow) adminRow.style.display = IS_ADMIN ? 'block' : 'none';
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateStudioLink(e){
+  if (!canOpenStudio()){ e.preventDefault(); showRoleInfo('Il tuo account non ha accesso a GDC STUDIO.'); return false; }
+  return true;
+}
+loadHubRole();
 
 /* ══ GDC LOGO HEADER: sequenza G→D→C→STUFF→linee ══ */
 (function(){

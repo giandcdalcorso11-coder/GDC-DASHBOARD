@@ -279,32 +279,6 @@ let calcFields={tempo_min:'',kwh:'',kwhManual:false,bobinaUsage:[],tempBobine:[]
 function todayIT(){return new Date().toLocaleDateString('it-IT');}
 function goHub(){window.location.href='app/page_hub_v1.html';}
 
-async function confirmReset(){
-  if(!confirm('Cancella tutti i dati e reinserisce i dati originali?\nQuesta azione non si può annullare.'))return;
-  setSS('saving');
-  try{
-    // Delete all existing data
-    await Promise.all([
-      sbFetch(SB_URL+'/rest/v1/studio_filaments?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()}),
-      sbFetch(SB_URL+'/rest/v1/studio_orders?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()}),
-      sbFetch(SB_URL+'/rest/v1/studio_expenses?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()}),
-      sbFetch(SB_URL+'/rest/v1/studio_hardware?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()}),
-      sbFetch(SB_URL+'/rest/v1/studio_projects?user_id=eq.'+_userId,{method:'DELETE',headers:sbH()})
-    ]);
-    // Re-seed with upsert
-    await Promise.all([
-      sbPost('studio_filaments',SEED_F,true),
-      sbPost('studio_orders',SEED_O,true),
-      sbPost('studio_expenses',SEED_E,true),
-      sbPost('studio_hardware',SEED_HW,true)
-    ]);
-    filaments=SEED_F;orders=SEED_O;expenses=SEED_E;hardware=SEED_HW;projects=[];
-    setSS('saved');
-    switchTab('hardware');
-    alert('Dati reinseriti correttamente!');
-  }catch(e){console.error(e);setSS('saved');alert('Errore: '+e.message);}
-}
-
 // ── SAVE STATUS ──
 function setSS(s){
   const el=document.getElementById('save-btn');if(!el)return;
@@ -391,6 +365,17 @@ async function loadData(){
   }
 }
 
+/* ── RUOLI STUDIO ──
+   A differenza di IA TEAM, qui 'nessuno' significa NESSUN accesso alla
+   sezione (non solo sola lettura): un collaboratore senza ruolo Studio
+   non deve proprio poter aprire questa pagina. is_admin ha sempre
+   accesso operatore. Chi ha un ruolo (osservatore/operatore) lavora sui
+   dati di Gianluca, non su un proprio spazio separato — vedi Step 11/12
+   del documento di sessione: i dati Studio restano unici, non per account.
+   L'enforcement delle singole azioni (osservatore vs operatore dentro
+   la pagina) non è ancora stato fatto — solo il blocco di accesso qui. */
+let STUDIO_ROLE='nessuno', IS_ADMIN=true;
+
 // ── INIT ──
 (async function init(){
   const el=document.getElementById('content');
@@ -403,6 +388,26 @@ async function loadData(){
       return;
     }
     if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:var(--grigio-lt);font-size:13px;">Caricamento dati…</div>';
+
+    const myId=_userId;
+    const pr=await sbFetch(SB_URL+'/rest/v1/profiles?user_id=eq.'+encodeURIComponent(myId)+'&select=is_admin,studio_ruolo',{headers:sbH()});
+    const prRows=pr.ok?await pr.json():[];
+    const prof=prRows[0]||{is_admin:false,studio_ruolo:'nessuno'};
+    IS_ADMIN=!!prof.is_admin;
+    STUDIO_ROLE=IS_ADMIN?'operatore':(prof.studio_ruolo||'nessuno');
+
+    if(!IS_ADMIN && STUDIO_ROLE==='nessuno'){
+      if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:var(--life);font-size:14px;">&#128274; Accesso non consentito a questa sezione.<br><br><button onclick="window.location.href=\'app/page_hub_v1.html\'" style="padding:10px 20px;border-radius:10px;border:none;background:var(--sabbia);color:var(--nero);cursor:pointer;font-size:14px;font-family:\'Jost\',sans-serif;font-weight:700;">← Torna all\'hub</button></div>';
+      return;
+    }
+
+    if(!IS_ADMIN){
+      // Collaboratore con ruolo Studio: lavora sui dati di Gianluca, non su un proprio spazio separato.
+      const adminR=await sbFetch(SB_URL+'/rest/v1/profiles?is_admin=eq.true&select=user_id&limit=1',{headers:sbH()});
+      const adminRows=adminR.ok?await adminR.json():[];
+      if(adminRows[0]) _userId=adminRows[0].user_id;
+    }
+
     await loadData();
     switchTab('hardware');
   }catch(e){
