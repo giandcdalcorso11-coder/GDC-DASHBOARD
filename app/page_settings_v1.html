@@ -634,7 +634,13 @@ async function loadWorkflowStatus(){
 }
 
 /* ══ ACCOUNT ══ */
-const ROLE_LBL={nessuno:'Nessuno',osservatore:'Osservatore',operatore:'Operatore'};
+/* 'nessuno' si legge diversamente per area: su IA TEAM non blocca nulla
+   (si comporta come osservatore), su Studio blocca del tutto l'accesso
+   alla sezione — l'etichetta lo rende esplicito invece di usare la
+   stessa parola per due comportamenti diversi. */
+const ROLE_LBL_IA={nessuno:'Non assegnato',osservatore:'Osservatore',operatore:'Operatore'};
+const ROLE_LBL_STUDIO={nessuno:'Bloccato',osservatore:'Osservatore',operatore:'Operatore'};
+function roleLbl(field,val){ return (field==='studio_ruolo'?ROLE_LBL_STUDIO:ROLE_LBL_IA)[val]||val; }
 
 async function loadAccount(){
   const box=document.getElementById('accBox');
@@ -653,7 +659,7 @@ async function loadAccount(){
 
     const sub=profile.is_admin
       ? 'Amministratore — accesso completo, GDC WORKSPACE'
-      : 'GDC IA TEAM: '+ROLE_LBL[profile.ia_team_ruolo]+' · GDC Studio: '+ROLE_LBL[profile.studio_ruolo];
+      : 'GDC IA TEAM: '+roleLbl('ia_team_ruolo',profile.ia_team_ruolo)+' · GDC Studio: '+roleLbl('studio_ruolo',profile.studio_ruolo);
     box.innerHTML='<div class="acc-row"><div class="acc-avatar">'+initial+'</div><div><div class="acc-email">'+email+'</div><div class="acc-sub">'+sub+'</div></div></div>';
 
     if(profile.is_admin){
@@ -798,7 +804,7 @@ async function loadCollaborators(){
 
 function roleSelect(uid,field,label,current){
   const opts=['nessuno','osservatore','operatore'].map(function(v){
-    return '<option value="'+v+'"'+(v===current?' selected':'')+'>'+ROLE_LBL[v]+'</option>';
+    return '<option value="'+v+'"'+(v===current?' selected':'')+'>'+roleLbl(field,v)+'</option>';
   }).join('');
   return '<label class="collab-role-lbl">'+label
     +'<select class="collab-select" onchange="onRoleChange(this)" data-uid="'+uid+'" data-field="'+field+'">'+opts+'</select>'
