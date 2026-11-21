@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 54
-**Ultimo aggiornamento:** 2026-11-21 15:01
+**Versione:** 55
+**Ultimo aggiornamento:** 2026-11-21 15:28
 
 ## Vision
 
@@ -416,6 +416,39 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-21] Solo analisi e decisione di rimandare, nessuna riga di codice scritta per questo step specifico (il pulsante "Scarica prompt", che era il punto di partenza della discussione, è registrato nello Step 11 — risolve solo l'ultimo miglio, non i gap di questo step).
 
 ## Storico sessioni
+
+### [2026-11-21 15:28] Step 11 chiuso: pulsante "Scarica prompt", enforcement completo di GDC Studio, etichette ruolo per area
+
+**Riepilogo:** giornata di chiusura dello Step 11. Implementato il pulsante "Scarica prompt" per gli agenti IA TEAM (con nomi file stabili per i prompt); durante la discussione, emerso che serve anche un accesso scoped a Supabase/Drive per farli girare dal profilo Claude.ai di un collaboratore — analizzato e deliberatamente rimandato come nuovo Step 12. Poi completato l'enforcement di ruoli su GDC Studio: prima il blocco di accesso alla sezione (nuova tipologia "bloccato", diversa dal comportamento di IA TEAM), poi il gate su ogni singola azione di scrittura dentro `gdc_studio.html`. Infine, su richiesta di Gianluca, differenziate le etichette del ruolo `nessuno` per area: "Non assegnato" su IA TEAM, "Bloccato" su Studio.
+
+**Cosa è stato fatto:**
+- **Pulsante "Scarica prompt"** in ogni pagina agente IA TEAM (tab Documenti per A2/A3/A4, tab Config per A5.1/A5.2/A6.1/A6.2 — A1/A7 esclusi, non sono agenti Claude.ai). Prima di implementarlo, rinominati gli 8 file in `docs/prompts/` togliendo il numero di versione dal nome (es. `Agente2_auto_prompt_v20.md` → `a2-analyst.md`): da ora un prompt aggiornato sovrascrive lo stesso file invece di crearne uno nuovo, così il link resta valido per sempre senza bisogno di aggiornarlo a mano a ogni revisione — requisito esplicito di Gianluca.
+- **Analisi dipendenze esterne degli agenti** (sub-agente dedicato, su richiesta di Gianluca prima di proseguire): il pulsante scarica-prompt dà solo il testo, ma 6 agenti su 7 dipendono anche da un connector Supabase MCP e/o Google Drive configurati sul profilo di chi lancia l'agente. Spiegato che condividere il connector Supabase così com'è equivarrebbe a dare poteri da amministratore su tutto il database (bypassa le RLS, non filtrabile per tabella) — vanificherebbe l'enforcement di ruoli appena costruito. Gianluca ha scelto di costruire in futuro un accesso con permessi limitati, non ora — registrato come nuovo Step 12.
+- **Enforcement GDC Studio — blocco di accesso**: su richiesta esplicita di Gianluca ("serve un'altra tipologia di account, che non abbia proprio l'accesso a quella sezione"), `studio_ruolo='nessuno'` ora blocca del tutto l'apertura di `gdc_studio.html` (prima equivaleva a osservatore, come su IA TEAM) — bloccato sia all'origine (card Hub smorzata, popup al click) sia a destinazione (controllo nella pagina stessa, difesa in profondità). Chi ha un ruolo Studio vero (osservatore/operatore) lavora sui dati reali di Gianluca, non su uno spazio vuoto proprio — verificato che le query puntano al suo `user_id`.
+  - **Bug/codice morto rimosso**: `confirmReset()` in `gdc_studio.html` cancellava tutti i dati reali e li sovrascriveva con dati seed/demo, senza essere collegata a nessun pulsante — stesso tipo di orfano già trovato due volte in sessioni precedenti.
+  - **Buco di sicurezza chiuso**: `gdc_reset_tool.html`, raggiungibile da chiunque col link dal footer dell'Hub senza alcun controllo. Verificato che non tocca mai dati reali su Supabase (solo `localStorage`/`sessionStorage` del browser) — comunque reso visibile e usabile solo da `is_admin`. Il link "Reset dati" nell'Hub spostato su una riga propria, separata da "Logout", su richiesta di Gianluca ("comandi pericolosi vicino a un'azione di uso quotidiano").
+- **Enforcement GDC Studio — singole azioni**: completato il gate su ogni funzione che scrive su Supabase (`updFil`/`delFil`/`showAddFil` in Magazzino, `updOrder`/`delOrder`/`showAddOrder` in Ordini, `delExp`/`showAddExp` in Bilancio, `updHW`/`delHW`/`showAddHW` in Macchina), stesso pattern di IA TEAM. Unica eccezione confermata: `saveProjCalc()` nel Calcolatore resta sempre permessa, `sendToOrders()` resta l'unica azione gated lì. Introdotta `gateEditableField(el,msg)` per adattare il pattern ai campi `contentEditable` degli ordini (nome/cliente/prezzo...): disattiva il campo invece di lasciare scrivere e bloccare solo il salvataggio al blur, per non mostrare un campo che sembra modificato ma non lo è. Bloccato anche il trascinamento dei componenti sulla mappa Macchina all'avvio del gesto, non solo al salvataggio della posizione.
+- **Etichette ruolo differenziate per area**: Gianluca ha chiesto di sostituire "nessuno" con un'etichetta diversa per ciascuna area, perché lo stesso valore ha un comportamento diverso nelle due — "Non assegnato" su IA TEAM (non blocca nulla), "Bloccato" su Studio (blocca l'accesso). Applicato sia nel riepilogo testuale in Account sia nelle select dei ruoli collaboratore in Impostazioni → Account — il valore salvato in `profiles` resta `nessuno` in entrambi i casi, cambia solo l'etichetta mostrata.
+- Verificato con Playwright a ogni passaggio: per l'osservatore Studio, zero scritture generate verso Supabase in qualunque punto della pagina (incluso il drag), popup mostrato correttamente ovunque, eccezione Calcolatore effettivamente permessa; per l'operatore/admin, comportamento normale e invariato; etichette ruolo corrette nelle select admin.
+
+**Decisioni prese:**
+- Contesto: i prompt in `docs/prompts/` avevano il numero di versione nel nome del file, quindi un link diretto si sarebbe rotto alla versione successiva.
+- Decisione: nomi file stabili (senza versione), aggiornamento futuro = sovrascrittura dello stesso file. Il numero di versione resta tracciato nel contenuto del documento (sezione "Note di Versione" già presente in ogni prompt).
+- Contesto: come far girare gli agenti IA TEAM dal profilo Claude.ai di un collaboratore senza dargli accesso illimitato al database.
+- Decisione: rimandato (Step 12) — si costruirà in futuro un accesso con permessi limitati (es. un server MCP dedicato) invece di condividere il connector Supabase nativo.
+- Alternative scartate: condividere il connector Supabase così com'è — scartato perché equivale ad accesso da amministratore su tutto, inclusi i dati Studio.
+- Contesto: come gestire un collaboratore che non deve avere accesso a GDC Studio.
+- Decisione: `studio_ruolo='nessuno'` blocca del tutto l'accesso alla sezione, a differenza di IA TEAM dove lo stesso valore equivale a osservatore.
+- Alternative scartate: nessuna — è un comportamento nuovo richiesto esplicitamente, non una scelta tra alternative.
+- Contesto: come rimuovere un collaboratore che non vuole più (richiesta separata, risolta in una sessione precedente ma rilevante per lo stesso filone) — vedi voce del 2026-11-20 per il dettaglio ban/unban/delete.
+- Contesto: etichetta del ruolo `nessuno`, uguale per le due aree pur avendo comportamento diverso.
+- Decisione: due etichette diverse per lo stesso valore salvato, scelte in base all'area selezionata nella select ("Non assegnato" / "Bloccato").
+
+**File consegnati/modificati:** `docs/prompts/` (8 file rinominati, senza numero di versione), `app/agenti/a2-analyst/page_agent_a2_v3.html`, `app/agenti/a3-planner/page_agent_a3_v1.html`, `app/agenti/a4-brief/page_agent_a4_v1.html`, `app/page_home_v25.html` (commento), `page_agent_a5_v1.html`, `page_agent_a6_v1.html`, `scripts/a2a3a4_watcher.py` (commento), `gdc_studio.html`, `gdc_reset_tool.html`, `app/page_hub_v1.html`, `app/page_settings_v1.html`.
+
+**Impatto su Vision/Pipeline:** Step 11 chiuso di fatto (enforcement ruoli completo su IA TEAM e Studio). Aggiunto il nuovo Step 12 (accesso scoped a Supabase/Drive per collaboratori), stato "da fare", deliberatamente rimandato.
+
+---
 
 ### [2026-11-20 22:34] Step 11: enforcement ruoli completato su tutte le 17 pagine GDC IA TEAM, più gestione completa account (crea/reset password/disabilita/elimina) da webapp
 
