@@ -122,6 +122,16 @@ input,textarea,button{font-family:inherit;}
   .content{padding:12px;}
   .g2,.g3{grid-template-columns:1fr;}
 }
+
+/* RUOLI — smorzato ma cliccabile, popup invece di eseguire o di un disabled muto */
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
+.role-info-overlay.open{display:flex;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -183,6 +193,15 @@ input,textarea,button{font-family:inherit;}
     <button class="ntab"    id="mnb-orders"   onclick="switchTab('orders')">  <span class="ntab-icon">📋</span> Ordini</button>
     <button class="ntab"    id="mnb-finance"  onclick="switchTab('finance')"> <span class="ntab-icon">💰</span> Bilancio</button>
     <button class="ntab"    id="mnb-chat"     onclick="switchTab('chat')">    <span class="ntab-icon">💬</span> Chat</button>
+  </div>
+</div>
+
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
   </div>
 </div>
 
@@ -372,9 +391,43 @@ async function loadData(){
    accesso operatore. Chi ha un ruolo (osservatore/operatore) lavora sui
    dati di Gianluca, non su un proprio spazio separato — vedi Step 11/12
    del documento di sessione: i dati Studio restano unici, non per account.
-   L'enforcement delle singole azioni (osservatore vs operatore dentro
-   la pagina) non è ancora stato fatto — solo il blocco di accesso qui. */
+
+   Enforcement delle singole azioni: osservatore vede tutto, nessuna
+   modifica, unica eccezione "salva bozza" nel Calcolatore (resta dentro
+   il calcolatore, non crea un ordine vero). Pulsanti/pill smorzati ma
+   cliccabili — popup al click invece dell'azione, stesso pattern di IA
+   TEAM. I campi editabili inline (nome/cliente/prezzo ordine) vengono
+   disattivati (contentEditable=false) invece di lasciare scrivere e
+   bloccare solo il salvataggio, per non mostrare un campo che sembra
+   modificato ma non lo è davvero. */
 let STUDIO_ROLE='nessuno', IS_ADMIN=true;
+function canActStudio(){ return IS_ADMIN || STUDIO_ROLE==='operatore'; }
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent=msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if(e.target===document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateStudio(msg){
+  if(canActStudio()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+function applyStudioGateUI(root){
+  const scope=root||document;
+  scope.querySelectorAll('[data-gate="studio"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActStudio()); });
+}
+/* Campi testo/contentEditable che scrivono al blur: se bloccati, niente
+   digitazione che "sembra funzionare" e poi si perde — readOnly (input)
+   o contentEditable=false (div/span), smorzati, click mostra il popup. */
+function gateEditableField(el,msg){
+  const blocked=!canActStudio();
+  if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.readOnly=blocked;
+  else el.contentEditable=blocked?'false':'true';
+  el.classList.toggle('role-disabled',blocked);
+  if(blocked) el.addEventListener('click',function(){ gateStudio(msg); });
+  return el;
+}
 
 // ── INIT ──
 (async function init(){
@@ -537,7 +590,9 @@ function renderCalcEdit(el){
     rc2.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--grigio-lt);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">Breakdown'+(r.pezzi>1?' ×'+r.pezzi+' pz':'')+'</div>';
     [['🧵 Filamenti',r.costoFil],['⚡ Energia',r.costoEnergia],['✋ Post',r.costoPost]].forEach(([l,v])=>{rc2.innerHTML+='<div style="display:flex;justify-content:space-between;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--bordo)"><span style="font-size:13px;color:var(--grigio)">'+l+'</span><span style="font-size:13px;font-weight:700">€'+v.toFixed(2)+(r.pezzi>1?' → €'+(v*r.pezzi).toFixed(2):'')+'</span></div>';});
     rc2.innerHTML+='<div style="background:var(--sab-bg);border-radius:10px;padding:14px;margin-top:10px;text-align:center"><div style="font-size:10px;color:var(--grigio-lt);font-weight:600;margin-bottom:3px">PREZZO CONSIGLIATO'+(r.pezzi>1?' ('+r.pezzi+' pz)':'')+'</div><div style="font-size:32px;font-weight:800">€'+r.prezzoConsigliato.toFixed(2)+'</div>'+(r.pezzi>1?'<div style="font-size:13px;color:var(--grigio)">€'+r.prezzoPezzo.toFixed(2)+' / pezzo</div>':'')+'</div>';
-    const ag=g2([btn('Salva bozza',saveProjCalc,'s',true),btn('→ Ordini',sendToOrders,'g',true)]);ag.style.marginTop='10px';rc2.appendChild(ag);right.appendChild(rc2);
+    const otb=btn('→ Ordini',sendToOrders,'g',true);otb.setAttribute('data-gate','studio');
+    const ag=g2([btn('Salva bozza',saveProjCalc,'s',true),otb]);ag.style.marginTop='10px';rc2.appendChild(ag);right.appendChild(rc2);
+    applyStudioGateUI(rc2);
   }else{const sb=btn('Salva bozza senza calcolare',saveProjCalc,'gh');sb.style.marginTop='4px';right.appendChild(sb);}
 
   layout.appendChild(left);layout.appendChild(right);el.appendChild(layout);
@@ -565,6 +620,7 @@ function saveProjCalc(){
   calcView='list';render();
 }
 function sendToOrders(){
+  if(!gateStudio('In modalità visualizzatore puoi calcolare un prezzo e salvarlo come bozza, ma non creare un ordine vero.'))return;
   if(!calcResult)return;
   const o={id:Date.now(),nome:calcFields.projectName||'Stampa senza nome',sottotitolo:'',cliente:'',pezzi:calcFields.qty,stato:'lavorazione',prezzo:calcResult.prezzoConsigliato.toFixed(2),pagato:false,data:todayIT(),bobinaUsage:calcFields.bobinaUsage||[]};
   orders=[o,...orders];
@@ -606,14 +662,15 @@ function renderFilaments(el){
     // Actions: reset (only in archivio) + delete
     const acts=mk('div','');acts.style.cssText='display:flex;gap:4px;align-items:center';
     if(filSubTab==='archivio'){
-      const rb=mk('button','btn btn-s btn-sm');rb.textContent='↺ Ripristina';rb.style.cssText='padding:3px 8px;font-size:10px;background:#C7DFCF;color:#3A6145;border:1px solid #4A7C59';
+      const rb=mk('button','btn btn-s btn-sm');rb.textContent='↺ Ripristina';rb.style.cssText='padding:3px 8px;font-size:10px;background:#C7DFCF;color:#3A6145;border:1px solid #4A7C59';rb.setAttribute('data-gate','studio');
       rb.onclick=()=>{
+        if(!gateStudio('In modalità visualizzatore non puoi modificare il magazzino.'))return;
         const newG=parseFloat(prompt('Inserisci grammi residui (max '+b.grammiTotali+'):', Math.round(b.grammiTotali*0.8)))||0;
         if(newG>0) updFil(b.id,{grammiResidui:Math.min(newG,b.grammiTotali)});
       };
       acts.appendChild(rb);
     }
-    const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);font-size:14px;cursor:pointer';db.onclick=()=>delFil(b.id);
+    const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);font-size:14px;cursor:pointer';db.setAttribute('data-gate','studio');db.onclick=()=>delFil(b.id);
     acts.appendChild(db);hd.appendChild(acts);c.appendChild(hd);
     if(b.grammiResidui>0){
       // Bar
@@ -623,6 +680,7 @@ function renderFilaments(el){
       // Input
       const ri=mk('input','inp');ri.type='number';ri.value=b.grammiResidui;ri.style.cssText='padding:5px 8px;font-size:12px';
       ri.onblur=e=>{const v=Math.max(0,Math.min(b.grammiTotali,parseFloat(e.target.value)||0));updFil(b.id,{grammiResidui:v});};
+      gateEditableField(ri,'In modalità visualizzatore non puoi modificare il magazzino.');
       c.appendChild(ri);
     }
     // Footer
@@ -631,12 +689,20 @@ function renderFilaments(el){
   });
   el.appendChild(g);
   if(!list.length){const e=mk('div','');e.style.cssText='text-align:center;color:var(--grigio-lt);font-size:13px;padding:40px 0';e.textContent='Nessuna bobina';el.appendChild(e);}
-  if(filSubTab==='uso'){const ab=btn('+ Aggiungi bobina',()=>showAddFil(el),'s');ab.style.marginTop='8px';el.appendChild(ab);}
+  if(filSubTab==='uso'){const ab=btn('+ Aggiungi bobina',()=>showAddFil(el),'s');ab.style.marginTop='8px';ab.setAttribute('data-gate','studio');el.appendChild(ab);}
+  applyStudioGateUI(el);
 }
 
-function updFil(id,patch){filaments=filaments.map(f=>f.id===id?{...f,...patch}:f);setSS('saving');sbPatch('studio_filaments',id,patch).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderFilaments(document.getElementById('content'));}
-function delFil(id){filaments=filaments.filter(f=>f.id!==id);sbDel('studio_filaments',id);renderFilaments(document.getElementById('content'));}
+function updFil(id,patch){
+  if(!gateStudio('In modalità visualizzatore non puoi modificare il magazzino.'))return;
+  filaments=filaments.map(f=>f.id===id?{...f,...patch}:f);setSS('saving');sbPatch('studio_filaments',id,patch).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderFilaments(document.getElementById('content'));
+}
+function delFil(id){
+  if(!gateStudio('In modalità visualizzatore non puoi eliminare una bobina.'))return;
+  filaments=filaments.filter(f=>f.id!==id);sbDel('studio_filaments',id);renderFilaments(document.getElementById('content'));
+}
 function showAddFil(el){
+  if(!gateStudio('In modalità visualizzatore non puoi aggiungere una bobina.'))return;
   const form={colore:'',tipo:'PLA',grammiTotali:'1000',prezzoPagato:'',data:''};
   const c=card();c.appendChild(lbl('Nuova bobina'));
   const ni=inp('Colore','',v=>form.colore=v);ni.style.marginBottom='8px';c.appendChild(ni);
@@ -668,45 +734,54 @@ function renderOrders(el){
   Object.entries(SS).forEach(([k,cfg])=>{const b=mk('button','stab');b.style.cssText='border-color:'+(ordSubTab===k?cfg.color:'var(--bordo)')+';background:'+(ordSubTab===k?cfg.color+'18':'var(--bianco)')+';color:'+(ordSubTab===k?cfg.color:'var(--grigio)')+';font-size:12px';b.innerHTML=cfg.label+' <span style="opacity:.6">('+groups[k].length+')</span>';b.onclick=()=>{ordSubTab=k;renderOrders(el);};tabs.appendChild(b);});
   el.appendChild(tabs);
 
-  const ab=btn('+ Nuovo ordine',()=>showAddOrder(el),'s');ab.style.marginBottom='12px';el.appendChild(ab);
+  const ab=btn('+ Nuovo ordine',()=>showAddOrder(el),'s');ab.style.marginBottom='12px';ab.setAttribute('data-gate','studio');el.appendChild(ab);
 
   const list=groups[ordSubTab];
-  if(!list.length){const e=mk('div','');e.style.cssText='text-align:center;color:var(--grigio-lt);font-size:13px;padding:40px 0';e.textContent='Nessun ordine';el.appendChild(e);return;}
+  if(!list.length){const e=mk('div','');e.style.cssText='text-align:center;color:var(--grigio-lt);font-size:13px;padding:40px 0';e.textContent='Nessun ordine';el.appendChild(e);applyStudioGateUI(el);return;}
 
+  const EDIT_MSG='In modalità visualizzatore non puoi modificare gli ordini.';
   const g=mk('div','g3');
   list.forEach(o=>{
     const c=mk('div','order-card');
     // Header with editable fields
     const ohdr=mk('div','');ohdr.style.marginBottom='10px';
     // Nome
-    const nomeEl=mk('div','');nomeEl.style.cssText='font-size:15px;font-weight:800;margin-bottom:4px;border-bottom:1px dashed var(--bordo);cursor:text;min-height:22px';nomeEl.contentEditable='true';nomeEl.textContent=o.nome||'';nomeEl.onblur=()=>updOrder(o.id,{nome:nomeEl.textContent.trim()});
+    const nomeEl=mk('div','');nomeEl.style.cssText='font-size:15px;font-weight:800;margin-bottom:4px;border-bottom:1px dashed var(--bordo);cursor:text;min-height:22px';nomeEl.contentEditable='true';nomeEl.textContent=o.nome||'';nomeEl.onblur=()=>updOrder(o.id,{nome:nomeEl.textContent.trim()});gateEditableField(nomeEl,EDIT_MSG);
     // Sottotitolo
-    const subEl=mk('div','');subEl.style.cssText='font-size:12px;color:var(--grigio);margin-bottom:3px;border-bottom:1px dashed var(--bordo);cursor:text;min-height:16px';subEl.contentEditable='true';subEl.textContent=o.sottotitolo||'';subEl.onblur=()=>updOrder(o.id,{sottotitolo:subEl.textContent.trim()});
+    const subEl=mk('div','');subEl.style.cssText='font-size:12px;color:var(--grigio);margin-bottom:3px;border-bottom:1px dashed var(--bordo);cursor:text;min-height:16px';subEl.contentEditable='true';subEl.textContent=o.sottotitolo||'';subEl.onblur=()=>updOrder(o.id,{sottotitolo:subEl.textContent.trim()});gateEditableField(subEl,EDIT_MSG);
     // Cliente
     const cliRow=mk('div','');cliRow.style.cssText='font-size:12px;color:var(--grigio-lt);margin-bottom:3px;display:flex;align-items:center;gap:4px';
-    cliRow.innerHTML='<span>👤</span>';const cliEl=mk('span','');cliEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;flex:1';cliEl.contentEditable='true';cliEl.textContent=o.cliente||'';cliEl.onblur=()=>updOrder(o.id,{cliente:cliEl.textContent.trim()});cliRow.appendChild(cliEl);
+    cliRow.innerHTML='<span>👤</span>';const cliEl=mk('span','');cliEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;flex:1';cliEl.contentEditable='true';cliEl.textContent=o.cliente||'';cliEl.onblur=()=>updOrder(o.id,{cliente:cliEl.textContent.trim()});gateEditableField(cliEl,EDIT_MSG);cliRow.appendChild(cliEl);
     // Pezzi e prezzo
     const prRow=mk('div','');prRow.style.cssText='font-size:12px;color:var(--grigio-lt);display:flex;gap:12px';
-    const pzSpan=mk('span','');pzSpan.innerHTML='Pezzi: ';const pzEl=mk('span','');pzEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;min-width:20px';pzEl.contentEditable='true';pzEl.textContent=o.pezzi||'';pzEl.onblur=()=>updOrder(o.id,{pezzi:pzEl.textContent.trim()});pzSpan.appendChild(pzEl);
-    const prSpan=mk('span','');prSpan.innerHTML='€ ';const prEl=mk('span','');prEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;min-width:20px';prEl.contentEditable='true';prEl.textContent=o.prezzo||'';prEl.onblur=()=>updOrder(o.id,{prezzo:prEl.textContent.trim()});prSpan.appendChild(prEl);
+    const pzSpan=mk('span','');pzSpan.innerHTML='Pezzi: ';const pzEl=mk('span','');pzEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;min-width:20px';pzEl.contentEditable='true';pzEl.textContent=o.pezzi||'';pzEl.onblur=()=>updOrder(o.id,{pezzi:pzEl.textContent.trim()});gateEditableField(pzEl,EDIT_MSG);pzSpan.appendChild(pzEl);
+    const prSpan=mk('span','');prSpan.innerHTML='€ ';const prEl=mk('span','');prEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;min-width:20px';prEl.contentEditable='true';prEl.textContent=o.prezzo||'';prEl.onblur=()=>updOrder(o.id,{prezzo:prEl.textContent.trim()});gateEditableField(prEl,EDIT_MSG);prSpan.appendChild(prEl);
     prRow.appendChild(pzSpan);prRow.appendChild(prSpan);
     ohdr.appendChild(nomeEl);ohdr.appendChild(subEl);ohdr.appendChild(cliRow);ohdr.appendChild(prRow);
     c.appendChild(ohdr);
     const sd=mk('div','');sd.style.cssText='border-top:1px solid var(--bordo);padding-top:8px;margin-bottom:8px;display:flex;gap:5px;flex-wrap:wrap';
-    Object.entries(SS).forEach(([s,cfg])=>{const p=mk('span','pill');p.style.cssText='border-color:'+(o.stato===s?cfg.color:'var(--bordo)')+';background:'+(o.stato===s?cfg.color+'22':'transparent')+';color:'+(o.stato===s?cfg.color:'var(--grigio-lt)');p.textContent=cfg.label;p.onclick=()=>updOrder(o.id,{stato:s});sd.appendChild(p);});
+    Object.entries(SS).forEach(([s,cfg])=>{const p=mk('span','pill');p.style.cssText='border-color:'+(o.stato===s?cfg.color:'var(--bordo)')+';background:'+(o.stato===s?cfg.color+'22':'transparent')+';color:'+(o.stato===s?cfg.color:'var(--grigio-lt)');p.textContent=cfg.label;p.setAttribute('data-gate','studio');p.onclick=()=>updOrder(o.id,{stato:s});sd.appendChild(p);});
     c.appendChild(sd);
     const pd=mk('div','');pd.style.cssText='border-top:1px solid var(--bordo);padding-top:8px;display:flex;justify-content:space-between;align-items:center';
     const pgd=mk('div','');pgd.style.cssText='display:flex;gap:5px';
-    [{val:true,label:'Saldato',color:'#4A7C59'},{val:false,label:'Non saldato',color:'#9A9488'}].forEach(opt=>{const p=mk('span','pill');p.style.cssText='border-color:'+(o.pagato===opt.val?opt.color:'var(--bordo)')+';background:'+(o.pagato===opt.val?opt.color+'22':'transparent')+';color:'+(o.pagato===opt.val?opt.color:'var(--grigio-lt)');p.textContent=opt.label;p.onclick=()=>updOrder(o.id,{pagato:opt.val});pgd.appendChild(p);});
-    const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:14px';db.onclick=()=>delOrder(o.id);
+    [{val:true,label:'Saldato',color:'#4A7C59'},{val:false,label:'Non saldato',color:'#9A9488'}].forEach(opt=>{const p=mk('span','pill');p.style.cssText='border-color:'+(o.pagato===opt.val?opt.color:'var(--bordo)')+';background:'+(o.pagato===opt.val?opt.color+'22':'transparent')+';color:'+(o.pagato===opt.val?opt.color:'var(--grigio-lt)');p.textContent=opt.label;p.setAttribute('data-gate','studio');p.onclick=()=>updOrder(o.id,{pagato:opt.val});pgd.appendChild(p);});
+    const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:14px';db.setAttribute('data-gate','studio');db.onclick=()=>delOrder(o.id);
     pd.appendChild(pgd);pd.appendChild(db);c.appendChild(pd);g.appendChild(c);
   });
   el.appendChild(g);
+  applyStudioGateUI(el);
 }
 
-function updOrder(id,patch){orders=orders.map(o=>o.id===id?{...o,...patch}:o);setSS('saving');sbPatch('studio_orders',id,patch).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderOrders(document.getElementById('content'));}
-function delOrder(id){orders=orders.filter(o=>o.id!==id);sbDel('studio_orders',id);renderOrders(document.getElementById('content'));}
+function updOrder(id,patch){
+  if(!gateStudio('In modalità visualizzatore non puoi modificare gli ordini.'))return;
+  orders=orders.map(o=>o.id===id?{...o,...patch}:o);setSS('saving');sbPatch('studio_orders',id,patch).then(()=>setSS('saved')).catch(()=>setSS('saved'));renderOrders(document.getElementById('content'));
+}
+function delOrder(id){
+  if(!gateStudio('In modalità visualizzatore non puoi eliminare un ordine.'))return;
+  orders=orders.filter(o=>o.id!==id);sbDel('studio_orders',id);renderOrders(document.getElementById('content'));
+}
 function showAddOrder(el){
+  if(!gateStudio('In modalità visualizzatore non puoi creare un nuovo ordine.'))return;
   const existing=el.querySelector('.add-order-form');
   if(existing)existing.remove();
   const form={nome:'',sottotitolo:'',cliente:'',pezzi:'',prezzo:'',stato:'possibilita'};
@@ -770,7 +845,7 @@ function renderFinance(el){
     const tot=mk('div','');tot.style.cssText='background:'+d.bg+';border-radius:12px;padding:16px;text-align:center;margin-bottom:16px;border:1px solid '+d.color+'22';
     tot.innerHTML='<div style="font-size:30px;font-weight:800;color:'+d.color+'">€'+d.val.toFixed(2)+'</div>';
     el.appendChild(tot);
-    if(d.isSpese){const ab=btn('+ Aggiungi spesa',()=>showAddExp(el,finDetail),'s',true);ab.style.marginBottom='10px';el.appendChild(ab);}
+    if(d.isSpese){const ab=btn('+ Aggiungi spesa',()=>showAddExp(el,finDetail),'s',true);ab.style.marginBottom='10px';ab.setAttribute('data-gate','studio');el.appendChild(ab);}
     if(!d.items.length){const e=mk('div','');e.style.cssText='text-align:center;color:var(--grigio-lt);font-size:13px;padding:40px 0';e.textContent='Nessuna voce';el.appendChild(e);}
     const g=mk('div','g3');
     d.items.forEach(item=>{
@@ -781,10 +856,11 @@ function renderFinance(el){
       c.innerHTML+='<div style="font-size:11px;color:var(--grigio-lt)">'+(item.data||'')+'</div></div>';
       const bot=mk('div','');bot.style.cssText='border-top:1px solid var(--bordo);padding-top:8px;display:flex;justify-content:space-between;align-items:center';
       bot.innerHTML='<div style="font-weight:800;font-size:16px;color:'+d.color+'">€'+val.toFixed(2)+'</div>';
-      if(d.isSpese){const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:14px';db.onclick=()=>{expenses=expenses.filter(e=>e.id!==item.id);sbDel('studio_expenses',item.id);renderFinance(el);};bot.appendChild(db);}
+      if(d.isSpese){const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:14px';db.setAttribute('data-gate','studio');db.onclick=()=>delExp(item.id,el);bot.appendChild(db);}
       c.appendChild(bot);g.appendChild(c);
     });
     el.appendChild(g);
+    applyStudioGateUI(el);
     return;
   }
 
@@ -816,7 +892,12 @@ function renderFinance(el){
   el.appendChild(card('<div style="text-align:center"><div style="font-size:10px;font-weight:700;color:'+bilCol+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">Bilancio Netto</div><div style="font-size:30px;font-weight:800;color:'+bilCol+'">'+(bil>=0?'':'-')+'€'+Math.abs(bil).toFixed(2)+'</div></div>',{background:bilBg,border:'1px solid '+bilCol+'33'}));
 }
 
+function delExp(id,el){
+  if(!gateStudio('In modalità visualizzatore non puoi eliminare una spesa.'))return;
+  expenses=expenses.filter(e=>e.id!==id);sbDel('studio_expenses',id);renderFinance(el);
+}
 function showAddExp(el,cat){
+  if(!gateStudio('In modalità visualizzatore non puoi aggiungere una spesa.'))return;
   const form={descrizione:'',sottotitolo:'',importo:'',categoria:cat,data:''};
   const c=card();c.appendChild(lbl('Nuova spesa'));
   [['Titolo','descrizione'],['Sottotitolo','sottotitolo']].forEach(([ph,k])=>{const i=inp(ph,'',v=>form[k]=v);i.style.marginBottom='8px';c.appendChild(i);});
@@ -857,15 +938,16 @@ function renderHardware(el){
   resto.forEach(h=>{
     const st=SHW[h.stato]||SHW.ok;
     const d=mk('div','hw-item');d.style.cssText='left:calc(50% + '+h.x+'px);top:calc(50% + '+h.y+'px);transform:translate(-50%,-50%);border:1.5px solid '+st.color+'66';
-    d.innerHTML='<div style="display:flex;justify-content:space-between;gap:3px"><span style="font-size:15px">'+(TIPI[h.tipo]||'📦')+'</span><button onclick="delHW('+h.id+')" style="background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:11px;padding:0">✕</button></div><div style="font-size:11px;font-weight:700;margin-top:3px">'+h.nome+'</div>'+(h.note?'<div style="font-size:10px;color:var(--grigio-lt)">'+h.note+'</div>':'')+
-      '<div style="margin-top:5px;display:flex;gap:3px;flex-wrap:wrap">'+Object.entries(SHW).map(([s,cfg])=>'<span onclick="updHW('+h.id+',\'stato\',\''+s+'\')" style="padding:2px 6px;border-radius:10px;border:1.5px solid '+(h.stato===s?cfg.color:'var(--bordo)')+';background:'+(h.stato===s?cfg.color+'22':'transparent')+';color:'+(h.stato===s?cfg.color:'var(--grigio-lt)')+';font-size:9px;font-weight:700;cursor:pointer">'+cfg.label+'</span>').join('')+'</div>';
+    d.innerHTML='<div style="display:flex;justify-content:space-between;gap:3px"><span style="font-size:15px">'+(TIPI[h.tipo]||'📦')+'</span><button data-gate="studio" onclick="delHW('+h.id+')" style="background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:11px;padding:0">✕</button></div><div style="font-size:11px;font-weight:700;margin-top:3px">'+h.nome+'</div>'+(h.note?'<div style="font-size:10px;color:var(--grigio-lt)">'+h.note+'</div>':'')+
+      '<div style="margin-top:5px;display:flex;gap:3px;flex-wrap:wrap">'+Object.entries(SHW).map(([s,cfg])=>'<span data-gate="studio" onclick="updHW('+h.id+',\'stato\',\''+s+'\')" style="padding:2px 6px;border-radius:10px;border:1.5px solid '+(h.stato===s?cfg.color:'var(--bordo)')+';background:'+(h.stato===s?cfg.color+'22':'transparent')+';color:'+(h.stato===s?cfg.color:'var(--grigio-lt)')+';font-size:9px;font-weight:700;cursor:pointer">'+cfg.label+'</span>').join('')+'</div>';
     let dragging=false,ox=0,oy=0;
-    d.onmousedown=e=>{if(e.target.tagName==='BUTTON'||e.target.tagName==='SPAN')return;e.preventDefault();const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();dragging=true;ox=e.clientX-(r.left+r.width/2)-h.x;oy=e.clientY-(r.top+r.height/2)-h.y;d.style.cursor='grabbing';};
+    d.onmousedown=e=>{if(e.target.tagName==='BUTTON'||e.target.tagName==='SPAN')return;if(!gateStudio('In modalità visualizzatore non puoi spostare i componenti.'))return;e.preventDefault();const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();dragging=true;ox=e.clientX-(r.left+r.width/2)-h.x;oy=e.clientY-(r.top+r.height/2)-h.y;d.style.cursor='grabbing';};
     document.addEventListener('mousemove',e=>{if(!dragging)return;const map=document.getElementById('hw-map');if(!map)return;const r=map.getBoundingClientRect();const nx=Math.round(e.clientX-(r.left+r.width/2)-ox),ny=Math.round(e.clientY-(r.top+r.height/2)-oy);d.style.left='calc(50% + '+nx+'px)';d.style.top='calc(50% + '+ny+'px)';h.x=nx;h.y=ny;updateSvgLines();});
     document.addEventListener('mouseup',()=>{if(dragging){dragging=false;d.style.cursor='grab';updHW(h.id,'x',h.x);updHW(h.id,'y',h.y);}});
     // Touch support
     d.addEventListener('touchstart',function(e){
       if(e.target.tagName==='BUTTON'||e.target.tagName==='SPAN')return;
+      if(!canActStudio())return;
       e.preventDefault();
       const touch=e.touches[0];
       const map=document.getElementById('hw-map');if(!map)return;
@@ -893,7 +975,8 @@ function renderHardware(el){
     mapDiv.appendChild(d);
   });
   const hint=mk('div','');hint.style.cssText='position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--grigio-lt)';hint.textContent='trascina per spostare';mapDiv.appendChild(hint);
-  left.appendChild(mapDiv);left.appendChild(btn('+ Aggiungi componente',()=>showAddHW(el),'s'));
+  const addHWBtn=btn('+ Aggiungi componente',()=>showAddHW(el),'s');addHWBtn.setAttribute('data-gate','studio');
+  left.appendChild(mapDiv);left.appendChild(addHWBtn);
   layout.appendChild(left);
 
   // Right: list
@@ -904,15 +987,23 @@ function renderHardware(el){
     const c=card();c.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 12px';
     c.innerHTML='<div><div style="font-size:14px">'+(TIPI[h.tipo]||'📦')+' <strong>'+h.nome+'</strong></div><div style="font-size:11px;color:var(--grigio-lt);margin-top:2px">'+h.tipo+' · '+h.data+'</div>'+(h.note?'<div style="font-size:11px;color:var(--grigio)">'+h.note+'</div>':'')+'</div>';
     const r=mk('div','');r.style.cssText='display:flex;align-items:center;gap:8px';r.innerHTML='<span style="padding:3px 10px;border-radius:20px;background:'+st.color+'22;color:'+st.color+';font-size:11px;font-weight:700;border:1px solid '+st.color+'44">'+st.label+'</span>';
-    if(h.tipo!=='stampante'){const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:14px';db.onclick=()=>delHW(h.id);r.appendChild(db);}
+    if(h.tipo!=='stampante'){const db=mk('button','');db.textContent='✕';db.style.cssText='background:none;border:none;color:var(--grigio-lt);cursor:pointer;font-size:14px';db.setAttribute('data-gate','studio');db.onclick=()=>delHW(h.id);r.appendChild(db);}
     c.appendChild(r);right.appendChild(c);
   });
   layout.appendChild(right);el.appendChild(layout);
+  applyStudioGateUI(el);
 }
 
-function updHW(id,k,v){hardware=hardware.map(h=>h.id===id?{...h,[k]:v}:h);setSS('saving');sbPatch('studio_hardware',id,{[k]:v}).then(()=>setSS('saved')).catch(()=>setSS('saved'));}
-function delHW(id){hardware=hardware.filter(h=>h.id!==id);sbDel('studio_hardware',id);renderHardware(document.getElementById('content'));}
+function updHW(id,k,v){
+  if(!gateStudio('In modalità visualizzatore non puoi modificare i componenti.'))return;
+  hardware=hardware.map(h=>h.id===id?{...h,[k]:v}:h);setSS('saving');sbPatch('studio_hardware',id,{[k]:v}).then(()=>setSS('saved')).catch(()=>setSS('saved'));
+}
+function delHW(id){
+  if(!gateStudio('In modalità visualizzatore non puoi eliminare un componente.'))return;
+  hardware=hardware.filter(h=>h.id!==id);sbDel('studio_hardware',id);renderHardware(document.getElementById('content'));
+}
 function showAddHW(el){
+  if(!gateStudio('In modalità visualizzatore non puoi aggiungere un componente.'))return;
   const form={nome:'',tipo:'accessorio',stato:'ok',note:'',data:''};
   const c=card();c.appendChild(lbl('Nuovo componente'));
   const ni=inp('Nome','',v=>form.nome=v);ni.style.marginBottom='8px';c.appendChild(ni);
