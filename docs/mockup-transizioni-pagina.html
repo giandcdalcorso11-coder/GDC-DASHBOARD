@@ -1,0 +1,391 @@
+<!doctype html>
+<title>Transizioni tra pagine GDC WORKSPACE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* ===== Design plan =====
+   Layout: colonna unica, una sezione per tipo di transizione, ciascuna con
+   una mini "cornice browser" dentro cui due pagine finte si alternano.
+   Color: stessa palette reale della webapp (carta/nero/maker/sabbia/life).
+   Type: Jost per tutto, stessa identita' del resto del sito.
+*/
+:root{
+  --carta:#F5F0E8; --bianco:#FAFAF5; --nero:#1C1C1C;
+  --border:#E3DCCB; --grigio:#8A8275;
+  --maker:#4A7C59; --maker-bg:#C7DFCF;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --shadow:0 1px 2px rgba(28,28,28,.06);
+  --font:'Jost',sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1;
+  --border:#3A3A3A; --grigio:#9A9A9A;
+  --maker-bg:#24352A; --sabbia-bg:#332C1E;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1;
+  --border:#3A3A3A; --grigio:#9A9A9A;
+  --maker-bg:#24352A; --sabbia-bg:#332C1E;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--carta); color:var(--nero);
+  font-family:var(--font); font-weight:400;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{ max-width:720px; margin:0 auto; padding-block:40px 80px; }
+
+.hero{ margin-bottom:40px; }
+.eyebrow{ font-size:.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--grigio); margin:0 0 8px; }
+h1{ font-size:1.9rem; font-weight:800; letter-spacing:-.02em; margin:0 0 10px; line-height:1.15; }
+.lead{ font-size:.98rem; color:var(--grigio); line-height:1.55; margin:0; max-width:56ch; }
+
+.section{
+  border:1px solid var(--border); border-radius:16px; background:var(--bianco);
+  padding:24px; margin-bottom:22px; box-shadow:var(--shadow);
+}
+.sec-num{ font-size:.7rem; font-weight:700; color:var(--grigio); letter-spacing:.08em; }
+h2{ font-size:1.15rem; font-weight:700; margin:2px 0 6px; letter-spacing:-.01em; }
+.sec-desc{ font-size:.86rem; color:var(--grigio); line-height:1.5; margin:0 0 16px; max-width:52ch; }
+.where{ font-size:.76rem; color:var(--grigio); margin-top:14px; line-height:1.5; }
+.where b{ color:var(--nero); font-weight:600; }
+
+/* ---- cornice "browser" ---- */
+.frame-row{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.frame{
+  width:260px; height:320px; border-radius:16px; border:1.5px solid var(--border);
+  background:var(--carta); position:relative; overflow:hidden; flex-shrink:0;
+  box-shadow:0 10px 26px rgba(28,28,28,.12);
+}
+.frame-bar{ height:22px; background:var(--bianco); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:4px; padding:0 8px; position:relative; z-index:5; }
+.frame-dot{ width:6px; height:6px; border-radius:50%; background:var(--border); }
+.replay{
+  appearance:none; border:none; border-radius:10px; background:var(--nero); color:var(--carta);
+  font-family:var(--font); font-weight:700; font-size:.78rem; letter-spacing:.02em;
+  padding:10px 16px; cursor:pointer; white-space:nowrap;
+}
+.replay:active{ transform:translateY(1px); }
+
+/* ---- finte pagine: Hub e Studio ---- */
+.pg{ position:absolute; inset:22px 0 0 0; padding:14px; }
+.pg-hub .pg-title{ font-size:.72rem; font-weight:700; color:var(--grigio); margin-bottom:10px; letter-spacing:.04em; text-transform:uppercase; }
+.pg-card{
+  border-radius:12px; padding:14px; margin-bottom:10px; cursor:pointer;
+  display:flex; flex-direction:column; gap:4px; border:1.5px solid var(--border);
+}
+.pg-card.ia{ background:var(--maker-bg); }
+.pg-card.studio{ background:var(--sabbia-bg); }
+.pg-card-ttl{ font-weight:800; font-size:.86rem; }
+.pg-card-sub{ font-size:.68rem; color:var(--grigio); }
+
+.pg-studio .pg-head{ display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+.pg-studio .pg-head-badge{ width:34px; height:34px; border-radius:10px; background:var(--sabbia); flex-shrink:0; }
+.pg-studio .pg-head-ttl{ font-weight:800; font-size:.92rem; }
+.pg-studio .pg-skel{ height:12px; border-radius:6px; background:var(--border); margin-bottom:8px; }
+.pg-studio .pg-skel.w1{ width:80%; } .pg-studio .pg-skel.w2{ width:55%; } .pg-studio .pg-skel.w3{ width:68%; }
+.pg-studio .pg-block{ height:48px; border-radius:10px; background:var(--bianco); border:1.5px solid var(--border); margin-bottom:8px; }
+
+/* ===== 1. Dissolvenza (quella gia' attiva oggi) ===== */
+.f1 .pg{ transition:opacity .32s ease; }
+.f1 .pg.leaving{ opacity:0; }
+.f1 .pg.hidden{ display:none; }
+
+/* ===== 2. Scorrimento direzionale ===== */
+.f2 .pg{ transition:transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s ease; }
+.f2 .pg.hidden{ display:none; }
+.f2 .pg.enter-right{ transform:translateX(100%); opacity:0; }
+.f2 .pg.enter-left{ transform:translateX(-100%); opacity:0; }
+.f2 .pg.leave-left{ transform:translateX(-30%); opacity:0; }
+.f2 .pg.leave-right{ transform:translateX(30%); opacity:0; }
+.f2 .pg.settled{ transform:translateX(0); opacity:1; }
+
+/* ===== 3. Elemento condiviso (morph) ===== */
+.f3 .pg.hidden{ display:none; }
+.f3 .pg{ transition:opacity .2s ease; }
+.ghost-card{
+  position:absolute; z-index:10; border-radius:12px; background:var(--sabbia-bg);
+  border:1.5px solid var(--border); pointer-events:none;
+  transition:left .38s cubic-bezier(.2,.8,.2,1), top .38s cubic-bezier(.2,.8,.2,1),
+             width .38s cubic-bezier(.2,.8,.2,1), height .38s cubic-bezier(.2,.8,.2,1),
+             border-radius .38s cubic-bezier(.2,.8,.2,1);
+}
+
+/* ===== 4. Scala (zoom) ===== */
+.f4 .pg{ transition:transform .32s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
+.f4 .pg.hidden{ display:none; }
+.f4 .pg.zoom-in-from{ transform:scale(.88); opacity:0; }
+.f4 .pg.zoom-out-to{ transform:scale(1.08); opacity:0; }
+.f4 .pg.settled{ transform:scale(1); opacity:1; }
+
+footer{ text-align:center; font-size:.74rem; color:var(--grigio); margin-top:30px; }
+
+@media (prefers-reduced-motion:reduce){
+  .pg, .ghost-card{ transition:none !important; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;800&display=swap">
+
+<div class="wrap">
+
+  <div class="hero">
+    <p class="eyebrow">GDC WORKSPACE — mockup, nessuna installazione</p>
+    <h1>4 modi per passare da una pagina all'altra</h1>
+    <p class="lead">Simulati qui dentro una finta cornice, perch&eacute; la vera transizione tra pagine succede solo navigando davvero tra due file HTML. Premi il bottone sotto ogni cornice per vederla in azione, pi&ugrave; volte.</p>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">01 &middot; gi&agrave; attiva oggi</span>
+    <h2>Dissolvenza</h2>
+    <p class="sec-desc">Quella che ho gi&agrave; attivato su tutte le pagine (<code>@view-transition</code>). La pagina vecchia sfuma mentre entra la nuova, nello stesso punto.</p>
+    <div class="frame-row">
+      <div class="frame f1" id="f1">
+        <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span></div>
+        <div class="pg pg-hub" id="f1-hub">
+          <div class="pg-title">GDC Workspace</div>
+          <div class="pg-card ia"><div class="pg-card-ttl">GDC IA TEAM</div><div class="pg-card-sub">7 agenti attivi</div></div>
+          <div class="pg-card studio"><div class="pg-card-ttl">GDC STUDIO</div><div class="pg-card-sub">3 ordini in corso</div></div>
+        </div>
+        <div class="pg pg-studio hidden" id="f1-studio">
+          <div class="pg-head"><div class="pg-head-badge"></div><div class="pg-head-ttl">GDC Studio</div></div>
+          <div class="pg-skel w1"></div><div class="pg-skel w2"></div>
+          <div class="pg-block"></div><div class="pg-block"></div>
+        </div>
+      </div>
+      <button class="replay" id="f1-btn">Vai a Studio →</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">02</span>
+    <h2>Scorrimento direzionale</h2>
+    <p class="sec-desc">La pagina nuova entra da destra quando vai "in avanti" (es. Hub → Studio), e da sinistra quando torni indietro. D&agrave; la sensazione di muoversi dentro una gerarchia, non solo di "cambiare schermata".</p>
+    <div class="frame-row">
+      <div class="frame f2" id="f2">
+        <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span></div>
+        <div class="pg pg-hub settled" id="f2-hub">
+          <div class="pg-title">GDC Workspace</div>
+          <div class="pg-card ia"><div class="pg-card-ttl">GDC IA TEAM</div><div class="pg-card-sub">7 agenti attivi</div></div>
+          <div class="pg-card studio"><div class="pg-card-ttl">GDC STUDIO</div><div class="pg-card-sub">3 ordini in corso</div></div>
+        </div>
+        <div class="pg pg-studio hidden" id="f2-studio">
+          <div class="pg-head"><div class="pg-head-badge"></div><div class="pg-head-ttl">GDC Studio</div></div>
+          <div class="pg-skel w1"></div><div class="pg-skel w2"></div>
+          <div class="pg-block"></div><div class="pg-block"></div>
+        </div>
+      </div>
+      <button class="replay" id="f2-btn">Vai a Studio →</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">03</span>
+    <h2>Elemento condiviso (morph)</h2>
+    <p class="sec-desc">La card "GDC STUDIO" che clicchi nell'Hub non scompare: si trasforma fluidamente nell'intestazione della pagina di Studio. Pi&ugrave; d'impatto delle altre tre, ma va costruita su misura per ogni coppia di pagine (qui solo Hub → Studio, non si pu&ograve; generalizzare a caso).</p>
+    <div class="frame-row">
+      <div class="frame f3" id="f3" style="position:relative;">
+        <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span></div>
+        <div class="pg pg-hub" id="f3-hub">
+          <div class="pg-title">GDC Workspace</div>
+          <div class="pg-card ia"><div class="pg-card-ttl">GDC IA TEAM</div><div class="pg-card-sub">7 agenti attivi</div></div>
+          <div class="pg-card studio" id="f3-source-card"><div class="pg-card-ttl">GDC STUDIO</div><div class="pg-card-sub">3 ordini in corso</div></div>
+        </div>
+        <div class="pg pg-studio hidden" id="f3-studio">
+          <div class="pg-head" style="position:relative;">
+            <div id="f3-target-badge" style="width:34px;height:34px;border-radius:10px;flex-shrink:0;"></div>
+            <div class="pg-head-ttl">GDC Studio</div>
+          </div>
+          <div class="pg-skel w1"></div><div class="pg-skel w2"></div>
+          <div class="pg-block"></div><div class="pg-block"></div>
+        </div>
+      </div>
+      <button class="replay" id="f3-btn">Vai a Studio →</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">04</span>
+    <h2>Scala (zoom)</h2>
+    <p class="sec-desc">La nuova pagina si allarga leggermente dal centro mentre appare, come se ci si immergesse dentro. Tornando indietro l'effetto si inverte (si rimpicciolisce). Buona per passaggi "verso il dettaglio", es. Pipeline → Scheda azienda.</p>
+    <div class="frame-row">
+      <div class="frame f4" id="f4">
+        <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span></div>
+        <div class="pg pg-hub settled" id="f4-hub">
+          <div class="pg-title">GDC Workspace</div>
+          <div class="pg-card ia"><div class="pg-card-ttl">GDC IA TEAM</div><div class="pg-card-sub">7 agenti attivi</div></div>
+          <div class="pg-card studio"><div class="pg-card-ttl">GDC STUDIO</div><div class="pg-card-sub">3 ordini in corso</div></div>
+        </div>
+        <div class="pg pg-studio hidden" id="f4-studio">
+          <div class="pg-head"><div class="pg-head-badge"></div><div class="pg-head-ttl">GDC Studio</div></div>
+          <div class="pg-skel w1"></div><div class="pg-skel w2"></div>
+          <div class="pg-block"></div><div class="pg-block"></div>
+        </div>
+      </div>
+      <button class="replay" id="f4-btn">Vai a Studio →</button>
+    </div>
+  </div>
+
+  <footer>Mockup statico &middot; nessuna modifica ai file reali &middot; CSS puro, zero dipendenze</footer>
+</div>
+
+<script>
+(function(){
+  // ---- 1. Dissolvenza ----
+  (function(){
+    var showingHub = true;
+    var hub = document.getElementById('f1-hub'), studio = document.getElementById('f1-studio'), btn = document.getElementById('f1-btn');
+    btn.addEventListener('click', function(){
+      if (showingHub){
+        hub.classList.add('leaving');
+        setTimeout(function(){
+          hub.classList.add('hidden'); hub.classList.remove('leaving');
+          studio.classList.remove('hidden');
+          void studio.offsetWidth;
+          studio.style.opacity = '0';
+          requestAnimationFrame(function(){ studio.style.opacity = '1'; });
+        }, 320);
+        btn.textContent = '← Torna alla Hub';
+      } else {
+        studio.classList.add('leaving');
+        setTimeout(function(){
+          studio.classList.add('hidden'); studio.classList.remove('leaving'); studio.style.opacity='';
+          hub.classList.remove('hidden');
+          void hub.offsetWidth;
+          hub.style.opacity = '0';
+          requestAnimationFrame(function(){ hub.style.opacity = '1'; });
+        }, 320);
+        btn.textContent = 'Vai a Studio →';
+      }
+      showingHub = !showingHub;
+    });
+  })();
+
+  // ---- 2. Scorrimento direzionale ----
+  (function(){
+    var showingHub = true;
+    var hub = document.getElementById('f2-hub'), studio = document.getElementById('f2-studio'), btn = document.getElementById('f2-btn');
+    function goForward(from, to){
+      to.classList.remove('hidden'); to.classList.remove('settled');
+      to.classList.add('enter-right');
+      from.classList.remove('settled');
+      void to.offsetWidth;
+      requestAnimationFrame(function(){
+        to.classList.remove('enter-right'); to.classList.add('settled');
+        from.classList.add('leave-left');
+      });
+      setTimeout(function(){ from.classList.add('hidden'); from.classList.remove('leave-left'); }, 340);
+    }
+    function goBack(from, to){
+      to.classList.remove('hidden'); to.classList.remove('settled');
+      to.classList.add('enter-left');
+      void to.offsetWidth;
+      requestAnimationFrame(function(){
+        to.classList.remove('enter-left'); to.classList.add('settled');
+        from.classList.add('leave-right');
+      });
+      setTimeout(function(){ from.classList.add('hidden'); from.classList.remove('leave-right'); }, 340);
+    }
+    btn.addEventListener('click', function(){
+      if (showingHub){ goForward(hub, studio); btn.textContent = '← Torna alla Hub'; }
+      else { goBack(studio, hub); btn.textContent = 'Vai a Studio →'; }
+      showingHub = !showingHub;
+    });
+  })();
+
+  // ---- 3. Elemento condiviso (morph) ----
+  (function(){
+    var showingHub = true;
+    var frame = document.getElementById('f3');
+    var hub = document.getElementById('f3-hub'), studio = document.getElementById('f3-studio'), btn = document.getElementById('f3-btn');
+    var sourceCard = document.getElementById('f3-source-card'), targetBadge = document.getElementById('f3-target-badge');
+    var ghost = null;
+
+    function rectRelativeTo(el, container){
+      var r = el.getBoundingClientRect(), c = container.getBoundingClientRect();
+      return { left: r.left - c.left, top: r.top - c.top, width: r.width, height: r.height };
+    }
+    function makeGhost(fromRect){
+      var g = document.createElement('div');
+      g.className = 'ghost-card';
+      g.style.left = fromRect.left + 'px';
+      g.style.top = fromRect.top + 'px';
+      g.style.width = fromRect.width + 'px';
+      g.style.height = fromRect.height + 'px';
+      g.style.borderRadius = '12px';
+      frame.appendChild(g);
+      return g;
+    }
+
+    btn.addEventListener('click', function(){
+      if (showingHub){
+        var fromRect = rectRelativeTo(sourceCard, frame);
+        ghost = makeGhost(fromRect);
+        hub.style.opacity = '0';
+        setTimeout(function(){
+          hub.classList.add('hidden'); hub.style.opacity = '';
+          studio.classList.remove('hidden'); studio.style.opacity = '1';
+          var toRect = rectRelativeTo(targetBadge, frame);
+          requestAnimationFrame(function(){
+            ghost.style.left = toRect.left + 'px';
+            ghost.style.top = toRect.top + 'px';
+            ghost.style.width = toRect.width + 'px';
+            ghost.style.height = toRect.height + 'px';
+            ghost.style.borderRadius = '10px';
+            ghost.style.background = 'var(--sabbia)';
+          });
+          setTimeout(function(){ if(ghost){ghost.remove();ghost=null;} targetBadge.style.background='var(--sabbia)'; }, 400);
+        }, 160);
+        btn.textContent = '← Torna alla Hub';
+      } else {
+        var fromRect2 = rectRelativeTo(targetBadge, frame);
+        ghost = makeGhost(fromRect2);
+        ghost.style.background = 'var(--sabbia)';
+        ghost.style.borderRadius = '10px';
+        studio.style.opacity = '0';
+        setTimeout(function(){
+          studio.classList.add('hidden'); studio.style.opacity = '';
+          hub.classList.remove('hidden'); hub.style.opacity = '1';
+          var toRect2 = rectRelativeTo(sourceCard, frame);
+          requestAnimationFrame(function(){
+            ghost.style.left = toRect2.left + 'px';
+            ghost.style.top = toRect2.top + 'px';
+            ghost.style.width = toRect2.width + 'px';
+            ghost.style.height = toRect2.height + 'px';
+            ghost.style.borderRadius = '12px';
+          });
+          setTimeout(function(){ if(ghost){ghost.remove();ghost=null;} }, 400);
+        }, 160);
+        btn.textContent = 'Vai a Studio →';
+      }
+      showingHub = !showingHub;
+    });
+  })();
+
+  // ---- 4. Scala (zoom) ----
+  (function(){
+    var showingHub = true;
+    var hub = document.getElementById('f4-hub'), studio = document.getElementById('f4-studio'), btn = document.getElementById('f4-btn');
+    function zoomIn(from, to){
+      to.classList.remove('hidden'); to.classList.remove('settled');
+      to.classList.add('zoom-in-from');
+      from.classList.remove('settled');
+      void to.offsetWidth;
+      requestAnimationFrame(function(){
+        to.classList.remove('zoom-in-from'); to.classList.add('settled');
+        from.classList.add('zoom-out-to');
+      });
+      setTimeout(function(){ from.classList.add('hidden'); from.classList.remove('zoom-out-to'); }, 330);
+    }
+    btn.addEventListener('click', function(){
+      if (showingHub){ zoomIn(hub, studio); btn.textContent = '← Torna alla Hub'; }
+      else { zoomIn(studio, hub); btn.textContent = 'Vai a Studio →'; }
+      showingHub = !showingHub;
+    });
+  })();
+})();
+</script>
