@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<script>try{var __d=sessionStorage.getItem('gdc_nav_dir');if(__d==='forward')document.documentElement.classList.add('nav-forward');else if(__d==='back')document.documentElement.classList.add('nav-back');sessionStorage.removeItem('gdc_nav_dir');}catch(e){}</script>
 <title>GDC WORKSPACE — Home</title>
 <link rel="manifest" href="../manifest.json">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -14,6 +15,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 @view-transition{navigation:auto;}
+/* Scorrimento direzionale Hub <-> IA TEAM (vedi script gdc_nav_dir in head) */
+html.nav-forward::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutLeft;}
+html.nav-forward::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInRight;}
+html.nav-back::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutRight;}
+html.nav-back::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInLeft;}
+@keyframes gdcSlideOutLeft{to{transform:translateX(-28%);opacity:0;}}
+@keyframes gdcSlideInRight{from{transform:translateX(100%);}}
+@keyframes gdcSlideOutRight{to{transform:translateX(28%);opacity:0;}}
+@keyframes gdcSlideInLeft{from{transform:translateX(-100%);}}
+/* Morph: il logo di ciascun agente "diventa" quello della sua pagina (vedi #logoBoxHero lato agente) */
+#box-a1{view-transition-name:agent-logo-a1;}
+#box-a2{view-transition-name:agent-logo-a2;}
+#box-a3{view-transition-name:agent-logo-a3;}
+#box-a4{view-transition-name:agent-logo-a4;}
+#box-a5{view-transition-name:agent-logo-a5;}
+#box-a6{view-transition-name:agent-logo-a6;}
+#box-a7{view-transition-name:agent-logo-a7;}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;--athlete:#2B5C8A;--athlete-bg:#D9E6F3;--athlete-mid:#4A86C6;--life:#C2193A;--life-bg:#F5E0E6;--life-mid:#E9415A;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -355,7 +373,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
 </div>
 <div style="width:100%;max-width:540px;padding:0 16px 18px;display:flex;justify-content:space-between;align-items:center;">
-  <div class="pill-hub-wrap"><a class="pill-hub" href="page_hub_v1.html">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="page_hub_v1.html" onclick="try{sessionStorage.setItem('gdc_nav_dir','back');}catch(e){}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>Hub</span>
   </a></div>

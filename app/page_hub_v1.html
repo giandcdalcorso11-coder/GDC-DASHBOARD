@@ -4,10 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<script>try{var __d=sessionStorage.getItem('gdc_nav_dir');if(__d==='forward')document.documentElement.classList.add('nav-forward');else if(__d==='back')document.documentElement.classList.add('nav-back');sessionStorage.removeItem('gdc_nav_dir');}catch(e){}</script>
 <title>GDC WORKSPACE — Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 @view-transition{navigation:auto;}
+/* Scorrimento direzionale Hub <-> Studio/IA TEAM (vedi script gdc_nav_dir in head) */
+html.nav-forward::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutLeft;}
+html.nav-forward::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInRight;}
+html.nav-back::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutRight;}
+html.nav-back::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInLeft;}
+@keyframes gdcSlideOutLeft{to{transform:translateX(-28%);opacity:0;}}
+@keyframes gdcSlideInRight{from{transform:translateX(100%);}}
+@keyframes gdcSlideOutRight{to{transform:translateX(28%);opacity:0;}}
+@keyframes gdcSlideInLeft{from{transform:translateX(-100%);}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
   --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
@@ -341,7 +351,7 @@ body{
 <div class="cards-wrap">
 
   <!-- ─── CARD GDC IA TEAM ─── -->
-  <a class="hub-card card-ia" href="page_home_v25.html" id="card-ia">
+  <a class="hub-card card-ia" href="page_home_v25.html" id="card-ia" onclick="try{sessionStorage.setItem('gdc_nav_dir','forward');}catch(e){}">
     <div class="card-top" style="margin-bottom:0px;">
       <div class="card-title">GDC IA TEAM</div>
       <div class="card-arrow">
@@ -444,7 +454,7 @@ body{
   </a>
 
   <!-- ─── CARD GDC STUFF STUDIO ─── -->
-  <a class="hub-card card-studio" href="../gdc_studio.html" id="card-studio" data-gate="studio" onclick="return gateStudioLink(event)">
+  <a class="hub-card card-studio" href="../gdc_studio.html" id="card-studio" data-gate="studio" onclick="try{sessionStorage.setItem('gdc_nav_dir','forward');}catch(e){}return gateStudioLink(event)">
     <div class="card-top">
       <div class="card-title">GDC STUDIO</div>
       <div class="card-arrow">

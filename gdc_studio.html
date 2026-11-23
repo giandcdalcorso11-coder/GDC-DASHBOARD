@@ -4,10 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<script>try{var __d=sessionStorage.getItem('gdc_nav_dir');if(__d==='forward')document.documentElement.classList.add('nav-forward');else if(__d==='back')document.documentElement.classList.add('nav-back');sessionStorage.removeItem('gdc_nav_dir');}catch(e){}</script>
 <title>GDC Print Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 @view-transition{navigation:auto;}
+/* Scorrimento direzionale Hub <-> Studio (vedi script gdc_nav_dir in head) */
+html.nav-forward::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutLeft;}
+html.nav-forward::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInRight;}
+html.nav-back::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutRight;}
+html.nav-back::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInLeft;}
+@keyframes gdcSlideOutLeft{to{transform:translateX(-28%);opacity:0;}}
+@keyframes gdcSlideInRight{from{transform:translateX(100%);}}
+@keyframes gdcSlideOutRight{to{transform:translateX(28%);opacity:0;}}
+@keyframes gdcSlideInLeft{from{transform:translateX(-100%);}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
   --carta:#F5F0E8; --bianco:#FAFAF5; --nero:#1C1C1C;
@@ -310,18 +320,18 @@ let calcView='list',calcEditId=null,calcResult=null;
 let calcFields={tempo_min:'',kwh:'',kwhManual:false,bobinaUsage:[],tempBobine:[],postProd:[],risk:'mid',perceived:'Funzionale',energyRate:'0.28',projectName:'',qty:'1'};
 
 function todayIT(){return new Date().toLocaleDateString('it-IT');}
-function goHub(){window.location.href='app/page_hub_v1.html';}
+function goHub(){try{sessionStorage.setItem('gdc_nav_dir','back');}catch(e){}window.location.href='app/page_hub_v1.html';}
 
 // ── COUNT-UP NUMERI ──
-function countUpEl(el,target,prefix,dur){
+function countUpEl(el,target,prefix,dur,decimals){
   if(!el)return;
-  prefix=prefix||'';dur=dur||650;
-  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=prefix+Math.round(target);return;}
+  prefix=prefix||'';dur=dur||650;decimals=decimals||0;
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=prefix+target.toFixed(decimals);return;}
   const t0=performance.now();
   function step(t){
     const p=Math.min(1,(t-t0)/dur);
-    const val=Math.round(target*(1-Math.pow(1-p,3)));
-    el.textContent=prefix+val;
+    const val=target*(1-Math.pow(1-p,3));
+    el.textContent=prefix+val.toFixed(decimals);
     if(p<1)requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
@@ -488,7 +498,7 @@ function gateEditableField(el,msg){
     STUDIO_ROLE=IS_ADMIN?'operatore':(prof.studio_ruolo||'nessuno');
 
     if(!IS_ADMIN && STUDIO_ROLE==='nessuno'){
-      if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:var(--life);font-size:14px;">&#128274; Accesso non consentito a questa sezione.<br><br><button onclick="window.location.href=\'app/page_hub_v1.html\'" style="padding:10px 20px;border-radius:10px;border:none;background:var(--sabbia);color:var(--nero);cursor:pointer;font-size:14px;font-family:\'Jost\',sans-serif;font-weight:700;">← Torna all\'hub</button></div>';
+      if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:var(--life);font-size:14px;">&#128274; Accesso non consentito a questa sezione.<br><br><button onclick="goHub()" style="padding:10px 20px;border-radius:10px;border:none;background:var(--sabbia);color:var(--nero);cursor:pointer;font-size:14px;font-family:\'Jost\',sans-serif;font-weight:700;">← Torna all\'hub</button></div>';
       return;
     }
 
@@ -886,8 +896,9 @@ function renderFinance(el){
     const tt=mk('div','ttl');tt.textContent=d.label;el.appendChild(tt);
     // Total
     const tot=mk('div','');tot.style.cssText='background:'+d.bg+';border-radius:12px;padding:16px;text-align:center;margin-bottom:16px;border:1px solid '+d.color+'22';
-    tot.innerHTML='<div style="font-size:30px;font-weight:800;color:'+d.color+'">€'+d.val.toFixed(2)+'</div>';
+    tot.innerHTML='<div style="font-size:30px;font-weight:800;color:'+d.color+'" id="finDetailTotal">€0.00</div>';
     el.appendChild(tot);
+    countUpEl(document.getElementById('finDetailTotal'),d.val,'€',700,2);
     if(d.isSpese){const ab=btn('+ Aggiungi spesa',()=>showAddExp(el,finDetail),'s',true);ab.style.marginBottom='10px';ab.setAttribute('data-gate','studio');el.appendChild(ab);}
     if(!d.items.length){const e=mk('div','');e.style.cssText='text-align:center;color:var(--grigio-lt);font-size:13px;padding:40px 0';e.textContent='Nessuna voce';el.appendChild(e);}
     const g=mk('div','g3');
@@ -914,25 +925,28 @@ function renderFinance(el){
   ['incassato','credito','pipeline'].forEach(id=>{
     const s=SECS[id];
     const d=mk('div','');d.style.cssText='background:'+s.bg+';border-radius:12px;padding:14px;text-align:center;cursor:pointer;border:1px solid '+s.color+'22;transition:transform .1s';
-    d.innerHTML='<div style="font-size:10px;font-weight:700;color:'+s.color+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">'+s.label+'</div><div style="font-size:20px;font-weight:800;color:'+s.color+'">€'+s.val.toFixed(2)+'</div><div style="font-size:10px;color:'+s.color+';opacity:.5;margin-top:3px">clicca per dettaglio →</div>';
+    d.innerHTML='<div style="font-size:10px;font-weight:700;color:'+s.color+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">'+s.label+'</div><div style="font-size:20px;font-weight:800;color:'+s.color+'" id="finTile-'+id+'">€0.00</div><div style="font-size:10px;color:'+s.color+';opacity:.5;margin-top:3px">clicca per dettaglio →</div>';
     d.onmouseenter=()=>d.style.transform='translateY(-2px)';d.onmouseleave=()=>d.style.transform='';
     d.onclick=()=>{finDetail=id;renderFinance(el);};
     g1.appendChild(d);
   });
   el.appendChild(g1);
+  ['incassato','credito','pipeline'].forEach(id=>countUpEl(document.getElementById('finTile-'+id),SECS[id].val,'€',700,2));
   el.appendChild(mk('div','',`<div style="font-size:11px;font-weight:700;color:var(--grigio-lt);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Spese</div>`));
   const g2d=mk('div','g2');g2d.style.marginBottom='14px';
   ['materiale','attrezzatura'].forEach(id=>{
     const s=SECS[id];
     const d=mk('div','');d.style.cssText='background:'+s.bg+';border-radius:12px;padding:14px;text-align:center;cursor:pointer;border:1px solid '+s.color+'22;transition:transform .1s';
-    d.innerHTML='<div style="font-size:10px;font-weight:700;color:'+s.color+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">'+s.label+'</div><div style="font-size:20px;font-weight:800;color:'+s.color+'">€'+s.val.toFixed(2)+'</div><div style="font-size:10px;color:'+s.color+';opacity:.5;margin-top:3px">clicca per dettaglio →</div>';
+    d.innerHTML='<div style="font-size:10px;font-weight:700;color:'+s.color+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">'+s.label+'</div><div style="font-size:20px;font-weight:800;color:'+s.color+'" id="finTile-'+id+'">€0.00</div><div style="font-size:10px;color:'+s.color+';opacity:.5;margin-top:3px">clicca per dettaglio →</div>';
     d.onmouseenter=()=>d.style.transform='translateY(-2px)';d.onmouseleave=()=>d.style.transform='';
     d.onclick=()=>{finDetail=id;renderFinance(el);};
     g2d.appendChild(d);
   });
   el.appendChild(g2d);
+  ['materiale','attrezzatura'].forEach(id=>countUpEl(document.getElementById('finTile-'+id),SECS[id].val,'€',700,2));
   const bilCol=bil>=0?'#4A7C59':'#C41E5A';const bilBg=bil>=0?'#C7DFCF':'#F5E0E6';
-  el.appendChild(card('<div style="text-align:center"><div style="font-size:10px;font-weight:700;color:'+bilCol+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">Bilancio Netto</div><div style="font-size:30px;font-weight:800;color:'+bilCol+'">'+(bil>=0?'':'-')+'€'+Math.abs(bil).toFixed(2)+'</div></div>',{background:bilBg,border:'1px solid '+bilCol+'33'}));
+  el.appendChild(card('<div style="text-align:center"><div style="font-size:10px;font-weight:700;color:'+bilCol+';letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">Bilancio Netto</div><div style="font-size:30px;font-weight:800;color:'+bilCol+'" id="finNetto">'+(bil>=0?'':'-')+'€0.00</div></div>',{background:bilBg,border:'1px solid '+bilCol+'33'}));
+  countUpEl(document.getElementById('finNetto'),Math.abs(bil),(bil>=0?'':'-')+'€',700,2);
 }
 
 function delExp(id,el){
