@@ -127,6 +127,8 @@ body{
   display:flex; align-items:center; justify-content:center;
   font-size:.75rem; font-weight:800; color:var(--nero); flex-shrink:0;
 }
+@keyframes stepPulse{0%{transform:scale(1);}45%{transform:scale(1.18);}100%{transform:scale(1);}}
+.step-num.step-pulse{animation:stepPulse .45s cubic-bezier(.34,1.56,.64,1);}
 .step-label{ font-size:.82rem; font-weight:600; color:var(--nero); }
 .step-sub  { font-size:.7rem; color:var(--grigio); }
 .fu-badge{
@@ -155,6 +157,8 @@ body{
   background:var(--bianco); border:1.5px solid var(--bordo); border-radius:16px;
   overflow:hidden;
 }
+.section.reveal-pending{ opacity:0; transform:translateY(14px); transition:opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1); }
+.section.reveal-pending.revealed{ opacity:1; transform:translateY(0); }
 .sec-header{
   padding:12px 16px 10px;
   border-bottom:1.5px solid var(--bordo);
@@ -643,6 +647,7 @@ async function loadCompany() {
     populatePage(data[0]);
     document.getElementById('sysLabel').textContent = 'Connesso a Supabase';
     document.getElementById('sysLabel').style.color = 'var(--maker)';
+    initScrollReveal();
   } catch(e) {
     showError('Errore fetch: ' + e.message);
     document.getElementById('sysLabel').textContent = 'Offline — dati non disponibili';
@@ -653,6 +658,41 @@ async function loadCompany() {
 function showError(msg) {
   document.querySelector('.company-name').textContent = 'Errore';
   document.querySelector('.company-meta').innerHTML = '<span style="color:var(--life);font-size:.8rem">' + msg + '</span>';
+}
+
+/* ── Reveal allo scroll: solo le 3 sezioni principali sotto la testata,
+   e solo se l'observer parte davvero — se qualcosa va storto le sezioni
+   restano semplicemente visibili come sempre (nessun contenuto nascosto
+   in attesa di JS). Gira una sola volta, al primo caricamento. ── */
+function initScrollReveal(){
+  try{
+    const sections = document.querySelectorAll('.section');
+    if(!sections.length || !('IntersectionObserver' in window)) return;
+    sections.forEach(function(sec){ sec.classList.add('reveal-pending'); });
+    const io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('revealed'); io.unobserve(e.target); }
+      });
+    }, { threshold: .12 });
+    sections.forEach(function(sec){ io.observe(sec); });
+  }catch(e){ console.error('initScrollReveal error:', e); }
+}
+
+/* ── Badge step: aggiorna testo e, solo se il valore e' davvero cambiato
+   rispetto a quello mostrato finora, fa un breve "pop" sul numero. ── */
+function setStepBadge(numText, labelText, subText){
+  const stepNum = document.querySelector('.step-num');
+  const stepLabel = document.querySelector('.step-label');
+  const stepSub = document.querySelector('.step-sub');
+  const changed = !!stepNum && stepNum.textContent !== String(numText);
+  if (stepNum) stepNum.textContent = numText;
+  if (stepLabel) stepLabel.textContent = labelText;
+  if (stepSub) stepSub.textContent = subText;
+  if (changed && stepNum) {
+    stepNum.classList.remove('step-pulse');
+    void stepNum.offsetWidth;
+    stepNum.classList.add('step-pulse');
+  }
 }
 
 function populatePage(co) {
@@ -680,9 +720,7 @@ function populatePage(co) {
   // Step attuale (lo step 13 "Rifiutato" è indipendente — vedi co.rejected)
   const step = co.step_attuale || 1;
   currentStep = step;
-  document.querySelector('.step-num').textContent = co.rejected ? '✕' : step;
-  document.querySelector('.step-label').textContent = co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—');
-  document.querySelector('.step-sub').textContent = co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12';
+  setStepBadge(co.rejected ? '✕' : step, co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—'), co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12');
 
   // Score badge
   const scoreBadge = document.querySelector('.topbar-badge.tag-score');
@@ -893,6 +931,7 @@ async function setManualContactToday() {
     });
     currentCompanyData.last_manual_contact_date = nowIso;
     renderFollowUp(currentCompanyData);
+    pipShowToast('Salvato');
   } catch(e) { console.error('setManualContactToday error:', e); }
 }
 async function clearManualContact() {
@@ -906,6 +945,7 @@ async function clearManualContact() {
     });
     currentCompanyData.last_manual_contact_date = null;
     renderFollowUp(currentCompanyData);
+    pipShowToast('Salvato');
   } catch(e) { console.error('clearManualContact error:', e); }
 }
 
@@ -922,6 +962,7 @@ async function toggleFollowUpStop() {
     });
     currentCompanyData.followup_stopped = newValue;
     renderFollowUp(currentCompanyData);
+    pipShowToast(newValue ? 'Follow-up sospesi' : 'Follow-up riattivati');
   } catch(e) { console.error('toggleFollowUpStop error:', e); }
 }
 async function toggleAzioneRichiesta() {
@@ -937,6 +978,7 @@ async function toggleAzioneRichiesta() {
     });
     currentCompanyData.step8_azione_richiesta = newValue;
     renderFollowUp(currentCompanyData);
+    pipShowToast('Salvato');
   } catch(e) { console.error('toggleAzioneRichiesta error:', e); }
 }
 
@@ -966,12 +1008,7 @@ async function updateStep(n) {
    stessa identica scrittura su Supabase di sempre, così A6/A7 restano compatibili. */
 function setStep(n){
   currentStep = n;
-  const stepNum = document.querySelector('.step-num');
-  const stepLabel = document.querySelector('.step-label');
-  const stepSub = document.querySelector('.step-sub');
-  if (stepNum) stepNum.textContent = n === 13 ? '✕' : n;
-  if (stepLabel) stepLabel.textContent = STEP_NAMES[n] || '—';
-  if (stepSub) stepSub.textContent = n === 13 ? 'Chiusa' : 'Step ' + n + ' di 12';
+  setStepBadge(n === 13 ? '✕' : n, STEP_NAMES[n] || '—', n === 13 ? 'Chiusa' : 'Step ' + n + ' di 12');
   // Salva su Supabase + aggiorna azioni
   updateStep(n);
   if (currentCompanyData) {
@@ -1065,6 +1102,7 @@ async function pipPatchCompany(body){
     });
     Object.assign(currentCompanyData, body);
     renderPipelineRami(currentCompanyData);
+    pipShowToast('Salvato');
   } catch(e) { console.error('pipPatchCompany error:', e); }
 }
 
@@ -1080,12 +1118,7 @@ function renderPipelineRami(co){
   redrawPipLines(lanes);
   // Tiene allineato il riepilogo in testata (es. dopo il toggle "rifiutato", che non passa da setStep)
   const step = co.step_attuale || 1;
-  const stepNum = document.querySelector('.step-num');
-  const stepLabel = document.querySelector('.step-label');
-  const stepSub = document.querySelector('.step-sub');
-  if (stepNum) stepNum.textContent = co.rejected ? '✕' : step;
-  if (stepLabel) stepLabel.textContent = co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—');
-  if (stepSub) stepSub.textContent = co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12';
+  setStepBadge(co.rejected ? '✕' : step, co.rejected ? 'Rifiutato' : (STEP_NAMES[step] || '—'), co.rejected ? 'Chiusa' : 'Step ' + step + ' di 12');
   applyRoleGateUI();
 }
 
@@ -1484,6 +1517,7 @@ async function saveNoteText(text){
   } catch(e){ console.error('saveNote error:', e); }
   // Mostra subito nella UI
   document.getElementById('noteList').prepend(renderNote(text));
+  pipShowToast('Nota salvata');
 }
 function saveNote(){
   if (!gateIa('Salva una nuova nota per questa azienda.')) return;

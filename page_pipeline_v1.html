@@ -744,11 +744,17 @@ function renderList(list){
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Nessuna azienda trovata</div><div class="empty-sub">Prova a cambiare filtro o ricerca</div></div>';
     return;
   }
+  // FLIP: posizione delle card prima del repaint (per animare il riordino)
+  const prevTops = {};
+  el.querySelectorAll('.co-card').forEach(function(card){
+    const cid = card.getAttribute('data-id');
+    if(cid) prevTops[cid] = card.getBoundingClientRect().top;
+  });
   el.innerHTML = list.map(c => {
     var bc = stepBadgeClass(c.step);
     var sc = scoreTagClass(c.score);
     var refused = c.step === 13;
-    return '<a class="co-card'+(refused?' refused':'')+'" href="page_company_v2.html?id='+c.id+'">' +
+    return '<a class="co-card'+(refused?' refused':'')+'" data-id="'+c.id+'" href="page_company_v2.html?id='+c.id+'">' +
       '<div class="step-badge '+bc+'">' +
         '<div class="step-num">'+(refused?'✕':c.step)+'</div>' +
       '</div>' +
@@ -768,16 +774,45 @@ function renderList(list){
       '</div>' +
     '</a>';
   }).join('');
+  // FLIP: applica il delta rispetto alla posizione precedente e lo rilascia
+  el.querySelectorAll('.co-card').forEach(function(card){
+    const cid = card.getAttribute('data-id');
+    const prevTop = prevTops[cid];
+    if(prevTop == null) return;
+    const delta = prevTop - card.getBoundingClientRect().top;
+    if(Math.abs(delta) < 1) return;
+    card.style.transition = 'none';
+    card.style.transform = 'translateY('+delta+'px)';
+    requestAnimationFrame(function(){
+      card.style.transition = 'transform .32s cubic-bezier(.2,.8,.2,1)';
+      card.style.transform = '';
+      setTimeout(function(){ card.style.transition = ''; }, 340);
+    });
+  });
 }
 
 // ─── STATS ───────────────────────────────────────────────────────────────────
+function countUpEl(el,target,dur){
+  if(!el||!isFinite(target)){ if(el) el.textContent = isFinite(target) ? target : '—'; return; }
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = target; return; }
+  var start = parseFloat(el.textContent) || 0;
+  dur = dur || 650;
+  var t0 = performance.now();
+  function step(t){
+    var p = Math.min(1,(t-t0)/dur);
+    var val = Math.round(start + (target-start) * (1-Math.pow(1-p,3)));
+    el.textContent = val;
+    if (p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 function renderStats(){
   var attive = COMPANIES.filter(c => c.step >= 1 && c.step <= 12).length;
   var avgScore = Math.round(COMPANIES.filter(c=>c.step!==13).reduce((s,c)=>s+c.score,0) /
                             COMPANIES.filter(c=>c.step!==13).length);
-  document.getElementById('statTotale').textContent = COMPANIES.length;
-  document.getElementById('statAttive').textContent = attive;
-  document.getElementById('statScore').textContent  = avgScore;
+  countUpEl(document.getElementById('statTotale'), COMPANIES.length);
+  countUpEl(document.getElementById('statAttive'), attive);
+  countUpEl(document.getElementById('statScore'), avgScore);
   document.getElementById('pipelineSub').textContent = attive + ' in corso · ' +
     COMPANIES.filter(c=>c.step===13).length + ' archiviate';
 }
