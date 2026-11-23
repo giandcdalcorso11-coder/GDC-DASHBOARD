@@ -13,6 +13,8 @@
 <meta name="theme-color" content="#1C1C1C">
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;--athlete:#2B5C8A;--athlete-bg:#D9E6F3;--athlete-mid:#4A86C6;--life:#C2193A;--life-bg:#F5E0E6;--life-mid:#E9415A;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{background:var(--carta);}
@@ -157,9 +159,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 /* ── Ruoli collaboratori (Step 11) — pulsanti che scrivono/lanciano agenti,
    smorzati per l'osservatore; al click, popup esplicativo invece dell'azione ── */
 .role-disabled{opacity:.5;filter:saturate(.6);}
-.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
-.role-info-overlay.open{display:flex;}
-.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
 .role-info-icon{font-size:1.6rem;margin-bottom:10px;}
 .role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
 .role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}

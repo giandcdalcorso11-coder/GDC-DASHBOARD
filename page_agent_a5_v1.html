@@ -7,6 +7,8 @@
 <title>GDC WORKSPACE — Agente 5</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
   --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
   --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
@@ -71,9 +73,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .msg-popup-title{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sabbia-dk);}
 .msg-popup-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
 .role-disabled{opacity:.5;filter:saturate(.6);}
-.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
-.role-info-overlay.open{display:flex;}
-.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
 .role-info-icon{font-size:1.6rem;margin-bottom:10px;}
 .role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
 .role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
@@ -116,7 +119,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}
 .tab-btn:hover:not(.active){border-color:var(--nero);color:var(--nero);}
 .panel{display:none;}
-.panel.active{display:block;}
+.panel.active{display:block;animation:gdcPanelIn .26s cubic-bezier(.2,.8,.2,1);}
+@keyframes gdcPanelIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
 /* ══ SECTION CARD ══ */
 .section-card{background:var(--bianco);border:1.5px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;}

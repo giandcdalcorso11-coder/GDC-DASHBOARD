@@ -7,6 +7,8 @@
 <title>GDC Print Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
   --carta:#F5F0E8; --bianco:#FAFAF5; --nero:#1C1C1C;
   --grigio:#6B6B6B; --grigio-lt:#9A9488; --bordo:#DDD6CB;
@@ -52,6 +54,12 @@ input,textarea,button{font-family:inherit;}
 
 /* CONTENT */
 .content{padding:20px;max-width:1200px;margin:0 auto;}
+.content.gdc-tab-in{animation:gdcPanelIn .26s cubic-bezier(.2,.8,.2,1);}
+@keyframes gdcPanelIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.skel-card{background:var(--bianco);border-radius:14px;border:1.5px solid var(--bordo);padding:14px;margin-bottom:10px;}
+.skel-bar{height:12px;border-radius:6px;background:linear-gradient(90deg,var(--bordo) 25%,var(--carta) 50%,var(--bordo) 75%);background-size:200% 100%;animation:gdcShimmer 1.4s ease-in-out infinite;margin-bottom:8px;}
+.skel-bar.w1{width:45%;} .skel-bar.w2{width:70%;} .skel-bar.w3{width:30%;margin-bottom:0;}
+@keyframes gdcShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 
 /* CARDS */
 .card{background:var(--bianco);border-radius:14px;border:1.5px solid var(--bordo);padding:14px;margin-bottom:10px;}
@@ -125,9 +133,10 @@ input,textarea,button{font-family:inherit;}
 
 /* RUOLI — smorzato ma cliccabile, popup invece di eseguire o di un disabled muto */
 .role-disabled{opacity:.5;filter:saturate(.6);}
-.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:none;align-items:center;justify-content:center;padding:24px;}
-.role-info-overlay.open{display:flex;}
-.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
 .role-info-icon{font-size:1.6rem;margin-bottom:10px;}
 .role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
 .role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
@@ -440,7 +449,7 @@ function gateEditableField(el,msg){
       if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:var(--life);font-size:14px;">Sessione scaduta.<br><br><button onclick="window.location.href=\'page_login_v6.html\'" style="padding:10px 20px;border-radius:10px;border:none;background:var(--sabbia);color:var(--nero);cursor:pointer;font-size:14px;font-family:\'Jost\',sans-serif;font-weight:700;">← Torna al login</button></div>';
       return;
     }
-    if(el) el.innerHTML='<div style="text-align:center;padding:60px;color:var(--grigio-lt);font-size:13px;">Caricamento dati…</div>';
+    if(el) el.innerHTML=Array(3).fill('<div class="skel-card"><div class="skel-bar w1"></div><div class="skel-bar w2"></div><div class="skel-bar w3"></div></div>').join('');
 
     const myId=_userId;
     const pr=await sbFetch(SB_URL+'/rest/v1/profiles?user_id=eq.'+encodeURIComponent(myId)+'&select=is_admin,studio_ruolo',{headers:sbH()});
@@ -487,6 +496,9 @@ function render(){
   if(!el)return;
   el.innerHTML='';
   ({calc:renderCalc,filament:renderFilaments,orders:renderOrders,finance:renderFinance,hardware:renderHardware,chat:renderChat})[curTab](el);
+  el.classList.remove('gdc-tab-in');
+  void el.offsetWidth;
+  el.classList.add('gdc-tab-in');
 }
 
 // ── DOM HELPERS ──

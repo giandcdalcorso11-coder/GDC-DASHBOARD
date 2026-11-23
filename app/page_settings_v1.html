@@ -13,6 +13,8 @@
 <meta name="theme-color" content="#1C1C1C">
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--athlete:#2B5C8A;--athlete-bg:#D9E6F3;--life:#C2193A;--life-bg:#F5E0E6;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
@@ -41,7 +43,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}
 .tab-btn:hover:not(.active){border-color:var(--nero);color:var(--nero);}
 .tab-panel{display:none;}
-.tab-panel.active{display:block;}
+.tab-panel.active{display:block;animation:gdcPanelIn .26s cubic-bezier(.2,.8,.2,1);}
+@keyframes gdcPanelIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
 /* ── Master toggle card ── */
 .master-card{display:flex;align-items:center;gap:12px;background:var(--bianco);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:22px;}
