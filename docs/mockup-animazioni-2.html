@@ -1,0 +1,289 @@
+<!doctype html>
+<title>Altre animazioni GDC WORKSPACE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* ===== Design plan =====
+   Layout: colonna unica, una sezione per ogni famiglia di animazione, demo dal vivo + snippet.
+   Color: stessa palette reale della webapp (carta/nero/maker/sabbia/life), nessuna invenzione.
+   Type: Jost per tutto, stessa identita' del resto del sito e del mockup precedente.
+*/
+:root{
+  --carta:#F5F0E8; --bianco:#FAFAF5; --nero:#1C1C1C;
+  --border:#E3DCCB; --grigio:#8A8275;
+  --maker:#4A7C59; --maker-bg:#C7DFCF;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --life:#C2193A; --life-bg:#F5E0E6;
+  --shadow:0 1px 2px rgba(28,28,28,.06);
+  --font:'Jost',sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1;
+  --border:#3A3A3A; --grigio:#9A9A9A;
+  --maker-bg:#24352A; --sabbia-bg:#332C1E; --life-bg:#3A2024;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1;
+  --border:#3A3A3A; --grigio:#9A9A9A;
+  --maker-bg:#24352A; --sabbia-bg:#332C1E; --life-bg:#3A2024;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--carta); color:var(--nero);
+  font-family:var(--font); font-weight:400;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{ max-width:720px; margin:0 auto; padding-block:40px 80px; }
+
+.hero{ margin-bottom:40px; }
+.eyebrow{ font-size:.72rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--grigio); margin:0 0 8px; }
+h1{ font-size:1.9rem; font-weight:800; letter-spacing:-.02em; margin:0 0 10px; line-height:1.15; }
+.lead{ font-size:.98rem; color:var(--grigio); line-height:1.55; margin:0; max-width:56ch; }
+
+.section{
+  border:1px solid var(--border); border-radius:16px; background:var(--bianco);
+  padding:24px; margin-bottom:22px; box-shadow:var(--shadow);
+}
+.sec-num{ font-size:.7rem; font-weight:700; color:var(--grigio); letter-spacing:.08em; }
+h2{ font-size:1.15rem; font-weight:700; margin:2px 0 6px; letter-spacing:-.01em; }
+.sec-desc{ font-size:.86rem; color:var(--grigio); line-height:1.5; margin:0 0 18px; max-width:52ch; }
+
+.demo-box{
+  background:var(--carta); border:1px dashed var(--border); border-radius:12px;
+  padding:22px; min-height:110px; display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden; margin-bottom:14px;
+}
+.replay{
+  appearance:none; border:none; border-radius:10px; background:var(--nero); color:var(--carta);
+  font-family:var(--font); font-weight:700; font-size:.78rem; letter-spacing:.02em;
+  padding:9px 16px; cursor:pointer;
+}
+.replay:active{ transform:translateY(1px); }
+.where{ font-size:.76rem; color:var(--grigio); margin-top:12px; line-height:1.5; }
+.where b{ color:var(--nero); font-weight:600; }
+
+/* ---- 1. Toast conferma azione ---- */
+.toast-host{ position:relative; width:100%; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:14px; }
+.toast{
+  position:absolute; bottom:14px; left:50%;
+  display:flex; align-items:center; gap:8px;
+  background:var(--nero); color:var(--carta); font-weight:600; font-size:.82rem;
+  padding:10px 16px; border-radius:999px; box-shadow:0 8px 20px rgba(0,0,0,.2);
+  transform:translate(-50%, 14px); opacity:0; pointer-events:none;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease;
+}
+.toast.show{ transform:translate(-50%, 0); opacity:1; }
+.toast-check{ width:16px;height:16px;border-radius:50%;background:var(--maker);display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0; }
+
+/* ---- 2. Cambio di stato (step badge) ---- */
+.step-demo{ display:flex; align-items:center; gap:16px; }
+.step-badge-demo{
+  width:46px; height:46px; border-radius:12px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; font-weight:800; font-size:.8rem;
+  background:var(--sabbia-bg); color:var(--sabbia-dk);
+  transition:background .35s ease, color .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.step-badge-demo.done{ background:var(--maker); color:#fff; transform:scale(1.08); }
+.step-label{ font-size:.84rem; font-weight:600; }
+.step-sub{ font-size:.74rem; color:var(--grigio); transition:color .3s; }
+.step-sub.done{ color:var(--maker); font-weight:600; }
+
+/* ---- 3. Numeri che contano ---- */
+.kpi-row{ display:flex; gap:26px; }
+.kpi{ text-align:center; }
+.kpi-num{ font-size:1.9rem; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.kpi-lbl{ font-size:.72rem; color:var(--grigio); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+
+/* ---- 4. Riordino liste (FLIP) ---- */
+.flip-list{ display:flex; flex-direction:column; gap:8px; width:100%; }
+.flip-item{
+  background:var(--bianco); border:1.5px solid var(--border); border-radius:12px;
+  padding:10px 14px; font-size:.82rem; font-weight:600; display:flex; align-items:center; justify-content:space-between;
+  transition:transform .32s cubic-bezier(.2,.8,.2,1);
+}
+.flip-item span.sc{ color:var(--grigio); font-weight:700; font-size:.76rem; }
+
+/* ---- 5. Scroll reveal ---- */
+.reveal-demo{ display:flex; flex-direction:column; gap:10px; width:100%; }
+.reveal-card{
+  background:var(--bianco); border:1.5px solid var(--border); border-radius:12px; padding:14px;
+  font-size:.82rem; opacity:0; transform:translateY(14px);
+  transition:opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.reveal-card.in{ opacity:1; transform:translateY(0); }
+
+footer{ text-align:center; font-size:.74rem; color:var(--grigio); margin-top:30px; }
+
+@media (prefers-reduced-motion:reduce){
+  .toast, .step-badge-demo, .step-sub, .flip-item, .reveal-card{ transition:none !important; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;800&display=swap">
+
+<div class="wrap">
+
+  <div class="hero">
+    <p class="eyebrow">GDC WORKSPACE — mockup, nessuna installazione</p>
+    <h1>5 altre transizioni possibili</h1>
+    <p class="lead">Sempre solo CSS. Le prime due (toast e cambio di stato) sono quelle che consiglio: colmano un vuoto reale, oggi non c'&egrave; nessun feedback dopo un salvataggio. Le altre sono pi&ugrave; estetiche.</p>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">01 &middot; consigliata</span>
+    <h2>Conferma azione (toast)</h2>
+    <p class="sec-desc">Oggi dopo aver salvato qualcosa (es. modifica a un ordine in Studio) non succede visivamente nulla. Qui appare un piccolo avviso in basso che confirma e scompare da solo.</p>
+    <div class="demo-box">
+      <div class="toast-host">
+        <button class="replay" id="toastBtn">Simula salvataggio</button>
+        <div class="toast" id="toast"><span class="toast-check">&check;</span>Salvato</div>
+      </div>
+    </div>
+    <div class="where">Dove si applicherebbe: ovunque c'&egrave; un UPDATE/INSERT su Supabase &mdash; Studio (ordini, magazzino, spese), Pipeline, Scheda azienda, Settings.</div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">02 &middot; consigliata</span>
+    <h2>Cambio di stato</h2>
+    <p class="sec-desc">Quando un'azienda avanza di step nella pipeline, o un ordine passa a "pagato", il badge cambia colore di scatto. Qui la transizione &egrave; morbida e il badge si "assesta" con un leggero rimbalzo.</p>
+    <div class="demo-box">
+      <div class="step-demo">
+        <div class="step-badge-demo" id="stepBadge">3</div>
+        <div>
+          <div class="step-label">Media kit</div>
+          <div class="step-sub" id="stepSub">In attesa di conferma</div>
+        </div>
+      </div>
+      <button class="replay" id="stepBtn" style="margin-left:20px;">Simula avanzamento</button>
+    </div>
+    <div class="where">Dove si applicherebbe: badge di step in <b>page_pipeline_v1.html</b> e <b>page_company_v2.html</b>, pallini stato ordine in <b>gdc_studio.html</b>.</div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">03</span>
+    <h2>Numeri che contano</h2>
+    <p class="sec-desc">I grandi numeri nei report (follower, ER, reach) oggi appaiono di scatto. Qui salgono rapidamente dal basso verso il valore reale, una volta sola al caricamento della pagina.</p>
+    <div class="demo-box">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-num" id="kpi1">0</div><div class="kpi-lbl">Follower</div></div>
+        <div class="kpi"><div class="kpi-num" id="kpi2">0</div><div class="kpi-lbl">ER medio</div></div>
+        <div class="kpi"><div class="kpi-num" id="kpi3">0</div><div class="kpi-lbl">Reach</div></div>
+      </div>
+      <button class="replay" id="kpiBtn" style="margin-left:24px;">Replay</button>
+    </div>
+    <div class="where">Dove si applicherebbe: report di Agente 2/3/4, dashboard KPI, schede azienda.</div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">04</span>
+    <h2>Riordino liste</h2>
+    <p class="sec-desc">Quando cambi l'ordinamento della Pipeline (es. per score invece che per step), oggi le card saltano di posizione di scatto. Qui si vedono scivolare nella nuova posizione.</p>
+    <div class="demo-box">
+      <div class="flip-list" id="flipList">
+        <div class="flip-item" data-id="a">EUMAKERS <span class="sc">9</span></div>
+        <div class="flip-item" data-id="b">FILOALFA <span class="sc">7</span></div>
+        <div class="flip-item" data-id="c">Mizuno <span class="sc">6</span></div>
+      </div>
+      <button class="replay" id="flipBtn" style="margin-left:24px;">Ordina per punteggio</button>
+    </div>
+    <div class="where">Dove si applicherebbe: lista aziende in <b>page_pipeline_v1.html</b> quando si cambia ordinamento/filtro. Pi&ugrave; complessa delle altre: richiede calcolare le posizioni prima e dopo (tecnica FLIP).</div>
+  </div>
+
+  <div class="section">
+    <span class="sec-num">05</span>
+    <h2>Reveal allo scroll</h2>
+    <p class="sec-desc">Le sezioni di una pagina lunga (es. la Scheda azienda) oggi sono tutte visibili da subito. Qui ogni sezione entra leggermente mentre scorri fino a raggiungerla.</p>
+    <div class="demo-box" style="max-height:140px;overflow-y:auto;">
+      <div class="reveal-demo" id="revealList">
+        <div class="reveal-card">Profilo Azienda</div>
+        <div class="reveal-card">Analisi Fit</div>
+        <div class="reveal-card">Contesto Fiscale</div>
+        <div class="reveal-card">Brief per Agente 6</div>
+      </div>
+    </div>
+    <div class="where">Dove si applicherebbe: <b>page_scheda_azienda_v1.html</b>, <b>page_company_v2.html</b> &mdash; scorri il riquadro sopra per vederlo. Attenzione: sulla pagina reale va sempre garantito che il contenuto sia leggibile anche senza scroll (i motori di ricerca/anteprime vedono la pagina ferma).</div>
+  </div>
+
+  <footer>Mockup statico &middot; nessuna modifica ai file reali &middot; CSS puro, zero dipendenze</footer>
+</div>
+
+<script>
+(function(){
+  // 1. Toast
+  var toast = document.getElementById('toast');
+  document.getElementById('toastBtn').addEventListener('click', function(){
+    toast.classList.remove('show');
+    void toast.offsetWidth;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+  });
+
+  // 2. Step badge
+  var badge = document.getElementById('stepBadge'), sub = document.getElementById('stepSub');
+  var done = false;
+  document.getElementById('stepBtn').addEventListener('click', function(){
+    done = !done;
+    badge.textContent = done ? '4' : '3';
+    badge.classList.toggle('done', done);
+    sub.textContent = done ? 'Approvato da Gianluca' : 'In attesa di conferma';
+    sub.classList.toggle('done', done);
+  });
+
+  // 3. KPI count-up
+  function countTo(el, target, suffix){
+    var start = 0, dur = 900, t0 = performance.now();
+    function step(t){
+      var p = Math.min(1, (t - t0) / dur);
+      var val = Math.round(start + (target - start) * (1 - Math.pow(1 - p, 3)));
+      el.textContent = val.toLocaleString('it-IT') + (suffix || '');
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function playKpis(){
+    countTo(document.getElementById('kpi1'), 18400);
+    countTo(document.getElementById('kpi2'), 4, '%');
+    countTo(document.getElementById('kpi3'), 52100);
+  }
+  document.getElementById('kpiBtn').addEventListener('click', playKpis);
+  playKpis();
+
+  // 4. FLIP reorder
+  var sorted = false;
+  document.getElementById('flipBtn').addEventListener('click', function(){
+    var list = document.getElementById('flipList');
+    var items = [].slice.call(list.children);
+    var first = items.map(function(it){ return it.getBoundingClientRect().top; });
+    sorted = !sorted;
+    var order = sorted ? ['a','b','c'] : ['a','b','c']; // base order by id
+    var byScore = items.slice().sort(function(a,b){
+      var sa = +a.querySelector('.sc').textContent, sb = +b.querySelector('.sc').textContent;
+      return sorted ? sb - sa : (a.dataset.id < b.dataset.id ? -1 : 1);
+    });
+    byScore.forEach(function(it){ list.appendChild(it); });
+    var last = items.map(function(it){ return it.getBoundingClientRect().top; });
+    items.forEach(function(it, i){
+      var delta = first[i] - it.getBoundingClientRect().top;
+      it.style.transition = 'none';
+      it.style.transform = 'translateY(' + delta + 'px)';
+      requestAnimationFrame(function(){
+        it.style.transition = '';
+        it.style.transform = '';
+      });
+    });
+  });
+
+  // 5. Scroll reveal (IntersectionObserver scoped to the demo box)
+  var revealBox = document.getElementById('revealList').parentElement;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { root: revealBox, threshold: .4 });
+  document.querySelectorAll('.reveal-card').forEach(function(c){ io.observe(c); });
+})();
+</script>
