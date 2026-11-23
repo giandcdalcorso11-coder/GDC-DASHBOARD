@@ -105,16 +105,47 @@ h2{ font-size:1.15rem; font-weight:700; margin:2px 0 6px; letter-spacing:-.01em;
 .f2 .pg.leave-right{ transform:translateX(30%); opacity:0; }
 .f2 .pg.settled{ transform:translateX(0); opacity:1; }
 
-/* ===== 3. Elemento condiviso (morph) ===== */
-.f3 .pg.hidden{ display:none; }
-.f3 .pg{ transition:opacity .2s ease; }
-.ghost-card{
-  position:absolute; z-index:10; border-radius:12px; background:var(--sabbia-bg);
-  border:1.5px solid var(--border); pointer-events:none;
-  transition:left .38s cubic-bezier(.2,.8,.2,1), top .38s cubic-bezier(.2,.8,.2,1),
-             width .38s cubic-bezier(.2,.8,.2,1), height .38s cubic-bezier(.2,.8,.2,1),
-             border-radius .38s cubic-bezier(.2,.8,.2,1);
+/* ===== 3. Elemento condiviso (morph) — confronto reale ===== */
+.morph-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:480px){ .morph-grid{ grid-template-columns:1fr; } }
+.morph-cell{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.morph-cell-lbl{ font-size:.74rem; font-weight:700; text-align:center; line-height:1.3; }
+.morph-cell-tag{ font-size:.64rem; font-weight:700; padding:2px 8px; border-radius:999px; display:inline-block; margin-bottom:2px; }
+.morph-cell-tag.ready{ background:var(--maker-bg); color:var(--maker); }
+.morph-cell-tag.needs{ background:var(--sabbia-bg); color:var(--sabbia-dk); }
+.mframe{ width:200px; height:230px; border-radius:14px; border:1.5px solid var(--border); background:var(--carta); position:relative; overflow:hidden; box-shadow:0 8px 20px rgba(28,28,28,.1); }
+.mframe-bar{ height:18px; background:var(--bianco); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:3px; padding:0 6px; position:relative; z-index:5; }
+.mframe .pg{ position:absolute; inset:18px 0 0 0; padding:10px; transition:opacity .2s ease; }
+.mframe .pg.hidden{ display:none; }
+/* finta card Hub semplificata, dentro i frame del morph */
+.mhub-title{ font-size:.6rem; font-weight:800; margin-bottom:6px; }
+.mhub-card{ border-radius:9px; padding:8px; border:1.5px solid var(--border); display:flex; flex-direction:column; gap:4px; }
+.mhub-card.studio{ background:var(--sabbia-bg); }
+.mhub-card.ia{ background:var(--maker-bg); }
+.mhub-card-ttl{ font-size:.58rem; font-weight:800; }
+.magent-row{ display:flex; gap:2px; flex-wrap:wrap; margin-top:3px; }
+.magent-dot{ width:11px; height:11px; border-radius:3px; background:var(--maker); opacity:.55; }
+.mlogo-mark{ width:26px; height:26px; border-radius:7px; background:var(--nero); color:var(--carta); font-size:.56rem; font-weight:800; display:flex; align-items:center; justify-content:center; }
+/* finta pagina destinazione, header compatto */
+.mdest-header{ height:30px; display:flex; align-items:center; gap:6px; padding:0 6px; border-bottom:1px solid var(--border); margin:-10px -10px 8px; }
+.mdest-header .mlogo-mark{ width:20px; height:20px; font-size:.5rem; }
+.mdest-header-ttl{ font-size:.56rem; font-weight:700; color:var(--grigio); }
+.mdest-skel{ height:9px; border-radius:5px; background:var(--border); margin-bottom:6px; }
+.mdest-skel.w1{ width:75%; } .mdest-skel.w2{ width:50%; }
+.mdest-block{ height:34px; border-radius:8px; background:var(--bianco); border:1.5px solid var(--border); margin-bottom:6px; }
+/* ghost che si muove tra i due stati: due livelli sovrapposti in crossfade */
+.morph-ghost{
+  position:absolute; z-index:10; pointer-events:none; overflow:hidden;
+  border-radius:9px; border:1.5px solid var(--border); background:var(--bianco);
+  transition:left .42s cubic-bezier(.2,.8,.2,1), top .42s cubic-bezier(.2,.8,.2,1),
+             width .42s cubic-bezier(.2,.8,.2,1), height .42s cubic-bezier(.2,.8,.2,1),
+             border-radius .42s cubic-bezier(.2,.8,.2,1);
 }
+.morph-ghost-inner{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:4px; padding:4px; transition:opacity .3s ease; overflow:hidden; }
+.morph-ghost-inner.to{ opacity:0; }
+.morph-ghost.morphed .morph-ghost-inner.from{ opacity:0; }
+.morph-ghost.morphed .morph-ghost-inner.to{ opacity:1; }
+.replay-sm{ appearance:none; border:none; border-radius:8px; background:var(--nero); color:var(--carta); font-family:var(--font); font-weight:700; font-size:.7rem; padding:7px 12px; cursor:pointer; }
 
 /* ===== 4. Scala (zoom) ===== */
 .f4 .pg{ transition:transform .32s cubic-bezier(.2,.8,.2,1), opacity .3s ease; }
@@ -126,7 +157,7 @@ h2{ font-size:1.15rem; font-weight:700; margin:2px 0 6px; letter-spacing:-.01em;
 footer{ text-align:center; font-size:.74rem; color:var(--grigio); margin-top:30px; }
 
 @media (prefers-reduced-motion:reduce){
-  .pg, .ghost-card{ transition:none !important; }
+  .pg, .morph-ghost, .morph-ghost-inner{ transition:none !important; }
 }
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700;800&display=swap">
@@ -186,25 +217,84 @@ footer{ text-align:center; font-size:.74rem; color:var(--grigio); margin-top:30p
   <div class="section">
     <span class="sec-num">03</span>
     <h2>Elemento condiviso (morph)</h2>
-    <p class="sec-desc">La card "GDC STUDIO" che clicchi nell'Hub non scompare: si trasforma fluidamente nell'intestazione della pagina di Studio. Pi&ugrave; d'impatto delle altre tre, ma va costruita su misura per ogni coppia di pagine (qui solo Hub → Studio, non si pu&ograve; generalizzare a caso).</p>
-    <div class="frame-row">
-      <div class="frame f3" id="f3" style="position:relative;">
-        <div class="frame-bar"><span class="frame-dot"></span><span class="frame-dot"></span><span class="frame-dot"></span></div>
-        <div class="pg pg-hub" id="f3-hub">
-          <div class="pg-title">GDC Workspace</div>
-          <div class="pg-card ia"><div class="pg-card-ttl">GDC IA TEAM</div><div class="pg-card-sub">7 agenti attivi</div></div>
-          <div class="pg-card studio" id="f3-source-card"><div class="pg-card-ttl">GDC STUDIO</div><div class="pg-card-sub">3 ordini in corso</div></div>
-        </div>
-        <div class="pg pg-studio hidden" id="f3-studio">
-          <div class="pg-head" style="position:relative;">
-            <div id="f3-target-badge" style="width:34px;height:34px;border-radius:10px;flex-shrink:0;"></div>
-            <div class="pg-head-ttl">GDC Studio</div>
+    <p class="sec-desc">Ho controllato il codice vero: Hub e pagina di Studio mostrano gi&agrave; lo stesso identico logo "GDC" (solo a due dimensioni diverse) &mdash; &egrave; l'elemento perfetto da far morphare. La card "GDC IA TEAM" invece oggi mostra le 7 iconcine degli agenti, non il logo: qui sotto vedi cosa succederebbe comunque, cos&igrave; decidi tu se ha senso o se serve prima un piccolo ritocco alla card.</p>
+    <div class="morph-grid">
+
+      <div class="morph-cell">
+        <div class="morph-cell-lbl"><span class="morph-cell-tag ready">gi&agrave; pronto</span><br>Studio &mdash; solo il logo</div>
+        <div class="mframe" id="m1">
+          <div class="mframe-bar"><span class="frame-dot"></span><span class="frame-dot"></span></div>
+          <div class="pg" id="m1-hub">
+            <div class="mhub-title">GDC Workspace</div>
+            <div class="mhub-card studio" id="m1-src"><div class="mhub-card-ttl">GDC STUDIO</div><div class="mlogo-mark" id="m1-src-icon">GDC</div></div>
           </div>
-          <div class="pg-skel w1"></div><div class="pg-skel w2"></div>
-          <div class="pg-block"></div><div class="pg-block"></div>
+          <div class="pg hidden" id="m1-dest">
+            <div class="mdest-header"><div class="mlogo-mark" id="m1-dst-icon">GDC</div><div class="mdest-header-ttl">Studio</div></div>
+            <div class="mdest-skel w1"></div><div class="mdest-skel w2"></div>
+            <div class="mdest-block"></div>
+          </div>
         </div>
+        <button class="replay-sm" data-morph="m1">Vai a Studio →</button>
       </div>
-      <button class="replay" id="f3-btn">Vai a Studio →</button>
+
+      <div class="morph-cell">
+        <div class="morph-cell-lbl"><span class="morph-cell-tag ready">gi&agrave; pronto</span><br>Studio &mdash; tutta la card</div>
+        <div class="mframe" id="m2">
+          <div class="mframe-bar"><span class="frame-dot"></span><span class="frame-dot"></span></div>
+          <div class="pg" id="m2-hub">
+            <div class="mhub-title">GDC Workspace</div>
+            <div class="mhub-card studio" id="m2-src"><div class="mhub-card-ttl">GDC STUDIO</div><div class="mlogo-mark">GDC</div></div>
+          </div>
+          <div class="pg hidden" id="m2-dest">
+            <div class="mdest-header" id="m2-dst"><div class="mlogo-mark">GDC</div><div class="mdest-header-ttl">Studio</div></div>
+            <div class="mdest-skel w1"></div><div class="mdest-skel w2"></div>
+            <div class="mdest-block"></div>
+          </div>
+        </div>
+        <button class="replay-sm" data-morph="m2" data-whole="1">Vai a Studio →</button>
+      </div>
+
+      <div class="morph-cell">
+        <div class="morph-cell-lbl"><span class="morph-cell-tag needs">richiede un ritocco</span><br>IA TEAM &mdash; solo icona</div>
+        <div class="mframe" id="m3">
+          <div class="mframe-bar"><span class="frame-dot"></span><span class="frame-dot"></span></div>
+          <div class="pg" id="m3-hub">
+            <div class="mhub-title">GDC Workspace</div>
+            <div class="mhub-card ia" id="m3-src"><div class="mhub-card-ttl">GDC IA TEAM</div><div class="mlogo-mark" id="m3-src-icon">GDC</div></div>
+          </div>
+          <div class="pg hidden" id="m3-dest">
+            <div class="mdest-header"><div class="mlogo-mark" id="m3-dst-icon">GDC</div><div class="mdest-header-ttl">IA Team</div></div>
+            <div class="mdest-skel w1"></div><div class="mdest-skel w2"></div>
+            <div class="mdest-block"></div>
+          </div>
+        </div>
+        <button class="replay-sm" data-morph="m3">Vai a IA TEAM →</button>
+      </div>
+
+      <div class="morph-cell">
+        <div class="morph-cell-lbl"><span class="morph-cell-tag needs">da valutare</span><br>IA TEAM &mdash; tutta la card</div>
+        <div class="mframe" id="m4">
+          <div class="mframe-bar"><span class="frame-dot"></span><span class="frame-dot"></span></div>
+          <div class="pg" id="m4-hub">
+            <div class="mhub-title">GDC Workspace</div>
+            <div class="mhub-card ia" id="m4-src">
+              <div class="mhub-card-ttl">GDC IA TEAM</div>
+              <div class="magent-row"><div class="magent-dot"></div><div class="magent-dot"></div><div class="magent-dot"></div><div class="magent-dot"></div><div class="magent-dot"></div></div>
+            </div>
+          </div>
+          <div class="pg hidden" id="m4-dest">
+            <div class="mdest-header" id="m4-dst"><div class="mlogo-mark">GDC</div><div class="mdest-header-ttl">IA Team</div></div>
+            <div class="mdest-skel w1"></div><div class="mdest-skel w2"></div>
+            <div class="mdest-block"></div>
+          </div>
+        </div>
+        <button class="replay-sm" data-morph="m4" data-whole="1">Vai a IA TEAM →</button>
+      </div>
+
+    </div>
+    <div class="where">
+      <b>Studio (prime due colonne):</b> l'icona "GDC" che vedi nella card dell'Hub &egrave; letteralmente lo stesso disegno gi&agrave; presente nell'intestazione di <b>gdc_studio.html</b> &mdash; il morph usa due elementi che esistono gi&agrave; identici, nessuna aggiunta.<br>
+      <b>IA TEAM (ultime due colonne):</b> oggi la card mostra le iconcine A1-A7, non il logo &mdash; per "solo icona" dovrei aggiungere un piccolo logo alla card (modifica minima, solo estetica); per "tutta la card" invece non serve aggiungere nulla, ma il salto da card piena di iconcine a intestazione sottile si vede: guarda tu se ti convince o preferisci lasciare IA TEAM con la sola dissolvenza.
     </div>
   </div>
 
@@ -297,73 +387,89 @@ footer{ text-align:center; font-size:.74rem; color:var(--grigio); margin-top:30p
     });
   })();
 
-  // ---- 3. Elemento condiviso (morph) ----
+  // ---- 3. Elemento condiviso (morph) — 4 confronti reali ----
   (function(){
-    var showingHub = true;
-    var frame = document.getElementById('f3');
-    var hub = document.getElementById('f3-hub'), studio = document.getElementById('f3-studio'), btn = document.getElementById('f3-btn');
-    var sourceCard = document.getElementById('f3-source-card'), targetBadge = document.getElementById('f3-target-badge');
-    var ghost = null;
-
     function rectRelativeTo(el, container){
       var r = el.getBoundingClientRect(), c = container.getBoundingClientRect();
       return { left: r.left - c.left, top: r.top - c.top, width: r.width, height: r.height };
     }
-    function makeGhost(fromRect){
-      var g = document.createElement('div');
-      g.className = 'ghost-card';
-      g.style.left = fromRect.left + 'px';
-      g.style.top = fromRect.top + 'px';
-      g.style.width = fromRect.width + 'px';
-      g.style.height = fromRect.height + 'px';
-      g.style.borderRadius = '12px';
-      frame.appendChild(g);
-      return g;
+    function wireMorph(id, fromHTML, toHTML, destLabel){
+      var frame = document.getElementById(id);
+      var hub = document.getElementById(id+'-hub'), dest = document.getElementById(id+'-dest');
+      var srcEl = document.getElementById(id+'-src'), dstEl = document.getElementById(id+'-dst');
+      var btn = document.querySelector('[data-morph="'+id+'"]');
+      var showingHub = true, ghost = null;
+      function makeGhost(rect, radius){
+        var g = document.createElement('div');
+        g.className = 'morph-ghost';
+        g.style.left = rect.left+'px'; g.style.top = rect.top+'px';
+        g.style.width = rect.width+'px'; g.style.height = rect.height+'px';
+        g.style.borderRadius = radius;
+        g.innerHTML = '<div class="morph-ghost-inner from">'+fromHTML+'</div><div class="morph-ghost-inner to">'+toHTML+'</div>';
+        frame.appendChild(g);
+        return g;
+      }
+      btn.addEventListener('click', function(){
+        if (showingHub){
+          var fromRect = rectRelativeTo(srcEl, frame);
+          var fromRadius = getComputedStyle(srcEl).borderRadius;
+          ghost = makeGhost(fromRect, fromRadius);
+          hub.style.opacity = '0';
+          setTimeout(function(){
+            hub.classList.add('hidden'); hub.style.opacity = '';
+            dest.classList.remove('hidden'); dest.style.opacity = '1';
+            var toRect = rectRelativeTo(dstEl, frame);
+            var toRadius = getComputedStyle(dstEl).borderRadius;
+            requestAnimationFrame(function(){
+              ghost.style.left = toRect.left+'px'; ghost.style.top = toRect.top+'px';
+              ghost.style.width = toRect.width+'px'; ghost.style.height = toRect.height+'px';
+              ghost.style.borderRadius = toRadius;
+              ghost.classList.add('morphed');
+            });
+            setTimeout(function(){ if(ghost){ghost.remove();ghost=null;} }, 450);
+          }, 140);
+          btn.textContent = '← Torna alla Hub';
+        } else {
+          var toRect2 = rectRelativeTo(srcEl, frame);
+          var fromRect2 = rectRelativeTo(dstEl, frame);
+          var fromRadius2 = getComputedStyle(dstEl).borderRadius;
+          ghost = makeGhost(fromRect2, fromRadius2);
+          ghost.classList.add('morphed');
+          dest.style.opacity = '0';
+          setTimeout(function(){
+            dest.classList.add('hidden'); dest.style.opacity = '';
+            hub.classList.remove('hidden'); hub.style.opacity = '1';
+            var toRadius2 = getComputedStyle(srcEl).borderRadius;
+            requestAnimationFrame(function(){
+              ghost.style.left = toRect2.left+'px'; ghost.style.top = toRect2.top+'px';
+              ghost.style.width = toRect2.width+'px'; ghost.style.height = toRect2.height+'px';
+              ghost.style.borderRadius = toRadius2;
+              ghost.classList.remove('morphed');
+            });
+            setTimeout(function(){ if(ghost){ghost.remove();ghost=null;} }, 450);
+          }, 140);
+          btn.textContent = 'Vai a '+destLabel+' →';
+        }
+        showingHub = !showingHub;
+      });
     }
 
-    btn.addEventListener('click', function(){
-      if (showingHub){
-        var fromRect = rectRelativeTo(sourceCard, frame);
-        ghost = makeGhost(fromRect);
-        hub.style.opacity = '0';
-        setTimeout(function(){
-          hub.classList.add('hidden'); hub.style.opacity = '';
-          studio.classList.remove('hidden'); studio.style.opacity = '1';
-          var toRect = rectRelativeTo(targetBadge, frame);
-          requestAnimationFrame(function(){
-            ghost.style.left = toRect.left + 'px';
-            ghost.style.top = toRect.top + 'px';
-            ghost.style.width = toRect.width + 'px';
-            ghost.style.height = toRect.height + 'px';
-            ghost.style.borderRadius = '10px';
-            ghost.style.background = 'var(--sabbia)';
-          });
-          setTimeout(function(){ if(ghost){ghost.remove();ghost=null;} targetBadge.style.background='var(--sabbia)'; }, 400);
-        }, 160);
-        btn.textContent = '← Torna alla Hub';
-      } else {
-        var fromRect2 = rectRelativeTo(targetBadge, frame);
-        ghost = makeGhost(fromRect2);
-        ghost.style.background = 'var(--sabbia)';
-        ghost.style.borderRadius = '10px';
-        studio.style.opacity = '0';
-        setTimeout(function(){
-          studio.classList.add('hidden'); studio.style.opacity = '';
-          hub.classList.remove('hidden'); hub.style.opacity = '1';
-          var toRect2 = rectRelativeTo(sourceCard, frame);
-          requestAnimationFrame(function(){
-            ghost.style.left = toRect2.left + 'px';
-            ghost.style.top = toRect2.top + 'px';
-            ghost.style.width = toRect2.width + 'px';
-            ghost.style.height = toRect2.height + 'px';
-            ghost.style.borderRadius = '12px';
-          });
-          setTimeout(function(){ if(ghost){ghost.remove();ghost=null;} }, 400);
-        }, 160);
-        btn.textContent = 'Vai a Studio →';
-      }
-      showingHub = !showingHub;
-    });
+    wireMorph('m1',
+      '<div class="mlogo-mark">GDC</div>',
+      '<div class="mlogo-mark">GDC</div>',
+      'Studio');
+    wireMorph('m2',
+      '<div class="mhub-card-ttl" style="font-size:.56rem">GDC STUDIO</div>',
+      '<div class="mdest-header-ttl">Studio</div>',
+      'Studio');
+    wireMorph('m3',
+      '<div class="mlogo-mark">GDC</div>',
+      '<div class="mlogo-mark">GDC</div>',
+      'IA TEAM');
+    wireMorph('m4',
+      '<div class="magent-row"><div class="magent-dot"></div><div class="magent-dot"></div><div class="magent-dot"></div></div>',
+      '<div class="mdest-header-ttl">IA Team</div>',
+      'IA TEAM');
   })();
 
   // ---- 4. Scala (zoom) ----
