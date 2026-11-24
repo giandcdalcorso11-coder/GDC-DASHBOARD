@@ -57,6 +57,21 @@ input,textarea,button{font-family:inherit;}
 .ntab.on{background:var(--sabbia);color:var(--nero);}
 .ntab-icon{font-size:14px;}
 
+/* NAV DESKTOP: linguetta unica che scorre, collegata alla pagina sottostante */
+@media(min-width:769px){
+  .topbar{border-bottom:none;}
+  .nav-tabs{position:relative;align-self:stretch;gap:0;align-items:stretch;}
+  .nav-tabs .ntab{position:relative;z-index:2;align-self:stretch;margin-top:8px;padding:0 18px;border-radius:14px 14px 0 0;background:transparent;transition:color .2s;}
+  .nav-tabs .ntab:hover{background:transparent;color:var(--nero);}
+  .nav-tabs .ntab.on{background:transparent;color:var(--nero);}
+  #nav-ind{position:absolute;z-index:1;top:8px;bottom:0;left:0;width:0;background:var(--sabbia);border-radius:14px 14px 0 0;pointer-events:none;}
+  #nav-ind::before,#nav-ind::after{content:'';position:absolute;bottom:0;width:14px;height:14px;}
+  #nav-ind::before{left:-14px;background:radial-gradient(circle at 0 0,transparent 13.5px,var(--sabbia) 14px);}
+  #nav-ind::after{right:-14px;background:radial-gradient(circle at 100% 0,transparent 13.5px,var(--sabbia) 14px);}
+  .sheet-wrap{background:var(--bianco);}
+  .sheet{border-radius:20px 20px 0 0;min-height:calc(100vh - 56px);background:linear-gradient(180deg,var(--sabbia) 0,color-mix(in srgb,var(--sabbia) 35%,var(--carta)) 55px,var(--carta) 140px) no-repeat var(--carta);}
+}
+
 .topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .save-btn{padding:5px 14px;border-radius:20px;border:none;font-weight:700;font-size:11px;cursor:pointer;transition:background .3s;font-family:'Jost',sans-serif;}
 .hub-btn{padding:5px 12px;border-radius:20px;background:var(--carta);color:var(--grigio);border:1.5px solid var(--bordo);font-weight:700;font-size:11px;cursor:pointer;font-family:'Jost',sans-serif;}
@@ -193,6 +208,7 @@ input,textarea,button{font-family:inherit;}
   </div>
 
   <div class="nav-tabs" id="desktop-nav">
+    <span id="nav-ind"></span>
     <button class="ntab on" id="nb-calc"     onclick="switchTab('calc')">    <span class="ntab-icon">🖨️</span> Calcolatore</button>
     <button class="ntab"    id="nb-filament" onclick="switchTab('filament')"><span class="ntab-icon">🧵</span> Magazzino</button>
     <button class="ntab"    id="nb-orders"   onclick="switchTab('orders')">  <span class="ntab-icon">📋</span> Ordini</button>
@@ -228,9 +244,9 @@ input,textarea,button{font-family:inherit;}
   </div>
 </div>
 
-<div class="content" id="content">
+<div class="sheet-wrap"><div class="sheet"><div class="content" id="content">
   <div style="text-align:center;padding:60px;color:var(--grigio-lt);font-size:13px;">Caricamento…</div>
-</div>
+</div></div></div>
 
 <script>
 const SB_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
@@ -528,11 +544,33 @@ function gateEditableField(el,msg){
 })();
 
 // ── NAVIGATION ──
+let _navPos=null;
+function moveNavInd(){
+  const ind=document.getElementById('nav-ind'),nav=document.getElementById('desktop-nav'),b=document.getElementById('nb-'+curTab);
+  if(!ind||!nav||!b||!b.offsetWidth)return;
+  const l=b.offsetLeft,w=b.offsetWidth;
+  if(!_navPos){ind.style.transition='none';ind.style.left=l+'px';ind.style.width=w+'px';_navPos={l,w};return;}
+  const o=_navPos;_navPos={l,w};
+  if(o.l===l&&o.w===w){ind.style.transition='none';return;}
+  clearTimeout(moveNavInd._t);
+  // fase 1: la linguetta si allunga coprendo tutta la riga fino alla nuova voce; fase 2: si restringe sulla voce scelta
+  const a=Math.min(o.l,l),z=Math.max(o.l+o.w,l+w),dist=Math.abs(l-o.l);
+  const d1=Math.min(.42,.16+dist/1800),d2=Math.min(.42,.2+dist/1800);
+  ind.style.transition='left '+d1+'s cubic-bezier(.4,0,.2,1),width '+d1+'s cubic-bezier(.4,0,.2,1)';
+  ind.style.left=a+'px';ind.style.width=(z-a)+'px';
+  moveNavInd._t=setTimeout(()=>{
+    ind.style.transition='left '+d2+'s cubic-bezier(.3,.7,.2,1),width '+d2+'s cubic-bezier(.3,.7,.2,1)';
+    ind.style.left=l+'px';ind.style.width=w+'px';
+  },d1*1000*.75);
+}
+window.addEventListener('resize',()=>{_navPos=null;moveNavInd();});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{_navPos=null;moveNavInd();});
 function switchTab(t){
   curTab=t;
   document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
   const btn=document.getElementById('nb-'+t);if(btn)btn.classList.add('on');
   const mbtn=document.getElementById('mnb-'+t);if(mbtn){mbtn.classList.add('on');mbtn.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}
+  moveNavInd();
   render();
 }
 function scrollNav(dir){
