@@ -47,7 +47,8 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 
 /* finestra visibile della riga agenti: zona piena = dimensioni del logo GDC Studio (160 × 80.72px).
    Il fade vive FUORI da questa zona, in un margine aggiunto ai due lati (20px), così il
-   rettangolo che corrisponde al logo resta sempre completamente opaco/confrontabile. */
+   rettangolo che corrisponde al logo resta sempre completamente opaco/confrontabile.
+   (il tratteggio di riferimento è stato tolto: serviva solo per il confronto in fase di mockup) */
 .agent-window{
   --fade-margin: 20px;
   width: calc(160px + 2*var(--fade-margin));
@@ -55,13 +56,6 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
   display:flex; align-items:center;
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
           mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
-}
-/* tratteggio: delimita la zona "piena" (160px, = logo Studio) dentro la finestra allargata */
-.agent-window::before{
-  content:''; position:absolute; top:0; bottom:0;
-  left:var(--fade-margin); right:var(--fade-margin);
-  border-left:1px dashed var(--grigio); border-right:1px dashed var(--grigio);
-  opacity:.35; pointer-events:none;
 }
 .agent-strip{ display:flex; gap:8px; align-items:center; will-change:transform; }
 
@@ -110,6 +104,10 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 .panel-label{ font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--grigio); }
 .metrics{ font-size:.82rem; line-height:1.6; }
 .metrics b{ font-variant-numeric:tabular-nums; }
+.opt{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; line-height:1.4; cursor:pointer; }
+.opt input{ margin-top:3px; accent-color:var(--maker); }
+.opt b{ display:block; }
+.opt span.d{ color:var(--grigio); font-size:.78rem; }
 .btn{
   font-family:inherit; font-size:.86rem; font-weight:700;
   padding:11px; border:none; border-radius:12px;
@@ -272,9 +270,20 @@ code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82
 <div class="panel">
   <div class="panel-label">Confronto dimensioni finestra</div>
   <div class="metrics" id="metrics">calcolo in corso…</div>
+
+  <div class="panel-label" style="margin-top:4px;">Bilanciamento velocità</div>
+  <label class="opt">
+    <input type="radio" name="speed" value="slowWave" checked>
+    <span><b>Rallenta l'accensione</b><span class="d">L'onda rosso→verde si allarga sui 7 agenti alla stessa velocità dello scorrimento laterale (scorrimento invariato).</span></span>
+  </label>
+  <label class="opt">
+    <input type="radio" name="speed" value="fastPan">
+    <span><b>Velocizza lo scorrimento</b><span class="d">Lo scorrimento laterale diventa rapido quanto l'accensione in sequenza (accensione invariata).</span></span>
+  </label>
+
   <button class="btn" id="play">Prova accensione + scorrimento</button>
   <div class="note">
-    La zona piena della finestra (tratteggio) ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. Il fade ora vive <b>fuori</b> da questa zona, in un margine aggiunto di 20px per lato: la finestra visibile è quindi leggermente più larga (200px), ma il rettangolo confrontabile col logo Studio resta intatto, sempre completamente opaco. I loghi degli agenti restano a 62px per riempire la finestra in verticale. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno.
+    La zona piena della finestra ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. Il fade vive <b>fuori</b> da questa zona, in un margine aggiunto di 20px per lato: la finestra visibile è quindi leggermente più larga (200px), ma il rettangolo confrontabile col logo Studio resta intatto, sempre completamente opaco. I loghi degli agenti restano a 62px per riempire la finestra in verticale. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno.
   </div>
 </div>
 
@@ -324,32 +333,44 @@ startBarAnim('card-clip-rect','card-hotend',34.04,518.41,428);
 
 /* ══ wave agenti: life → done in sequenza, scala dal centro (variante approvata) ══ */
 const N = 7;
-const STAGGER = 280, HOLD_ON = 3200, HOLD_OFF = 1400;
+const HOLD_ON = 3200, HOLD_OFF = 1400;
+const SPEED_PRESETS = {
+  slowWave: { stagger:700,  panDuration:4200 }, // accensione rallentata = velocità dello scorrimento attuale
+  fastPan:  { stagger:280,  panDuration:1800 }, // scorrimento velocizzato = velocità dell'accensione attuale
+};
+function currentPreset(){
+  const v = document.querySelector('input[name="speed"]:checked').value;
+  return SPEED_PRESETS[v];
+}
+
 let waveTimer = null;
 function waveOn(){
+  const { stagger } = currentPreset();
   for(let i=0;i<N;i++){
     setTimeout(()=>{
       const el=document.getElementById('icon-'+i);
       el.classList.remove('icon-life'); el.classList.add('icon-done');
       el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
       setTimeout(()=>{ el.classList.remove('pop'); }, 550);
-    }, i*STAGGER);
+    }, i*stagger);
   }
-  waveTimer = setTimeout(waveOff, (N-1)*STAGGER + HOLD_ON);
+  waveTimer = setTimeout(waveOff, (N-1)*stagger + HOLD_ON);
 }
 function waveOff(){
+  const { stagger } = currentPreset();
   for(let i=0;i<N;i++){
     setTimeout(()=>{
       const el=document.getElementById('icon-'+i);
       el.classList.remove('icon-done'); el.classList.add('icon-life');
-    }, i*STAGGER);
+    }, i*stagger);
   }
-  waveTimer = setTimeout(waveOn, (N-1)*STAGGER + HOLD_OFF);
+  waveTimer = setTimeout(waveOn, (N-1)*stagger + HOLD_OFF);
 }
 
 /* ══ scorrimento di tutta la riga dentro la finestra fissa ══ */
 let panAnim = null;
 function startPan(){
+  const { panDuration } = currentPreset();
   const win = document.getElementById('agentWindow');
   const strip = document.getElementById('strip');
   const shift = strip.scrollWidth - win.clientWidth;
@@ -357,7 +378,7 @@ function startPan(){
   if(shift <= 0) return;
   panAnim = strip.animate(
     [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
-    { duration: 4200, direction:'alternate', iterations:Infinity, easing:'ease-in-out' }
+    { duration: panDuration, direction:'alternate', iterations:Infinity, easing:'ease-in-out' }
   );
 }
 
@@ -373,12 +394,7 @@ function printMetrics(){
     'Finestra totale (zona piena + margine fade): <b>'+win.width.toFixed(1)+' × '+win.height.toFixed(1)+' px</b>';
 }
 
-window.addEventListener('load', ()=>{
-  printMetrics();
-  startPan();
-  setTimeout(waveOn, 600);
-});
-document.getElementById('play').addEventListener('click', ()=>{
+function restart(){
   if(waveTimer) clearTimeout(waveTimer);
   for(let i=0;i<N;i++){
     const el=document.getElementById('icon-'+i);
@@ -386,5 +402,15 @@ document.getElementById('play').addEventListener('click', ()=>{
   }
   startPan();
   waveOn();
+}
+
+window.addEventListener('load', ()=>{
+  printMetrics();
+  startPan();
+  setTimeout(waveOn, 600);
+});
+document.getElementById('play').addEventListener('click', restart);
+document.querySelectorAll('input[name="speed"]').forEach(r=>{
+  r.addEventListener('change', restart);
 });
 </script>
