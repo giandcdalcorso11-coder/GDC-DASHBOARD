@@ -44,7 +44,9 @@ input,textarea,button{font-family:inherit;}
   #mobile-tabs .ntab-icon{font-size:16px;}
   .content{padding:12px;}
   .topbar-left{min-width:0;gap:8px;}
-  .back-btn{padding:5px 11px 5px 8px;font-size:.74rem;}
+  .pill-hub{height:32px;padding:0 14px 0 20px;font-size:.74rem;}
+  .pill-hub-wrap{clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);}
+  .pill-hub{clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%);}
   .sys-mini{font-size:.68rem;}
   .logo-row{min-width:0;}
   #hub-master-svg{height:30px!important;}
@@ -78,8 +80,9 @@ input,textarea,button{font-family:inherit;}
 }
 
 .topbar-left{display:flex;align-items:center;gap:14px;flex-shrink:0;min-width:150px;}
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--bordo);border-radius:999px;padding:7px 15px 7px 11px;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--grigio);transition:border-color .15s,color .15s;user-select:none;font-family:'Jost',sans-serif;}
-.back-btn:hover{border-color:var(--nero);color:var(--nero);}
+.pill-hub-wrap{display:inline-flex;padding:1.5px;background:var(--bordo);border-radius:999px;clip-path:polygon(17px 0,100% 0,100% 100%,17px 100%,0 50%);transition:background .2s;flex-shrink:0;}
+.pill-hub-wrap:hover{background:var(--nero);}
+.pill-hub{display:inline-flex;align-items:center;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:700;height:38px;padding:0 18px 0 24px;background:var(--bianco);color:var(--nero);cursor:pointer;border:none;border-radius:999px;clip-path:polygon(15.5px 0,100% 0,100% 100%,15.5px 100%,0 50%);}
 .sys-mini{display:flex;align-items:center;gap:7px;font-size:.74rem;font-weight:700;color:var(--maker);transition:color .3s;white-space:nowrap;}
 .sys-mini-dot{position:relative;width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
 .sys-mini-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid currentColor;animation:sysPulse 2s ease-out infinite;}
@@ -185,7 +188,7 @@ input,textarea,button{font-family:inherit;}
 
 <div class="topbar">
   <div class="topbar-left">
-    <button class="back-btn" onclick="goHub()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Hub</button>
+    <div class="pill-hub-wrap"><button class="pill-hub" onclick="goHub()">Hub</button></div>
     <div class="sys-mini" id="save-btn"><span class="sys-mini-dot"></span><span id="save-label">Salvato</span></div>
   </div>
   <div class="nav-tabs" id="desktop-nav">
