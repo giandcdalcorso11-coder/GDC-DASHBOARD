@@ -45,12 +45,23 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 /* stessa "cornice" di posizionamento per i due loghi, per un confronto onesto */
 .logo-window-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding:4px 0 2px; }
 
-/* finestra visibile della riga agenti = dimensioni del logo GDC nella card Studio (160 × 80.72px, viewBox 555×280) */
+/* finestra visibile della riga agenti: zona piena = dimensioni del logo GDC Studio (160 × 80.72px).
+   Il fade vive FUORI da questa zona, in un margine aggiunto ai due lati (20px), così il
+   rettangolo che corrisponde al logo resta sempre completamente opaco/confrontabile. */
 .agent-window{
-  width:160px; height:80.72px; overflow:hidden; display:flex; align-items:center;
-  /* fade ai due lati: non sembra un taglio ma un reveal */
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
-          mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  --fade-margin: 20px;
+  width: calc(160px + 2*var(--fade-margin));
+  height:80.72px; overflow:hidden; position:relative;
+  display:flex; align-items:center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
+}
+/* tratteggio: delimita la zona "piena" (160px, = logo Studio) dentro la finestra allargata */
+.agent-window::before{
+  content:''; position:absolute; top:0; bottom:0;
+  left:var(--fade-margin); right:var(--fade-margin);
+  border-left:1px dashed var(--grigio); border-right:1px dashed var(--grigio);
+  opacity:.35; pointer-events:none;
 }
 .agent-strip{ display:flex; gap:8px; align-items:center; will-change:transform; }
 
@@ -263,7 +274,7 @@ code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82
   <div class="metrics" id="metrics">calcolo in corso…</div>
   <button class="btn" id="play">Prova accensione + scorrimento</button>
   <div class="note">
-    La finestra <code>.agent-window</code> ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. I loghi degli agenti sono stati ingranditi (62px, prima 46px) per riempire la finestra in verticale, lasciando lo spazio minimo necessario perché la scala 1.22× dell'accensione non venga tagliata. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno — lo "scorrimento nello spazio" richiesto.
+    La zona piena della finestra (tratteggio) ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. Il fade ora vive <b>fuori</b> da questa zona, in un margine aggiunto di 20px per lato: la finestra visibile è quindi leggermente più larga (200px), ma il rettangolo confrontabile col logo Studio resta intatto, sempre completamente opaco. I loghi degli agenti restano a 62px per riempire la finestra in verticale. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno.
   </div>
 </div>
 
@@ -351,11 +362,15 @@ function startPan(){
 }
 
 function printMetrics(){
-  const win = document.getElementById('agentWindow').getBoundingClientRect();
+  const winEl = document.getElementById('agentWindow');
+  const win = winEl.getBoundingClientRect();
+  const fadeMargin = parseFloat(getComputedStyle(winEl).getPropertyValue('--fade-margin')) || 0;
+  const coreWidth = win.width - 2*fadeMargin;
   const svg = document.getElementById('studio-card-svg').getBoundingClientRect();
   document.getElementById('metrics').innerHTML =
-    'Finestra riga agenti: <b>'+win.width.toFixed(1)+' × '+win.height.toFixed(1)+' px</b><br>'+
-    'Logo GDC Studio: <b>'+svg.width.toFixed(1)+' × '+svg.height.toFixed(1)+' px</b>';
+    'Zona piena finestra agenti: <b>'+coreWidth.toFixed(1)+' × '+win.height.toFixed(1)+' px</b><br>'+
+    'Logo GDC Studio: <b>'+svg.width.toFixed(1)+' × '+svg.height.toFixed(1)+' px</b><br>'+
+    'Finestra totale (zona piena + margine fade): <b>'+win.width.toFixed(1)+' × '+win.height.toFixed(1)+' px</b>';
 }
 
 window.addEventListener('load', ()=>{
