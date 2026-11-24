@@ -46,7 +46,12 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 .logo-window-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding:4px 0 2px; }
 
 /* finestra visibile della riga agenti = dimensioni del logo GDC nella card Studio (160 × 80.72px, viewBox 555×280) */
-.agent-window{ width:160px; height:80.72px; overflow:hidden; display:flex; align-items:center; }
+.agent-window{
+  width:160px; height:80.72px; overflow:hidden; display:flex; align-items:center;
+  /* fade ai due lati: non sembra un taglio ma un reveal */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+}
 .agent-strip{ display:flex; gap:8px; align-items:center; will-change:transform; }
 
 .agent-icon{
@@ -56,6 +61,7 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
   transition: background .5s;
   background: var(--life-bg);
 }
+.agent-icon.icon-done{ background: var(--maker-bg); }
 .agent-icon svg{ width:42px; height:42px; }
 
 /* colori — stato life (rosso), identici alla pagina reale */
