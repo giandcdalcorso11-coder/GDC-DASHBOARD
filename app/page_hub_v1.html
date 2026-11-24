@@ -141,8 +141,8 @@ body{
   overflow-x:auto;
   scrollbar-width:none;
   -webkit-overflow-scrolling:touch;
-  padding:2px 0 4px;
-  margin-top:-38px;
+  padding:4px 0 4px;
+  margin-top:-44px;
   /* nasconde scrollbar su webkit */
 }
 .agent-strip::-webkit-scrollbar{ display:none; }
@@ -194,12 +194,14 @@ body{
 
 .agent-icon{
   flex-shrink:0;
-  width:46px; height:46px; border-radius:11px;
+  width:52px; height:52px; border-radius:12px;
   display:flex; align-items:center; justify-content:center;
   transition: transform .35s cubic-bezier(.22,.8,.36,1), background .5s;
+  transform-origin:center top; /* crescita solo verso il basso: niente taglio in alto */
   /* stato iniziale: life */
   background: var(--life-bg);
 }
+.agent-icon svg{ width:36px; height:36px; }
 /* colori elementi SVG — stato life (rosso) */
 .icon-life #a1-outer{ fill:#C2193A; }
 .icon-life #a1-inner{ fill:#E9415A; }
@@ -287,6 +289,14 @@ body{
 
 /* SVG transition su tutti gli elementi colorati */
 .agent-icon svg *{ transition: fill .45s ease, stroke .45s ease; }
+
+/* reveal con scorrimento quando l'agente "si accende" (life → done) */
+@keyframes agentLightUp{
+  0%   { transform:translateY(6px) scale(1);    opacity:.5; }
+  55%  { transform:translateY(-2px) scale(1.22); opacity:1; }
+  100% { transform:translateY(0) scale(1);       opacity:1; }
+}
+.agent-icon.pop{ animation:agentLightUp .55s cubic-bezier(.22,.8,.36,1) both; }
 
 /* ══ STUDIO LOGO nella card ══ */
 .studio-logo-box{
@@ -675,10 +685,12 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
         const el=document.getElementById('icon-'+i);
         el.classList.remove('icon-life');
         el.classList.add('icon-done');
-        el.style.transform='scale(1.22)';
         el.style.background='var(--maker-bg)';
-        // dopo picco, torna a scale 1
-        setTimeout(()=>{ el.style.transform='scale(1)'; }, 200);
+        // reveal con scorrimento: riavvia l'animazione da zero
+        el.classList.remove('pop');
+        void el.offsetWidth;
+        el.classList.add('pop');
+        setTimeout(()=>{ el.classList.remove('pop'); }, 550);
       }, i*STAGGER);
     }
     // dopo che l'ultimo è diventato verde, aspetta HOLD_ON poi torna rosso
