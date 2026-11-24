@@ -48,10 +48,20 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 /* finestra visibile della riga agenti = dimensioni del logo GDC nella card Studio (160 × 80.72px, viewBox 555×280) */
 .agent-window{
   width:160px; height:80.72px; overflow:hidden; display:flex; align-items:center;
-  /* fade ai due lati: non sembra un taglio ma un reveal */
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
-          mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+  /* reveal vero: dissolvenza larga e graduale ai due lati, non un semplice bordo sfumato */
+  --fade: linear-gradient(to right,
+            transparent 0,
+            rgba(0,0,0,.08) 10px,
+            rgba(0,0,0,.45) 22px,
+            #000 38px,
+            #000 calc(100% - 38px),
+            rgba(0,0,0,.45) calc(100% - 22px),
+            rgba(0,0,0,.08) calc(100% - 10px),
+            transparent 100%);
+  -webkit-mask-image: var(--fade);
+          mask-image: var(--fade);
 }
+.agent-window.no-fade{ -webkit-mask-image:none; mask-image:none; }
 .agent-strip{ display:flex; gap:8px; align-items:center; will-change:transform; }
 
 .agent-icon{
@@ -99,6 +109,10 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 .panel-label{ font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--grigio); }
 .metrics{ font-size:.82rem; line-height:1.6; }
 .metrics b{ font-variant-numeric:tabular-nums; }
+.opt{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; line-height:1.4; cursor:pointer; }
+.opt input{ margin-top:3px; accent-color:var(--maker); }
+.opt b{ display:block; }
+.opt span.d{ color:var(--grigio); font-size:.78rem; }
 .btn{
   font-family:inherit; font-size:.86rem; font-weight:700;
   padding:11px; border:none; border-radius:12px;
@@ -261,9 +275,13 @@ code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82
 <div class="panel">
   <div class="panel-label">Confronto dimensioni finestra</div>
   <div class="metrics" id="metrics">calcolo in corso…</div>
+  <label class="opt">
+    <input type="checkbox" id="fadeToggle" checked>
+    <span><b>Reveal ai bordi (fade)</b><span class="d">Disattivalo per vedere il taglio netto di prima e confrontare.</span></span>
+  </label>
   <button class="btn" id="play">Prova accensione + scorrimento</button>
   <div class="note">
-    La finestra <code>.agent-window</code> ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. I loghi degli agenti sono stati ingranditi (62px, prima 46px) per riempire la finestra in verticale, lasciando lo spazio minimo necessario perché la scala 1.22× dell'accensione non venga tagliata. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno — lo "scorrimento nello spazio" richiesto.
+    La finestra <code>.agent-window</code> ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. I loghi degli agenti sono stati ingranditi (62px, prima 46px) per riempire la finestra in verticale, lasciando lo spazio minimo necessario perché la scala 1.22× dell'accensione non venga tagliata. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno — lo "scorrimento nello spazio" richiesto. Andata più lenta (scoprendo gli agenti), ritorno più veloce.
   </div>
 </div>
 
@@ -337,17 +355,32 @@ function waveOff(){
 }
 
 /* ══ scorrimento di tutta la riga dentro la finestra fissa ══ */
-let panAnim = null;
-function startPan(){
+/* andata (svela gli agenti) più lenta, ritorno all'inizio più veloce */
+const T_PAN_FORWARD = 3400, T_PAN_BACK = 1300, T_PAN_PAUSE = 450;
+let panGen = 0;
+async function startPan(){
+  const myGen = ++panGen;
   const win = document.getElementById('agentWindow');
   const strip = document.getElementById('strip');
+  strip.getAnimations().forEach(a=>a.cancel());
+  strip.style.transform = 'translateX(0px)';
   const shift = strip.scrollWidth - win.clientWidth;
-  if(panAnim) panAnim.cancel();
   if(shift <= 0) return;
-  panAnim = strip.animate(
-    [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
-    { duration: 4200, direction:'alternate', iterations:Infinity, easing:'ease-in-out' }
-  );
+  while(panGen === myGen){
+    await strip.animate(
+      [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
+      { duration:T_PAN_FORWARD, easing:'ease-in-out', fill:'forwards' }
+    ).finished.catch(()=>{});
+    if(panGen !== myGen) return;
+    await new Promise(r=>setTimeout(r,T_PAN_PAUSE));
+    if(panGen !== myGen) return;
+    await strip.animate(
+      [{ transform:'translateX(-'+shift+'px)' }, { transform:'translateX(0px)' }],
+      { duration:T_PAN_BACK, easing:'ease-in', fill:'forwards' }
+    ).finished.catch(()=>{});
+    if(panGen !== myGen) return;
+    await new Promise(r=>setTimeout(r,T_PAN_PAUSE));
+  }
 }
 
 function printMetrics(){
@@ -371,5 +404,8 @@ document.getElementById('play').addEventListener('click', ()=>{
   }
   startPan();
   waveOn();
+});
+document.getElementById('fadeToggle').addEventListener('change', (e)=>{
+  document.getElementById('agentWindow').classList.toggle('no-fade', !e.target.checked);
 });
 </script>
