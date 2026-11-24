@@ -132,20 +132,22 @@ body{
 .card-ia:hover     .card-arrow{ background:var(--maker);  color:#fff; }
 .card-studio:hover .card-arrow{ background:var(--sabbia); color:#fff; }
 
-/* ══ STRIP AGENTI ══ */
+/* ══ STRIP AGENTI — finestra fissa delle stesse dimensioni del logo GDC Studio (160×80.72px),
+   con fade fuori da quella zona e scorrimento automatico avanti/indietro al suo interno ══ */
+.agent-window{
+  --fade-margin: 40px;
+  width: calc(160px + 2*var(--fade-margin));
+  height:80.72px; overflow:hidden;
+  display:flex; align-items:center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
+}
 .agent-strip{
   display:flex;
-  gap:6px;
+  gap:8px;
   align-items:center;
-  justify-content:center;
-  overflow-x:auto;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
-  padding:4px 0 4px;
-  margin-top:-44px;
-  /* nasconde scrollbar su webkit */
+  will-change:transform;
 }
-.agent-strip::-webkit-scrollbar{ display:none; }
 
 /* ══ FOOTER — link discreti (reset dati / logout) ══ */
 .hub-footer{
@@ -194,14 +196,13 @@ body{
 
 .agent-icon{
   flex-shrink:0;
-  width:52px; height:52px; border-radius:12px;
+  width:65px; height:65px; border-radius:14px;
   display:flex; align-items:center; justify-content:center;
-  transition: transform .35s cubic-bezier(.22,.8,.36,1), background .5s;
-  transform-origin:center top; /* crescita solo verso il basso: niente taglio in alto */
+  transition: background .5s;
   /* stato iniziale: life */
   background: var(--life-bg);
 }
-.agent-icon svg{ width:36px; height:36px; }
+.agent-icon svg{ width:44px; height:44px; }
 /* colori elementi SVG — stato life (rosso) */
 .icon-life #a1-outer{ fill:#C2193A; }
 .icon-life #a1-inner{ fill:#E9415A; }
@@ -290,13 +291,9 @@ body{
 /* SVG transition su tutti gli elementi colorati */
 .agent-icon svg *{ transition: fill .45s ease, stroke .45s ease; }
 
-/* reveal con scorrimento quando l'agente "si accende" (life → done) */
-@keyframes agentLightUp{
-  0%   { transform:translateY(6px) scale(1);    opacity:.5; }
-  55%  { transform:translateY(-2px) scale(1.22); opacity:1; }
-  100% { transform:translateY(0) scale(1);       opacity:1; }
-}
-.agent-icon.pop{ animation:agentLightUp .55s cubic-bezier(.22,.8,.36,1) both; }
+/* accensione: ingrandimento dal centro quando l'agente "si accende" (life → done) */
+@keyframes popCenter{ 0%,100%{ transform:scale(1); } 55%{ transform:scale(1.23); } }
+.agent-icon.pop{ animation:popCenter .75s cubic-bezier(.22,.8,.36,1) both; }
 
 /* ══ STUDIO LOGO nella card ══ */
 .studio-logo-box{
@@ -362,7 +359,7 @@ body{
 
   <!-- ─── CARD GDC IA TEAM ─── -->
   <a class="hub-card card-ia" href="page_home_v25.html" id="card-ia" onclick="try{sessionStorage.setItem('gdc_nav_dir','forward');}catch(e){}">
-    <div class="card-top" style="margin-bottom:0px;">
+    <div class="card-top">
       <div class="card-title">GDC IA TEAM</div>
       <div class="card-arrow">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -371,7 +368,9 @@ body{
       </div>
     </div>
 
-    <!-- Strip agenti A1→A7 tutti visibili, life→done con wave -->
+    <!-- Finestra fissa (stesse dimensioni del logo GDC Studio) con la striscia agenti A1→A7 che scorre al suo interno -->
+    <div class="studio-logo-box">
+      <div class="agent-window" id="agentWindow">
     <div class="agent-strip" id="agent-strip">
 
       <!-- A1 -->
@@ -460,6 +459,8 @@ body{
         </svg>
       </div>
 
+    </div>
+      </div>
     </div>
   </a>
 
@@ -675,9 +676,10 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
 /* ══ WAVE AGENTI: life → done in sequenza con ingrandimento ══ */
 (function(){
   const N = 7;
-  const STAGGER  = 280;  // ms tra un agente e il successivo nella wave
-  const HOLD_ON  = 3200; // ms tutti verdi prima di tornare rossi
-  const HOLD_OFF = 1400; // ms tutti rossi prima della prossima wave
+  const STAGGER  = 210;  // ms tra un agente e il successivo nella wave
+  const HOLD_ON  = 1200; // ms tutti verdi prima di tornare rossi
+  const HOLD_OFF = 1000; // ms tutti rossi prima della prossima wave
+  const POP_MS   = 750;  // ms durata dell'ingrandimento (deve combaciare con la keyframe popCenter)
 
   function waveOn(){
     for(let i=0;i<N;i++){
@@ -686,11 +688,10 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
         el.classList.remove('icon-life');
         el.classList.add('icon-done');
         el.style.background='var(--maker-bg)';
-        // reveal con scorrimento: riavvia l'animazione da zero
         el.classList.remove('pop');
         void el.offsetWidth;
         el.classList.add('pop');
-        setTimeout(()=>{ el.classList.remove('pop'); }, 550);
+        setTimeout(()=>{ el.classList.remove('pop'); }, POP_MS);
       }, i*STAGGER);
     }
     // dopo che l'ultimo è diventato verde, aspetta HOLD_ON poi torna rosso
@@ -711,6 +712,39 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
 
   // Prima wave dopo che le card sono apparse
   setTimeout(waveOn, 1000);
+})();
+
+/* ══ SCORRIMENTO riga agenti dentro la finestra fissa: andata/ritorno indipendenti ══ */
+(function(){
+  const PAN_FORWARD = 2050; // ms andata (svela gli agenti)
+  const PAN_BACK     = 300; // ms ritorno rapido all'inizio
+  let gen = 0;
+
+  async function loop(){
+    const myGen = ++gen;
+    const win = document.getElementById('agentWindow');
+    const strip = document.getElementById('agent-strip');
+    if(!win || !strip) return;
+    strip.getAnimations().forEach(a=>a.cancel());
+    strip.style.transform = 'translateX(0px)';
+    const shift = strip.scrollWidth - win.clientWidth;
+    if(shift <= 0) return;
+    while(gen === myGen){
+      await strip.animate(
+        [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
+        { duration:PAN_FORWARD, easing:'ease-in-out', fill:'forwards' }
+      ).finished.catch(()=>{});
+      if(gen !== myGen) return;
+      await strip.animate(
+        [{ transform:'translateX(-'+shift+'px)' }, { transform:'translateX(0px)' }],
+        { duration:PAN_BACK, easing:'ease-in-out', fill:'forwards' }
+      ).finished.catch(()=>{});
+      if(gen !== myGen) return;
+    }
+  }
+
+  // Avvia lo scorrimento dopo che la card è apparsa
+  setTimeout(loop, 700);
 })();
 </script>
 </body>
