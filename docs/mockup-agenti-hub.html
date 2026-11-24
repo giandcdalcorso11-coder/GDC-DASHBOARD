@@ -1,0 +1,181 @@
+<!doctype html>
+<title>Accensione agenti — mockup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap">
+<style>
+/* layout: colonna centrale, card replica dell'hub in alto, pannello di controllo sotto */
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF;
+  --life:#C2193A; --life-mid:#E9415A; --life-bg:#F5E0E6;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+  --accento:#4A7C59;
+}
+@media(prefers-color-scheme:dark){:root{
+  --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A;
+}}
+*{box-sizing:border-box;}
+body{
+  margin:0; font-family:'Jost',Arial,sans-serif; background:var(--carta); color:var(--nero);
+  display:flex; flex-direction:column; align-items:center; gap:28px;
+  padding:32px max(16px,env(safe-area-inset-left,0px)) 60px max(16px,env(safe-area-inset-right,0px));
+}
+
+h1{ font-size:1.1rem; font-weight:800; margin:0; text-align:center; }
+.sub{ font-size:.82rem; color:var(--grigio); text-align:center; max-width:440px; line-height:1.5; margin:0 0 4px; }
+
+/* ══ CARD (replica fedele di .hub-card nell'hub reale) ══ */
+.card-wrap{ width:100%; max-width:420px; }
+.hub-card{
+  position:relative;
+  /* FIX: niente più overflow:hidden sulla card -> le icone possono
+     crescere liberamente dal centro senza essere tagliate, sopra o sotto */
+  background:var(--bianco);
+  border:1.5px solid var(--border);
+  border-radius:20px;
+  padding:20px 20px 18px;
+}
+.hub-card::after{
+  content:''; position:absolute; inset:0;
+  /* FIX: il gradiente prende lo stesso border-radius della card,
+     così resta "tagliato" agli angoli anche senza overflow:hidden sul genitore */
+  border-radius:20px;
+  background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,transparent 55%);
+  pointer-events:none;
+}
+.card-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.card-title{ font-size:1.18rem; font-weight:800; letter-spacing:-.02em; }
+.card-arrow{
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--maker-bg); color:var(--maker);
+}
+
+.agent-strip{
+  display:flex; gap:6px; align-items:center; justify-content:center;
+  overflow-x:auto; scrollbar-width:none;
+  padding:4px 0 4px;
+  margin-top:-44px; /* stesso posizionamento "alzato" già approvato */
+}
+.agent-strip::-webkit-scrollbar{ display:none; }
+
+.agent-icon{
+  flex-shrink:0;
+  width:52px; height:52px; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:.78rem;
+  transition: background .5s;
+  background:var(--life-bg); color:var(--life);
+}
+.agent-icon.done{ background:var(--maker-bg); color:var(--maker); }
+
+/* ══ due varianti di "accensione" selezionabili ══ */
+@keyframes popSlide{
+  0%   { transform:translateX(-9px) scale(1);    opacity:.4; }
+  55%  { transform:translateX(0)    scale(1.22); opacity:1; }
+  100% { transform:translateX(0)    scale(1);    opacity:1; }
+}
+@keyframes popWipe{
+  0%   { clip-path:inset(0 100% 0 0); transform:scale(1); }
+  55%  { clip-path:inset(0 0%   0 0); transform:scale(1.22); }
+  100% { clip-path:inset(0 0%   0 0); transform:scale(1); }
+}
+@keyframes popCenter{
+  0%,100%{ transform:scale(1); }
+  55%{ transform:scale(1.22); }
+}
+.agent-icon.pop-slide{  animation:popSlide .55s cubic-bezier(.22,.8,.36,1) both; }
+.agent-icon.pop-wipe{   animation:popWipe  .55s cubic-bezier(.22,.8,.36,1) both; }
+.agent-icon.pop-center{ animation:popCenter .5s cubic-bezier(.22,.8,.36,1) both; }
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;}}
+
+/* ══ pannello di controllo ══ */
+.panel{
+  width:100%; max-width:420px; background:var(--bianco);
+  border:1.5px solid var(--border); border-radius:16px; padding:16px 18px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.panel-label{ font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--grigio); }
+.options{ display:flex; flex-direction:column; gap:8px; }
+.opt{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; line-height:1.4; cursor:pointer; }
+.opt input{ margin-top:3px; accent-color:var(--accento); }
+.opt b{ display:block; }
+.opt span.d{ color:var(--grigio); font-size:.78rem; }
+.btn{
+  font-family:inherit; font-size:.86rem; font-weight:700;
+  padding:11px; border:none; border-radius:12px;
+  background:var(--nero); color:var(--carta); cursor:pointer;
+}
+.btn:active{ opacity:.85; }
+.note{ font-size:.76rem; color:var(--grigio); line-height:1.5; }
+code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82em; }
+</style>
+
+<h1>GDC IA TEAM — accensione agenti</h1>
+<p class="sub">Mockup per sistemare il taglio delle icone e aggiungere lo scorrimento con reveal, prima di toccare di nuovo la pagina reale.</p>
+
+<div class="card-wrap">
+  <div class="hub-card">
+    <div class="card-top">
+      <div class="card-title">GDC IA TEAM</div>
+      <div class="card-arrow">→</div>
+    </div>
+    <div class="agent-strip" id="strip">
+      <div class="agent-icon" id="ic-0">A1</div>
+      <div class="agent-icon" id="ic-1">A2</div>
+      <div class="agent-icon" id="ic-2">A3</div>
+      <div class="agent-icon" id="ic-3">A4</div>
+      <div class="agent-icon" id="ic-4">A5</div>
+      <div class="agent-icon" id="ic-5">A6</div>
+      <div class="agent-icon" id="ic-6">A7</div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-label">Tipo di accensione</div>
+  <div class="options">
+    <label class="opt">
+      <input type="radio" name="variant" value="pop-center" checked>
+      <span><b>Solo scala dal centro</b><span class="d">Come prima: cresce dal centro, nessuno scorrimento laterale. Taglio risolto togliendo l'overflow:hidden dalla card.</span></span>
+    </label>
+    <label class="opt">
+      <input type="radio" name="variant" value="pop-slide">
+      <span><b>Scorrimento laterale</b><span class="d">L'icona scorre leggermente da sinistra mentre compare e si ingrandisce dal centro.</span></span>
+    </label>
+    <label class="opt">
+      <input type="radio" name="variant" value="pop-wipe">
+      <span><b>Reveal a tendina</b><span class="d">Il verde viene "svelato" da sinistra a destra come una tendina, mentre l'icona si ingrandisce dal centro.</span></span>
+    </label>
+  </div>
+  <button class="btn" id="play">Prova accensione (wave)</button>
+  <div class="note">
+    Fix del taglio: la card non ha più <code>overflow:hidden</code>; l'angolo arrotondato del gradiente decorativo è ottenuto dando lo stesso <code>border-radius</code> al pseudo-elemento <code>::after</code>, invece di affidarsi al clip del genitore. Così le icone crescono dal centro, sopra e sotto, senza essere mai tagliate.
+  </div>
+</div>
+
+<script>
+const N = 7;
+const STAGGER = 280;
+function currentVariant(){
+  return document.querySelector('input[name="variant"]:checked').value;
+}
+document.getElementById('play').addEventListener('click', ()=>{
+  const variant = currentVariant();
+  for(let i=0;i<N;i++){
+    setTimeout(()=>{
+      const el = document.getElementById('ic-'+i);
+      el.classList.add('done');
+      el.classList.remove('pop-center','pop-slide','pop-wipe');
+      void el.offsetWidth;
+      el.classList.add(variant);
+      setTimeout(()=>{ el.classList.remove(variant); }, 600);
+    }, i*STAGGER);
+  }
+  // torna rosso dopo la wave, per poter riprovare
+  setTimeout(()=>{
+    for(let i=0;i<N;i++) document.getElementById('ic-'+i).classList.remove('done');
+  }, N*STAGGER + 1800);
+});
+</script>
