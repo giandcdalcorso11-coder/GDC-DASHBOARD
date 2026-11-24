@@ -8,6 +8,11 @@
   --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
   --life:#C2193A; --life-mid:#E9415A; --life-bg:#F5E0E6;
   --grigio:#6B6B6B; --border:#ddd6cb;
+  /* parametri regolabili dagli slider — i valori qui sono quelli di default/attuali */
+  --pop-duration: 500ms;
+  --pop-scale: 1.22;
+  --svg-color-duration: 450ms;
+  --icon-size: 62px;
 }
 @media(prefers-color-scheme:dark){:root{
   --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A;
@@ -61,13 +66,13 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 
 .agent-icon{
   flex-shrink:0;
-  width:62px; height:62px; border-radius:14px;
+  width:var(--icon-size); height:var(--icon-size); border-radius:14px;
   display:flex; align-items:center; justify-content:center;
   transition: background .5s;
   background: var(--life-bg);
 }
 .agent-icon.icon-done{ background: var(--maker-bg); }
-.agent-icon svg{ width:42px; height:42px; }
+.agent-icon svg{ width:calc(var(--icon-size) * .677); height:calc(var(--icon-size) * .677); }
 
 /* colori — stato life (rosso), identici alla pagina reale */
 .icon-life #a1-outer{ fill:#C2193A; } .icon-life #a1-inner{ fill:#E9415A; } .icon-life #a1-dot{ fill:#C2193A; } .icon-life #a1-label{ fill:#E9415A; }
@@ -87,11 +92,11 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 .icon-done .doc-path{ stroke:#497B58; } .icon-done .fold-path{ stroke:#497B58; }
 .icon-done .env-rect{ stroke:#497B58; } .icon-done .env-v{ stroke:#5D9C71; } .icon-done .env-dot{ fill:#497B58; }
 
-.agent-icon svg *{ transition: fill .45s ease, stroke .45s ease; }
+.agent-icon svg *{ transition: fill var(--svg-color-duration) ease, stroke var(--svg-color-duration) ease; }
 
-/* accensione per singola icona: SOLO scala dal centro (l'unica variante approvata finora) */
-@keyframes popCenter{ 0%,100%{ transform:scale(1); } 55%{ transform:scale(1.22); } }
-.agent-icon.pop{ animation:popCenter .5s cubic-bezier(.22,.8,.36,1) both; }
+/* accensione per singola icona: scala dal centro */
+@keyframes popCenter{ 0%,100%{ transform:scale(1); } 55%{ transform:scale(var(--pop-scale)); } }
+.agent-icon.pop{ animation:popCenter var(--pop-duration) cubic-bezier(.22,.8,.36,1) both; }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;}}
 
@@ -113,9 +118,26 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
   padding:11px; border:none; border-radius:12px;
   background:var(--nero); color:var(--carta); cursor:pointer;
 }
+.btn.secondary{ background:var(--bianco); color:var(--nero); border:1.5px solid var(--border); }
 .btn:active{ opacity:.85; }
 .note{ font-size:.76rem; color:var(--grigio); line-height:1.5; }
 code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82em; }
+
+/* ══ slider dei parametri ══ */
+.param-group{ display:flex; flex-direction:column; gap:10px; padding-top:4px; }
+.param-group-title{ font-size:.78rem; font-weight:800; margin-top:6px; }
+.param-row{ display:flex; flex-direction:column; gap:3px; }
+.param-row-head{ display:flex; justify-content:space-between; align-items:baseline; font-size:.82rem; }
+.param-row-head .val{ font-variant-numeric:tabular-nums; font-weight:700; color:var(--nero); }
+.param-row input[type=range]{ width:100%; accent-color:var(--maker); }
+.btn-row{ display:flex; gap:8px; }
+.btn-row .btn{ flex:1; }
+#valuesOut{
+  width:100%; min-height:110px; resize:vertical;
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.72rem;
+  background:var(--carta); color:var(--nero); border:1.5px solid var(--border);
+  border-radius:10px; padding:8px 10px; box-sizing:border-box;
+}
 </style>
 
 <h1>GDC IA TEAM — finestra come il logo GDC Studio</h1>
@@ -270,21 +292,21 @@ code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82
 <div class="panel">
   <div class="panel-label">Confronto dimensioni finestra</div>
   <div class="metrics" id="metrics">calcolo in corso…</div>
-
-  <div class="panel-label" style="margin-top:4px;">Bilanciamento velocità</div>
-  <label class="opt">
-    <input type="radio" name="speed" value="slowWave" checked>
-    <span><b>Rallenta l'accensione</b><span class="d">L'onda rosso→verde si allarga sui 7 agenti alla stessa velocità dello scorrimento laterale (scorrimento invariato).</span></span>
-  </label>
-  <label class="opt">
-    <input type="radio" name="speed" value="fastPan">
-    <span><b>Velocizza lo scorrimento</b><span class="d">Lo scorrimento laterale diventa rapido quanto l'accensione in sequenza (accensione invariata).</span></span>
-  </label>
-
-  <button class="btn" id="play">Prova accensione + scorrimento</button>
+  <button class="btn" id="play">Riavvia con i valori attuali</button>
   <div class="note">
-    La zona piena della finestra ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. Il fade vive <b>fuori</b> da questa zona, in un margine aggiunto di 20px per lato: la finestra visibile è quindi leggermente più larga (200px), ma il rettangolo confrontabile col logo Studio resta intatto, sempre completamente opaco. I loghi degli agenti restano a 62px per riempire la finestra in verticale. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno.
+    La zona piena della finestra ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio. Il fade vive fuori da questa zona, nel margine regolabile qui sotto.
   </div>
+</div>
+
+<div class="panel">
+  <div class="panel-label">Tutti i parametri — regolali e inviami i valori</div>
+  <div class="note">Ogni slider si applica subito al rilascio. In fondo trovi il riepilogo testuale da copiare e rimandarmi.</div>
+  <div class="param-group" id="paramGroups"></div>
+  <div class="btn-row">
+    <button class="btn secondary" id="resetParams">Reimposta ai valori attuali</button>
+    <button class="btn" id="copyParams">Copia valori</button>
+  </div>
+  <textarea id="valuesOut" readonly></textarea>
 </div>
 
 <script>
@@ -331,62 +353,138 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
 }
 startBarAnim('card-clip-rect','card-hotend',34.04,518.41,428);
 
-/* ══ wave agenti: life → done in sequenza, scala dal centro (variante approvata) ══ */
+/* ══ tutti i parametri regolabili, con i valori attuali come default ══ */
 const N = 7;
-const HOLD_ON = 3200, HOLD_OFF = 1400;
-const SPEED_PRESETS = {
-  slowWave: { stagger:700,  panDuration:4200 }, // accensione rallentata = velocità dello scorrimento attuale
-  fastPan:  { stagger:280,  panDuration:1800 }, // scorrimento velocizzato = velocità dell'accensione attuale
+const PARAMS = {
+  popDuration:      500,  // ms — durata dell'ingrandimento (pop) di ogni singolo logo
+  popScale:         1.22, // × — di quanto si ingrandisce al picco
+  colorOnDuration:  500,  // ms — sfondo chip: rosso → verde
+  colorOffDuration: 500,  // ms — sfondo chip: verde → rosso
+  svgColorDuration: 450,  // ms — colore del disegno/linee dentro il logo (entrambe le direzioni)
+  stagger:          280,  // ms — intervallo tra un agente e il successivo nell'onda
+  holdOn:          3200,  // ms — pausa a tutti accesi (verdi) prima di spegnere
+  holdOff:         1400,  // ms — pausa a tutti spenti (rossi) prima di riaccendere
+  panForward:      4200,  // ms — scorrimento: andata (svela gli agenti verso destra)
+  panBack:         4200,  // ms — scorrimento: ritorno all'inizio
+  fadeMargin:        20,  // px — margine di dissolvenza fuori dalla zona piena
+  iconSize:          62,  // px — dimensione di ogni logo agente
 };
-function currentPreset(){
-  const v = document.querySelector('input[name="speed"]:checked').value;
-  return SPEED_PRESETS[v];
+
+const PARAM_DEFS = [
+  { group:'Ingrandimento (pop)', key:'popDuration',      label:'Durata ingrandimento',              unit:'ms', min:100, max:1200, step:10 },
+  { group:'Ingrandimento (pop)', key:'popScale',          label:'Picco scala',                       unit:'×',  min:1,   max:1.6,  step:0.01 },
+  { group:'Cambio colore',       key:'colorOnDuration',   label:'Sfondo: rosso → verde',             unit:'ms', min:50,  max:1500, step:10 },
+  { group:'Cambio colore',       key:'colorOffDuration',  label:'Sfondo: verde → rosso',             unit:'ms', min:50,  max:1500, step:10 },
+  { group:'Cambio colore',       key:'svgColorDuration',  label:'Disegno/linee del logo',            unit:'ms', min:50,  max:1500, step:10 },
+  { group:'Sequenza (onda)',     key:'stagger',           label:'Intervallo tra un agente e il successivo', unit:'ms', min:50, max:1200, step:10 },
+  { group:'Sequenza (onda)',     key:'holdOn',            label:'Pausa a tutti accesi (verde)',      unit:'ms', min:200, max:6000, step:50 },
+  { group:'Sequenza (onda)',     key:'holdOff',           label:'Pausa a tutti spenti (rosso)',      unit:'ms', min:200, max:6000, step:50 },
+  { group:'Scorrimento',         key:'panForward',        label:'Andata',                            unit:'ms', min:300, max:8000, step:50 },
+  { group:'Scorrimento',         key:'panBack',           label:'Ritorno',                           unit:'ms', min:300, max:8000, step:50 },
+  { group:'Aspetto finestra',    key:'fadeMargin',        label:'Margine fade ai bordi',             unit:'px', min:0,   max:50,   step:1 },
+  { group:'Aspetto finestra',    key:'iconSize',          label:'Dimensione loghi agenti',           unit:'px', min:40,  max:90,   step:1 },
+];
+
+function buildParamUI(){
+  const wrap = document.getElementById('paramGroups');
+  let html = '';
+  let lastGroup = null;
+  PARAM_DEFS.forEach(def=>{
+    if(def.group !== lastGroup){
+      html += '<div class="param-group-title">'+def.group+'</div>';
+      lastGroup = def.group;
+    }
+    const val = PARAMS[def.key];
+    html += '<div class="param-row">'
+      + '<div class="param-row-head"><span>'+def.label+'</span><span class="val" id="val-'+def.key+'">'+val+' '+def.unit+'</span></div>'
+      + '<input type="range" id="sld-'+def.key+'" min="'+def.min+'" max="'+def.max+'" step="'+def.step+'" value="'+val+'">'
+      + '</div>';
+  });
+  wrap.innerHTML = html;
+
+  PARAM_DEFS.forEach(def=>{
+    const slider = document.getElementById('sld-'+def.key);
+    const out = document.getElementById('val-'+def.key);
+    slider.addEventListener('input', ()=>{
+      const v = parseFloat(slider.value);
+      out.textContent = (def.step < 1 ? v.toFixed(2) : v) + ' ' + def.unit;
+    });
+    slider.addEventListener('change', ()=>{
+      PARAMS[def.key] = parseFloat(slider.value);
+      applyStaticParams();
+      updateValuesOut();
+      restart();
+    });
+  });
 }
 
+/* parametri che si traducono in variabili CSS: si applicano subito, senza bisogno di restart */
+function applyStaticParams(){
+  document.documentElement.style.setProperty('--pop-duration', PARAMS.popDuration+'ms');
+  document.documentElement.style.setProperty('--pop-scale', PARAMS.popScale);
+  document.documentElement.style.setProperty('--svg-color-duration', PARAMS.svgColorDuration+'ms');
+  document.documentElement.style.setProperty('--icon-size', PARAMS.iconSize+'px');
+  document.getElementById('agentWindow').style.setProperty('--fade-margin', PARAMS.fadeMargin+'px');
+}
+
+function updateValuesOut(){
+  const lines = PARAM_DEFS.map(def=>'  '+def.key+': '+PARAMS[def.key]+(def.unit==='ms'?' // ms':def.unit==='px'?' // px':' // moltiplicatore'));
+  document.getElementById('valuesOut').value = '{\n' + lines.join(',\n') + '\n}';
+}
+
+/* ══ wave agenti: life → done in sequenza, scala dal centro ══ */
 let waveTimer = null;
 function waveOn(){
-  const { stagger } = currentPreset();
   for(let i=0;i<N;i++){
     setTimeout(()=>{
       const el=document.getElementById('icon-'+i);
+      el.style.transitionDuration = PARAMS.colorOnDuration+'ms';
       el.classList.remove('icon-life'); el.classList.add('icon-done');
       el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-      setTimeout(()=>{ el.classList.remove('pop'); }, 550);
-    }, i*stagger);
+      setTimeout(()=>{ el.classList.remove('pop'); }, PARAMS.popDuration+30);
+    }, i*PARAMS.stagger);
   }
-  waveTimer = setTimeout(waveOff, (N-1)*stagger + HOLD_ON);
+  waveTimer = setTimeout(waveOff, (N-1)*PARAMS.stagger + PARAMS.holdOn);
 }
 function waveOff(){
-  const { stagger } = currentPreset();
   for(let i=0;i<N;i++){
     setTimeout(()=>{
       const el=document.getElementById('icon-'+i);
+      el.style.transitionDuration = PARAMS.colorOffDuration+'ms';
       el.classList.remove('icon-done'); el.classList.add('icon-life');
-    }, i*stagger);
+    }, i*PARAMS.stagger);
   }
-  waveTimer = setTimeout(waveOn, (N-1)*stagger + HOLD_OFF);
+  waveTimer = setTimeout(waveOn, (N-1)*PARAMS.stagger + PARAMS.holdOff);
 }
 
-/* ══ scorrimento di tutta la riga dentro la finestra fissa ══ */
-let panAnim = null;
-function startPan(){
-  const { panDuration } = currentPreset();
+/* ══ scorrimento di tutta la riga dentro la finestra fissa — andata/ritorno indipendenti ══ */
+let panGen = 0;
+async function startPan(){
+  const myGen = ++panGen;
   const win = document.getElementById('agentWindow');
   const strip = document.getElementById('strip');
+  strip.getAnimations().forEach(a=>a.cancel());
+  strip.style.transform = 'translateX(0px)';
   const shift = strip.scrollWidth - win.clientWidth;
-  if(panAnim) panAnim.cancel();
   if(shift <= 0) return;
-  panAnim = strip.animate(
-    [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
-    { duration: panDuration, direction:'alternate', iterations:Infinity, easing:'ease-in-out' }
-  );
+  while(panGen === myGen){
+    await strip.animate(
+      [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
+      { duration:PARAMS.panForward, easing:'ease-in-out', fill:'forwards' }
+    ).finished.catch(()=>{});
+    if(panGen !== myGen) return;
+    await strip.animate(
+      [{ transform:'translateX(-'+shift+'px)' }, { transform:'translateX(0px)' }],
+      { duration:PARAMS.panBack, easing:'ease-in-out', fill:'forwards' }
+    ).finished.catch(()=>{});
+    if(panGen !== myGen) return;
+  }
 }
 
 function printMetrics(){
   const winEl = document.getElementById('agentWindow');
   const win = winEl.getBoundingClientRect();
-  const fadeMargin = parseFloat(getComputedStyle(winEl).getPropertyValue('--fade-margin')) || 0;
-  const coreWidth = win.width - 2*fadeMargin;
+  const coreWidth = win.width - 2*PARAMS.fadeMargin;
   const svg = document.getElementById('studio-card-svg').getBoundingClientRect();
   document.getElementById('metrics').innerHTML =
     'Zona piena finestra agenti: <b>'+coreWidth.toFixed(1)+' × '+win.height.toFixed(1)+' px</b><br>'+
@@ -402,15 +500,33 @@ function restart(){
   }
   startPan();
   waveOn();
+  printMetrics();
 }
 
 window.addEventListener('load', ()=>{
+  buildParamUI();
+  applyStaticParams();
+  updateValuesOut();
   printMetrics();
   startPan();
   setTimeout(waveOn, 600);
 });
 document.getElementById('play').addEventListener('click', restart);
-document.querySelectorAll('input[name="speed"]').forEach(r=>{
-  r.addEventListener('change', restart);
+document.getElementById('resetParams').addEventListener('click', ()=>{
+  PARAM_DEFS.forEach(def=>{ document.getElementById('sld-'+def.key).value = PARAMS[def.key]; });
+  updateValuesOut();
+});
+document.getElementById('copyParams').addEventListener('click', async ()=>{
+  const btn = document.getElementById('copyParams');
+  const text = document.getElementById('valuesOut').value;
+  try{
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copiato!';
+  }catch(e){
+    document.getElementById('valuesOut').focus();
+    document.getElementById('valuesOut').select();
+    btn.textContent = 'Seleziona e copia (Ctrl/Cmd+C)';
+  }
+  setTimeout(()=>{ btn.textContent = 'Copia valori'; }, 1800);
 });
 </script>
