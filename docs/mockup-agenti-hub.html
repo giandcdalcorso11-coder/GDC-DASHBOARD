@@ -69,24 +69,26 @@ h1{ font-size:1.1rem; font-weight:800; margin:0; text-align:center; }
 }
 .agent-icon.done{ background:var(--maker-bg); color:var(--maker); }
 
-/* ══ due varianti di "accensione" selezionabili ══ */
-@keyframes popSlide{
-  0%   { transform:translateX(-9px) scale(1);    opacity:.4; }
-  55%  { transform:translateX(0)    scale(1.22); opacity:1; }
-  100% { transform:translateX(0)    scale(1);    opacity:1; }
-}
-@keyframes popWipe{
-  0%   { clip-path:inset(0 100% 0 0); transform:scale(1); }
-  55%  { clip-path:inset(0 0%   0 0); transform:scale(1.22); }
-  100% { clip-path:inset(0 0%   0 0); transform:scale(1); }
-}
+/* ══ accensione per singola icona: SOLO scala dal centro (approvata) ══ */
 @keyframes popCenter{
   0%,100%{ transform:scale(1); }
   55%{ transform:scale(1.22); }
 }
-.agent-icon.pop-slide{  animation:popSlide .55s cubic-bezier(.22,.8,.36,1) both; }
-.agent-icon.pop-wipe{   animation:popWipe  .55s cubic-bezier(.22,.8,.36,1) both; }
 .agent-icon.pop-center{ animation:popCenter .5s cubic-bezier(.22,.8,.36,1) both; }
+
+/* ══ scorrimento di TUTTA la riga, non della singola icona ══ */
+@keyframes rowSlideIn{
+  0%  { transform:translateX(-22px); opacity:.55; }
+  100%{ transform:translateX(0);     opacity:1; }
+}
+@keyframes rowSwish{
+  0%  { transform:translateX(0); }
+  32% { transform:translateX(9px); }
+  68% { transform:translateX(-3px); }
+  100%{ transform:translateX(0); }
+}
+#strip.row-slide-in{ animation:rowSlideIn .75s cubic-bezier(.22,.8,.36,1) both; }
+#strip.row-swish{    animation:rowSwish   .85s cubic-bezier(.22,.8,.36,1) both; }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;}}
 
@@ -134,45 +136,56 @@ code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82
 </div>
 
 <div class="panel">
-  <div class="panel-label">Tipo di accensione</div>
+  <div class="panel-label">Scorrimento della riga (oltre alla scala dal centro, già confermata)</div>
   <div class="options">
     <label class="opt">
-      <input type="radio" name="variant" value="pop-center" checked>
-      <span><b>Solo scala dal centro</b><span class="d">Come prima: cresce dal centro, nessuno scorrimento laterale. Taglio risolto togliendo l'overflow:hidden dalla card.</span></span>
+      <input type="radio" name="row" value="none">
+      <span><b>Nessuno scorrimento</b><span class="d">Solo le singole icone che si ingrandiscono dal centro e cambiano colore, riga ferma.</span></span>
     </label>
     <label class="opt">
-      <input type="radio" name="variant" value="pop-slide">
-      <span><b>Scorrimento laterale</b><span class="d">L'icona scorre leggermente da sinistra mentre compare e si ingrandisce dal centro.</span></span>
+      <input type="radio" name="row" value="row-slide-in" checked>
+      <span><b>Scorrimento in ingresso</b><span class="d">Tutta la riga entra scorrendo da sinistra verso la sua posizione, mentre gli agenti si accendono uno dopo l'altro.</span></span>
     </label>
     <label class="opt">
-      <input type="radio" name="variant" value="pop-wipe">
-      <span><b>Reveal a tendina</b><span class="d">Il verde viene "svelato" da sinistra a destra come una tendina, mentre l'icona si ingrandisce dal centro.</span></span>
+      <input type="radio" name="row" value="row-swish">
+      <span><b>Scorrimento a rimbalzo</b><span class="d">Tutta la riga scivola leggermente a destra e torna indietro, come un piccolo "swish", mentre gli agenti si accendono.</span></span>
     </label>
   </div>
   <button class="btn" id="play">Prova accensione (wave)</button>
   <div class="note">
-    Fix del taglio: la card non ha più <code>overflow:hidden</code>; l'angolo arrotondato del gradiente decorativo è ottenuto dando lo stesso <code>border-radius</code> al pseudo-elemento <code>::after</code>, invece di affidarsi al clip del genitore. Così le icone crescono dal centro, sopra e sotto, senza essere mai tagliate.
+    Fix del taglio: la card non ha più <code>overflow:hidden</code>; l'angolo arrotondato del gradiente decorativo è ottenuto dando lo stesso <code>border-radius</code> al pseudo-elemento <code>::after</code>, invece di affidarsi al clip del genitore. Così le icone crescono dal centro, sopra e sotto, senza essere mai tagliate. Lo scorrimento qui sotto si applica a tutta la riga <code>agent-strip</code> in un unico movimento, non icona per icona.
   </div>
 </div>
 
 <script>
 const N = 7;
 const STAGGER = 280;
-function currentVariant(){
-  return document.querySelector('input[name="variant"]:checked').value;
+function currentRowVariant(){
+  return document.querySelector('input[name="row"]:checked').value;
 }
 document.getElementById('play').addEventListener('click', ()=>{
-  const variant = currentVariant();
+  const rowVariant = currentRowVariant();
+  const strip = document.getElementById('strip');
+
+  // scorrimento di tutta la riga, una volta sola, all'avvio della wave
+  if(rowVariant !== 'none'){
+    strip.classList.remove('row-slide-in','row-swish');
+    void strip.offsetWidth;
+    strip.classList.add(rowVariant);
+  }
+
+  // ogni icona: scala dal centro, in sequenza (variante già confermata)
   for(let i=0;i<N;i++){
     setTimeout(()=>{
       const el = document.getElementById('ic-'+i);
       el.classList.add('done');
-      el.classList.remove('pop-center','pop-slide','pop-wipe');
+      el.classList.remove('pop-center');
       void el.offsetWidth;
-      el.classList.add(variant);
-      setTimeout(()=>{ el.classList.remove(variant); }, 600);
+      el.classList.add('pop-center');
+      setTimeout(()=>{ el.classList.remove('pop-center'); }, 550);
     }, i*STAGGER);
   }
+
   // torna rosso dopo la wave, per poter riprovare
   setTimeout(()=>{
     for(let i=0;i<N;i++) document.getElementById('ic-'+i).classList.remove('done');
