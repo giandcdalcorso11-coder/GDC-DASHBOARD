@@ -84,15 +84,11 @@ body{
 }
 
 .hub-card{
-  position:relative; overflow:hidden;
-  background:var(--bianco);
-  border:1.5px solid var(--border);
-  border-radius:20px;
+  position:relative;
   padding:20px 20px 18px;
   cursor:pointer;
   text-decoration:none; color:inherit;
-  transition:border-color .2s, transform .18s, box-shadow .18s;
-  display:flex; flex-direction:column; justify-content:space-between;
+  transition:transform .18s, box-shadow .18s;
   min-height:148px;
   opacity:0; transform:translateY(18px);
 }
@@ -101,36 +97,31 @@ body{
 }
 .hub-card:nth-child(2).visible{ animation-delay:.12s; }
 @keyframes cardIn{ to{ opacity:1; transform:translateY(0); } }
-
-.hub-card::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,transparent 55%);
-  pointer-events:none;
-}
 .hub-card:hover{ transform:translateY(-2px); box-shadow:0 8px 28px rgba(28,28,28,.1); }
-.card-ia:hover     { border-color:var(--maker); }
-.card-studio:hover { border-color:var(--sabbia); }
+
+/* ══ forma della card: un'unica forma SVG (angoli sinistri arrotondati + punta a destra
+   a tutta altezza, angolo 45° come la vecchia freccia nel pallino), bordo continuo ══ */
+.hub-card-bg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.hub-card-bg path.fill{ fill:var(--bianco); }
+.hub-card-bg path.sheen{ fill:url(#sheenGrad); }
+.hub-card-bg path.stroke{ fill:none; stroke:var(--border); stroke-width:1.5; transition:stroke .2s; }
+.card-ia:hover     .hub-card-bg path.stroke{ stroke:var(--maker); }
+.card-studio:hover .hub-card-bg path.stroke{ stroke:var(--sabbia); }
+
+/* contenuto: si restringe della lunghezza della punta (impostata via JS) e resta
+   centrato nello spazio utile rimasto, non sotto la punta */
+.card-content{
+  position:relative; z-index:1; width:100%;
+  display:flex; flex-direction:column; justify-content:space-between; height:100%;
+}
 
 /* top row */
 .card-top{
-  display:flex; align-items:center;
-  justify-content:space-between; gap:10px; margin-bottom:14px;
+  display:flex; align-items:center; margin-bottom:14px;
 }
 .card-title{
   font-size:1.18rem; font-weight:800; letter-spacing:-.02em;
 }
-
-/* arrow */
-.card-arrow{
-  width:28px; height:28px; border-radius:50%; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  transition:background .2s, transform .2s;
-}
-.card-ia     .card-arrow{ background:var(--maker-bg); color:var(--maker); }
-.card-studio .card-arrow{ background:var(--sabbia-bg); color:var(--sabbia-dk); }
-.hub-card:hover .card-arrow{ transform:translateX(3px); }
-.card-ia:hover     .card-arrow{ background:var(--maker);  color:#fff; }
-.card-studio:hover .card-arrow{ background:var(--sabbia); color:#fff; }
 
 /* ══ STRIP AGENTI — finestra fissa delle stesse dimensioni del logo GDC Studio (160×80.72px),
    con fade fuori da quella zona e scorrimento automatico avanti/indietro al suo interno ══ */
@@ -359,13 +350,10 @@ body{
 
   <!-- ─── CARD GDC IA TEAM ─── -->
   <a class="hub-card card-ia" href="page_home_v25.html" id="card-ia" onclick="try{sessionStorage.setItem('gdc_nav_dir','forward');}catch(e){}">
+    <svg class="hub-card-bg" id="bg-ia"><path class="fill"/><path class="sheen"/><path class="stroke"/></svg>
+    <div class="card-content" id="content-ia">
     <div class="card-top">
       <div class="card-title">GDC IA TEAM</div>
-      <div class="card-arrow">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M3 7h8M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
     </div>
 
     <!-- Finestra fissa (stesse dimensioni del logo GDC Studio) con la striscia agenti A1→A7 che scorre al suo interno -->
@@ -462,17 +450,15 @@ body{
     </div>
       </div>
     </div>
+    </div>
   </a>
 
   <!-- ─── CARD GDC STUFF STUDIO ─── -->
   <a class="hub-card card-studio" href="../gdc_studio.html" id="card-studio" data-gate="studio" onclick="try{sessionStorage.setItem('gdc_nav_dir','forward');}catch(e){}return gateStudioLink(event)">
+    <svg class="hub-card-bg" id="bg-studio"><path class="fill"/><path class="sheen"/><path class="stroke"/></svg>
+    <div class="card-content" id="content-studio">
     <div class="card-top">
       <div class="card-title">GDC STUDIO</div>
-      <div class="card-arrow">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M3 7h8M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
     </div>
 
     <!-- Logo GDC master nella card, versione piccola con barretta animata -->
@@ -517,9 +503,20 @@ body{
           transform="translate(34.04,428)"/>
       </svg>
     </div>
+    </div>
   </a>
 
 </div>
+
+<!-- gradiente condiviso per la sfumatura decorativa sulla forma delle card -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="sheenGrad" x1="0%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".14"/>
+      <stop offset="55%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>
 
 <div class="hub-footer">
   GDC WEBAPP &nbsp;·&nbsp; uso privato
@@ -663,6 +660,37 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
   setW(0);
   requestAnimationFrame(tick);
 }
+
+/* ══ FORMA DELLE CARD: angoli sinistri arrotondati + punta a destra a tutta altezza
+   (angolo 45°, come la vecchia freccia nel pallino rimosso), bordo SVG continuo ══ */
+(function(){
+  function buildCardPath(w,h,r,l){
+    const xr = w - l;
+    return `M ${r} 0 L ${xr} 0 L ${w} ${h/2} L ${xr} ${h} L ${r} ${h} A ${r} ${r} 0 0 1 0 ${h-r} L 0 ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`;
+  }
+  function layoutCard(card, svgId, contentId){
+    if(!card) return;
+    const content = document.getElementById(contentId);
+    content.style.width = '100%'; // reset prima di misurare, per avere l'altezza "naturale"
+    const w = card.clientWidth, h = card.offsetHeight;
+    const r = 20;
+    const l = h/2; // punta a 45°: lunga quanto metà dell'altezza
+    content.style.width = 'calc(100% - ' + l + 'px)';
+    const svg = document.getElementById(svgId);
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    const d = buildCardPath(w,h,r,l);
+    svg.querySelectorAll('path').forEach(p=>p.setAttribute('d', d));
+  }
+  function updateCardShapes(){
+    layoutCard(document.getElementById('card-ia'),     'bg-ia',     'content-ia');
+    layoutCard(document.getElementById('card-studio'), 'bg-studio', 'content-studio');
+  }
+  window.addEventListener('load', updateCardShapes);
+  window.addEventListener('resize', updateCardShapes);
+  window.updateCardShapes = updateCardShapes;
+})();
 
 /* ══ CARD FADE-IN ══ */
 (function(){
