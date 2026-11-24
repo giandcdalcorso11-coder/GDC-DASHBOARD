@@ -1,0 +1,532 @@
+<!doctype html>
+<title>Finestra agenti — mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --life:#C2193A; --life-mid:#E9415A; --life-bg:#F5E0E6;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+  /* parametri regolabili dagli slider — i valori qui sono quelli di default/attuali */
+  --pop-duration: 500ms;
+  --pop-scale: 1.22;
+  --svg-color-duration: 450ms;
+  --icon-size: 62px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A;
+}}
+*{box-sizing:border-box;}
+body{
+  margin:0; font-family:'Jost',Arial,sans-serif; background:var(--carta); color:var(--nero);
+  display:flex; flex-direction:column; align-items:center; gap:24px;
+  padding:32px max(16px,env(safe-area-inset-left,0px)) 60px max(16px,env(safe-area-inset-right,0px));
+}
+h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
+.sub{ font-size:.82rem; color:var(--grigio); text-align:center; max-width:460px; line-height:1.5; margin:0; }
+
+/* ══ CARDS — replica 1:1 di app/page_hub_v1.html ══ */
+.cards-wrap{ width:100%; max-width:420px; display:flex; flex-direction:column; gap:14px; }
+.hub-card{
+  position:relative; overflow:hidden;
+  background:var(--bianco); border:1.5px solid var(--border); border-radius:20px;
+  padding:20px 20px 18px;
+}
+.hub-card::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,transparent 55%);
+  pointer-events:none;
+}
+.card-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+.card-title{ font-size:1.18rem; font-weight:800; letter-spacing:-.02em; }
+.card-arrow{
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.card-ia .card-arrow{ background:var(--maker-bg); color:var(--maker); }
+.card-studio .card-arrow{ background:var(--sabbia-bg); color:var(--sabbia-dk); }
+
+/* stessa "cornice" di posizionamento per i due loghi, per un confronto onesto */
+.logo-window-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding:4px 0 2px; }
+
+/* finestra visibile della riga agenti: zona piena = dimensioni del logo GDC Studio (160 × 80.72px).
+   Il fade vive FUORI da questa zona, in un margine aggiunto ai due lati (20px), così il
+   rettangolo che corrisponde al logo resta sempre completamente opaco/confrontabile.
+   (il tratteggio di riferimento è stato tolto: serviva solo per il confronto in fase di mockup) */
+.agent-window{
+  --fade-margin: 20px;
+  width: calc(160px + 2*var(--fade-margin));
+  height:80.72px; overflow:hidden; position:relative;
+  display:flex; align-items:center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 var(--fade-margin), #000 calc(100% - var(--fade-margin)), transparent 100%);
+}
+.agent-strip{ display:flex; gap:8px; align-items:center; will-change:transform; }
+
+.agent-icon{
+  flex-shrink:0;
+  width:var(--icon-size); height:var(--icon-size); border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  transition: background .5s;
+  background: var(--life-bg);
+}
+.agent-icon.icon-done{ background: var(--maker-bg); }
+.agent-icon svg{ width:calc(var(--icon-size) * .677); height:calc(var(--icon-size) * .677); }
+
+/* colori — stato life (rosso), identici alla pagina reale */
+.icon-life #a1-outer{ fill:#C2193A; } .icon-life #a1-inner{ fill:#E9415A; } .icon-life #a1-dot{ fill:#C2193A; } .icon-life #a1-label{ fill:#E9415A; }
+.icon-life #a2-bar1{ fill:#C2193A; } .icon-life #a2-bar2{ fill:#E9415A; } .icon-life #a2-bar3{ fill:#C2193A; } .icon-life #a2-bar4{ fill:none; stroke:#E9415A; stroke-width:5; stroke-dasharray:9 7; } .icon-life #a2-label{ fill:#C2193A; }
+.icon-life #a3-r1{ fill:#E9415A; } .icon-life #a3-r2{ fill:#C2193A; } .icon-life #a3-r3{ fill:none; stroke:#E9415A; stroke-width:5; } .icon-life #a3-r4{ fill:#E9415A; } .icon-life #a3-r5{ fill:#C2193A; } .icon-life #a3-r6{ fill:#C2193A; } .icon-life #a3-r7{ fill:none; stroke:#E9415A; stroke-width:5; } .icon-life #a3-r8{ fill:#C2193A; } .icon-life #a3-arrow{ stroke:#F5E0E6; } .icon-life #a3-label{ fill:#C2193A; }
+.icon-life .doc-rect{ stroke:#C2193A; } .icon-life .bar{ fill:#E9415A; } .icon-life .cur-el{ fill:#E9415A; } .icon-life .lbl{ fill:#C2193A; }
+.icon-life .arc-outer{ stroke:#C2193A; } .icon-life .circ-mid{ stroke:#E9415A; } .icon-life .dot-cent{ fill:#C2193A; } .icon-life .dash-line{ stroke:#E9415A; } .icon-life .badge{ fill:#E9415A; }
+.icon-life .doc-path{ stroke:#C2193A; } .icon-life .fold-path{ stroke:#C2193A; }
+.icon-life .env-rect{ stroke:#C2193A; } .icon-life .env-v{ stroke:#E9415A; } .icon-life .env-dot{ fill:#C2193A; }
+
+/* colori — stato done (verde), identici alla pagina reale */
+.icon-done #a1-outer{ fill:#497B58; } .icon-done #a1-inner{ fill:#5D9C71; } .icon-done #a1-dot{ fill:#497B58; } .icon-done #a1-label{ fill:#5D9C71; }
+.icon-done #a2-bar1{ fill:#5D9C71; } .icon-done #a2-bar2{ fill:#4A7C59; } .icon-done #a2-bar3{ fill:#5D9C71; } .icon-done #a2-bar4{ fill:none; stroke:#4A7C59; stroke-width:5; stroke-dasharray:9 7; } .icon-done #a2-label{ fill:#5D9C71; }
+.icon-done #a3-r1{ fill:#5D9C71; } .icon-done #a3-r2{ fill:#4A7C59; } .icon-done #a3-r3{ fill:none; stroke:#5D9C71; stroke-width:5; } .icon-done #a3-r4{ fill:#5D9C71; } .icon-done #a3-r5{ fill:#4A7C59; } .icon-done #a3-r6{ fill:#4A7C59; } .icon-done #a3-r7{ fill:none; stroke:#5D9C71; stroke-width:5; } .icon-done #a3-r8{ fill:#4A7C59; } .icon-done #a3-arrow{ stroke:#C7DFCF; } .icon-done #a3-label{ fill:#4A7C59; }
+.icon-done .doc-rect{ stroke:#497B58; } .icon-done .bar{ fill:#5D9C71; } .icon-done .cur-el{ fill:#5D9C71; } .icon-done .lbl{ fill:#497B58; }
+.icon-done .arc-outer{ stroke:#497B58; } .icon-done .circ-mid{ stroke:#5D9C71; } .icon-done .dot-cent{ fill:#497B58; } .icon-done .dash-line{ stroke:#5D9C71; } .icon-done .badge{ fill:#5D9C71; }
+.icon-done .doc-path{ stroke:#497B58; } .icon-done .fold-path{ stroke:#497B58; }
+.icon-done .env-rect{ stroke:#497B58; } .icon-done .env-v{ stroke:#5D9C71; } .icon-done .env-dot{ fill:#497B58; }
+
+.agent-icon svg *{ transition: fill var(--svg-color-duration) ease, stroke var(--svg-color-duration) ease; }
+
+/* accensione per singola icona: scala dal centro */
+@keyframes popCenter{ 0%,100%{ transform:scale(1); } 55%{ transform:scale(var(--pop-scale)); } }
+.agent-icon.pop{ animation:popCenter var(--pop-duration) cubic-bezier(.22,.8,.36,1) both; }
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;}}
+
+/* ══ pannello di controllo ══ */
+.panel{
+  width:100%; max-width:420px; background:var(--bianco);
+  border:1.5px solid var(--border); border-radius:16px; padding:16px 18px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.panel-label{ font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--grigio); }
+.metrics{ font-size:.82rem; line-height:1.6; }
+.metrics b{ font-variant-numeric:tabular-nums; }
+.opt{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; line-height:1.4; cursor:pointer; }
+.opt input{ margin-top:3px; accent-color:var(--maker); }
+.opt b{ display:block; }
+.opt span.d{ color:var(--grigio); font-size:.78rem; }
+.btn{
+  font-family:inherit; font-size:.86rem; font-weight:700;
+  padding:11px; border:none; border-radius:12px;
+  background:var(--nero); color:var(--carta); cursor:pointer;
+}
+.btn.secondary{ background:var(--bianco); color:var(--nero); border:1.5px solid var(--border); }
+.btn:active{ opacity:.85; }
+.note{ font-size:.76rem; color:var(--grigio); line-height:1.5; }
+code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82em; }
+
+/* ══ slider dei parametri ══ */
+.param-group{ display:flex; flex-direction:column; gap:10px; padding-top:4px; }
+.param-group-title{ font-size:.78rem; font-weight:800; margin-top:6px; }
+.param-row{ display:flex; flex-direction:column; gap:3px; }
+.param-row-head{ display:flex; justify-content:space-between; align-items:baseline; font-size:.82rem; }
+.param-row-head .val{ font-variant-numeric:tabular-nums; font-weight:700; color:var(--nero); }
+.param-row input[type=range]{ width:100%; accent-color:var(--maker); }
+.btn-row{ display:flex; gap:8px; }
+.btn-row .btn{ flex:1; }
+#valuesOut{
+  width:100%; min-height:110px; resize:vertical;
+  font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.72rem;
+  background:var(--carta); color:var(--nero); border:1.5px solid var(--border);
+  border-radius:10px; padding:8px 10px; box-sizing:border-box;
+}
+</style>
+
+<h1>GDC IA TEAM — finestra come il logo GDC Studio</h1>
+<p class="sub">Le due card sotto sono una replica 1:1 di quelle reali nell'hub (stesso markup, stessi colori, stessa animazione della barretta). La finestra della riga agenti ora ha le stesse dimensioni del logo GDC nella card Studio; i loghi sono ingranditi per riempirla in verticale e scorrono al suo interno.</p>
+
+<div class="cards-wrap">
+
+  <!-- ─── CARD GDC IA TEAM (replica) ─── -->
+  <div class="hub-card card-ia">
+    <div class="card-top">
+      <div class="card-title">GDC IA TEAM</div>
+      <div class="card-arrow">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 7h8M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="logo-window-wrap">
+      <div class="agent-window" id="agentWindow">
+        <div class="agent-strip" id="strip">
+
+          <!-- A1 -->
+          <div class="agent-icon icon-life" id="icon-0">
+            <svg viewBox="30 150 560 530" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+              <circle id="a1-dot"   cx="307.72" cy="403.14" r="45.04" fill="currentColor"/>
+              <path   id="a1-outer" fill="currentColor" d="M577.03,380.6c-1.04-12.39-11.93-21.6-24.32-20.56c-0.68,0.06-1.36,0.14-2.03,0.26c-11.47,2.02-19.5,12.45-18.53,24.06c9.06,108.27-60.47,207.58-165.32,236.1C246.81,653.1,123.05,582.27,90.41,462.25s38.19-243.78,158.21-276.42c11.24-3.06,18.29-14.17,16.27-25.64c-2.16-12.25-13.84-20.43-26.09-18.27c-0.67,0.12-1.34,0.27-2,0.45C92.77,181.54,7.77,330.05,46.94,474.07s187.68,229.02,331.71,189.85C504.46,629.7,587.9,510.53,577.03,380.6z"/>
+              <path   id="a1-inner" d="M254.85,254.62C172.83,283.82,130,373.99,159.2,456.01s119.36,124.85,201.39,95.65c63.21-22.5,105.25-82.54,104.78-149.63c-0.09-12.44-10.24-22.45-22.68-22.36c-1.26,0.01-2.51,0.12-3.75,0.34c-10.82,1.91-18.69,11.35-18.61,22.34c0.34,47.92-29.69,90.81-74.84,106.88c-58.59,20.86-122.99-9.73-143.85-68.32s9.73-122.99,68.32-143.85c10.35-3.69,16.53-14.3,14.63-25.13c-2.16-12.25-13.84-20.43-26.09-18.27C257.26,253.88,256.04,254.2,254.85,254.62z"/>
+              <text   id="a1-label" x="423.5" y="285" font-family="Jost,sans-serif" font-weight="800" font-size="115" text-anchor="middle" letter-spacing="-3">A1</text>
+            </svg>
+          </div>
+
+          <!-- A2 -->
+          <div class="agent-icon icon-life" id="icon-1">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <rect id="a2-bar1" x="14" y="76" width="18" height="28" rx="4"/>
+              <rect id="a2-bar2" x="40" y="56" width="18" height="48" rx="4"/>
+              <rect id="a2-bar3" x="66" y="34" width="18" height="70" rx="4"/>
+              <rect id="a2-bar4" x="92" y="20" width="18" height="84" rx="4"/>
+              <text id="a2-label" x="11" y="34" font-family="Jost,sans-serif" font-weight="800" font-size="30" letter-spacing="-1">A2</text>
+            </svg>
+          </div>
+
+          <!-- A3 -->
+          <div class="agent-icon icon-life" id="icon-2">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <g stroke-width="5">
+                <rect id="a3-r1" x="10" y="10" width="26" height="26" rx="6"/>
+                <rect id="a3-r2" x="47" y="10" width="26" height="26" rx="6"/>
+                <rect id="a3-r3" x="11.25" y="48.25" width="23.5" height="23.5" rx="5.25"/>
+                <rect id="a3-r4" x="47" y="47" width="26" height="26" rx="6"/>
+                <rect id="a3-r5" x="84" y="47" width="26" height="26" rx="6"/>
+                <rect id="a3-r6" x="10" y="84" width="26" height="26" rx="6"/>
+                <rect id="a3-r7" x="48.25" y="85.25" width="23.5" height="23.5" rx="5.25"/>
+                <rect id="a3-r8" x="84" y="84" width="26" height="26" rx="6"/>
+              </g>
+              <path id="a3-arrow" d="M17 97 H30 M26 92 L31 97 L26 102" fill="none" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <text id="a3-label" x="97" y="33" font-family="Jost,sans-serif" font-weight="800" font-size="31" text-anchor="middle" letter-spacing="-1.5">A3</text>
+            </svg>
+          </div>
+
+          <!-- A4 -->
+          <div class="agent-icon icon-life" id="icon-3">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <rect class="doc-rect" x="16" y="8" width="88" height="104" rx="12" fill="none" stroke-width="6.5"/>
+              <rect class="bar" x="30" y="29" width="60" height="6" rx="3"/>
+              <rect class="bar" x="30" y="46" width="60" height="6" rx="3"/>
+              <rect class="bar" x="30" y="63" width="60" height="6" rx="3"/>
+              <rect class="bar" x="30" y="85" width="20" height="6" rx="3"/>
+              <rect class="cur-el" x="57" y="79" width="6" height="18" rx="3"/>
+              <text class="lbl" x="66" y="95" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1">A4</text>
+            </svg>
+          </div>
+
+          <!-- A5 -->
+          <div class="agent-icon icon-life" id="icon-4">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <path class="arc-outer" d="M18.8 70 A44 44 0 1 1 97.2 70" fill="none" stroke-width="6.5" stroke-linecap="round"/>
+              <circle class="circ-mid" cx="58" cy="50" r="27" fill="none" stroke-width="5.5"/>
+              <circle class="dot-cent" cx="58" cy="50" r="12"/>
+              <path class="dash-line" d="M65 60 L82 84" fill="none" stroke-width="5" stroke-dasharray="6 6" stroke-linecap="round"/>
+              <circle class="badge" cx="87" cy="91" r="9"/>
+              <text class="lbl" x="24" y="102" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1">A5</text>
+            </svg>
+          </div>
+
+          <!-- A6 -->
+          <div class="agent-icon icon-life" id="icon-5">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <path class="doc-path" d="M21 9 H85 L104 28 V107 H21 Z" fill="none" stroke-width="6.5" stroke-linejoin="round"/>
+              <path class="fold-path" d="M85 9 V28 H104" fill="none" stroke-width="6.5" stroke-linejoin="round"/>
+              <text class="lbl" x="34" y="40" font-family="Jost,sans-serif" font-weight="800" font-size="27" letter-spacing="-1.5">A6</text>
+              <rect class="bar" x="34" y="52" width="52" height="6" rx="3"/>
+              <rect class="bar" x="34" y="70" width="52" height="6" rx="3"/>
+              <rect class="bar" x="34" y="88" width="52" height="6" rx="3"/>
+            </svg>
+          </div>
+
+          <!-- A7 -->
+          <div class="agent-icon icon-life" id="icon-6">
+            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+              <path class="env-v" d="M18 24 L60 46 L102 24" fill="none" stroke-width="5" stroke-dasharray="7 6" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect class="env-rect" x="14" y="20" width="92" height="62" rx="11" fill="none" stroke-width="7"/>
+              <circle class="env-dot" cx="60" cy="46" r="7"/>
+              <text class="lbl" x="60" y="74" font-family="Jost,sans-serif" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1">A7</text>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── CARD GDC STUFF STUDIO (replica identica alla pagina reale) ─── -->
+  <div class="hub-card card-studio">
+    <div class="card-top">
+      <div class="card-title">GDC STUDIO</div>
+      <div class="card-arrow">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 7h8M8 3.5L11.5 7 8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="logo-window-wrap">
+      <svg id="studio-card-svg"
+        viewBox="20 205 555 280"
+        xmlns="http://www.w3.org/2000/svg"
+        style="width:160px;height:auto;overflow:visible;"
+        font-family="Jost,sans-serif">
+
+        <g fill="var(--nero)">
+          <path d="M141.92,331.53h45.01v44.28c-3.67,1.02-7.34,2.03-11.54,2.61c-4.76,0.65-10.2,0.74-15.19,0.72c-4.8-0.01-9.18-0.12-14.1-0.79c-5.48-0.75-11.64-2.21-17-4.34c-5.04-2-9.37-4.59-13.45-7.74c-4.06-3.13-7.87-6.81-10.92-10.85c-2.96-3.92-5.21-8.18-6.94-12.73c-1.77-4.65-3-9.62-3.69-14.68c-0.69-5.09-0.84-10.28-0.65-15.26c0.19-4.84,0.69-9.49,1.88-14.25c1.22-4.87,3.15-9.86,5.35-14.03c1.96-3.72,4.13-6.78,6.73-9.84c2.72-3.2,5.9-6.38,9.48-8.97c3.57-2.59,7.54-4.58,11.43-6.22c3.75-1.58,7.44-2.84,11.5-3.84c4.47-1.1,9.4-1.89,14.47-2.32c5.28-0.44,10.71-0.48,15.91-0.29c4.95,0.18,9.69,0.57,14.39,1.01c4.62,0.43,9.2,0.91,13.82,1.66c4.65,0.75,9.33,1.78,13.89,2.75c4.4,0.94,8.69,1.82,12.97,2.7v-35.44c-2.26-0.71-4.52-1.41-7.71-2.18c-4.85-1.17-11.84-2.47-18.19-3.4c-6.15-0.9-11.68-1.45-17.27-1.82c-5.46-0.36-10.98-0.55-16.54-0.61c-5.59-0.06-11.22,0.01-16.67,0.31c-5.3,0.29-10.42,0.79-15.69,1.64c-5.45,0.88-11.08,2.12-16.48,3.59c-5.13,1.39-10.07,2.98-14.41,4.81c-4.05,1.7-7.59,3.59-11.74,6.02c-4.78,2.8-10.37,6.31-14.66,9.67c-3.62,2.83-6.32,5.56-9.06,8.58c-2.89,3.17-5.83,6.65-8.58,10.83c-3.08,4.68-5.92,10.23-8.09,15.33c-1.93,4.53-3.32,8.71-4.44,12.96c-1.04,3.95-1.85,7.96-2.31,11.62c-0.41,3.3-0.53,6.32-0.61,9.61c-0.08,3.42-0.1,7.13,0.06,10.4c0.14,2.93,0.43,5.51,0.79,8.33c0.39,3.05,0.86,6.4,1.58,9.67c0.74,3.33,1.74,6.6,2.86,9.73c1.08,3.03,2.28,5.93,3.59,8.76c1.28,2.76,2.68,5.46,4.26,7.97c1.56,2.48,3.3,4.79,5.11,7.18c1.87,2.47,3.82,5.02,5.9,7.3c2,2.19,4.11,4.13,6.26,6.02c2.17,1.9,4.39,3.76,6.87,5.53c2.81,2.01,5.96,3.93,9.67,5.9c4.37,2.32,9.52,4.7,14.29,6.51c4.48,1.7,8.64,2.89,13.26,3.95c4.87,1.12,10.25,2.11,15.14,2.74c4.47,0.57,8.53,0.84,12.77,1.09c4.34,0.26,8.88,0.49,13.38,0.49c4.58,0,9.14-0.24,13.87-0.49c4.91-0.25,10.01-0.51,14.9-0.97c4.59-0.44,8.99-1.06,13.08-1.64c3.79-0.54,7.31-1.04,11.19-1.77c3.74-0.7,7.82-1.62,10.34-2.13c1.42-0.29,2.34-0.45,3.27-0.6V297.35h-83.33V331.53z"/>
+          <path d="M371.13,314.9c-0.07-4.76-0.29-9.13-0.87-13.53c-0.57-4.33-1.48-8.7-2.68-12.87c-1.24-4.31-2.78-8.41-5.39-12.92c-3.19-5.5-7.98-11.6-13.4-16.06c-5.09-4.18-10.74-6.92-16.06-9c-4.73-1.85-9.2-3.17-13.91-4.19c-4.99-1.08-10.24-1.83-16.16-2.15c-6.36-0.34-13.49-0.2-18.82,0.2c-3.83,0.29-6.74,0.72-9.64,1.14v144.51c1.58,0.49,3.01,0.64,5.18,0.81c3.71,0.3,9.58,0.68,15.28,0.76c6.12,0.09,12.03-0.15,17.58-0.94c5.22-0.74,10.1-1.95,15.14-3.7c5.25-1.83,10.67-4.24,15.31-7.23c4.36-2.81,8.05-6.12,11.35-9.72c3.2-3.49,6.05-7.24,8.34-11.27c2.28-3.99,4.01-8.25,5.33-12.73c1.38-4.68,2.31-9.6,2.84-14.79C371.1,325.84,371.21,320.13,371.13,314.9z"/>
+          <path d="M529.09,373.73c-3.89,1.18-9.52,2.99-14.35,4.08c-4.34,0.97-8.04,1.37-11.86,1.77c-3.72,0.39-7.55,0.78-11.31,1.04c-3.68,0.25-7.3,0.36-10.89,0.37c-3.55,0-7.08-0.1-10.64-0.42c-3.57-0.32-7.18-0.86-10.58-1.58c-3.24-0.69-6.28-1.55-9.31-2.74c-3.02-1.19-6.02-2.7-8.76-4.14c-2.53-1.33-4.84-2.59-7.06-4.26c-2.29-1.71-4.48-3.85-6.51-5.84c-1.96-1.92-3.76-3.72-5.35-6.14c-1.63-2.49-3.04-5.65-4.01-7.6c-0.34,2.13-1.02,4.71-2.13,7.6c-1.4,3.66-3.47,7.82-5.35,11.44c-1.73,3.32-3.31,6.19-5.35,9.19c-2.11,3.08-4.71,6.3-7.06,8.82c-1.92,2.07-3.67,3.68-5.53,5.23c2.87,2.55,6.8,5.18,10.28,7.42c3.27,2.11,6.14,3.88,9.67,5.59c4.12,2,9.12,3.93,14.17,5.54c5.12,1.63,10.29,2.93,15.08,3.95c4.42,0.94,8.53,1.63,13.08,2.13c5.32,0.58,11.24,0.89,18.13,0.97c8.07,0.09,17.46-0.13,24.88-0.73c5.64-0.46,10.14-1.14,14.29-1.89c3.79-0.68,7.29-1.42,11.74-2.56c5.04-1.29,11.3-3.09,14.9-4.08L529.09,373.73z"/>
+          <path d="M419.61,283.58c-0.3-1.87-0.67-3.3-1.45-5.42c-1.16-3.18-3.24-7.91-5.21-11.5c-1.75-3.2-3.4-5.49-5.61-8.28c-2.41-3.05-5.47-6.69-7.7-9.19c-1.64-1.83-2.83-3.05-4.63-4.54c3.01-2.17,6.02-4.35,9.1-6.44c3.23-2.2,6.54-4.31,10.54-6.34c4.64-2.36,10.19-4.61,15.34-6.34c4.78-1.61,9.21-2.77,13.81-3.78c4.59-1.01,9.34-1.89,14.01-2.56c5.07-0.73,10.04-1.21,16.67-1.33c8.51-0.15,19.76,0.32,27.52,0.92c5.33,0.42,9.01,0.9,12.89,1.64c3.57,0.68,7.32,1.58,10.74,2.45c3.11,0.8,5.95,1.57,8.8,2.35l-8.84,33.77c-3.24-0.98-6.16-1.89-9.43-2.65c-3.58-0.84-7.57-1.52-11.57-2.11c-4.08-0.6-8.17-1.11-12.21-1.38c-3.91-0.26-7.77-0.28-11.49-0.23c-3.58,0.05-7.02,0.18-10.63,0.51c-3.73,0.34-7.65,0.9-11.21,1.74c-3.31,0.78-6.32,1.8-9.33,2.97c-3,1.16-5.99,2.45-8.82,4.05c-2.79,1.57-5.44,3.45-7.74,5.35c-2.12,1.75-3.95,3.54-5.74,5.52c-1.77,1.96-3.5,4.11-4.89,6.05C421.35,280.45,420.41,281.96,419.61,283.58z"/>
+        </g>
+
+        <defs>
+          <clipPath id="card-bar-clip">
+            <rect id="card-clip-rect" x="34.04" y="443" width="0" height="13"/>
+          </clipPath>
+        </defs>
+        <rect id="card-bar-full" x="34.04" y="446.1" width="518.41" height="7.14" fill="var(--nero)" clip-path="url(#card-bar-clip)"/>
+        <polygon id="card-hotend" points="0,0 22,0 11,18" fill="var(--nero)" transform="translate(34.04,428)"/>
+      </svg>
+    </div>
+  </div>
+
+</div>
+
+<div class="panel">
+  <div class="panel-label">Confronto dimensioni finestra</div>
+  <div class="metrics" id="metrics">calcolo in corso…</div>
+  <button class="btn" id="play">Riavvia con i valori attuali</button>
+  <div class="note">
+    La zona piena della finestra ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio. Il fade vive fuori da questa zona, nel margine regolabile qui sotto.
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-label">Tutti i parametri — regolali e inviami i valori</div>
+  <div class="note">Ogni slider si applica subito al rilascio. In fondo trovi il riepilogo testuale da copiare e rimandarmi.</div>
+  <div class="param-group" id="paramGroups"></div>
+  <div class="btn-row">
+    <button class="btn secondary" id="resetParams">Reimposta ai valori attuali</button>
+    <button class="btn" id="copyParams">Copia valori</button>
+  </div>
+  <textarea id="valuesOut" readonly></textarea>
+</div>
+
+<script>
+/* ══ barretta animata card Studio — stessa funzione della pagina reale ══ */
+function startBarAnim(clipId, hotendId, x0, barW, hotY){
+  const clipRect = document.getElementById(clipId);
+  const hotend   = document.getElementById(hotendId);
+  const T_GROW = 1600, T_HOLD = 500, T_FADE = 280;
+  function ease(t){ return t<.5?2*t*t:-1+(4-2*t)*t; }
+  function setW(w){
+    clipRect.setAttribute('width', Math.max(0,w));
+    hotend.setAttribute('transform','translate('+(x0+w-11)+','+hotY+')');
+  }
+  let phase='grow', st=null;
+  function tick(ts){
+    if(!st) st=ts;
+    const dt=ts-st;
+    if(phase==='grow'){
+      const p=Math.min(dt/T_GROW,1);
+      setW(ease(p)*barW);
+      if(p>=1){ phase='hold'; st=ts; }
+    } else if(phase==='hold'){
+      setW(barW);
+      if(dt>=T_HOLD){
+        phase='fade'; st=ts;
+        hotend.style.transition=`opacity ${T_FADE}ms`;
+        hotend.style.opacity='0';
+        document.getElementById('card-bar-full').style.transition=`opacity ${T_FADE}ms`;
+        document.getElementById('card-bar-full').style.opacity='0';
+      }
+    } else if(phase==='fade'){
+      if(dt>=T_FADE){
+        setW(0);
+        hotend.style.transition='none'; hotend.style.opacity='1';
+        document.getElementById('card-bar-full').style.transition='none';
+        document.getElementById('card-bar-full').style.opacity='1';
+        phase='grow'; st=null;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  setW(0);
+  requestAnimationFrame(tick);
+}
+startBarAnim('card-clip-rect','card-hotend',34.04,518.41,428);
+
+/* ══ tutti i parametri regolabili, con i valori attuali come default ══ */
+const N = 7;
+const PARAMS = {
+  popDuration:      500,  // ms — durata dell'ingrandimento (pop) di ogni singolo logo
+  popScale:         1.22, // × — di quanto si ingrandisce al picco
+  colorOnDuration:  500,  // ms — sfondo chip: rosso → verde
+  colorOffDuration: 500,  // ms — sfondo chip: verde → rosso
+  svgColorDuration: 450,  // ms — colore del disegno/linee dentro il logo (entrambe le direzioni)
+  stagger:          280,  // ms — intervallo tra un agente e il successivo nell'onda
+  holdOn:          3200,  // ms — pausa a tutti accesi (verdi) prima di spegnere
+  holdOff:         1400,  // ms — pausa a tutti spenti (rossi) prima di riaccendere
+  panForward:      4200,  // ms — scorrimento: andata (svela gli agenti verso destra)
+  panBack:         4200,  // ms — scorrimento: ritorno all'inizio
+  fadeMargin:        20,  // px — margine di dissolvenza fuori dalla zona piena
+  iconSize:          62,  // px — dimensione di ogni logo agente
+};
+
+const PARAM_DEFS = [
+  { group:'Ingrandimento (pop)', key:'popDuration',      label:'Durata ingrandimento',              unit:'ms', min:100, max:1200, step:10 },
+  { group:'Ingrandimento (pop)', key:'popScale',          label:'Picco scala',                       unit:'×',  min:1,   max:1.6,  step:0.01 },
+  { group:'Cambio colore',       key:'colorOnDuration',   label:'Sfondo: rosso → verde',             unit:'ms', min:50,  max:1500, step:10 },
+  { group:'Cambio colore',       key:'colorOffDuration',  label:'Sfondo: verde → rosso',             unit:'ms', min:50,  max:1500, step:10 },
+  { group:'Cambio colore',       key:'svgColorDuration',  label:'Disegno/linee del logo',            unit:'ms', min:50,  max:1500, step:10 },
+  { group:'Sequenza (onda)',     key:'stagger',           label:'Intervallo tra un agente e il successivo', unit:'ms', min:50, max:1200, step:10 },
+  { group:'Sequenza (onda)',     key:'holdOn',            label:'Pausa a tutti accesi (verde)',      unit:'ms', min:200, max:6000, step:50 },
+  { group:'Sequenza (onda)',     key:'holdOff',           label:'Pausa a tutti spenti (rosso)',      unit:'ms', min:200, max:6000, step:50 },
+  { group:'Scorrimento',         key:'panForward',        label:'Andata',                            unit:'ms', min:300, max:8000, step:50 },
+  { group:'Scorrimento',         key:'panBack',           label:'Ritorno',                           unit:'ms', min:300, max:8000, step:50 },
+  { group:'Aspetto finestra',    key:'fadeMargin',        label:'Margine fade ai bordi',             unit:'px', min:0,   max:50,   step:1 },
+  { group:'Aspetto finestra',    key:'iconSize',          label:'Dimensione loghi agenti',           unit:'px', min:40,  max:90,   step:1 },
+];
+
+function buildParamUI(){
+  const wrap = document.getElementById('paramGroups');
+  let html = '';
+  let lastGroup = null;
+  PARAM_DEFS.forEach(def=>{
+    if(def.group !== lastGroup){
+      html += '<div class="param-group-title">'+def.group+'</div>';
+      lastGroup = def.group;
+    }
+    const val = PARAMS[def.key];
+    html += '<div class="param-row">'
+      + '<div class="param-row-head"><span>'+def.label+'</span><span class="val" id="val-'+def.key+'">'+val+' '+def.unit+'</span></div>'
+      + '<input type="range" id="sld-'+def.key+'" min="'+def.min+'" max="'+def.max+'" step="'+def.step+'" value="'+val+'">'
+      + '</div>';
+  });
+  wrap.innerHTML = html;
+
+  PARAM_DEFS.forEach(def=>{
+    const slider = document.getElementById('sld-'+def.key);
+    const out = document.getElementById('val-'+def.key);
+    slider.addEventListener('input', ()=>{
+      const v = parseFloat(slider.value);
+      out.textContent = (def.step < 1 ? v.toFixed(2) : v) + ' ' + def.unit;
+    });
+    slider.addEventListener('change', ()=>{
+      PARAMS[def.key] = parseFloat(slider.value);
+      applyStaticParams();
+      updateValuesOut();
+      restart();
+    });
+  });
+}
+
+/* parametri che si traducono in variabili CSS: si applicano subito, senza bisogno di restart */
+function applyStaticParams(){
+  document.documentElement.style.setProperty('--pop-duration', PARAMS.popDuration+'ms');
+  document.documentElement.style.setProperty('--pop-scale', PARAMS.popScale);
+  document.documentElement.style.setProperty('--svg-color-duration', PARAMS.svgColorDuration+'ms');
+  document.documentElement.style.setProperty('--icon-size', PARAMS.iconSize+'px');
+  document.getElementById('agentWindow').style.setProperty('--fade-margin', PARAMS.fadeMargin+'px');
+}
+
+function updateValuesOut(){
+  const lines = PARAM_DEFS.map(def=>'  '+def.key+': '+PARAMS[def.key]+(def.unit==='ms'?' // ms':def.unit==='px'?' // px':' // moltiplicatore'));
+  document.getElementById('valuesOut').value = '{\n' + lines.join(',\n') + '\n}';
+}
+
+/* ══ wave agenti: life → done in sequenza, scala dal centro ══ */
+let waveTimer = null;
+function waveOn(){
+  for(let i=0;i<N;i++){
+    setTimeout(()=>{
+      const el=document.getElementById('icon-'+i);
+      el.style.transitionDuration = PARAMS.colorOnDuration+'ms';
+      el.classList.remove('icon-life'); el.classList.add('icon-done');
+      el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+      setTimeout(()=>{ el.classList.remove('pop'); }, PARAMS.popDuration+30);
+    }, i*PARAMS.stagger);
+  }
+  waveTimer = setTimeout(waveOff, (N-1)*PARAMS.stagger + PARAMS.holdOn);
+}
+function waveOff(){
+  for(let i=0;i<N;i++){
+    setTimeout(()=>{
+      const el=document.getElementById('icon-'+i);
+      el.style.transitionDuration = PARAMS.colorOffDuration+'ms';
+      el.classList.remove('icon-done'); el.classList.add('icon-life');
+    }, i*PARAMS.stagger);
+  }
+  waveTimer = setTimeout(waveOn, (N-1)*PARAMS.stagger + PARAMS.holdOff);
+}
+
+/* ══ scorrimento di tutta la riga dentro la finestra fissa — andata/ritorno indipendenti ══ */
+let panGen = 0;
+async function startPan(){
+  const myGen = ++panGen;
+  const win = document.getElementById('agentWindow');
+  const strip = document.getElementById('strip');
+  strip.getAnimations().forEach(a=>a.cancel());
+  strip.style.transform = 'translateX(0px)';
+  const shift = strip.scrollWidth - win.clientWidth;
+  if(shift <= 0) return;
+  while(panGen === myGen){
+    await strip.animate(
+      [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
+      { duration:PARAMS.panForward, easing:'ease-in-out', fill:'forwards' }
+    ).finished.catch(()=>{});
+    if(panGen !== myGen) return;
+    await strip.animate(
+      [{ transform:'translateX(-'+shift+'px)' }, { transform:'translateX(0px)' }],
+      { duration:PARAMS.panBack, easing:'ease-in-out', fill:'forwards' }
+    ).finished.catch(()=>{});
+    if(panGen !== myGen) return;
+  }
+}
+
+function printMetrics(){
+  const winEl = document.getElementById('agentWindow');
+  const win = winEl.getBoundingClientRect();
+  const coreWidth = win.width - 2*PARAMS.fadeMargin;
+  const svg = document.getElementById('studio-card-svg').getBoundingClientRect();
+  document.getElementById('metrics').innerHTML =
+    'Zona piena finestra agenti: <b>'+coreWidth.toFixed(1)+' × '+win.height.toFixed(1)+' px</b><br>'+
+    'Logo GDC Studio: <b>'+svg.width.toFixed(1)+' × '+svg.height.toFixed(1)+' px</b><br>'+
+    'Finestra totale (zona piena + margine fade): <b>'+win.width.toFixed(1)+' × '+win.height.toFixed(1)+' px</b>';
+}
+
+function restart(){
+  if(waveTimer) clearTimeout(waveTimer);
+  for(let i=0;i<N;i++){
+    const el=document.getElementById('icon-'+i);
+    el.classList.remove('icon-done','pop'); el.classList.add('icon-life');
+  }
+  startPan();
+  waveOn();
+  printMetrics();
+}
+
+window.addEventListener('load', ()=>{
+  buildParamUI();
+  applyStaticParams();
+  updateValuesOut();
+  printMetrics();
+  startPan();
+  setTimeout(waveOn, 600);
+});
+document.getElementById('play').addEventListener('click', restart);
+document.getElementById('resetParams').addEventListener('click', ()=>{
+  PARAM_DEFS.forEach(def=>{ document.getElementById('sld-'+def.key).value = PARAMS[def.key]; });
+  updateValuesOut();
+});
+document.getElementById('copyParams').addEventListener('click', async ()=>{
+  const btn = document.getElementById('copyParams');
+  const text = document.getElementById('valuesOut').value;
+  try{
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copiato!';
+  }catch(e){
+    document.getElementById('valuesOut').focus();
+    document.getElementById('valuesOut').select();
+    btn.textContent = 'Seleziona e copia (Ctrl/Cmd+C)';
+  }
+  setTimeout(()=>{ btn.textContent = 'Copia valori'; }, 1800);
+});
+</script>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<title>GDC WORKSPACE — Scheda Azienda</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@view-transition{navigation:auto;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
+:root{
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF;
+  --life:#C2193A; --life-bg:#F5E0E6;
+  --grigio:#6B6B6B; --border:#ddd6cb;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }}:root[data-theme="dark"]{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
+body{ display:flex; flex-direction:column; }
+.topbar{ display:flex; align-items:center; gap:10px; padding:10px 16px; background:var(--bianco); border-bottom:1.5px solid var(--border); flex-wrap:wrap; }
+.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--carta); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; }
+.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
+.pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px; clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; }
+.pill-hub{ display:inline-flex; align-items:center; font-family:'Jost',sans-serif; font-size:.72rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--carta); color:var(--grigio); cursor:pointer; text-decoration:none; border:none; border-radius:999px; transition:color .15s; clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
+.pill-hub:hover{ color:var(--nero); }
+.topbar-title{ font-weight:800; font-size:.86rem; flex:1; min-width:120px; }
+.export-btn{ font-family:inherit; font-size:.72rem; font-weight:700; border:1.5px solid var(--maker); background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:6px 14px; cursor:pointer; white-space:nowrap; }
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
+.export-btn:disabled{ opacity:.6; cursor:default; }
+.export-status{ font-size:.68rem; color:var(--grigio); white-space:nowrap; }
+.export-dl{ font-size:.72rem; font-weight:700; color:var(--maker); text-decoration:underline; white-space:nowrap; }
+.export-err{ font-size:.68rem; color:var(--life); }
+.scheda-frame{ flex:1; width:100%; border:none; min-height:calc(100vh - 54px); }
+.empty-state{ text-align:center; padding:60px 16px; color:var(--grigio); font-size:.82rem; line-height:1.6; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="pill-hub-wrap"><a class="pill-hub" id="backBtn" href="../page_pipeline_v1.html">Azienda</a></div>
+  <div class="topbar-title" id="topTitle">Scheda azienda</div>
+  <span class="export-status" id="exportStatus"></span>
+  <a class="export-dl" id="exportDl" href="#" target="_blank" style="display:none;">Scarica PDF &#8595;</a>
+  <button class="export-btn" id="exportBtn" data-gate="ia" onclick="exportPdf()">Esporta PDF</button>
+  <div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+    <div class="role-info-card">
+      <div class="role-info-icon">&#128065;</div>
+      <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+      <div class="role-info-text" id="roleInfoText"></div>
+      <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+    </div>
+  </div>
+</div>
+
+<div id="emptyState" class="empty-state" style="display:none;">
+  Scheda non ancora prodotta da Agente 5.2 per questa azienda.
+</div>
+<iframe id="schedaFrame" class="scheda-frame" style="display:none;"></iframe>
+
+<script>
+const SUPA_URL='https://pnzabwfsgkvejnrtrjcp.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBuemFid2ZzZ2t2ZWpucnRyamNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTg4OTIsImV4cCI6MjA5NDQzNDg5Mn0.xhnaMOxdymJSfLy77jhPo2w0K7j3z_tSgeRozqifSlk';
+
+function gdcToken(){ return sessionStorage.getItem('gdc_token'); }
+function gdcSessionExpired(){
+  sessionStorage.removeItem('gdc_token'); sessionStorage.removeItem('gdc_uid');
+  let banner=document.getElementById('gdcSessionBanner');
+  if(!banner){ banner=document.createElement('div'); banner.id='gdcSessionBanner';
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#C2193A;color:#fff;text-align:center;padding:12px 16px;font-family:Jost,sans-serif;font-size:.85rem;letter-spacing:.02em;box-shadow:0 2px 12px rgba(0,0,0,.25);';
+    document.body.prepend(banner);
+  }
+  banner.textContent='Sessione scaduta — reindirizzamento al login...';
+  setTimeout(()=>{ window.location.href='../page_login_v6.html'; },1600);
+}
+async function sbFetch(url,options){
+  options=options||{};
+  const headers=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+gdcToken()},options.headers||{});
+  const res=await fetch(url,Object.assign({},options,{headers:headers}));
+  if(res.status===401||res.status===403){ gdcSessionExpired(); throw new Error('session-expired'); }
+  return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  document.getElementById('exportBtn').classList.toggle('role-disabled', !canActIa());
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+
+const params = new URLSearchParams(window.location.search);
+const companyId = params.get('id');
+
+if(companyId){
+  document.getElementById('backBtn').href = '../page_company_v2.html?id=' + encodeURIComponent(companyId);
+}
+
+async function loadCompanyName(){
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/companies?id=eq.'+encodeURIComponent(companyId)+'&select=nome');
+    const rows = await r.json();
+    if(rows && rows[0]) document.getElementById('topTitle').textContent = 'Scheda — ' + rows[0].nome;
+  }catch(e){ console.error('Errore lettura nome azienda:', e); }
+}
+
+async function loadScheda(){
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/schede_aziendali?company_id=eq.'+encodeURIComponent(companyId)+'&select=html');
+    const rows = await r.json();
+    if(!rows || !rows[0]){
+      document.getElementById('emptyState').style.display='block';
+      document.getElementById('exportBtn').disabled = true;
+      return;
+    }
+    const frame = document.getElementById('schedaFrame');
+    frame.srcdoc = rows[0].html;
+    frame.style.display='block';
+  }catch(e){
+    console.error('Errore caricamento scheda:', e);
+    document.getElementById('emptyState').textContent = 'Impossibile caricare la scheda al momento.';
+    document.getElementById('emptyState').style.display='block';
+  }
+}
+
+let pollTimer = null;
+
+async function exportPdf(){
+  if (!gateIa('Genera il PDF della scheda aziendale.')) return;
+  const btn = document.getElementById('exportBtn');
+  const status = document.getElementById('exportStatus');
+  const dl = document.getElementById('exportDl');
+  dl.style.display = 'none';
+  btn.disabled = true;
+  status.textContent = 'Generazione in corso...';
+  status.className = 'export-status';
+
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/scheda_pdf_requests', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({ company_id: companyId })
+    });
+    const rows = await r.json();
+    const requestId = rows && rows[0] && rows[0].id;
+    if(!requestId) throw new Error('Richiesta non creata');
+    pollRequest(requestId, 0);
+  }catch(e){
+    console.error('Errore avvio export PDF:', e);
+    status.textContent = '';
+    showError('Impossibile avviare la generazione — riprova.');
+    btn.disabled = false;
+  }
+}
+
+async function pollRequest(requestId, attempt){
+  const btn = document.getElementById('exportBtn');
+  const status = document.getElementById('exportStatus');
+  const dl = document.getElementById('exportDl');
+
+  if(attempt >= 40){
+    status.textContent = '';
+    showError('Ancora in corso dopo 2 minuti — riprova più tardi, potrebbe comunque completarsi.');
+    btn.disabled = false;
+    return;
+  }
+
+  try{
+    const r = await sbFetch(SUPA_URL+'/rest/v1/scheda_pdf_requests?id=eq.'+encodeURIComponent(requestId)+'&select=status,pdf_url,error_message');
+    const rows = await r.json();
+    const row = rows && rows[0];
+    if(!row){ scheduleNext(requestId, attempt); return; }
+
+    if(row.status === 'done'){
+      status.textContent = '';
+      dl.href = row.pdf_url;
+      dl.style.display = 'inline';
+      btn.disabled = false;
+      btn.textContent = 'Esporta di nuovo';
+      return;
+    }
+    if(row.status === 'error'){
+      status.textContent = '';
+      showError(row.error_message || 'Errore durante la generazione.');
+      btn.disabled = false;
+      return;
+    }
+    status.textContent = 'Generazione in corso... (' + (attempt+1) + ')';
+    scheduleNext(requestId, attempt);
+  }catch(e){
+    console.error('Errore polling export PDF:', e);
+    scheduleNext(requestId, attempt);
+  }
+}
+
+function scheduleNext(requestId, attempt){
+  clearTimeout(pollTimer);
+  pollTimer = setTimeout(()=>pollRequest(requestId, attempt+1), 3000);
+}
+
+function showError(msg){
+  const status = document.getElementById('exportStatus');
+  status.textContent = msg;
+  status.className = 'export-status export-err';
+}
+
+if(!companyId){
+  document.getElementById('emptyState').textContent = 'Nessuna azienda indicata.';
+  document.getElementById('emptyState').style.display='block';
+} else if(!gdcToken()){
+  window.location.href='../page_login_v6.html';
+} else {
+  loadIaTeamRole();
+  loadCompanyName();
+  loadScheda();
+}
+</script>
+</body>
+</html>

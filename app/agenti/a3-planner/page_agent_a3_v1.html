@@ -3,13 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
 <title>GDC WORKSPACE — Agente 3</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+#logoBoxHero{view-transition-name:agent-logo-a3;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
   --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
   --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
-  --athlete:#2B5F9E; --athlete-bg:#D9E6F3;
+  --athlete:#2B5C8A; --athlete-bg:#D9E6F3;
   --life:#C2193A; --life-bg:#F5E0E6; --life-mid:#E9415A;
   --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
   --grigio:#6B6B6B; --border:#ddd6cb;
@@ -23,27 +27,7 @@ body{
   display:flex; flex-direction:column; align-items:center;
   padding-bottom:60px;
 }
-@media(prefers-color-scheme:dark){
-  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
-  .system-bar,.date-chip{ background:#2E2E2E; border-color:var(--border); }
-  .hero-card,.section-card,.note-box{ background:var(--bianco); border-color:var(--border); }
-  .back-btn{ background:#2E2E2E; border-color:var(--border); }
-  .tab-btn{ background:#2E2E2E; }
-  .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
-  .io-block{ background:#1A1A1A; }
-  .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }
-  .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }
-  .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }
-  .lg-maker{ background:rgba(74,124,89,.18); border-color:rgba(74,124,89,.35); color:#5D9C71; }
-  .lg-cta{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
-  .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }
-  .cal-popup,.msg-popup{ background:#242424; border-color:var(--border); }
-  .cal-day.has-event{ background:#2E2E2E; }
-  .cal-day.has-event:hover{ background:#3A3A3A; }
-  .cal-events-panel,.cal-event-item{ border-color:var(--border); }
-  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
-  #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee { fill:#F0EBE1; }
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }:root:not([data-theme="light"]) .s-rest svg #a3-arrow{stroke:#FAFAF5;}:root:not([data-theme="light"]) .date-chip{ background:#2E2E2E; border-color:var(--border); }:root:not([data-theme="light"]) .hero-card,:root:not([data-theme="light"]) .section-card,:root:not([data-theme="light"]) .note-box{ background:var(--bianco); border-color:var(--border); }:root:not([data-theme="light"]) .pill-hub{ background:var(--bianco); }:root:not([data-theme="light"]) .pill-notif.on{ background:var(--bianco); }:root:not([data-theme="light"]) .tab-btn{ background:#2E2E2E; }:root:not([data-theme="light"]) .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }:root:not([data-theme="light"]) .io-block{ background:#1A1A1A; }:root:not([data-theme="light"]) .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }:root:not([data-theme="light"]) .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }:root:not([data-theme="light"]) .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }:root:not([data-theme="light"]) .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }:root:not([data-theme="light"]) .cal-popup{ background:#242424; border-color:var(--border); }:root:not([data-theme="light"]) .cal-day.has-event{ background:#2E2E2E; }:root:not([data-theme="light"]) .cal-day.has-event:hover{ background:#3A3A3A; }:root:not([data-theme="light"]) .cal-events-panel{ border-color:var(--border); }:root:not([data-theme="light"]) .cal-event-item{ border-color:var(--border); }:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{ fill:#F0EBE1; }}:root[data-theme="dark"]{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }:root[data-theme="dark"] .s-rest svg #a3-arrow{stroke:#FAFAF5;}:root[data-theme="dark"] .date-chip{ background:#2E2E2E; border-color:var(--border); }:root[data-theme="dark"] .hero-card,:root[data-theme="dark"] .section-card,:root[data-theme="dark"] .note-box{ background:var(--bianco); border-color:var(--border); }:root[data-theme="dark"] .pill-hub{ background:var(--bianco); }:root[data-theme="dark"] .pill-notif.on{ background:var(--bianco); }:root[data-theme="dark"] .tab-btn{ background:#2E2E2E; }:root[data-theme="dark"] .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }:root[data-theme="dark"] .io-block{ background:#1A1A1A; }:root[data-theme="dark"] .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }:root[data-theme="dark"] .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }:root[data-theme="dark"] .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }:root[data-theme="dark"] .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }:root[data-theme="dark"] .cal-popup{ background:#242424; border-color:var(--border); }:root[data-theme="dark"] .cal-day.has-event{ background:#2E2E2E; }:root[data-theme="dark"] .cal-day.has-event:hover{ background:#3A3A3A; }:root[data-theme="dark"] .cal-events-panel{ border-color:var(--border); }:root[data-theme="dark"] .cal-event-item{ border-color:var(--border); }:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{ fill:#F0EBE1; }
 
 /* ══ HEADER ══ */
 .header{ width:100%; max-width:540px; padding:20px 16px 12px; display:flex; flex-direction:column; gap:10px; }
@@ -51,16 +35,24 @@ body{
 .gdc-logo-wrap{ display:flex; align-items:center; }
 #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
 #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee { opacity:0; transition:opacity .22s ease; }
-.date-chip{ display:flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px; font-size:.75rem; font-weight:700; cursor:pointer; transition:border-color .2s; user-select:none; }
+.date-chip{ display:flex; align-items:center; gap:6px; height:32px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:0 14px; font-size:.7rem; font-weight:700; cursor:pointer; transition:border-color .2s; user-select:none; flex-shrink:0; }
 .date-chip:hover{ border-color:var(--nero); }
 .date-chip-dot{ width:7px; height:7px; border-radius:50%; background:var(--maker); flex-shrink:0; }
-.system-bar{ display:flex; align-items:center; gap:8px; background:var(--bianco); border:1.5px solid var(--border); border-radius:10px; padding:9px 13px; }
-.sys-dot-wrap{ position:relative; width:10px; height:10px; flex-shrink:0; }
-.sys-dot{ width:10px; height:10px; border-radius:50%; background:var(--maker); }
-.sys-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--maker); animation:sysPulse 2s ease-out infinite; }
+.sys-mini{ display:flex; align-items:center; gap:6px; flex:1; min-width:0; justify-content:center; font-size:.72rem; font-weight:700; color:var(--maker); transition:color .3s; }
+.sys-mini span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sys-mini-dot{ position:relative; width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.sys-mini-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid currentColor; animation:sysPulse 2s ease-out infinite; }
 @keyframes sysPulse{ 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(2)} }
-.sys-label{ font-weight:700; font-size:.82rem; color:var(--maker); flex:1; }
-.sys-meta{ font-size:.7rem; color:var(--grigio); }
+
+/* ══ Pillola Home a punta + pillola Notifiche (stesso pattern di A1/A2/home) ══ */
+.pill-row{ width:100%; max-width:540px; padding:0 16px 10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; }
+.pill-hub{ display:inline-flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--nero); cursor:pointer; text-decoration:none; border:none; border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
+.pill-hub svg{ width:12px; height:12px; flex-shrink:0; }
+.pill-notif{ display:inline-flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; height:32px; padding:0 14px; border-radius:999px; border:1.5px solid var(--athlete); background:var(--athlete); color:#fff; cursor:pointer; transition:background .2s,color .2s,border-color .2s; }
+.pill-notif.on{ background:var(--bianco); border-color:var(--border); color:var(--nero); }
 
 /* ══ CALENDAR ══ */
 .cal-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.4); z-index:200; display:none; align-items:flex-start; justify-content:center; padding-top:70px; }
@@ -91,35 +83,18 @@ body{
 .cal-event-text{ font-weight:600; color:var(--nero); font-size:.74rem; }
 .cal-event-agent{ font-size:.64rem; color:var(--grigio); }
 
-/* ══ MSG POPUP ══ */
-.msg-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:300; display:none; align-items:flex-end; justify-content:center; }
-.msg-overlay.open{ display:flex; }
-.msg-popup{ background:var(--bianco); border:1.5px solid var(--border); border-radius:20px 20px 0 0; width:100%; max-width:540px; padding:20px 16px 32px; box-shadow:0 -4px 32px rgba(28,28,28,.16); }
-.msg-popup-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.msg-popup-title{ font-size:.75rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--maker); }
-.msg-popup-close{ background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--grigio); padding:2px 6px; border-radius:6px; }
-.msg-popup-close:hover{ background:var(--border); }
-.msg-note{ font-size:.65rem; color:var(--sabbia-dk); background:var(--sabbia-bg); border-radius:8px; padding:8px 10px; margin-bottom:10px; line-height:1.5; }
-.msg-textarea{ width:100%; background:var(--carta); border:1.5px solid var(--border); border-radius:12px; font-family:'Jost',sans-serif; font-size:.72rem; color:var(--nero); padding:12px 13px; resize:none; outline:none; min-height:220px; line-height:1.6; }
-.msg-actions{ display:flex; gap:8px; margin-top:10px; }
-.msg-copy-btn{ flex:1; background:var(--nero); color:var(--carta); border:none; border-radius:12px; padding:13px; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .15s; }
-.msg-copy-btn:hover{ background:#333; }
-.msg-open-btn{ background:rgba(74,124,89,.12); color:var(--maker); border:1.5px solid rgba(74,124,89,.25); border-radius:12px; padding:13px 16px; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700; cursor:pointer; text-decoration:none; display:flex; align-items:center; }
-
 /* ══ PAGE LAYOUT ══ */
 .page-content{ width:100%; max-width:540px; padding:0 16px; }
-.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:12px; }
-.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
 
 /* ══ HERO ══ */
-.hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; }
+.hero-card{ background:var(--bianco); border:2px solid var(--athlete); border-radius:20px; overflow:hidden; margin-bottom:12px; transition:border-color .3s; }
 .hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
-.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; background:var(--athlete-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
+.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
 .logo-active{ background:var(--sabbia-bg) !important; }
 .logo-queued{ background:var(--life-bg) !important; }
 .logo-done{ background:var(--maker-bg) !important; }
 .logo-sleep{ background:var(--athlete-bg) !important; }
-.logo-rest{ background:var(--carta) !important; }
+.logo-rest{ background:#1C1C1C !important; }
 
 /* ══ ICONA — esatta dalla home, per-forma + animazioni ══ */
 .logo-wrap svg #a3-r1,.logo-wrap svg #a3-r2,.logo-wrap svg #a3-r3,.logo-wrap svg #a3-r4,.logo-wrap svg #a3-r5,.logo-wrap svg #a3-r6,.logo-wrap svg #a3-r7,.logo-wrap svg #a3-r8,.logo-wrap svg #a3-label{transition:fill .6s,stroke .6s;}
@@ -134,22 +109,18 @@ body{
 @keyframes arrowMove{0%{transform:translate(0,-74px);opacity:0}32.86%{transform:translate(0,-74px);opacity:0}34.29%{transform:translate(0,-74px);opacity:1}41.43%{transform:translate(0,-74px);opacity:1}48.57%{transform:translate(37px,-74px);opacity:1}49.71%{transform:translate(37px,-74px);opacity:0}50%{transform:translate(0,-37px);opacity:0}50.71%{transform:translate(0,-37px);opacity:1}55.71%{transform:translate(0,-37px);opacity:1}62.86%{transform:translate(37px,-37px);opacity:1}70%{transform:translate(74px,-37px);opacity:1}71.14%{transform:translate(74px,-37px);opacity:0}71.43%{transform:translate(0,0);opacity:0}72.14%{transform:translate(0,0);opacity:1}77.14%{transform:translate(0,0);opacity:1}84.29%{transform:translate(37px,0);opacity:1}91.43%{transform:translate(74px,0);opacity:1}97.14%{transform:translate(130px,0);opacity:0}100%{transform:translate(0,-74px);opacity:0}}
 @keyframes arrowColor{0%{stroke:#8A6D3B}34.29%{stroke:#8A6D3B}50.71%{stroke:#E9DFC9}55.71%{stroke:#8A6D3B}62.86%{stroke:#8A6D3B}72.14%{stroke:#E9DFC9}84.29%{stroke:#8A6D3B}91.43%{stroke:#E9DFC9}100%{stroke:#8A6D3B}}
 .hero-text{ flex:1; min-width:0; }
-.agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
-.agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
+.agent-name-big{ font-size:1.1rem; font-weight:800; line-height:1.15; margin-bottom:5px; color:var(--athlete); transition:color .4s; }
 .agent-desc-big{ font-size:.71rem; color:var(--grigio); line-height:1.4; }
 .hero-meta{ display:flex; align-items:center; gap:7px; padding:0 16px 14px; flex-wrap:wrap; }
 .status-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:4px 10px; font-size:.67rem; font-weight:700; }
 .badge-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.badge-done{ color:var(--maker); border-color:var(--maker-bg); }
-.badge-done .badge-dot{ background:var(--maker); }
+.badge-done{ color:var(--maker); border-color:var(--maker-bg); } .badge-done .badge-dot{ background:var(--maker); }
 .badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
-.badge-queued{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-queued .badge-dot{ background:var(--athlete); }
-.badge-sleep{ color:var(--grigio); border-color:var(--border); } .badge-sleep .badge-dot{ background:var(--grigio); }
-.type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:4px 9px; }
+.badge-queued{ color:var(--life); border-color:var(--life-bg); } .badge-queued .badge-dot{ background:var(--life); }
+.badge-sleep{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-sleep .badge-dot{ background:var(--athlete); }
+.badge-rest{ color:var(--grigio); border-color:var(--border); } .badge-rest .badge-dot{ background:var(--grigio); }
+.type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:999px; padding:4px 9px; }
 .last-run-lbl{ font-size:.65rem; color:var(--grigio); }
-.push-row{ width:100%; max-width:540px; padding:0 16px 6px; display:flex; justify-content:flex-end; }
-.push-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; color:var(--grigio); background:none; border:none; cursor:pointer; padding:0; transition:color .15s; }
-.push-btn:hover{ color:var(--nero); }
 .empty-note{ font-size:.72rem; color:var(--grigio); line-height:1.5; padding:6px 0; }
 
 /* ══ TABS ══ */
@@ -159,7 +130,8 @@ body{
 .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
 .tab-btn:hover:not(.active){ border-color:var(--nero); color:var(--nero); }
 .panel{ display:none; }
-.panel.active{ display:block; }
+.panel.active{ display:block; animation:gdcPanelIn .26s cubic-bezier(.2,.8,.2,1); }
+@keyframes gdcPanelIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
 
 /* ══ SECTION CARD ══ */
 .section-card{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
@@ -175,11 +147,6 @@ body{
 .lg-btn::before{ content:''; position:absolute; inset:0; border-radius:inherit; background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.1) 50%,transparent 100%); pointer-events:none; }
 .lg-btn:hover:not(.lg-disabled){ transform:translateY(-1px) scale(1.01); box-shadow:0 4px 12px rgba(28,28,28,.12),inset 0 1px 0 rgba(255,255,255,.9); background:rgba(255,255,255,.72); }
 .lg-btn:active:not(.lg-disabled){ transform:scale(.98); }
-.lg-maker{ background:rgba(74,124,89,.12); border-color:rgba(74,124,89,.25); color:var(--maker); box-shadow:0 1px 3px rgba(74,124,89,.1),inset 0 1px 0 rgba(255,255,255,.7); }
-.lg-maker:hover:not(.lg-disabled){ background:rgba(74,124,89,.18); box-shadow:0 4px 12px rgba(74,124,89,.15),inset 0 1px 0 rgba(255,255,255,.8); }
-.lg-cta{ background:var(--nero); color:var(--carta); border-color:var(--nero); box-shadow:0 2px 8px rgba(28,28,28,.2); }
-.lg-cta:hover:not(.lg-disabled){ background:#333; box-shadow:0 4px 14px rgba(28,28,28,.28); transform:translateY(-1px); }
-.lg-cta::before{ display:none; }
 .lg-disabled{ opacity:.45; cursor:not-allowed; background:rgba(200,200,200,.15); border-color:rgba(200,200,200,.25); color:var(--grigio); box-shadow:none; }
 .btn-icon{ font-size:1.1rem; flex-shrink:0; width:22px; text-align:center; }
 .btn-text{ flex:1; }
@@ -188,11 +155,12 @@ body{
 .btn-arr{ font-size:.85rem; opacity:.35; flex-shrink:0; }
 
 /* ══ DOCUMENTI ══ */
-.file-item{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); text-decoration:none; color:var(--nero); transition:opacity .15s; }
+.file-item{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); text-decoration:none; color:var(--nero); transition:opacity .15s; cursor:pointer; }
 .file-item:last-child{ border-bottom:none; }
 .file-item:hover{ opacity:.7; }
 .file-icon{ flex-shrink:0; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
 .fi-sheet{ background:#e8f4e8; }
+.fi-doc{ background:#e8f0fe; }
 .fi-slide{ background:#fff3e0; }
 .file-info{ flex:1; min-width:0; }
 .file-name{ font-size:.72rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -216,9 +184,8 @@ body{
 .work-step:last-child{ border-bottom:none; }
 .work-num{ flex-shrink:0; width:20px; height:20px; border-radius:50%; background:var(--nero); color:var(--carta); font-size:.6rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px; }
 .work-desc{ font-size:.72rem; line-height:1.4; color:var(--nero); }
-.work-sub{ font-size:.63rem; color:var(--grigio); margin-top:1px; }
 
-/* ══ RUN ══ */
+/* ══ RUN/PANORAMICA ══ */
 .run-row{ display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
 .run-row:last-child{ border-bottom:none; }
 .run-icon{ font-size:.9rem; flex-shrink:0; margin-top:1px; }
@@ -227,7 +194,8 @@ body{
 .run-meta{ font-size:.63rem; color:var(--grigio); margin-top:1px; }
 .run-badge{ border-radius:999px; font-size:.6rem; font-weight:700; padding:2px 8px; flex-shrink:0; }
 .rb-ok{ background:var(--maker-bg); color:var(--maker); }
-.stat-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; text-align:center; }
+.rb-err{ background:var(--life-bg); color:var(--life); }
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center; }
 .stat-num{ font-size:1.35rem; font-weight:800; }
 .stat-lbl{ font-size:.6rem; color:var(--grigio); font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
 
@@ -268,27 +236,15 @@ body{
   </div>
 </div>
 
-<!-- ══ MSG POPUP ══ -->
-<div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
-  <div class="msg-popup">
-    <div class="msg-popup-head">
-      <span class="msg-popup-title">&#128203; Messaggio A3 — Planner</span>
-      <button class="msg-popup-close" onclick="closeMsg()">&#10005;</button>
-    </div>
-    <div class="msg-note">&#9888;&#65039; Aggiungi manualmente il blocco <strong>CALENDARIO IMPEGNI</strong> dopo aver incollato il messaggio — script BPT in sviluppo.</div>
-    <textarea class="msg-textarea" id="msgText" readonly></textarea>
-    <div class="msg-actions">
-      <button class="msg-copy-btn" id="copyBtn" onclick="copyMsg()">Copia messaggio</button>
-      <a class="msg-open-btn" href="https://claude.ai/project/019dc48d-98e7-7375-ba30-d1c514ecc02f" target="_blank">&#128279; Apri A3</a>
-    </div>
-  </div>
-</div>
-
 <!-- ══ HEADER ══ -->
 <div class="header">
   <div class="header-top">
     <div class="gdc-logo-wrap">
-      <svg id="hub-master-svg" viewBox="20 205 555 280" xmlns="http://www.w3.org/2000/svg" style="height:34px;width:auto;overflow:visible;" font-family="Jost,sans-serif">
+      <svg id="hub-master-svg"
+        viewBox="20 205 555 280"
+        xmlns="http://www.w3.org/2000/svg"
+        style="height:34px;width:auto;overflow:visible;"
+        font-family="Jost,sans-serif">
         <g class="logo-G" fill="var(--nero)">
           <path d="M141.92,331.53h45.01v44.28c-3.67,1.02-7.34,2.03-11.54,2.61c-4.76,0.65-10.2,0.74-15.19,0.72c-4.8-0.01-9.18-0.12-14.1-0.79c-5.48-0.75-11.64-2.21-17-4.34c-5.04-2-9.37-4.59-13.45-7.74c-4.06-3.13-7.87-6.81-10.92-10.85c-2.96-3.92-5.21-8.18-6.94-12.73c-1.77-4.65-3-9.62-3.69-14.68c-0.69-5.09-0.84-10.28-0.65-15.26c0.19-4.84,0.69-9.49,1.88-14.25c1.22-4.87,3.15-9.86,5.35-14.03c1.96-3.72,4.13-6.78,6.73-9.84c2.72-3.2,5.9-6.38,9.48-8.97c3.57-2.59,7.54-4.58,11.43-6.22c3.75-1.58,7.44-2.84,11.5-3.84c4.47-1.1,9.4-1.89,14.47-2.32c5.28-0.44,10.71-0.48,15.91-0.29c4.95,0.18,9.69,0.57,14.39,1.01c4.62,0.43,9.2,0.91,13.82,1.66c4.65,0.75,9.33,1.78,13.89,2.75c4.4,0.94,8.69,1.82,12.97,2.7v-35.44c-2.26-0.71-4.52-1.41-7.71-2.18c-4.85-1.17-11.84-2.47-18.19-3.4c-6.15-0.9-11.68-1.45-17.27-1.82c-5.46-0.36-10.98-0.55-16.54-0.61c-5.59-0.06-11.22,0.01-16.67,0.31c-5.3,0.29-10.42,0.79-15.69,1.64c-5.45,0.88-11.08,2.12-16.48,3.59c-5.13,1.39-10.07,2.98-14.41,4.81c-4.05,1.7-7.59,3.59-11.74,6.02c-4.78,2.8-10.37,6.31-14.66,9.67c-3.62,2.83-6.32,5.56-9.06,8.58c-2.89,3.17-5.83,6.65-8.58,10.83c-3.08,4.68-5.92,10.23-8.09,15.33c-1.93,4.53-3.32,8.71-4.44,12.96c-1.04,3.95-1.85,7.96-2.31,11.62c-0.41,3.3-0.53,6.32-0.61,9.61c-0.08,3.42-0.1,7.13,0.06,10.4c0.14,2.93,0.43,5.51,0.79,8.33c0.39,3.05,0.86,6.4,1.58,9.67c0.74,3.33,1.74,6.6,2.86,9.73c1.08,3.03,2.28,5.93,3.59,8.76c1.28,2.76,2.68,5.46,4.26,7.97c1.56,2.48,3.3,4.79,5.11,7.18c1.87,2.47,3.82,5.02,5.9,7.3c2,2.19,4.11,4.13,6.26,6.02c2.17,1.9,4.39,3.76,6.87,5.53c2.81,2.01,5.96,3.93,9.67,5.9c4.37,2.32,9.52,4.7,14.29,6.51c4.48,1.7,8.64,2.89,13.26,3.95c4.87,1.12,10.25,2.11,15.14,2.74c4.47,0.57,8.53,0.84,12.77,1.09c4.34,0.26,8.88,0.49,13.38,0.49c4.58,0,9.14-0.24,13.87-0.49c4.91-0.25,10.01-0.51,14.9-0.97c4.59-0.44,8.99-1.06,13.08-1.64c3.79-0.54,7.31-1.04,11.19-1.77c3.74-0.7,7.82-1.62,10.34-2.13c1.42-0.29,2.34-0.45,3.27-0.6V297.35h-83.33V331.53z"/>
         </g>
@@ -312,19 +268,21 @@ body{
         </g>
       </svg>
     </div>
-    <div class="date-chip" onclick="openCal()">
+    <div class="sys-mini" id="sysMini">
+      <span class="sys-mini-dot"></span><span id="sysLabel">Caricamento...</span>
+    </div>
+    <div class="date-chip" id="dateChip" onclick="openCal()">
       <span class="date-chip-dot"></span>
       <span id="dateChipText"></span>
     </div>
   </div>
-  <div class="system-bar">
-    <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
-    <div class="sys-meta" id="sysMeta"></div>
-  </div>
 </div>
-<div class="push-row">
-  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
+<div class="pill-row">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="../../page_home_v25.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a></div>
+  <button id="pushBtn" class="pill-notif" onclick="togglePushNotifications()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span id="pushBtnLabel">Attiva notifiche</span>
   </button>
@@ -333,23 +291,10 @@ body{
 <!-- ══ PAGE CONTENT ══ -->
 <div class="page-content">
 
-  <a class="back-btn" href="../../page_home_v25.html">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-      <path d="M8 2.5L4.5 6.5L8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Home
-  </a>
-  <a class="back-btn" href="../../page_hub_v1.html" style="margin-left:8px;">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-    Hub
-  </a>
-
   <!-- HERO -->
-  <div class="hero-card">
+  <div class="hero-card" id="heroCard">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div class="logo-wrap s-sleep" id="logoWrap">
+      <div class="logo-box-hero logo-sleep" id="logoBoxHero"><div class="logo-wrap s-sleep" id="logoWrap">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible">
           <g stroke-width="5">
             <rect id="a3-r1" x="10"    y="10"    width="26" height="26" rx="6" fill="#4A86C6"/>
@@ -366,134 +311,101 @@ body{
         </svg>
       </div></div>
       <div class="hero-text">
-        <div class="agent-id-lbl">Agente 3</div>
-        <div class="agent-name-big">Planner</div>
-        <div class="agent-desc-big">Pianifica il calendario editoriale del mese corrente, integrando analisi metriche, impegni agonistici e piano precedente.</div>
+        <div class="agent-name-big" id="agentTitle">AGENTE 3 &#x2014; Planner</div>
+        <div class="agent-desc-big">Genera il piano editoriale del mese da pianificare come pagina HTML, scritta direttamente su Supabase — nessun file da scaricare o caricare.</div>
       </div>
     </div>
     <div class="hero-meta">
       <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
-      <span class="type-tag">&#9729;&#65039; Claude.ai</span>
+      <span class="type-tag">&#129302; Claude Code</span>
       <span class="last-run-lbl" id="lastRunLbl"></span>
     </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs-row">
-    <button class="tab-btn active" onclick="switchTab('azioni',this)">Azioni</button>
-    <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
+    <button class="tab-btn active" onclick="switchTab('panoramica',this)">Panoramica</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
-    <button class="tab-btn" onclick="switchTab('run',this)">Run</button>
+    <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
-  <!-- TAB: AZIONI -->
-  <div id="panel-azioni" class="panel active">
-    <div class="action-row">
-
-      <a class="lg-btn" href="piano.html">
-        <span class="btn-icon">&#128197;</span>
-        <div class="btn-text">
-          <div class="btn-title">Piani editoriali</div>
-          <div class="btn-sub">Piano completo di ogni mese, in HTML</div>
+  <!-- TAB: PANORAMICA -->
+  <div id="panel-panoramica" class="panel active">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#9889; Azioni</span></div>
+      <div class="sc-body">
+        <div class="action-row">
+          <a class="lg-btn" href="piano.html">
+            <span class="btn-icon">&#128197;</span>
+            <div class="btn-text">
+              <div class="btn-title">Piani editoriali</div>
+              <div class="btn-sub">Piano completo di ogni mese, in HTML</div>
+            </div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
+          <a class="lg-btn" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
+            <span class="btn-icon">&#128202;</span>
+            <div class="btn-text">
+              <div class="btn-title">Apri Google Sheet A1</div>
+              <div class="btn-sub">Instagram_Analytics_GDC — dati input</div>
+            </div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
         </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-        <span class="btn-icon">&#128202;</span>
-        <div class="btn-text">
-          <div class="btn-title">Cartella Drive A2 — Report</div>
-          <div class="btn-sub" id="reportSubLbl">Recupera report Mm1 e Mm2</div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128200; Ultimo run registrato</span></div>
+      <div class="sc-body">
+        <div class="stat-grid">
+          <div><div class="stat-num" style="color:var(--maker);" id="statMese">&#8212;</div><div class="stat-lbl">Mese pianificato</div></div>
+          <div><div class="stat-num" id="statTornei">&#8212;</div><div class="stat-lbl">Tornei BPT nel mese</div></div>
         </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
-        <span class="btn-icon">&#128193;</span>
-        <div class="btn-text">
-          <div class="btn-title">Cartella Drive A3</div>
-          <div class="btn-sub" id="driveLbl">Piani editoriali — output</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn lg-cta" href="https://claude.ai/project/019dc48d-98e7-7375-ba30-d1c514ecc02f" target="_blank">
-        <span class="btn-icon">&#9889;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri progetto Claude A3</div>
-          <div class="btn-sub">Planner — claude.ai/project/...</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-maker" onclick="openMsg()">
-        <span class="btn-icon">&#128203;</span>
-        <div class="btn-text">
-          <div class="btn-title">Copia messaggio precompilato</div>
-          <div class="btn-sub" id="msgSubLbl">Launcher A3 — piano mese corrente</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </button>
-
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#8987; Attività recente (activity_log)</span></div>
+      <div class="sc-body" id="runList">
+        <div class="empty-note">Caricamento...</div>
+      </div>
     </div>
   </div>
 
   <!-- TAB: DOCUMENTI -->
   <div id="panel-file" class="panel">
     <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128197; Piani generati (report_mensili)</span></div>
+      <div class="sc-body" id="pianiList">
+        <div class="empty-note">Caricamento...</div>
+      </div>
+    </div>
+    <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128196; Output — Cartella Drive A3</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">Apri &#8599;</a>
+        <span class="sc-label">&#128202; Input — Google Sheet A1</span>
+        <a class="sc-link" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">Apri &#8599;</a>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
-          <div class="file-icon fi-slide">&#128203;</div>
+        <a class="file-item" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
+          <div class="file-icon fi-sheet">&#128202;</div>
           <div class="file-info">
-            <div class="file-name" id="pianoNomeLbl">piano_[mese]_[anno]</div>
-            <div class="file-sub">Google Slides — output A3 (M0)</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
-        <a class="file-item dim" href="https://drive.google.com/drive/folders/1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK" target="_blank">
-          <div class="file-icon fi-slide" style="opacity:.5;">&#128203;</div>
-          <div class="file-info">
-            <div class="file-name" id="pianoNomePrecLbl">piano_[mese-1]_[anno]</div>
-            <div class="file-sub">Piano mese precedente — Mm1 (input)</div>
+            <div class="file-name">Instagram_Analytics_GDC</div>
+            <div class="file-sub">Google Sheet — dati aggiornati da A1 (input diretto di A3)</div>
           </div>
           <span class="file-arr">&#8599;</span>
         </a>
       </div>
     </div>
     <div class="section-card">
-      <div class="sc-head">
-        <span class="sc-label">&#128202; Input — Report A2 (Mm1 + Mm2)</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">Apri &#8599;</a>
-      </div>
+      <div class="sc-head"><span class="sc-label">&#128196; Prompt dell'agente</span></div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide">&#128202;</div>
+        <a class="file-item" href="../../../docs/prompts/a3-planner.md" download>
+          <div class="file-icon fi-doc">&#128196;</div>
           <div class="file-info">
-            <div class="file-name" id="repMm1Lbl">report_GDC_[mese-1]_[anno]</div>
-            <div class="file-sub">Report mese precedente — Mm1</div>
+            <div class="file-name">Prompt Agente 3 — Planner</div>
+            <div class="file-sub">Sempre l'ultima versione — per ricreare il progetto su un altro account Claude.ai</div>
           </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
-        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide">&#128202;</div>
-          <div class="file-info">
-            <div class="file-name" id="repMm2Lbl">report_GDC_[mese-2]_[anno]</div>
-            <div class="file-sub">Report due mesi fa — Mm2</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
-        <a class="file-item" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
-          <div class="file-icon fi-sheet">&#128202;</div>
-          <div class="file-info">
-            <div class="file-name">Instagram_Analytics_GDC</div>
-            <div class="file-sub">Google Sheet — dati A1</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
+          <span class="file-arr">&#8595;</span>
         </a>
       </div>
     </div>
@@ -507,66 +419,46 @@ body{
         <div class="io-grid">
           <div class="io-block">
             <div class="io-title in">&#9660; Input</div>
-            <div class="io-item"><span class="io-dot in"></span>Sheet A1 (metriche IG)</div>
-            <div class="io-item"><span class="io-dot in"></span>Report A2 Mm1 + Mm2</div>
-            <div class="io-item"><span class="io-dot in"></span>Piano A3 <span id="ioMm1Lbl">Mm1</span></div>
-            <div class="io-item"><span class="io-dot in"></span>Calendario impegni M0</div>
+            <div class="io-item"><span class="io-dot in"></span>Google Sheet A1 (metriche IG)</div>
+            <div class="io-item"><span class="io-dot in"></span>Report A2 — mese chiuso (opzionale, Supabase)</div>
+            <div class="io-item"><span class="io-dot in"></span>Piano A3 mese precedente (Supabase)</div>
+            <div class="io-item"><span class="io-dot in"></span>Calendario impegni (BPT + altri)</div>
           </div>
           <div class="io-block">
             <div class="io-title out">&#9650; Output</div>
-            <div class="io-item"><span class="io-dot out"></span>piano_<span id="ioM0Lbl">M0</span>.pptx</div>
-            <div class="io-item"><span class="io-dot out"></span>→ Google Slides (Drive A3)</div>
+            <div class="io-item"><span class="io-dot out"></span>Pagina HTML &#8594; Supabase (report_mensili)</div>
+            <div class="io-item"><span class="io-dot out"></span>Stato Supabase &#8594; A4 notificato</div>
           </div>
         </div>
       </div>
     </div>
     <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128218; Procedura manuale</span></div>
+      <div class="sc-head"><span class="sc-label">&#9881;&#65039; Cosa fa</span></div>
       <div class="sc-body">
         <div class="work-step">
           <div class="work-num">1</div>
-          <div><div class="work-desc">Verifica che A2 abbia completato il report Mm1</div><div class="work-sub">Controlla stato home — A2 deve essere "completato"</div></div>
+          <div><div class="work-desc">Gianluca apre la sessione Claude Code dedicata dalla pillola "Ciclo editoriale mensile" in home (si abilita solo quando A1 ha completato e la categorizzazione post è finita).</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">2</div>
-          <div><div class="work-desc">Apri il progetto Claude A3</div><div class="work-sub">Tasto "Apri progetto Claude A3" qui sopra</div></div>
+          <div><div class="work-desc">A3 legge il documento di sessione e l'ultima versione del prompt (v13) prima di iniziare, poi si auto-segnala "in corso" su agent_states.</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">3</div>
-          <div><div class="work-desc">Copia e incolla il messaggio precompilato</div><div class="work-sub">Tasto "Copia messaggio" — include tutti i link Drive con date automatiche</div></div>
+          <div><div class="work-desc">Legge il Google Sheet A1, il report A2 del mese chiuso (se presente, da Supabase) e il piano del mese precedente (da Supabase).</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">4</div>
-          <div><div class="work-desc">Il calendario impegni (tornei BPT, trasferte, riposo) è incluso in automatico nel messaggio</div><div class="work-sub">Letto da agent_states.bpt_calendar — stessa fonte usata dalla home</div></div>
+          <div><div class="work-desc">Legge il calendario impegni (tornei BPT + altri) e classifica i periodi del mese: torneo, trasferta, allenamento intenso, libero.</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">5</div>
-          <div><div class="work-desc">A3 genera il piano editoriale .pptx</div><div class="work-sub">L'agente produce il file e lo offre in download</div></div>
+          <div><div class="work-desc">Analizza il mese chiuso, confronta con il piano precedente, genera il piano editoriale (calendario, obiettivi ER, categorie, formati e hook) come pagina HTML.</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">6</div>
-          <div><div class="work-desc">Scarica e carica su Drive A3</div><div class="work-sub">Drag &amp; drop nella cartella — conversione automatica in Slides</div></div>
+          <div><div class="work-desc">Scrive la pagina su report_mensili, un'attività su activity_log, segna agent_states a3=done e a4=ready — il piano è già visibile sulla webapp, nessun caricamento manuale.</div></div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: RUN -->
-  <div id="panel-run" class="panel">
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128200; Ultimo run registrato</span></div>
-      <div class="sc-body">
-        <div class="stat-grid">
-          <div><div class="stat-num" style="color:var(--maker);" id="statMese">&#8212;</div><div class="stat-lbl">Mese</div></div>
-          <div><div class="stat-num" id="statTornei">&#8212;</div><div class="stat-lbl">Tornei BPT</div></div>
-        </div>
-        <div class="empty-note" id="statMeta" style="margin-top:8px;"></div>
-      </div>
-    </div>
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128337; Storico run</span></div>
-      <div class="sc-body">
-        <div class="empty-note">Non ancora tracciato — A3 non scrive su activity_log al momento. Qui sopra vedi solo l'ultimo stato noto da agent_states, non uno storico completo.</div>
       </div>
     </div>
   </div>
@@ -576,27 +468,24 @@ body{
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#9881; Configurazione agente</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai + launcher webapp</span></div>
+        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#129302; Claude Code — sessione dedicata (da Hub)</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">Mensile — manuale (primi giorni del mese)</span></div>
-        <div class="config-row"><span class="config-key">Mese riferimento</span><span class="config-val" id="configMeseLbl">M0 — mese corrente</span></div>
-        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1Fd8LCdQaMHzeAwZbdTWMzNoWJJiKaBPK</span></div>
+        <div class="config-row"><span class="config-key">Mese riferimento</span><span class="config-val" id="configMeseLbl">M0 — mese da pianificare</span></div>
         <div class="config-row"><span class="config-key">Sheet input</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30</span></div>
-        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019dc48d-98e7-7375-ba30-d1c514ecc02f</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="cfg-dot" id="depA2Dot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">A2 completato (report Mm1 su Drive)</span><span style="font-size:.62rem;font-weight:700;" id="depA2Lbl">Caricamento...</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm2 disponibile su Drive</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Piano A3 Mm1 disponibile su Drive</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
-        <div class="config-row"><span class="cfg-dot" id="depBptDot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">Calendario BPT automatico nel messaggio</span><span style="font-size:.62rem;font-weight:700;" id="depBptLbl">Caricamento...</span></div>
+        <div class="config-row"><span class="cfg-dot" id="depA2Dot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">Report A2 mese chiuso disponibile (opzionale)</span><span style="font-size:.62rem;font-weight:700;" id="depA2Lbl">Caricamento...</span></div>
+        <div class="config-row"><span class="cfg-dot" id="depPianoDot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">Piano A3 mese precedente disponibile</span><span style="font-size:.62rem;font-weight:700;" id="depPianoLbl">Caricamento...</span></div>
+        <div class="config-row"><span class="cfg-dot" id="depBptDot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">Calendario BPT automatico per il mese</span><span style="font-size:.62rem;font-weight:700;" id="depBptLbl">Caricamento...</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#9889; Posizione nel flusso A1&#8594;A4</span></div>
       <div class="sc-body">
-        <div style="font-size:.72rem;line-height:1.5;">A3 riceve i report A2 (Mm1+Mm2) e il piano precedente, e costruisce il piano editoriale del mese corrente (M0).<br><span style="color:var(--grigio);">Output: piano_[M0].pptx → Google Slides</span></div>
+        <div style="font-size:.72rem;line-height:1.5;">A3 riceve i report A2 e il piano precedente, legge il calendario impegni, e costruisce il piano editoriale del mese da pianificare.<br><span style="color:var(--grigio);">Output: pagina HTML su report_mensili.</span></div>
         <div class="flow-row">
           <span class="flow-side">A1</span>
           <span class="flow-dash"></span>
@@ -626,61 +515,17 @@ const M0_NUM=now.getMonth()+1, A0_NUM=YY;
 
 const mm1d=new Date(now.getFullYear(),now.getMonth()-1,1);
 const Mm1=MESI[mm1d.getMonth()]; const Am1=mm1d.getFullYear();
-const mm2d=new Date(now.getFullYear(),now.getMonth()-2,1);
-const Mm2=MESI[mm2d.getMonth()]; const Am2=mm2d.getFullYear();
+const MESE_MM1=`${Mm1.charAt(0).toUpperCase()+Mm1.slice(1)} ${Am1}`;
 
 // Aggiorna UI
 document.getElementById('dateChipText').textContent=`${DD}/${MM}/${YY}`;
-document.getElementById('lastRunLbl').textContent=`Ultima run: ${M0} ${A0}`;
-document.getElementById('driveLbl').textContent=`piano_${M0}_${A0} — output`;
-document.getElementById('pianoNomeLbl').textContent=`piano_${M0}_${A0}`;
-document.getElementById('pianoNomePrecLbl').textContent=`piano_${Mm1}_${Am1}`;
-document.getElementById('repMm1Lbl').textContent=`report_GDC_${Mm1}_${Am1}`;
-document.getElementById('repMm2Lbl').textContent=`report_GDC_${Mm2}_${Am2}`;
-document.getElementById('reportSubLbl').textContent=`report Mm1: ${Mm1} · Mm2: ${Mm2}`;
-document.getElementById('ioMm1Lbl').textContent=`${Mm1} ${Am1}`;
-document.getElementById('ioM0Lbl').textContent=`${M0}_${A0}`;
-document.getElementById('configMeseLbl').textContent=`M0 — ${M0} ${A0}`;
-document.getElementById('msgSubLbl').textContent=`Launcher A3 — ${M0} ${A0}`;
-
-// Testo messaggio precompilato — costruito da buildMsg(), richiamato dopo il
-// caricamento del calendario BPT reale da Supabase (vedi loadA3() più sotto).
-function buildMsg(calText){
-  return `Ciao A3. È il momento del piano editoriale mensile.
-
-Link diretto al Google Sheet:
-https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit
-
-Report A2 e il tuo piano del mese precedente: leggili da Supabase (tabella report_mensili) tramite il connector MCP Supabase GDC.
-→ report A2: agente='a2', mese='${Mm1} ${Am1}' e mese='${Mm2} ${Am2}'
-→ piano precedente: agente='a3', mese='${Mm1} ${Am1}'
-
-Mese da pianificare: ${M0} ${A0}
-
-CALENDARIO IMPEGNI ${M0} ${A0}:
-${calText}
-
-Genera il piano editoriale come pagina HTML e scrivilo su Supabase (tabella report_mensili, agente='a3'), come da prompt v13.`;
-}
-document.getElementById('msgText').value=buildMsg('[caricamento calendario BPT...]');
+document.getElementById('configMeseLbl').textContent=`M0 — ${M0} ${A0} (mese da pianificare)`;
 
 function switchTab(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
-}
-
-/* ── MSG POPUP ── */
-function openMsg(){ document.getElementById('msgOverlay').classList.add('open'); }
-function closeMsg(){ document.getElementById('msgOverlay').classList.remove('open'); }
-function closeMsgIfBg(e){ if(e.target===document.getElementById('msgOverlay')) closeMsg(); }
-function copyMsg(){
-  navigator.clipboard.writeText(document.getElementById('msgText').value).then(()=>{
-    const btn=document.getElementById('copyBtn');
-    btn.textContent='✓ Copiato!';
-    setTimeout(()=>{ btn.textContent='Copia messaggio'; },2000);
-  }).catch(()=>{ document.getElementById('msgText').select(); document.execCommand('copy'); });
 }
 
 /* ══ GDC LOGO MASTER ANIM ══ */
@@ -700,7 +545,7 @@ function copyMsg(){
 /* ══ CALENDAR ══ */
 const CAL_EVENTS={
   [`${YY}-${MM}-01`]:[{label:`A1 — Sync dati Instagram: ${M0} ${A0}`,agent:'A1',color:'#4A7C59'}],
-  [`${YY}-${MM}-03`]:[{label:`A2 — Report ${Mm1} ${Am1} generato`,agent:'A2',color:'#4A7C59'}],
+  [`${YY}-${MM}-03`]:[{label:`A2 — Report ${MESE_MM1} generato`,agent:'A2',color:'#4A7C59'}],
   [`${YY}-${MM}-05`]:[{label:`A3 — Piano ${M0} ${A0} generato`,agent:'A3',color:'#4A7C59'}],
 };
 let calY=parseInt(YY),calM=parseInt(MM)-1,selDay=null;
@@ -761,7 +606,7 @@ async function sbFetch(url,options){
   return res;
 }
 
-/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html) ══ */
+/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html / A2) ══ */
 const VAPID_PUBLIC_KEY='BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
@@ -783,10 +628,12 @@ async function getExistingPushSubscription(){
   return await reg.pushManager.getSubscription();
 }
 async function updatePushButtonUI(){
-  const label=document.getElementById('pushBtnLabel'); if(!label) return;
+  const label=document.getElementById('pushBtnLabel'); const btn=document.getElementById('pushBtn');
+  if(!label) return;
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
   const sub=await getExistingPushSubscription();
   label.textContent=sub?'Notifiche attive':'Attiva notifiche';
+  if(btn) btn.classList.toggle('on',!!sub);
 }
 let pushToggleInProgress=false;
 async function togglePushNotifications(){
@@ -805,7 +652,7 @@ async function togglePushNotifications(){
     const existing=await getExistingPushSubscription();
     if(existing){
       try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
-      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; if(btn) btn.classList.remove('on'); return;
     }
     try{
       const permission=await Notification.requestPermission();
@@ -815,11 +662,11 @@ async function togglePushNotifications(){
       const subJson=sub.toJSON();
       await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
-      if(label) label.textContent='Notifiche attive';
+      if(label) label.textContent='Notifiche attive'; if(btn) btn.classList.add('on');
     }catch(e){
       console.error('Errore attivazione notifiche:',e);
       const realSub=await getExistingPushSubscription();
-      if(realSub){ if(label) label.textContent='Notifiche attive'; }
+      if(realSub){ if(label) label.textContent='Notifiche attive'; if(btn) btn.classList.add('on'); }
       else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
     }
   } finally {
@@ -829,7 +676,7 @@ async function togglePushNotifications(){
 }
 document.addEventListener('DOMContentLoaded',updatePushButtonUI);
 
-/* ══ DATI REALI — agent_states (a2 + a3 + bpt_calendar) ══ */
+/* ══ DATI REALI — agent_states (a2 + a3) ══ */
 function timeAgo(iso){
   if(!iso) return '';
   const diff=Date.now()-new Date(iso).getTime();
@@ -841,12 +688,13 @@ function timeAgo(iso){
   const days=Math.floor(hrs/24);
   return days+' giorn'+(days===1?'o':'i')+' fa';
 }
-// Stessa identica logica di page_home_v25.html — stato raw -> categoria UI
+// Stessa identica logica di page_home_v25.html / A1 / A2 — stato raw -> categoria UI
 const THREE_DAYS=3*24*60*60*1000;
 function mapState(row){
   if(!row) return 'sleep';
   const st=row.stato||'';
   const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='error') return 'error';
   if(st==='working') return 'active';
   if(st==='ready'||st==='queued') return 'queued';
   if(st==='done') return age<THREE_DAYS?'done':'sleep';
@@ -857,9 +705,13 @@ const STATE_CFG={
   active:{badge:'badge-active',logo:'logo-active',lbl:'In corso'},
   queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda'},
   done:{badge:'badge-done',logo:'logo-done',lbl:'Completato'},
-  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
+  rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
+  error:{badge:'badge-queued',logo:'logo-queued',lbl:'Errore'},
 };
+const TITLE_COLOR={active:'var(--sabbia-dk)',queued:'var(--life)',done:'var(--maker)',rest:'var(--nero)',sleep:'var(--athlete)',error:'var(--life)'};
+const BORDER_COLOR={active:'var(--sabbia)',queued:'var(--life)',done:'var(--maker)',rest:'var(--nero)',sleep:'var(--athlete)',error:'var(--life)'};
+
 async function loadA3(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a2,a3)&select=agent_id,stato,updated_at,mese');
@@ -868,12 +720,10 @@ async function loadA3(){
     const a2=rows.find(r=>r.agent_id==='a2');
     const a3=rows.find(r=>r.agent_id==='a3');
 
-    // Calendario BPT del mese ESATTO che A3 sta pianificando (M0_NUM/A0_NUM),
-    // non più "l'ultimo calendario disponibile" (bug Step 32/33, gemello di
-    // quello già corretto in page_home_v25.html).
+    // Calendario BPT del mese ESATTO che A3 sta pianificando (M0_NUM/A0_NUM)
     let bpt=null;
     try{
-      const bptRes=await sbFetch(SUPA_URL+'/rest/v1/bpt_calendars?select=testo,n_tornei,updated_at&mese_num=eq.'+M0_NUM+'&anno=eq.'+A0_NUM+'&limit=1');
+      const bptRes=await sbFetch(SUPA_URL+'/rest/v1/bpt_calendars?select=n_tornei,updated_at&mese_num=eq.'+M0_NUM+'&anno=eq.'+A0_NUM+'&limit=1');
       const bptRows=bptRes.ok?await bptRes.json():[];
       bpt=bptRows[0]||null;
     }catch(eBpt){
@@ -881,48 +731,113 @@ async function loadA3(){
     }
 
     document.getElementById('sysLabel').textContent='Connesso a Supabase';
-    document.getElementById('sysLabel').style.color='var(--maker)';
-    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sysMini').style.color='var(--maker)';
+    document.getElementById('sysMini').title='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 
-    // Badge + logo — stessa categoria di stato, stessa palette della home
+    // Badge + logo + titolo — stessa categoria di stato, stessa palette della home
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
+    const title=document.getElementById('agentTitle');
+    const heroCard=document.getElementById('heroCard');
     const stCat=mapState(a3), c=STATE_CFG[stCat];
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
     if(logoWrap) logoWrap.className='logo-wrap s-'+stCat;
+    if(title) title.style.color=TITLE_COLOR[stCat];
+    if(heroCard) heroCard.style.borderColor=BORDER_COLOR[stCat];
     document.getElementById('lastRunLbl').textContent=a3&&a3.updated_at?('Ultimo aggiornamento: '+timeAgo(a3.updated_at)):'';
 
-    // Tab Run — dati reali
-    document.getElementById('statMese').textContent=a3&&a3.mese?a3.mese:'—';
+    // Stat grid (Panoramica)
+    document.getElementById('statMese').textContent=a3&&a3.mese?a3.mese:(M0.charAt(0).toUpperCase()+M0.slice(1))+' '+A0;
     document.getElementById('statTornei').textContent=(bpt&&bpt.n_tornei!=null)?bpt.n_tornei:'—';
-    document.getElementById('statMeta').textContent=a3&&a3.updated_at?('Da agent_states — aggiornato '+timeAgo(a3.updated_at)):'Nessun dato ancora registrato.';
 
-    // Dipendenza A2 — check reale
-    const dotA2=document.getElementById('depA2Dot'), lblA2=document.getElementById('depA2Lbl');
-    const a2Age=a2&&a2.updated_at?Date.now()-new Date(a2.updated_at).getTime():Infinity;
-    if(a2&&a2.stato==='done'&&a2Age<THREE_DAYS){
-      dotA2.style.background='var(--maker)'; lblA2.style.color='var(--maker)'; lblA2.textContent='OK — completato';
-    } else {
-      dotA2.style.background='var(--sabbia)'; lblA2.style.color='var(--sabbia-dk)'; lblA2.textContent='Non risulta completato di recente';
-    }
-
-    // Dipendenza calendario BPT — reale, per il mese M0/A0 esatto, e messaggio precompilato aggiornato
+    // Dipendenza calendario BPT
     const dotBpt=document.getElementById('depBptDot'), lblBpt=document.getElementById('depBptLbl');
-    if(bpt&&bpt.testo){
-      dotBpt.style.background='var(--maker)'; lblBpt.style.color='var(--maker)'; lblBpt.textContent='OK — inserito nel messaggio';
-      document.getElementById('msgText').value=buildMsg(bpt.testo);
+    if(bpt&&bpt.n_tornei!=null){
+      dotBpt.style.background='var(--maker)'; lblBpt.style.color='var(--maker)'; lblBpt.textContent='OK — '+bpt.n_tornei+' torneo/i';
     } else {
-      dotBpt.style.background='var(--sabbia)'; lblBpt.style.color='var(--sabbia-dk)'; lblBpt.textContent='Nessun calendario trovato per '+M0+' '+A0;
-      document.getElementById('msgText').value=buildMsg('[nessun calendario BPT trovato in bpt_calendars per '+M0+' '+A0+' — esegui bpt_calendar.py con BPT_TARGET_MONTH oppure aggiungi qui gli impegni a mano]');
+      dotBpt.style.background='var(--sabbia)'; lblBpt.style.color='var(--sabbia-dk)'; lblBpt.textContent='Nessun calendario trovato';
     }
   }catch(e){
     console.error('Errore caricamento A3:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
-    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('sysMini').style.color='var(--grigio)';
+    document.getElementById('sysMini').title='';
     document.getElementById('statusBadgeLbl').textContent='Non disponibile';
-    document.getElementById('msgText').value=buildMsg('[impossibile caricare il calendario — aggiungi qui i tuoi impegni a mano]');
+  }
+}
+
+async function loadActivity(){
+  const box=document.getElementById('runList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/activity_log?agent_id=eq.A3&order=created_at.desc&limit=15');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){
+      box.innerHTML='<div class="empty-note">Nessuna attività ancora registrata per A3. Apparirà qui dopo la prossima run del piano mensile.</div>';
+      return;
+    }
+    box.innerHTML=rows.map(r=>{
+      const isWarn=/mancante|errore|fallit/i.test(r.titolo||'');
+      const icon=isWarn?'&#9888;&#65039;':'&#128197;';
+      const badgeCls=isWarn?'rb-err':'rb-ok';
+      const badgeTxt=isWarn?'Attenzione':'OK';
+      return '<div class="run-row"><span class="run-icon">'+icon+'</span><div class="run-info">'+
+        '<div class="run-title">'+(r.titolo||'')+'</div>'+
+        '<div class="run-meta">'+timeAgo(r.created_at)+(r.descrizione?(' · '+r.descrizione):'')+'</div>'+
+        '</div><span class="run-badge '+badgeCls+'">'+badgeTxt+'</span></div>';
+    }).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare activity_log al momento.</div>';
+  }
+}
+
+async function loadLatestPiani(){
+  const box=document.getElementById('pianiList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/report_mensili?agente=eq.a3&select=mese,mese_num,anno&order=anno.desc,mese_num.desc&limit=3');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){ box.innerHTML='<div class="empty-note">Nessun piano generato ancora.</div>'; return; }
+    box.innerHTML=rows.map((r,i)=>
+      '<a class="file-item'+(i>0?' dim':'')+'" href="piano.html?mese='+encodeURIComponent(r.mese)+'">'+
+      '<div class="file-icon fi-slide">&#128197;</div>'+
+      '<div class="file-info"><div class="file-name">'+r.mese+'</div><div class="file-sub">Piano editoriale — pagina HTML</div></div>'+
+      '<span class="file-arr">&#8594;</span></a>'
+    ).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare i piani al momento.</div>';
+  }
+}
+
+async function loadDependencies(){
+  // Report A2 — mese chiuso (opzionale)
+  const dotA2=document.getElementById('depA2Dot'), lblA2=document.getElementById('depA2Lbl');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/report_mensili?agente=eq.a2&mese=eq.'+encodeURIComponent(MESE_MM1)+'&select=mese&limit=1');
+    const rows=res.ok?await res.json():[];
+    if(rows.length){
+      dotA2.style.background='var(--maker)'; lblA2.style.color='var(--maker)'; lblA2.textContent='OK — trovato';
+    } else {
+      dotA2.style.background='var(--sabbia)'; lblA2.style.color='var(--sabbia-dk)'; lblA2.textContent='Non trovato — opzionale';
+    }
+  }catch(e){
+    dotA2.style.background='var(--sabbia)'; lblA2.style.color='var(--sabbia-dk)'; lblA2.textContent='Non verificabile';
+  }
+
+  // Piano A3 — mese precedente
+  const dotPiano=document.getElementById('depPianoDot'), lblPiano=document.getElementById('depPianoLbl');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/report_mensili?agente=eq.a3&mese=eq.'+encodeURIComponent(MESE_MM1)+'&select=mese&limit=1');
+    const rows=res.ok?await res.json():[];
+    if(rows.length){
+      dotPiano.style.background='var(--maker)'; lblPiano.style.color='var(--maker)'; lblPiano.textContent='OK — trovato';
+    } else {
+      dotPiano.style.background='var(--sabbia)'; lblPiano.style.color='var(--sabbia-dk)'; lblPiano.textContent='Non trovato — prima sessione?';
+    }
+  }catch(e){
+    dotPiano.style.background='var(--sabbia)'; lblPiano.style.color='var(--sabbia-dk)'; lblPiano.textContent='Non verificabile';
   }
 }
 
@@ -930,6 +845,9 @@ if(!gdcToken()){
   window.location.href='../../../page_login_v6.html';
 } else {
   loadA3();
+  loadActivity();
+  loadLatestPiani();
+  loadDependencies();
 }
 </script>
 </body>

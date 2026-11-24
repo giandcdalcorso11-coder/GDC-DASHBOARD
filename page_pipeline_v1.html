@@ -3,40 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
 <title>GDC WORKSPACE — Pipeline</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;--athlete:#2B5F9E;--athlete-bg:#D9E6F3;--life:#C2193A;--life-bg:#F5E0E6;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
+@view-transition{navigation:auto;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
+:root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--maker-dk:#3A6145;--maker-mid:#5D9C71;--athlete:#2B5F9E;--athlete-bg:#D9E6F3;--life:#C2193A;--life-bg:#F5E0E6;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
-@media(prefers-color-scheme:dark){
-  :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}
-  .hero-stats,.section-card,.co-card{background:var(--bianco);border-color:var(--border);}
-  .back-btn{background:#2E2E2E;border-color:var(--border);}
-  .search-input{background:#2E2E2E;border-color:var(--border);color:var(--nero);}
-  .search-input::placeholder{color:#555;}
-  .filter-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}
-  .filter-pill.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}
-  .step-badge{background:#2E2E2E;}
-  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
-  #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
-  .date-chip{background:#2E2E2E;border-color:var(--border);}
-  .empty-state{background:var(--bianco);}
-  .filters-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root:not([data-theme="light"]) .hero-stats,:root:not([data-theme="light"]) .section-card,:root:not([data-theme="light"]) .co-card{background:var(--bianco);border-color:var(--border);}:root:not([data-theme="light"]) .search-input{background:#2E2E2E;border-color:var(--border);color:var(--nero);}:root:not([data-theme="light"]) .search-input::placeholder{color:#555;}:root:not([data-theme="light"]) .filter-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}:root:not([data-theme="light"]) .filter-pill.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}:root:not([data-theme="light"]) .step-badge{background:#2E2E2E;}:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{fill:#F0EBE1;}:root:not([data-theme="light"]) .date-chip{background:#2E2E2E;border-color:var(--border);}:root:not([data-theme="light"]) .empty-state{background:var(--bianco);}:root:not([data-theme="light"]) .filters-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}:root:not([data-theme="light"]) .pill-hub{background:var(--bianco);}:root:not([data-theme="light"]) .cal-popup{background:#242424;border-color:var(--border);}:root:not([data-theme="light"]) .cal-day.today{background:var(--nero);color:var(--carta);}}:root[data-theme="dark"]{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root[data-theme="dark"] .hero-stats,:root[data-theme="dark"] .section-card,:root[data-theme="dark"] .co-card{background:var(--bianco);border-color:var(--border);}:root[data-theme="dark"] .search-input{background:#2E2E2E;border-color:var(--border);color:var(--nero);}:root[data-theme="dark"] .search-input::placeholder{color:#555;}:root[data-theme="dark"] .filter-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}:root[data-theme="dark"] .filter-pill.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}:root[data-theme="dark"] .step-badge{background:#2E2E2E;}:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{fill:#F0EBE1;}:root[data-theme="dark"] .date-chip{background:#2E2E2E;border-color:var(--border);}:root[data-theme="dark"] .empty-state{background:var(--bianco);}:root[data-theme="dark"] .filters-pill{background:#2E2E2E;border-color:var(--border);color:var(--grigio);}:root[data-theme="dark"] .pill-hub{background:var(--bianco);}:root[data-theme="dark"] .cal-popup{background:#242424;border-color:var(--border);}:root[data-theme="dark"] .cal-day.today{background:var(--nero);color:var(--carta);}
 
-/* ══ HEADER ══ */
+/* ══ HEADER — stesso pattern di page_home_v25.html / A1-A7 ══ */
 .header{width:100%;max-width:540px;padding:20px 16px 12px;display:flex;flex-direction:column;gap:10px;}
 .header-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .gdc-logo-wrap{display:flex;align-items:center;}
+#hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
+#hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{opacity:0;transition:opacity .22s ease;}
 
 .date-chip{display:flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:700;cursor:pointer;transition:border-color .2s;user-select:none;}
 .date-chip:hover{border-color:var(--nero);}
-.date-chip-dot{width:7px;height:7px;border-radius:50%;background:var(--sabbia);flex-shrink:0;}
+.date-chip-dot{width:7px;height:7px;border-radius:50%;background:var(--maker);flex-shrink:0;}
+.sys-mini{display:flex;align-items:center;gap:6px;flex:1;min-width:0;justify-content:center;font-size:.72rem;font-weight:700;color:var(--maker);transition:color .3s;}
+.sys-mini span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sys-mini-dot{position:relative;width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sys-mini-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid currentColor;animation:sysPulse 2s ease-out infinite;}
+@keyframes sysPulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
 
-/* ══ BACK + TITLE ══ */
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:700;color:var(--grigio);cursor:pointer;text-decoration:none;transition:border-color .15s,color .15s;align-self:flex-start;}
-.back-btn:hover{border-color:var(--nero);color:var(--nero);}
+/* ══ CALENDARIO — stesso pattern condiviso ══ */
+.cal-overlay{position:fixed;inset:0;background:rgba(28,28,28,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding-top:70px;}
+.cal-overlay.open{display:flex;}
+.cal-popup{background:var(--bianco);border:1.5px solid var(--border);border-radius:16px;width:calc(100% - 32px);max-width:380px;box-shadow:0 8px 32px rgba(28,28,28,.18);overflow:hidden;}
+.cal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.cal-nav{display:flex;align-items:center;gap:10px;}
+.cal-nav-btn{background:none;border:1.5px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.8rem;color:var(--grigio);}
+.cal-nav-btn:hover{border-color:var(--nero);color:var(--nero);}
+.cal-month-label{font-weight:700;font-size:.85rem;min-width:110px;text-align:center;}
+.cal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
+.cal-close:hover{background:var(--border);}
+.cal-grid{padding:10px 12px 14px;}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cal-dow span{text-align:center;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--grigio);padding:4px 0;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 2px 2px;font-size:.72rem;font-weight:600;cursor:default;}
+.cal-day.today{background:var(--nero);color:#fff;}
+.cal-day .day-num{font-size:.7rem;font-weight:700;line-height:1;}
+.cal-events-panel{border-top:1px solid var(--border);padding:10px 14px;min-height:48px;}
+
+/* ══ NAVIGAZIONE — pill coi lati a freccia, stesso pattern di home/A1-A7 ══ */
+.pill-row{width:100%;max-width:540px;padding:0 16px 10px;display:flex;align-items:center;gap:8px;}
+.pill-hub-wrap{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);transition:background .2s;}
+.pill-hub{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px 0 18px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%);}
+.pill-hub svg{width:12px;height:12px;flex-shrink:0;}
+
+/* ══ TITOLO PAGINA ══ */
+.page-title-wrap{width:100%;max-width:540px;padding:0 16px 12px;}
 .page-title{font-size:1.4rem;font-weight:800;letter-spacing:-.02em;}
 .page-sub{font-size:.78rem;color:var(--grigio);}
 
@@ -84,11 +107,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .filters-reset-btn{width:100%;padding:10px;border-radius:12px;background:none;border:1.5px solid var(--border);color:var(--grigio);font-size:.76rem;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;transition:all .15s;}
 .filters-reset-btn:hover{border-color:var(--life);color:var(--life);}
 
-@media(prefers-color-scheme:dark){
-  .filters-sheet{background:var(--bianco);}
-  .filters-close{background:#1A1A1A;}
-  .filter-pill,.sort-pill{background:#1A1A1A;border-color:var(--border);}
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .filters-sheet{background:var(--bianco);}:root:not([data-theme="light"]) .filters-close{background:#1A1A1A;}:root:not([data-theme="light"]) .filter-pill,:root:not([data-theme="light"]) .sort-pill{background:#1A1A1A;border-color:var(--border);}}:root[data-theme="dark"] .filters-sheet{background:var(--bianco);}:root[data-theme="dark"] .filters-close{background:#1A1A1A;}:root[data-theme="dark"] .filter-pill,:root[data-theme="dark"] .sort-pill{background:#1A1A1A;border-color:var(--border);}
 
 /* ══ SECTION LABEL ══ */
 .section-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grigio);padding:0 2px;}
@@ -110,16 +129,24 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .step-badge.refused .step-num{color:var(--life);}
 .step-badge.hot .step-num{color:var(--sabbia-dk);}
 
-/* Puntini canale (LinkedIn/Instagram) — sotto-passi dello step 7, vedi chanDotsHtml() */
-.chan-dots{display:flex;align-items:center;gap:4px;margin-top:1px;}
-.chan-mini{width:8px;height:8px;border-radius:50%;background:transparent;border:1.5px solid var(--border);flex-shrink:0;}
-.chan-mini.attesa.li{background:var(--athlete);border-color:var(--athlete);}
-.chan-mini.tocca.li{background:var(--athlete);border-color:var(--athlete);box-shadow:0 0 0 2px var(--athlete-bg);}
-.chan-mini.gestito.li{background:var(--athlete);border-color:var(--athlete);opacity:.4;}
-.chan-mini.attesa.ig{background:var(--life);border-color:var(--life);}
-.chan-mini.tocca.ig{background:var(--life);border-color:var(--life);box-shadow:0 0 0 2px var(--life-bg);}
-.chan-mini.gestito.ig{background:var(--life);border-color:var(--life);opacity:.4;}
-.chan-days{font-size:.58rem;font-weight:700;color:var(--grigio);margin-right:2px;}
+/* Canali di contatto (Mail/LinkedIn/Instagram) — stesso formato per tutti, vedi chanRowHtml().
+   Puntino = identità canale (sempre lo stesso colore), sfondo/colore del pill = stato/urgenza. */
+.chan-row-mini{display:flex;gap:6px;flex-wrap:wrap;margin-top:1px;}
+.chan-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 8px 3px 5px;border-radius:999px;font-size:.6rem;font-weight:700;white-space:nowrap;border:1.5px solid var(--border);background:var(--carta);color:var(--grigio);}
+.chan-pill .cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 1.5px var(--bianco);}
+.chan-pill .cdot.mail{background:var(--sabbia);}
+.chan-pill .cdot.li{background:var(--athlete);}
+.chan-pill .cdot.ig{background:var(--life);}
+.chan-pill.state-none{opacity:.45;}
+.chan-pill.state-none .cdot{background:var(--grigio)!important;}
+.chan-pill.state-gestito{opacity:.55;}
+.chan-pill.state-attesa{background:var(--maker-bg);border-color:var(--maker);color:var(--maker-dk);}
+.chan-pill.state-silenzio{background:var(--sabbia-bg);border-color:var(--sabbia);color:var(--sabbia-dk);}
+.chan-pill.state-sospesa{background:var(--nero);border-color:var(--nero);color:var(--bianco);}
+.chan-pill.state-sospesa .cdot{background:var(--bianco);}
+.chan-pill.state-tocca{background:var(--life);border-color:var(--life);color:#fff;font-weight:800;animation:chanPulse 1.4s ease-in-out infinite;}
+.chan-pill.state-tocca .cdot{background:#fff;}
+@keyframes chanPulse{0%,100%{box-shadow:0 0 0 0 rgba(194,25,58,.45);}50%{box-shadow:0 0 0 4px rgba(194,25,58,0);}}
 
 .co-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .co-name{font-size:.88rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -132,14 +159,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .tag-score-lo{background:var(--border);color:var(--grigio);border-color:var(--grigio);}
 .co-step-name{font-size:.68rem;color:var(--grigio);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-.co-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
-.fu-badge{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:999px;display:flex;align-items:center;gap:4px;white-space:nowrap;}
-.fu-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
-.fu-7{background:#FFF9EC;color:var(--sabbia-dk);border:1.5px solid var(--sabbia);}
-.fu-14{background:#FFF0E6;color:#C4621A;border:1.5px solid #D4701A;}
-.fu-30{background:var(--life-bg);color:var(--life);border:1.5px solid var(--life);}
-.fu-urgent{background:var(--life);color:#fff;border:1.5px solid var(--life);font-weight:800;animation:fuPulse 1.4s ease-in-out infinite;}
-.fu-silence{background:#EAEAEA;color:#6B6B6B;border:1.5px solid #B8B8B8;font-weight:700;}
+.co-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.prio-flag{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:999px;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.prio-flag .fu-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.prio-flag.wait{background:var(--maker-bg);color:var(--maker-dk);border:1.5px solid var(--maker);}
+.prio-flag.silence{background:var(--sabbia-bg);color:var(--sabbia-dk);border:1.5px solid var(--sabbia);}
+.prio-flag.suspended{background:var(--nero);color:var(--bianco);border:1.5px solid var(--nero);}
+.prio-flag.urgent{background:var(--life);color:#fff;border:1.5px solid var(--life);font-weight:800;animation:fuPulse 1.4s ease-in-out infinite;}
+.prio-flag.stopped{background:#EAEAEA;color:#6B6B6B;border:1.5px solid #B8B8B8;font-weight:700;}
 @keyframes fuPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
 .co-arrow{color:var(--border);font-size:.9rem;margin-top:2px;}
 
@@ -147,15 +174,51 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .empty-state{background:var(--bianco);border:1.5px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;}
 .empty-icon{font-size:2rem;opacity:.4;}
 .empty-title{font-size:.88rem;font-weight:700;color:var(--grigio);}
+.skel-co{background:var(--bianco);border:1.5px solid var(--border);border-radius:14px;padding:13px 14px;display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+.skel-badge{width:38px;height:38px;border-radius:10px;flex-shrink:0;background:linear-gradient(90deg,var(--border) 25%,var(--carta) 50%,var(--border) 75%);background-size:200% 100%;animation:gdcShimmer 1.4s ease-in-out infinite;}
+.skel-lines{flex:1;display:flex;flex-direction:column;gap:7px;}
+.skel-bar{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--border) 25%,var(--carta) 50%,var(--border) 75%);background-size:200% 100%;animation:gdcShimmer 1.4s ease-in-out infinite;}
+.skel-bar.w1{width:55%;height:12px;} .skel-bar.w2{width:38%;} .skel-bar.w3{width:70%;}
+@keyframes gdcShimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 .empty-sub{font-size:.72rem;color:var(--grigio);opacity:.7;}
 
 /* ══ ADD BTN ══ */
 .add-fab{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--sabbia);border:none;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(196,168,101,.4);transition:transform .15s,background .15s;z-index:50;}
 .add-fab:hover{background:var(--sabbia-dk);transform:scale(1.08);}
 .add-fab:active{transform:scale(.95);}
+.add-fab.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 </style>
 </head>
 <body>
+
+<!-- ══ CALENDARIO ══ -->
+<div class="cal-overlay" id="calOverlay" onclick="closeCalIfBg(event)">
+  <div class="cal-popup">
+    <div class="cal-head">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calNav(-1)">&#8249;</button>
+        <div class="cal-month-label" id="calMonthLabel"></div>
+        <button class="cal-nav-btn" onclick="calNav(+1)">&#8250;</button>
+      </div>
+      <button class="cal-close" onclick="closeCal()">&#10005;</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+      <div class="cal-days" id="calDays"></div>
+    </div>
+    <div class="cal-events-panel" id="calEventsPanel">
+      <span style="color:var(--grigio);font-size:.72rem;">Pipeline è on-demand — nessun evento fisso</span>
+    </div>
+  </div>
+</div>
 
 <!-- ══ HEADER ══ -->
 <div class="header">
@@ -189,26 +252,26 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </g>
       </svg>
     </div>
-    <div class="date-chip" id="dateChip">
-      <div class="date-chip-dot"></div>
-      <span id="dateLabel">—</span>
+    <div class="sys-mini" id="sysMini">
+      <span class="sys-mini-dot"></span><span id="sysLabel">Caricamento...</span>
+    </div>
+    <div class="date-chip" onclick="openCal()">
+      <span class="date-chip-dot"></span><span id="dateChipText"></span>
     </div>
   </div>
+</div>
 
-  <div style="display:flex;align-items:center;gap:8px;">
-    <a href="app/page_home_v25.html" class="back-btn">← Home</a>
-    <a class="back-btn" href="app/page_hub_v1.html">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      Hub
-    </a>
-  </div>
+<!-- ══ NAVIGAZIONE ══ -->
+<div class="pill-row">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="app/page_home_v25.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a></div>
+</div>
 
-  <div>
-    <div class="page-title">Pipeline Sponsorizzazioni</div>
-    <div class="page-sub" id="pipelineSub">Caricamento…</div>
-  </div>
+<div class="page-title-wrap">
+  <div class="page-title">Pipeline Sponsorizzazioni</div>
+  <div class="page-sub" id="pipelineSub">Caricamento…</div>
 </div>
 
 <!-- ══ CONTENT ══ -->
@@ -295,7 +358,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 </div>
 
 <!-- FAB aggiungi azienda -->
-<button class="add-fab" title="Aggiungi azienda" onclick="alert('Funzione: aggiunta azienda — da collegare a Supabase')">＋</button>
+<button class="add-fab" id="addFab" title="Aggiungi azienda" onclick="onAddCompanyClick()">＋</button>
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
 
 <script>
 // ─── CONFIG SUPABASE ─────────────────────────────────────────────────────────
@@ -331,6 +402,35 @@ async function sbFetch(url, options){
   return res;
 }
 
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  document.getElementById('addFab').classList.toggle('role-disabled', !canActIa());
+}
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+function onAddCompanyClick(){
+  if (!gateIa('Aggiunge una nuova azienda alla pipeline.')) return;
+  alert('Funzione: aggiunta azienda — da collegare a Supabase');
+}
+
 const STEP_NAMES = {
   1:'Trovata', 2:'Scheda', 3:'Media kit', 4:'Approvato',
   5:'Testo mail', 6:'Bozza Gmail', 7:'Mail inviata', 8:'Risposta',
@@ -345,10 +445,10 @@ let sortAsc = false;
 
 // ─── FETCH SUPABASE ───────────────────────────────────────────────────────────
 async function loadCompanies() {
-  document.getElementById('coList').innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Caricamento aziende…</div></div>';
+  document.getElementById('coList').innerHTML = Array(4).fill('<div class="skel-co"><div class="skel-badge"></div><div class="skel-lines"><div class="skel-bar w1"></div><div class="skel-bar w3"></div><div class="skel-bar w2"></div></div></div>').join('');
   try {
     const res = await sbFetch(
-      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,created_at,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,followup_count,followup_max,followup_stopped,last_manual_contact_date,linkedin_stato,linkedin_contattato_date,instagram_stato,instagram_contattato_date,note,a7_status&order=step_attuale.desc'
+      SUPA_URL + '/rest/v1/companies?select=id,nome,settore,lingua,score,tag,step_attuale,created_at,step_7_date,step_8_date,step_9_date,step_10_date,step_11_date,step_12_date,step8_azione_richiesta,step9_azione_richiesta,step10_azione_richiesta,step11_azione_richiesta,step12_azione_richiesta,followup_count,followup_max,followup_stopped,last_manual_contact_date,linkedin_stato,linkedin_contattato_date,linkedin_primo_contatto_date,instagram_stato,instagram_contattato_date,instagram_primo_contatto_date,note,a7_status&order=step_attuale.desc'
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
@@ -362,20 +462,22 @@ async function loadCompanies() {
       tag:           c.tag     || '',
       step:          c.step_attuale || 1,
       followup:      calcFollowup(c),
+      liState:       chanState(c.linkedin_stato, c.linkedin_contattato_date),
+      igState:       chanState(c.instagram_stato, c.instagram_contattato_date),
       contact_date:  c.step_7_date || null,
       foundDate:     c.created_at || null,
       note:          c.note    || '',
-      a7_status:     c.a7_status || '',
-      linkedinStato:         c.linkedin_stato  || null,
-      linkedinContattatoDate: c.linkedin_contattato_date || null,
-      instagramStato:         c.instagram_stato || null,
-      instagramContattatoDate: c.instagram_contattato_date || null
+      a7_status:     c.a7_status || ''
     }));
     renderStats();
     applyFilters();
+    document.getElementById('sysLabel').textContent = 'Connesso a Supabase';
+    document.getElementById('sysLabel').style.color = 'var(--maker)';
   } catch(e) {
     document.getElementById('coList').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Errore caricamento</div><div class="empty-sub">' + e.message + '</div></div>';
     console.error('Supabase fetch error:', e);
+    document.getElementById('sysLabel').textContent = 'Offline — dati non disponibili';
+    document.getElementById('sysLabel').style.color = 'var(--grigio)';
   }
 }
 
@@ -392,10 +494,21 @@ async function loadCompanies() {
 //   company page — evita badge urgenti "fantasma" su step dove non è previsto di default).
 // - step 13: nessun badge, gestione conclusa (rifiutato).
 // Questo è SOLO il contatore mail/step. Il contatto sui canali social (LinkedIn/Instagram)
-// ha un contatore separato e indipendente — vedi chanDotsHtml()/chanDaysLabel() più sotto.
+// ha un contatore separato e indipendente, stessa scala di giorni — vedi chanState()/chanRowHtml().
 const SILENCE_THRESHOLD_DAYS = 21;
+const SUSPENDED_THRESHOLD_DAYS = 60;
 const FU_RESET_MIN_STEP = 7;
 const FU_RESET_MAX_STEP = 11;
+
+// Livello comune a mail e canali social, dato il numero di giorni di attesa:
+// entro SILENCE_THRESHOLD_DAYS = attesa normale (verde), oltre = silenzio (sabbia),
+// oltre SUSPENDED_THRESHOLD_DAYS = sospesa (bianco/nero, fuori scala — canale considerato
+// inattivo, nessuna azione in corso).
+function dayTier(days) {
+  if (days >= SUSPENDED_THRESHOLD_DAYS) return 'suspended';
+  if (days >= SILENCE_THRESHOLD_DAYS) return 'silence';
+  return 'waiting';
+}
 
 function calcFollowup(c) {
   const step = c.step_attuale;
@@ -404,9 +517,7 @@ function calcFollowup(c) {
 
   if (stepInResetRange && manualDate) {
     const days = Math.floor((Date.now() - new Date(manualDate).getTime()) / 86400000);
-    if (days >= 0) {
-      return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
-    }
+    if (days >= 0) return { type: dayTier(days), days };
     return null;
   }
 
@@ -415,17 +526,27 @@ function calcFollowup(c) {
     if (days < 0) return null;
     const azioneRichiesta = c.step8_azione_richiesta !== false;
     if (azioneRichiesta) return { type: 'urgent', days };
-    return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    return { type: dayTier(days), days };
   }
 
   if (step === 7 && c.step_7_date) {
     const days = Math.floor((Date.now() - new Date(c.step_7_date).getTime()) / 86400000);
     if (c.followup_stopped) return { type: 'stopped', days };
-    if (days > 0) return { type: days >= SILENCE_THRESHOLD_DAYS ? 'silence' : 'waiting', days };
+    if (days > 0) return { type: dayTier(days), days };
     return null;
   }
 
   return null;
+}
+
+// Stato di un canale social (LinkedIn/Instagram) dato lo stato salvato e la data dell'ultimo
+// cambio di stato (non la data di primo contatto, che è solo informativa — vedi page_company_v2).
+function chanState(stato, contattatoDate) {
+  if (!stato) return { type: 'none', days: 0 };
+  if (stato === 'gestito') return { type: 'gestito', days: 0 };
+  const days = contattatoDate ? Math.max(0, Math.floor((Date.now() - new Date(contattatoDate).getTime()) / 86400000)) : 0;
+  if (stato === 'tocca_a_te') return { type: 'urgent', days };
+  return { type: dayTier(days), days }; // in_attesa
 }
 
 // ─── FILTRI ──────────────────────────────────────────────────────────────────
@@ -555,47 +676,66 @@ function scoreTagClass(score){
   return 'tag-score-lo';                  // 1-4: basso fit
 }
 
-function fuHtml(fu){
-  if(!fu) return '';
-  if(fu.type === 'urgent'){
-    return '<div class="fu-badge fu-urgent">⚡ Tocca a te · '+fu.days+'gg</div>';
-  }
-  if(fu.type === 'stopped'){
-    return '<div class="fu-badge fu-silence">Follow-up fermati</div>';
-  }
-  if(fu.type === 'silence'){
-    return '<div class="fu-badge fu-silence">Silenzio '+fu.days+'gg</div>';
-  }
-  var cls = fu.days <= 7 ? 'fu-7' : 'fu-14';
-  return '<div class="fu-badge '+cls+'"><div class="fu-dot"></div>+'+fu.days+'gg</div>';
+// Riga dei 3 canali (Mail/LinkedIn/Instagram) — stesso formato pill per tutti, visibile solo
+// da step 7 in su (mail già inviata). Il puntino identifica sempre il canale; sfondo/colore
+// del pill riflettono lo stato/urgenza (vedi dayTier()/chanState()).
+const CHAN_LABELS2 = { mail: 'Mail', linkedin: 'LinkedIn', instagram: 'Instagram' };
+
+function mailPillState(fu){
+  if(!fu) return { type: 'gestito', label: 'Mail' };
+  if(fu.type === 'urgent')    return { type: 'tocca',    label: 'Mail' };
+  if(fu.type === 'stopped')   return { type: 'gestito',  label: 'Mail · Fermati' };
+  if(fu.type === 'suspended') return { type: 'sospesa',  label: 'Mail · Sospesa ' + fu.days + 'gg' };
+  if(fu.type === 'silence')   return { type: 'silenzio', label: 'Mail · Silenzio ' + fu.days + 'gg' };
+  return { type: 'attesa', label: 'Mail · ' + fu.days + 'gg' };
+}
+function chanPillState(cs, label){
+  if(cs.type === 'none')      return { type: 'none',     label: label };
+  if(cs.type === 'gestito')   return { type: 'gestito',  label: label + ' · Gestito' };
+  if(cs.type === 'urgent')    return { type: 'tocca',    label: label };
+  if(cs.type === 'suspended') return { type: 'sospesa',  label: label + ' · Sospesa ' + cs.days + 'gg' };
+  if(cs.type === 'silence')   return { type: 'silenzio', label: label + ' · Silenzio ' + cs.days + 'gg' };
+  return { type: 'attesa', label: label + ' · ' + cs.days + 'gg' }; // in_attesa
+}
+function chanRowHtml(c){
+  if(c.step < 7) return '';
+  const mailP = mailPillState(c.followup);
+  const liP   = chanPillState(c.liState, 'LinkedIn');
+  const igP   = chanPillState(c.igState, 'Instagram');
+  return '<div class="chan-row-mini">' +
+    '<span class="chan-pill state-'+mailP.type+'"><span class="cdot mail"></span>'+mailP.label+'</span>' +
+    '<span class="chan-pill state-'+liP.type+'"><span class="cdot li"></span>'+liP.label+'</span>' +
+    '<span class="chan-pill state-'+igP.type+'"><span class="cdot ig"></span>'+igP.label+'</span>' +
+  '</div>';
 }
 
-// Puntini canale — visibili solo da step 7 in su (mail già inviata), riflettono
-// linkedin_stato/instagram_stato scritti a mano dalla company page (vedi renderChannels lì).
-// Ogni canale ha il proprio contatore giorni, calcolato dalla propria data di contatto
-// (linkedin_contattato_date / instagram_contattato_date) — indipendente dal contatore
-// mail/step di fuHtml(). Se un'azienda è stata contattata sia via mail che via social,
-// i due contatori restano separati e ognuno riflette solo il proprio canale.
-function chanClass(stato){
-  if(!stato) return '';
-  if(stato === 'in_attesa') return 'attesa';
-  if(stato === 'tocca_a_te') return 'tocca';
-  return 'gestito';
+// Bandierina di priorità (a destra della card) — il canale più urgente tra mail/LinkedIn/
+// Instagram, per continuare a scorrere la lista velocemente senza aprire ogni azienda.
+const PRIO_RANK = { urgent: 5, stopped: 4, suspended: 3, silence: 2, waiting: 1 };
+function pickPriority(c){
+  const cands = [
+    { ch: 'mail',      st: c.followup },
+    { ch: 'linkedin',  st: c.liState },
+    { ch: 'instagram', st: c.igState }
+  ];
+  let best = null;
+  cands.forEach(function(cand){
+    if(!cand.st) return;
+    const rank = PRIO_RANK[cand.st.type];
+    if(!rank) return; // 'none'/'gestito' non concorrono alla priorità
+    if(!best || rank > PRIO_RANK[best.st.type]) best = cand;
+  });
+  return best;
 }
-function chanDaysLabel(stato, dateRaw){
-  if(!stato || !dateRaw) return '';
-  const days = Math.floor((Date.now() - new Date(dateRaw).getTime()) / 86400000);
-  if(days < 0) return '';
-  return '<span class="chan-days">'+days+'gg</span>';
-}
-function chanDotsHtml(c){
-  if(c.step < 7) return '';
-  return '<div class="chan-dots">' +
-    '<div class="chan-mini li ' + chanClass(c.linkedinStato) + '" title="LinkedIn"></div>' +
-    chanDaysLabel(c.linkedinStato, c.linkedinContattatoDate) +
-    '<div class="chan-mini ig ' + chanClass(c.instagramStato) + '" title="Instagram"></div>' +
-    chanDaysLabel(c.instagramStato, c.instagramContattatoDate) +
-  '</div>';
+function prioHtml(c){
+  const p = pickPriority(c);
+  if(!p) return '';
+  const st = p.st;
+  if(st.type === 'urgent')    return '<div class="prio-flag urgent">⚡ '+CHAN_LABELS2[p.ch]+'</div>';
+  if(st.type === 'stopped')   return '<div class="prio-flag stopped">Follow-up fermati</div>';
+  if(st.type === 'suspended') return '<div class="prio-flag suspended">☓ Sospesa</div>';
+  if(st.type === 'silence')   return '<div class="prio-flag silence">Silenzio '+st.days+'gg</div>';
+  return '<div class="prio-flag wait"><div class="fu-dot"></div>+'+st.days+'gg</div>';
 }
 
 function renderList(list){
@@ -604,11 +744,17 @@ function renderList(list){
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Nessuna azienda trovata</div><div class="empty-sub">Prova a cambiare filtro o ricerca</div></div>';
     return;
   }
+  // FLIP: posizione delle card prima del repaint (per animare il riordino)
+  const prevTops = {};
+  el.querySelectorAll('.co-card').forEach(function(card){
+    const cid = card.getAttribute('data-id');
+    if(cid) prevTops[cid] = card.getBoundingClientRect().top;
+  });
   el.innerHTML = list.map(c => {
     var bc = stepBadgeClass(c.step);
     var sc = scoreTagClass(c.score);
     var refused = c.step === 13;
-    return '<a class="co-card'+(refused?' refused':'')+'" href="page_company_v2.html?id='+c.id+'">' +
+    return '<a class="co-card'+(refused?' refused':'')+'" data-id="'+c.id+'" href="page_company_v2.html?id='+c.id+'">' +
       '<div class="step-badge '+bc+'">' +
         '<div class="step-num">'+(refused?'✕':c.step)+'</div>' +
       '</div>' +
@@ -620,33 +766,87 @@ function renderList(list){
           '<span class="tag '+sc+'">'+c.score+'</span>' +
         '</div>' +
         '<div class="co-step-name">Step '+c.step+' — '+STEP_NAMES[c.step]+(c.note?' · '+c.note:'')+'</div>' +
-        chanDotsHtml(c) +
+        chanRowHtml(c) +
       '</div>' +
       '<div class="co-right">' +
-        fuHtml(c.followup) +
+        prioHtml(c) +
         '<span class="co-arrow">›</span>' +
       '</div>' +
     '</a>';
   }).join('');
+  // FLIP: applica il delta rispetto alla posizione precedente e lo rilascia
+  el.querySelectorAll('.co-card').forEach(function(card){
+    const cid = card.getAttribute('data-id');
+    const prevTop = prevTops[cid];
+    if(prevTop == null) return;
+    const delta = prevTop - card.getBoundingClientRect().top;
+    if(Math.abs(delta) < 1) return;
+    card.style.transition = 'none';
+    card.style.transform = 'translateY('+delta+'px)';
+    requestAnimationFrame(function(){
+      card.style.transition = 'transform .32s cubic-bezier(.2,.8,.2,1)';
+      card.style.transform = '';
+      setTimeout(function(){ card.style.transition = ''; }, 340);
+    });
+  });
 }
 
 // ─── STATS ───────────────────────────────────────────────────────────────────
+function countUpEl(el,target,dur){
+  if(!el||!isFinite(target)){ if(el) el.textContent = isFinite(target) ? target : '—'; return; }
+  if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = target; return; }
+  var start = parseFloat(el.textContent) || 0;
+  dur = dur || 650;
+  var t0 = performance.now();
+  function step(t){
+    var p = Math.min(1,(t-t0)/dur);
+    var val = Math.round(start + (target-start) * (1-Math.pow(1-p,3)));
+    el.textContent = val;
+    if (p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 function renderStats(){
   var attive = COMPANIES.filter(c => c.step >= 1 && c.step <= 12).length;
   var avgScore = Math.round(COMPANIES.filter(c=>c.step!==13).reduce((s,c)=>s+c.score,0) /
                             COMPANIES.filter(c=>c.step!==13).length);
-  document.getElementById('statTotale').textContent = COMPANIES.length;
-  document.getElementById('statAttive').textContent = attive;
-  document.getElementById('statScore').textContent  = avgScore;
+  countUpEl(document.getElementById('statTotale'), COMPANIES.length);
+  countUpEl(document.getElementById('statAttive'), attive);
+  countUpEl(document.getElementById('statScore'), avgScore);
   document.getElementById('pipelineSub').textContent = attive + ' in corso · ' +
     COMPANIES.filter(c=>c.step===13).length + ' archiviate';
 }
 
-// ─── DATE ────────────────────────────────────────────────────────────────────
+// ─── DATE + CALENDARIO — stesso pattern condiviso di home/A1-A7 ───────────────
+const MESI_S = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+const __now = new Date();
+const DD = String(__now.getDate()).padStart(2, '0');
+const MM = String(__now.getMonth() + 1).padStart(2, '0');
+const YY = __now.getFullYear();
+let calY = parseInt(YY), calM = parseInt(MM) - 1;
+
 function renderDate(){
-  var now = new Date();
-  var lbl = now.toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase();
-  document.getElementById('dateLabel').textContent = lbl;
+  document.getElementById('dateChipText').textContent = `${DD}/${MM}/${YY}`;
+}
+function openCal(){ calY = parseInt(YY); calM = parseInt(MM) - 1; document.getElementById('calOverlay').classList.add('open'); renderCal(); }
+function closeCal(){ document.getElementById('calOverlay').classList.remove('open'); }
+function closeCalIfBg(e){ if (e.target === document.getElementById('calOverlay')) closeCal(); }
+function calNav(d){ calM += d; if (calM < 0) { calM = 11; calY--; } if (calM > 11) { calM = 0; calY++; } renderCal(); }
+function renderCal(){
+  document.getElementById('calMonthLabel').textContent = MESI_S[calM] + ' ' + calY;
+  const grid = document.getElementById('calDays'); grid.innerHTML = '';
+  const fd = (new Date(calY, calM, 1).getDay() + 6) % 7;
+  const dim = new Date(calY, calM + 1, 0).getDate();
+  for (let i = 0; i < fd; i++) { const el = document.createElement('div'); el.className = 'cal-day'; grid.appendChild(el); }
+  for (let d = 1; d <= dim; d++) {
+    const ds = String(d).padStart(2, '0'), ms = String(calM + 1).padStart(2, '0');
+    const key = `${calY}-${ms}-${ds}`;
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (key === `${YY}-${MM}-${DD}` ? ' today' : '');
+    el.innerHTML = `<span class="day-num">${d}</span>`;
+    grid.appendChild(el);
+  }
+  document.getElementById('calEventsPanel').innerHTML = '<span style="color:var(--grigio);font-size:.72rem;">Pipeline è on-demand — nessun evento fisso</span>';
 }
 
 // ─── LOGO STAGGER ────────────────────────────────────────────────────────────
@@ -678,6 +878,7 @@ renderDate();
 if (!gdcToken()) {
   window.location.href = 'page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadCompanies();
 }
 </script>

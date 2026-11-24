@@ -3,9 +3,11 @@
 GDC IA TEAM — A1 MBS Watcher
 
 Controllo periodico leggero: se il CSV MBS repost manca ancora (flag
-mbs_missing attivo su Supabase), ricontrolla se nel frattempo è comparso
-su Drive e, in tal caso, ritriggera A1 Monthly via GitHub API — così
-Gianluca vede il foglio aggiornarsi da solo, senza rilanciare nulla a mano.
+mbs_missing attivo su Supabase), ricontrolla se nel frattempo è stato
+caricato su Supabase Storage (bucket mbs-csv, via webapp — vedi
+app/agenti/a1-analytics/carica_mbs.html) e, in tal caso, ritriggera A1
+Monthly via GitHub API — così Gianluca vede il foglio aggiornarsi da
+solo, senza rilanciare nulla a mano.
 
 Gira SOLO dal giorno 2 al giorno 10 del mese, ogni 30 minuti (cron nel
 workflow a1_mbs_watcher.yml). Fuori da questa finestra il workflow non
@@ -15,10 +17,12 @@ GitHub Actions non supporta run in pausa indefinita in attesa di un
 evento esterno (limite 6h sui runner standard) — questo script è la
 soluzione: un controllo leggero e periodico, non un'attesa attiva.
 
-Vedi step 20, sezione 3.10.
+Vedi step 20, sezione 3.10. Aggiornato il 16/11/2026: il controllo era
+su Drive ("Archivio docs MBS"), ora e' su Supabase Storage — non serve
+piu' l'accesso a Google Drive, quindi GOOGLE_CREDENTIALS non e' piu'
+richiesto da questo script.
 
 Variabili d'ambiente richieste:
-  GOOGLE_CREDENTIALS  — service account JSON, base64 (stesso pattern di a1_monthly.py)
   SUPABASE_URL / SUPABASE_SERVICE_KEY  (service_role: bypassa la RLS, mai l'anon key)
   GH_PAT_REPO         — Personal Access Token scope 'repo' (già usato da ig_token_refresh.py
                          per scrivere i GitHub Secrets — stesso PAT, scope sufficiente
@@ -26,14 +30,7 @@ Variabili d'ambiente richieste:
 """
 
 import os
-import json
-import base64
-import re
 import requests
-from datetime import datetime
-
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 from supabase import create_client
 
 SUPA_URL = os.environ["SUPABASE_URL"]
@@ -43,27 +40,12 @@ GH_PAT   = os.environ["GH_PAT_REPO"]
 GH_OWNER = "giandcdalcorso11-coder"
 GH_REPO  = "GDC-DASHBOARD"
 
-# Stessi valori usati in a1_monthly.py (find_mbs_csv) — tenerli allineati
-# se in futuro cambia la cartella o il suffisso del file MBS
-MBS_FOLDER_ID   = "1rGgK2yB_MRMi0jvxKWPSIJJJKCtgDnIg"  # Drive "Archivio docs MBS"
-# NB (2/8/2026): rimosso MBS_FILE_SUFFIX hardcoded — l'ID Meta account/pagina
-# nel nome file non e' stabile nel tempo (cambiato tra giugno e luglio 2026,
-# causa mancato rilevamento). Riconoscimento ora solo su pattern data + .csv,
-# stessa logica di find_mbs_csv() in a1_monthly.py.
+MBS_BUCKET = "mbs-csv"  # stesso bucket usato da a1_monthly.py (find_mbs_csv_path)
 
 MESE_IT = [
     "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
     "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"
 ]
-
-
-def get_drive_service():
-    creds_json = json.loads(base64.b64decode(os.environ["GOOGLE_CREDENTIALS"]))
-    creds = Credentials.from_service_account_info(
-        creds_json,
-        scopes=["https://www.googleapis.com/auth/drive"]
-    )
-    return build("drive", "v3", credentials=creds)
 
 
 def parse_mese_label(mese_label):
@@ -76,37 +58,16 @@ def parse_mese_label(mese_label):
         return None
 
 
-def find_mbs_csv(drive_service, mese_num, anno):
+def find_mbs_csv_path(supabase, mese_num, anno):
     """
-    Stessa identica logica di find_mbs_csv() in a1_monthly.py, ma
+    Stessa identica logica di find_mbs_csv_path() in a1_monthly.py, ma
     parametrizzata su mese/anno invece che sul mese target implicito
     (qui il "mese target" arriva dal flag Supabase, non da oggi-1mese).
     """
-    query = f"'{MBS_FOLDER_ID}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
-    results = drive_service.files().list(
-        q=query, fields="files(id, name, createdTime)",
-        supportsAllDrives=True, includeItemsFromAllDrives=True
-    ).execute()
-
-    candidates = []
-    for f in results.get("files", []):
-        name = f["name"]
-        if not name.lower().endswith(".csv"):
-            continue
-        m = re.match(r"^([A-Za-z]{3})-(\d{2})-(\d{4})_", name)
-        if not m:
-            continue
-        try:
-            file_start = datetime.strptime(f"{m.group(1)} {m.group(3)}", "%b %Y").date()
-        except ValueError:
-            continue
-        if file_start.year == anno and file_start.month == mese_num:
-            candidates.append(f)
-
-    if not candidates:
-        return None
-    candidates.sort(key=lambda f: f.get("createdTime", ""), reverse=True)
-    return candidates[0]["id"]
+    path = f"{anno}-{mese_num:02d}.csv"
+    files = supabase.storage.from_(MBS_BUCKET).list()
+    names = {f.get("name") for f in files}
+    return path if path in names else None
 
 
 def trigger_a1_monthly():
@@ -140,12 +101,11 @@ def main():
         return
 
     mese_num, anno = parsed
-    print(f"Flag attivo per {mese_label} — controllo 'Archivio docs MBS'...")
+    print(f"Flag attivo per {mese_label} — controllo il bucket Storage '{MBS_BUCKET}'...")
 
-    drive = get_drive_service()
-    file_id = find_mbs_csv(drive, mese_num, anno)
+    path = find_mbs_csv_path(supabase, mese_num, anno)
 
-    if not file_id:
+    if not path:
         print(f"    Ancora nessun CSV per {mese_label} — riprovo al prossimo giro (30 min).")
         return
 

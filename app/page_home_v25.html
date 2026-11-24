@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<script>try{var __d=sessionStorage.getItem('gdc_nav_dir');if(__d==='forward')document.documentElement.classList.add('nav-forward');else if(__d==='back')document.documentElement.classList.add('nav-back');sessionStorage.removeItem('gdc_nav_dir');}catch(e){}</script>
 <title>GDC WORKSPACE — Home</title>
 <link rel="manifest" href="../manifest.json">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -12,47 +14,55 @@
 <meta name="theme-color" content="#1C1C1C">
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+/* Scorrimento direzionale Hub <-> IA TEAM (vedi script gdc_nav_dir in head) */
+html.nav-forward::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutLeft;}
+html.nav-forward::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInRight;}
+html.nav-back::view-transition-old(root){animation:220ms cubic-bezier(.2,.8,.2,1) both gdcSlideOutRight;}
+html.nav-back::view-transition-new(root){animation:320ms cubic-bezier(.2,.8,.2,1) both gdcSlideInLeft;}
+@keyframes gdcSlideOutLeft{to{transform:translateX(-28%);opacity:0;}}
+@keyframes gdcSlideInRight{from{transform:translateX(100%);}}
+@keyframes gdcSlideOutRight{to{transform:translateX(28%);opacity:0;}}
+@keyframes gdcSlideInLeft{from{transform:translateX(-100%);}}
+/* Morph: il logo di ciascun agente "diventa" quello della sua pagina (vedi #logoBoxHero lato agente) */
+#box-a1{view-transition-name:agent-logo-a1;}
+#box-a2{view-transition-name:agent-logo-a2;}
+#box-a3{view-transition-name:agent-logo-a3;}
+#box-a4{view-transition-name:agent-logo-a4;}
+#box-a5{view-transition-name:agent-logo-a5;}
+#box-a6{view-transition-name:agent-logo-a6;}
+#box-a7{view-transition-name:agent-logo-a7;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{--carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;--maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;--athlete:#2B5C8A;--athlete-bg:#D9E6F3;--athlete-mid:#4A86C6;--life:#C2193A;--life-bg:#F5E0E6;--life-mid:#E9415A;--sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;--grigio:#6B6B6B;--border:#ddd6cb;}
 *{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--carta);}
 body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:52px;}
-@media(prefers-color-scheme:dark){
-  :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}
-  .acard{background:var(--bianco);border-color:var(--border);}
-  .acard.st-done{border-color:var(--maker);}.acard.st-queued{border-color:var(--life);}.acard.st-working{border-color:var(--sabbia);}.acard.st-sleep{border-color:#3A3A3A;}
-  .date-chip{background:#2E2E2E;border-color:var(--border);color:var(--nero);}
-  .system-bar{background:#2E2E2E;border-color:var(--border);}
-  .cal-popup{background:#242424;border-color:var(--border);}
-  .cal-day.has-event{background:#2E2E2E;}.cal-day.has-event:hover{background:#3A3A3A;}
-  .cal-events-panel{border-color:var(--border);}.cal-event-item{border-color:var(--border);}
-  .msg-popup{background:#242424;}.msg-head{border-color:var(--border);}.msg-text{background:#1A1A1A;color:var(--nero);}
-  .agent-tag{background:#333;color:#9A9A9A;}
-  .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}
-  .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}
-  .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}
-  .lg-primary{background:rgba(194,25,58,.18);border-color:rgba(194,25,58,.35);color:#E9415A;}
-  .lg-done{background:rgba(74,124,89,.18);border-color:rgba(74,124,89,.35);color:#5D9C71;}
-  .lg-disabled{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:#555;}
-  .chip-done{background:rgba(74,124,89,.25);}.chip-working{background:rgba(138,109,59,.25);}.chip-queued{background:rgba(194,25,58,.2);}.chip-sleep{background:rgba(43,92,138,.2);}
-  .bg-rest{background:#FAFAF5!important;}
-  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,#hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
-}
-.header{width:100%;max-width:540px;padding:20px 16px 12px;display:flex;flex-direction:column;gap:10px;}
-.header-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.gdc-logo-wrap{display:flex;align-items:center;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root:not([data-theme="light"]) .acard{background:var(--bianco);border-color:var(--border);}:root:not([data-theme="light"]) .acard.st-done{border-color:var(--maker);}:root:not([data-theme="light"]) .acard.st-queued{border-color:var(--life);}:root:not([data-theme="light"]) .acard.st-working{border-color:var(--sabbia);}:root:not([data-theme="light"]) .acard.st-sleep{border-color:#3A3A3A;}:root:not([data-theme="light"]) .date-chip{background:#2E2E2E;border-color:var(--border);color:var(--nero);}:root:not([data-theme="light"]) .cal-popup{background:#242424;border-color:var(--border);}:root:not([data-theme="light"]) .cal-day.has-event{background:#2E2E2E;}:root:not([data-theme="light"]) .cal-day.has-event:hover{background:#3A3A3A;}:root:not([data-theme="light"]) .cal-events-panel{border-color:var(--border);}:root:not([data-theme="light"]) .cal-event-item{border-color:var(--border);}:root:not([data-theme="light"]) .msg-popup{background:#242424;}:root:not([data-theme="light"]) .msg-head{border-color:var(--border);}:root:not([data-theme="light"]) .msg-text{background:#1A1A1A;color:var(--nero);}:root:not([data-theme="light"]) .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}:root:not([data-theme="light"]) .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}:root:not([data-theme="light"]) .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}:root:not([data-theme="light"]) .lg-primary{background:rgba(194,25,58,.18);border-color:rgba(194,25,58,.35);color:#E9415A;}:root:not([data-theme="light"]) .lg-done{background:rgba(74,124,89,.18);border-color:rgba(74,124,89,.35);color:#5D9C71;}:root:not([data-theme="light"]) .lg-disabled{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:#555;}:root:not([data-theme="light"]) .chip-done{background:rgba(74,124,89,.25);}:root:not([data-theme="light"]) .chip-working{background:rgba(138,109,59,.25);}:root:not([data-theme="light"]) .chip-queued{background:rgba(194,25,58,.2);}:root:not([data-theme="light"]) .chip-sleep{background:rgba(43,92,138,.2);}:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{fill:#F0EBE1;}}:root[data-theme="dark"]{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root[data-theme="dark"] .acard{background:var(--bianco);border-color:var(--border);}:root[data-theme="dark"] .acard.st-done{border-color:var(--maker);}:root[data-theme="dark"] .acard.st-queued{border-color:var(--life);}:root[data-theme="dark"] .acard.st-working{border-color:var(--sabbia);}:root[data-theme="dark"] .acard.st-sleep{border-color:#3A3A3A;}:root[data-theme="dark"] .date-chip{background:#2E2E2E;border-color:var(--border);color:var(--nero);}:root[data-theme="dark"] .cal-popup{background:#242424;border-color:var(--border);}:root[data-theme="dark"] .cal-day.has-event{background:#2E2E2E;}:root[data-theme="dark"] .cal-day.has-event:hover{background:#3A3A3A;}:root[data-theme="dark"] .cal-events-panel{border-color:var(--border);}:root[data-theme="dark"] .cal-event-item{border-color:var(--border);}:root[data-theme="dark"] .msg-popup{background:#242424;}:root[data-theme="dark"] .msg-head{border-color:var(--border);}:root[data-theme="dark"] .msg-text{background:#1A1A1A;color:var(--nero);}:root[data-theme="dark"] .lg-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2);}:root[data-theme="dark"] .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%);}:root[data-theme="dark"] .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,.12);}:root[data-theme="dark"] .lg-primary{background:rgba(194,25,58,.18);border-color:rgba(194,25,58,.35);color:#E9415A;}:root[data-theme="dark"] .lg-done{background:rgba(74,124,89,.18);border-color:rgba(74,124,89,.35);color:#5D9C71;}:root[data-theme="dark"] .lg-disabled{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:#555;}:root[data-theme="dark"] .chip-done{background:rgba(74,124,89,.25);}:root[data-theme="dark"] .chip-working{background:rgba(138,109,59,.25);}:root[data-theme="dark"] .chip-queued{background:rgba(194,25,58,.2);}:root[data-theme="dark"] .chip-sleep{background:rgba(43,92,138,.2);}:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{fill:#F0EBE1;}
+/* Header in flusso normale (non più sticky/fixed): sia position:sticky che
+   position:fixed+spacer hanno dato lo stesso glitch su iOS in standalone con
+   status bar black-translucent (si intravede il contenuto sotto durante lo
+   scroll). Contenuto non essenziale da tenere sempre in vista — scorre via
+   con il resto della pagina come tutto il resto, eliminando del tutto la
+   categoria di bug (nessun layer fisso/incollato con cui possa interferire).
+   Il logo mantiene comunque l'animazione di rimpicciolimento mentre esce
+   dallo schermo, solo cosmetica, nessun posizionamento speciale coinvolto. */
+.header{width:100%;max-width:540px;padding:14px 16px 8px;display:flex;flex-direction:column;gap:8px;}
+.header-top{display:flex;align-items:center;gap:8px;}
+.header-top-side{flex:1;min-width:0;display:flex;align-items:center;}
+.header-top-side.right{justify-content:flex-end;}
+.gdc-logo-wrap{display:flex;align-items:center;justify-content:center;flex-shrink:0;transform-origin:center top;will-change:transform,opacity;}
 #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,#hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{opacity:0;transition:opacity .22s ease;}
-.date-chip{display:flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:700;cursor:pointer;transition:border-color .2s;user-select:none;}
+.date-chip{display:flex;align-items:center;gap:6px;height:32px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:0 14px;font-size:.7rem;font-weight:700;cursor:pointer;transition:border-color .2s;user-select:none;flex-shrink:0;}
 .date-chip:hover{border-color:var(--nero);}
 .date-chip-dot{width:7px;height:7px;border-radius:50%;background:var(--maker);flex-shrink:0;}
-.system-bar{display:flex;align-items:center;gap:8px;background:var(--bianco);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;}
-.sys-dot-wrap{position:relative;width:10px;height:10px;flex-shrink:0;}
-.sys-dot{width:10px;height:10px;border-radius:50%;background:var(--maker);}
-.sys-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--maker);animation:sysPulse 2s ease-out infinite;}
+.sys-mini{display:flex;align-items:center;gap:6px;min-width:0;font-size:.72rem;font-weight:700;color:var(--maker);transition:color .3s;}
+.sys-mini span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sys-mini-dot{position:relative;width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sys-mini-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid currentColor;animation:sysPulse 2s ease-out infinite;}
 @keyframes sysPulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
-.sys-label{font-weight:700;font-size:.82rem;color:var(--maker);flex:1;}
-.sys-meta{font-size:.7rem;color:var(--grigio);}
 .cal-overlay{position:fixed;inset:0;background:rgba(28,28,28,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding-top:70px;}
 .cal-overlay.open{display:flex;}
-.cal-popup{background:var(--bianco);border:1.5px solid var(--border);border-radius:16px;width:calc(100% - 32px);max-width:380px;box-shadow:0 8px 32px rgba(28,28,28,.18);overflow:hidden;}
+.cal-popup{background:var(--bianco);border:1.5px solid var(--border);border-radius:16px;width:calc(100% - 32px);max-width:380px;max-height:calc(100vh - 110px);box-shadow:0 8px 32px rgba(28,28,28,.18);overflow:hidden;display:flex;flex-direction:column;overscroll-behavior:contain;}
 .cal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
 .cal-nav{display:flex;align-items:center;gap:10px;}
 .cal-nav-btn{background:none;border:1.5px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:.8rem;color:var(--grigio);}
@@ -60,7 +70,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .cal-month-label{font-weight:700;font-size:.85rem;min-width:110px;text-align:center;}
 .cal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
 .cal-close:hover{background:var(--border);}
-.cal-grid{padding:10px 12px 14px;}
+.cal-grid{padding:10px 12px 14px;flex-shrink:0;}
 .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
 .cal-dow span{text-align:center;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--grigio);padding:4px 0;}
 .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
@@ -70,26 +80,31 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .cal-day .day-num{font-size:.7rem;font-weight:700;line-height:1;}
 .cal-day .event-dots{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;}
 .event-dot{width:5px;height:5px;border-radius:50%;}
-.cal-events-panel{border-top:1px solid var(--border);padding:10px 14px;min-height:48px;}
+.cal-events-panel{border-top:1px solid var(--border);padding:10px 14px;min-height:48px;overflow-y:auto;overscroll-behavior:contain;}
 .cal-event-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);}
 .cal-event-item:last-child{border-bottom:none;}
 .cal-event-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px;}
 .cal-event-text{font-weight:600;color:var(--nero);font-size:.74rem;}
 .cal-event-agent{font-size:.64rem;color:var(--grigio);}
 .list-wrap{width:100%;max-width:540px;padding:0 16px;}
+/* Stacco visivo Team Social (A1-A4) / Team Commerciale (A5-A7): cornice
+   neutra (nessun colore nuovo, per non competere con i colori di stato
+   delle card) concentrica alle card, con l'etichetta che taglia il bordo
+   in linea con il quadrato del logo — 16 (padding banda) + 2 (bordo
+   card) + 8 (padding logo-col) = 26px. */
+.team-band{position:relative;border:1.5px solid var(--border);border-radius:20px;padding:16px;margin-bottom:28px;}
+.team-band-lbl{position:absolute;top:-8px;left:26px;background:var(--carta);padding:0 8px;font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);line-height:16px;}
+.team-band .acard:last-child{margin-bottom:0;}
 .acard{position:relative;z-index:1;background:var(--bianco);border:2px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;transition:border-color .4s;}
 .acard-body{display:flex;}
 .logo-col{flex-shrink:0;width:166px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;transition:opacity .15s;text-decoration:none;}
 .logo-col:hover{opacity:.82;}
 .logo-box{width:150px;height:150px;border-radius:20px;display:flex;align-items:center;justify-content:center;padding:12px;overflow:hidden;transition:background .5s ease;}
 .logo-box svg{width:100%;height:100%;overflow:visible;}
-.logo-state-label{font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);text-align:center;}
 .right-col{flex:1;min-width:0;display:flex;flex-direction:column;}
 .info-row{padding:10px 10px 4px;display:flex;flex-direction:column;gap:4px;}
-.agent-title{display:flex;align-items:center;gap:6px;}
-.agent-name{font-weight:800;font-size:.82rem;transition:color .4s;}
-.agent-tag{font-size:.62rem;font-weight:700;border-radius:999px;padding:2px 7px;background:var(--border);color:var(--grigio);flex-shrink:0;margin-left:auto;}
-.agent-desc{font-size:.64rem;color:var(--grigio);line-height:1.35;}
+.agent-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 6px;}
+.agent-name{font-weight:800;font-size:1rem;transition:color .4s;}
 .status-chip{display:inline-flex;align-items:center;gap:4px;font-size:.67rem;font-weight:700;border-radius:999px;padding:2px 8px;margin-top:2px;}
 .chip-done{background:var(--maker-bg);color:var(--maker);}.chip-working{background:var(--sabbia-bg);color:var(--sabbia-dk);}.chip-queued{background:var(--life-bg);color:var(--life);opacity:.7;}.chip-sleep{background:var(--athlete-bg);color:var(--athlete);}
 .spinner-dot{width:5px;height:5px;border-radius:50%;background:var(--sabbia-dk);animation:spPulse 1.3s ease-in-out infinite;}
@@ -106,10 +121,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .lg-done{background:rgba(74,124,89,.12);border-color:rgba(74,124,89,.25);color:var(--maker);}
 .lg-done:hover:not(.lg-disabled){background:rgba(74,124,89,.18);}
 .lg-disabled{opacity:.45;cursor:not-allowed;background:rgba(200,200,200,.15);border-color:rgba(200,200,200,.25);color:var(--grigio);box-shadow:none;}
+.cat-count{position:absolute;top:-6px;right:-6px;display:none;align-items:center;justify-content:center;background:var(--life);color:#fff;font-size:.56rem;font-weight:800;min-width:16px;height:16px;border-radius:999px;padding:0 4px;box-shadow:0 1px 3px rgba(0,0,0,.25);}
 .lg-stato{background:rgba(196,168,101,.12);border-color:rgba(196,168,101,.3);color:var(--sabbia-dk);}
 .lg-stato:hover:not(.lg-disabled){background:rgba(196,168,101,.2);}
-.stato-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 10px 10px;border-top:1px solid var(--border);margin-top:2px;padding-top:7px;}
-.stato-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px 5px;border-radius:10px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.48rem;font-weight:700;text-align:center;line-height:1.2;border:1.5px solid transparent;background:rgba(255,255,255,.4);color:var(--grigio);transition:all .15s;}
+.stato-row{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:0 10px 7px;border-top:1px solid var(--border);margin-top:1px;padding-top:5px;}
+.stato-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 1px 3px;border-radius:8px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.44rem;font-weight:700;text-align:center;line-height:1.1;border:1.5px solid transparent;background:rgba(255,255,255,.4);color:var(--grigio);transition:all .15s;}
+.agent-row{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:10px;background:var(--carta);border:1.5px solid var(--border);margin-bottom:4px;}
+.agent-row:last-child{margin-bottom:0;}
+.agent-row-name{flex:1;font-size:.64rem;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agent-row-btns{display:flex;gap:4px;flex-shrink:0;}
+.agent-mini-btn{display:flex;align-items:center;gap:3px;padding:3px 7px;border-radius:7px;border:1.5px solid var(--border);background:var(--bianco);font-size:.56rem;font-weight:700;color:var(--nero);cursor:pointer;text-decoration:none;font-family:'Jost',sans-serif;white-space:nowrap;}
+.actions-wrap{padding:4px 10px 9px;}
+.pipeline-pill-wide{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;color:var(--nero);text-decoration:none;margin-bottom:14px;}
+.team-band .ciclo-pill{margin-bottom:14px;}
 .stato-pill:hover{background:rgba(255,255,255,.7);color:var(--nero);}
 .stato-pill.sp-active{border-color:currentColor;background:rgba(255,255,255,.75);box-shadow:0 1px 4px rgba(28,28,28,.1);}
 .stato-pill .sp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
@@ -132,7 +156,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .msg-reset-btn{font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;background:none;border:1px solid var(--border);color:var(--grigio);border-radius:8px;padding:5px 12px;cursor:pointer;transition:border-color .15s;}
 .msg-reset-btn:hover{border-color:var(--grigio);}
 .msg-edit-hint{font-size:.62rem;color:var(--grigio);font-style:italic;}
-@media(prefers-color-scheme:dark){.msg-textarea{background:#1A1A1A;color:var(--nero);}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .msg-textarea{background:#1A1A1A;color:var(--nero);}}:root[data-theme="dark"] .msg-textarea{background:#1A1A1A;color:var(--nero);}
 /* A7 Picker */
 .a7-picker-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;padding-bottom:24px;}
 .a7-picker-overlay.open{display:flex;}
@@ -149,7 +173,18 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .a7-launch-btn:hover{opacity:.88;}
 .a7-launch-btn:disabled{background:#ccc;cursor:not-allowed;opacity:.6;}
 .a7-status-msg{font-size:.72rem;color:var(--grigio);text-align:center;margin-top:10px;min-height:18px;}
-@media(prefers-color-scheme:dark){.a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}}:root[data-theme="dark"] .a7-select{background:#1A1A1A;color:var(--nero);border-color:var(--border);}
+/* ── Ruoli collaboratori (Step 11) — pulsanti che scrivono/lanciano agenti,
+   smorzati per l'osservatore; al click, popup esplicativo invece dell'azione ── */
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
 .st-queued{border-color:var(--life);opacity:.65;}.st-queued .agent-name{color:var(--life);}
 .st-working{border-color:var(--sabbia);}.st-working .agent-name{color:var(--sabbia-dk);}
 .st-done{border-color:var(--maker);}.st-done .agent-name{color:var(--maker);}
@@ -219,9 +254,38 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .s-done .env-rect{stroke:#497B58;}.s-done .env-v{stroke:#5D9C71;}.s-done .env-dot{fill:#497B58;}.s-done .a7-lbl{fill:#497B58;}
 .s-sleep .env-rect{stroke:#2B5C8A;}.s-sleep .env-v{stroke:#4A86C6;}.s-sleep .env-dot{fill:#2B5C8A;}.s-sleep .a7-lbl{fill:#2B5C8A;}
 .a7-lbl{transition:fill .6s;}
-.legend{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:.67rem;color:var(--grigio);padding:4px 16px 0;}
-.leg{display:flex;align-items:center;gap:4px;}
-.legdot{width:8px;height:8px;border-radius:50%;border:1.5px solid transparent;}
+
+/* ══ Pillola Hub: punta a sinistra ("torna indietro"), tonda a destra.
+   Niente CSS border (si taglierebbe sulla punta): due livelli sovrapposti
+   con lo stesso clip-path, il più esterno fa da bordo uniforme. ══ */
+.pill-hub-wrap{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);transition:background .2s;}
+.pill-hub{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px 0 18px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%);}
+.pill-hub svg{width:12px;height:12px;flex-shrink:0;}
+/* Pillola Notifiche: piena/accent finché non sono attive, poi neutra come Hub */
+.pill-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);color:var(--nero);cursor:pointer;text-decoration:none;flex-shrink:0;transition:border-color .2s,background .2s,color .2s;}
+.pill-icon-btn:hover{border-color:var(--nero);}
+.pill-icon-btn svg{width:15px;height:15px;}
+/* Pillola notifiche: diventa rossa con campanella barrata quando le notifiche
+   NON sono attive su questo dispositivo; neutra (come l'ingranaggio) quando attive. */
+.pill-icon-btn.notif-off{background:var(--life-bg);border-color:var(--life);color:var(--life);}
+#pushBtnSlash{display:none;}
+.pill-icon-btn.notif-off #pushBtnSlash{display:inline;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill-hub{background:var(--bianco);}}:root[data-theme="dark"] .pill-hub{background:var(--bianco);}
+
+/* ══ Ciclo editoriale mensile: pillola unica, estremi a specchio ══ */
+.ciclo-pill{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;height:50px;padding:5px;border-radius:999px;background:var(--bianco);border:1.5px solid var(--border);}
+.ciclo-end{flex-shrink:0;width:134px;height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:'Jost',sans-serif;font-size:.68rem;font-weight:700;padding:0 8px;border-radius:999px;background:var(--carta);color:var(--nero);border:1.5px solid var(--border);cursor:pointer;text-decoration:none;transition:transform .12s,opacity .2s;}
+.ciclo-end:active{transform:scale(.97);}
+.ciclo-end.ciclo-disabled{opacity:.4;pointer-events:none;}
+.ciclo-end svg{width:15px;height:15px;flex-shrink:0;}
+.ciclo-label{flex:1;text-align:center;font-size:.72rem;color:var(--nero);font-weight:800;letter-spacing:.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ══ Card agente: angolo sinistro concentrico al logo (A1-A4 solo — A5/A6/A7 invariate) ══
+   raggio logo 20px + (bordo card 2px + padding logo-col 8px) = 30px */
+.acard-logo-round{border-top-left-radius:30px;border-bottom-left-radius:30px;border-top-right-radius:16px;border-bottom-right-radius:16px;}
+.acard-logo-round .acard-body{align-items:center;}
 </style>
 </head>
 <body>
@@ -260,6 +324,14 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     </div>
   </div>
 </div>
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon" id="roleInfoIcon">&#128065;</div>
+    <div class="role-info-title" id="roleInfoTitle">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
 <div class="cal-overlay" id="calOverlay" onclick="closeCalIfBg(event)">
   <div class="cal-popup">
     <div class="cal-head">
@@ -279,8 +351,13 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 </div>
 <div class="header">
   <div class="header-top">
-    <div class="gdc-logo-wrap">
-      <svg id="hub-master-svg" viewBox="20 205 555 280" xmlns="http://www.w3.org/2000/svg" style="height:34px;width:auto;overflow:visible;" font-family="Jost,sans-serif">
+    <div class="header-top-side">
+      <div class="sys-mini" id="sysMini">
+        <span class="sys-mini-dot"></span><span id="sysLabel">Caricamento...</span>
+      </div>
+    </div>
+    <div class="gdc-logo-wrap" id="gdcLogoWrap">
+      <svg id="hub-master-svg" viewBox="20 205 555 280" xmlns="http://www.w3.org/2000/svg" style="height:54px;width:auto;overflow:visible;" font-family="Jost,sans-serif">
         <g class="logo-G" fill="var(--nero)"><path d="M141.92,331.53h45.01v44.28c-3.67,1.02-7.34,2.03-11.54,2.61c-4.76,0.65-10.2,0.74-15.19,0.72c-4.8-0.01-9.18-0.12-14.1-0.79c-5.48-0.75-11.64-2.21-17-4.34c-5.04-2-9.37-4.59-13.45-7.74c-4.06-3.13-7.87-6.81-10.92-10.85c-2.96-3.92-5.21-8.18-6.94-12.73c-1.77-4.65-3-9.62-3.69-14.68c-0.69-5.09-0.84-10.28-0.65-15.26c0.19-4.84,0.69-9.49,1.88-14.25c1.22-4.87,3.15-9.86,5.35-14.03c1.96-3.72,4.13-6.78,6.73-9.84c2.72-3.2,5.9-6.38,9.48-8.97c3.57-2.59,7.54-4.58,11.43-6.22c3.75-1.58,7.44-2.84,11.5-3.84c4.47-1.1,9.4-1.89,14.47-2.32c5.28-0.44,10.71-0.48,15.91-0.29c4.95,0.18,9.69,0.57,14.39,1.01c4.62,0.43,9.2,0.91,13.82,1.66c4.65,0.75,9.33,1.78,13.89,2.75c4.4,0.94,8.69,1.82,12.97,2.7v-35.44c-2.26-0.71-4.52-1.41-7.71-2.18c-4.85-1.17-11.84-2.47-18.19-3.4c-6.15-0.9-11.68-1.45-17.27-1.82c-5.46-0.36-10.98-0.55-16.54-0.61c-5.59-0.06-11.22,0.01-16.67,0.31c-5.3,0.29-10.42,0.79-15.69,1.64c-5.45,0.88-11.08,2.12-16.48,3.59c-5.13,1.39-10.07,2.98-14.41,4.81c-4.05,1.7-7.59,3.59-11.74,6.02c-4.78,2.8-10.37,6.31-14.66,9.67c-3.62,2.83-6.32,5.56-9.06,8.58c-2.89,3.17-5.83,6.65-8.58,10.83c-3.08,4.68-5.92,10.23-8.09,15.33c-1.93,4.53-3.32,8.71-4.44,12.96c-1.04,3.95-1.85,7.96-2.31,11.62c-0.41,3.3-0.53,6.32-0.61,9.61c-0.08,3.42-0.1,7.13,0.06,10.4c0.14,2.93,0.43,5.51,0.79,8.33c0.39,3.05,0.86,6.4,1.58,9.67c0.74,3.33,1.74,6.6,2.86,9.73c1.08,3.03,2.28,5.93,3.59,8.76c1.28,2.76,2.68,5.46,4.26,7.97c1.56,2.48,3.3,4.79,5.11,7.18c1.87,2.47,3.82,5.02,5.9,7.3c2,2.19,4.11,4.13,6.26,6.02c2.17,1.9,4.39,3.76,6.87,5.53c2.81,2.01,5.96,3.93,9.67,5.9c4.37,2.32,9.52,4.7,14.29,6.51c4.48,1.7,8.64,2.89,13.26,3.95c4.87,1.12,10.25,2.11,15.14,2.74c4.47,0.57,8.53,0.84,12.77,1.09c4.34,0.26,8.88,0.49,13.38,0.49c4.58,0,9.14-0.24,13.87-0.49c4.91-0.25,10.01-0.51,14.9-0.97c4.59-0.44,8.99-1.06,13.08-1.64c3.79-0.54,7.31-1.04,11.19-1.77c3.74-0.7,7.82-1.62,10.34-2.13c1.42-0.29,2.34-0.45,3.27-0.6V297.35h-83.33V331.53z"/></g>
         <g class="logo-D" fill="var(--nero)"><path d="M371.13,314.9c-0.07-4.76-0.29-9.13-0.87-13.53c-0.57-4.33-1.48-8.7-2.68-12.87c-1.24-4.31-2.78-8.41-5.39-12.92c-3.19-5.5-7.98-11.6-13.4-16.06c-5.09-4.18-10.74-6.92-16.06-9c-4.73-1.85-9.2-3.17-13.91-4.19c-4.99-1.08-10.24-1.83-16.16-2.15c-6.36-0.34-13.49-0.2-18.82,0.2c-3.83,0.29-6.74,0.72-9.64,1.14v144.51c1.58,0.49,3.01,0.64,5.18,0.81c3.71,0.3,9.58,0.68,15.28,0.76c6.12,0.09,12.03-0.15,17.58-0.94c5.22-0.74,10.1-1.95,15.14-3.7c5.25-1.83,10.67-4.24,15.31-7.23c4.36-2.81,8.05-6.12,11.35-9.72c3.2-3.49,6.05-7.24,8.34-11.27c2.28-3.99,4.01-8.25,5.33-12.73c1.38-4.68,2.31-9.6,2.84-14.79C371.1,325.84,371.21,320.13,371.13,314.9z"/></g>
         <g class="logo-C" fill="var(--nero)"><path d="M529.09,373.73c-3.89,1.18-9.52,2.99-14.35,4.08c-4.34,0.97-8.04,1.37-11.86,1.77c-3.72,0.39-7.55,0.78-11.31,1.04c-3.68,0.25-7.3,0.36-10.89,0.37c-3.55,0-7.08-0.1-10.64-0.42c-3.57-0.32-7.18-0.86-10.58-1.58c-3.24-0.69-6.28-1.55-9.31-2.74c-3.02-1.19-6.02-2.7-8.76-4.14c-2.53-1.33-4.84-2.59-7.06-4.26c-2.29-1.71-4.48-3.85-6.51-5.84c-1.96-1.92-3.76-3.72-5.35-6.14c-1.63-2.49-3.04-5.65-4.01-7.6c-0.34,2.13-1.02,4.71-2.13,7.6c-1.4,3.66-3.47,7.82-5.35,11.44c-1.73,3.32-3.31,6.19-5.35,9.19c-2.11,3.08-4.71,6.3-7.06,8.82c-1.92,2.07-3.67,3.68-5.53,5.23c2.87,2.55,6.8,5.18,10.28,7.42c3.27,2.11,6.14,3.88,9.67,5.59c4.12,2,9.12,3.93,14.17,5.54c5.12,1.63,10.29,2.93,15.08,3.95c4.42,0.94,8.53,1.63,13.08,2.13c5.32,0.58,11.24,0.89,18.13,0.97c8.07,0.09,17.46-0.13,24.88-0.73c5.64-0.46,10.14-1.14,14.29-1.89c3.79-0.68,7.29-1.42,11.74-2.56c5.04-1.29,11.3-3.09,14.9-4.08L529.09,373.73z"/><path d="M419.61,283.58c-0.3-1.87-0.67-3.3-1.45-5.42c-1.16-3.18-3.24-7.91-5.21-11.5c-1.75-3.2-3.4-5.49-5.61-8.28c-2.41-3.05-5.47-6.69-7.7-9.19c-1.64-1.83-2.83-3.05-4.63-4.54c3.01-2.17,6.02-4.35,9.1-6.44c3.23-2.2,6.54-4.31,10.54-6.34c4.64-2.36,10.19-4.61,15.34-6.34c4.78-1.61,9.21-2.77,13.81-3.78c4.59-1.01,9.34-1.89,14.01-2.56c5.07-0.73,10.04-1.21,16.67-1.33c8.51-0.15,19.76,0.32,27.52,0.92c5.33,0.42,9.01,0.9,12.89,1.64c3.57,0.68,7.32,1.58,10.74,2.45c3.11,0.8,5.95,1.57,8.8,2.35l-8.84,33.77c-3.24-0.98-6.16-1.89-9.43-2.65c-3.58-0.84-7.57-1.52-11.57-2.11c-4.08-0.6-8.17-1.11-12.21-1.38c-3.91-0.26-7.77-0.28-11.49-0.23c-3.58,0.05-7.02,0.18-10.63,0.51c-3.73,0.34-7.65,0.9-11.21,1.74c-3.31,0.78-6.32,1.8-9.33,2.97c-3,1.16-5.99,2.45-8.82,4.05c-2.79,1.57-5.44,3.45-7.74,5.35c-2.12,1.75-3.95,3.54-5.74,5.52c-1.77,1.96-3.5,4.11-4.89,6.05C421.35,280.45,420.41,281.96,419.61,283.58z"/></g>
@@ -288,36 +365,25 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <g class="logo-linee" fill="var(--nero)"><rect x="34.04" y="446.1" width="116.55" height="7.14"/><rect x="436.27" y="446.1" width="116.18" height="7.14"/></g>
       </svg>
     </div>
-    <div class="date-chip" id="dateChip" onclick="openCal()">
-      <span class="date-chip-dot"></span><span id="dateChipText"></span>
+    <div class="header-top-side right">
+      <div class="date-chip" id="dateChip" onclick="openCal()">
+        <span class="date-chip-dot"></span><span id="dateChipText"></span>
+      </div>
     </div>
   </div>
-  <div class="system-bar">
-    <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label" id="sysLabel">Caricamento stati...</div>
-    <div class="sys-meta" id="sysMeta"></div>
-  </div>
 </div>
-<div style="width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:space-between;align-items:center;">
-  <button id="pushBtn" onclick="togglePushNotifications()" style="display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);background:none;border:none;cursor:pointer;padding:0;transition:color .15s;" onmouseover="this.style.color='var(--nero)'" onmouseout="this.style.color='var(--grigio)'">
-    <svg id="pushBtnIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    <span id="pushBtnLabel">Attiva notifiche</span>
-  </button>
-  <a href="page_hub_v1.html" style="display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);text-decoration:none;transition:color .15s;" onmouseover="this.style.color='var(--nero)'" onmouseout="this.style.color='var(--grigio)'">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Hub
-  </a>
-</div>
-<div style="width:100%;max-width:540px;padding:0 16px 10px;">
-  <div class="acard" style="border-color:var(--athlete);margin-bottom:0;">
-    <div style="padding:14px 16px 6px;">
-      <div class="agent-title"><span class="agent-name">&#x26A1; Ciclo editoriale mensile</span><span class="agent-tag">A2&#x2192;A3&#x2192;A4</span></div>
-      <div class="agent-desc">Sessione Claude Code dedicata e persistente &#x2014; apertura mese per Analyst, Planner, Brief &amp; Script in un unico passaggio.</div>
-    </div>
-    <div class="actions" style="grid-template-columns:1fr 1fr;">
-      <a class="lg-btn lg-primary" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank"><svg><use href="#ic-chat"/></svg><span>Apri sessione</span></a>
-      <button class="lg-btn" onclick="openMsg('CICLO','Ciclo editoriale A2&#x2192;A3&#x2192;A4',MSG_CICLO)"><svg><use href="#ic-copy"/></svg><span>Copia messaggio</span></button>
-    </div>
+<div style="width:100%;max-width:540px;padding:0 16px 18px;display:flex;justify-content:space-between;align-items:center;">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="page_hub_v1.html" onclick="try{sessionStorage.setItem('gdc_nav_dir','back');}catch(e){}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Hub</span>
+  </a></div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button id="pushBtn" class="pill-icon-btn" onclick="togglePushNotifications()" title="Notifiche">
+      <svg id="pushBtnIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line id="pushBtnSlash" x1="3" y1="21" x2="21" y2="3"/></svg>
+    </button>
+    <a class="pill-icon-btn" href="page_settings_v1.html" title="Impostazioni">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </a>
   </div>
 </div>
 <div class="list-wrap">
@@ -329,8 +395,21 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <symbol id="ic-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></symbol>
     <symbol id="ic-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></symbol>
   </defs></svg>
+  <div class="team-band">
+  <span class="team-band-lbl">Team Social</span>
+  <div class="ciclo-pill">
+    <a class="ciclo-end ciclo-disabled" id="cicloOpenBtn" data-gate="ia" href="https://claude.ai/code/session_01HsrMVD8rfwcZoBQUR5DssK" target="_blank" title="Caricamento stato..." onclick="return gateIaLink(event,'Apre la sessione Claude Code del ciclo editoriale mensile.')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 7 4 12 9 17"/><polyline points="15 7 20 12 15 17"/></svg>
+      <span>Apri sessione</span>
+    </a>
+    <span class="ciclo-label">Ciclo editoriale mensile</span>
+    <button class="ciclo-end" data-gate="ia" onclick="copyCicloMsg(this)">
+      <span>Copia messaggio</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+    </button>
+  </div>
   <!-- A1 -->
-  <div class="acard" id="card-a1"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a1"><div class="acard-body">
     <a class="logo-col" href="agenti/a1-analytics/page_agent_a1_v1.html" title="Vai alla pagina A1">
       <div class="logo-box bg-sleep" id="box-a1"><div class="logo-wrap s-sleep" id="wrap-a1">
         <svg viewBox="30 150 560 530" xmlns="http://www.w3.org/2000/svg">
@@ -340,23 +419,21 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text id="a1-label" x="423.5" y="285" font-family="Jost,sans-serif" font-weight="800" font-size="115" text-anchor="middle" fill="#4A86C6" letter-spacing="-3">A1</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a1">Caricamento...</span>
     </a>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a1">AGENTE 1 &#x2014; Data Collector</span><span class="agent-tag">&#x26A1; Auto</span></div>
-      <div class="agent-desc">Script GitHub Actions. Sync dati Instagram + BPT Calendar ogni 1&#xB0; del mese.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a1">AGENTE 1 &#x2014; Data Collector</span></div>
+
     </div>
     <div class="actions" id="actions-a1">
-      <a class="lg-btn" href="https://github.com/giandcdalcorso11-coder/GDC-DASHBOARD/actions" target="_blank"><svg><use href="#ic-check"/></svg><span>Avvia Run Manuale</span></a>
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank"><span class="fmt-badge fmt-gsheet">Fogli</span><span>&#x2192; Analytics GDC</span></a>
-      <a class="lg-btn" href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&amp;asset_id=1110414672162254&amp;platform=Instagram" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;" title="Meta Business Suite &#x2014; Content Insights (export CSV repost per A1)"><span class="fmt-badge fmt-gsheet" style="background:#1877F2;color:#fff;margin:0">MBS</span><span>Content Insights</span></a>
+      <a class="lg-btn" href="https://business.facebook.com/latest/insights/content?business_id=387965531740587&amp;asset_id=1110414672162254&amp;platform=Instagram" target="_blank" title="Meta Business Suite &#x2014; Content Insights (export CSV repost)"><span class="fmt-badge fmt-gsheet" style="background:#1877F2;color:#fff;margin:0">MBS</span><span>Apri MBS</span></a>
+      <a class="lg-btn lg-primary" href="agenti/a1-analytics/carica_mbs.html" title="Carica il CSV esportato da MBS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Carica CSV</span></a>
+      <a class="lg-btn lg-disabled" id="catBtn-a1" href="agenti/a1-analytics/categorizza.html" title="Categorizza i post del mese"><span class="cat-count" id="catCount-a1"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg><span>Categorizza</span></a>
     </div>
     <div class="stato-row" id="stato-row-a1"></div>
     </div>
   </div></div>
   <!-- A2 -->
-  <div class="acard" id="card-a2"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a2"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a2')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a2"><div class="logo-wrap s-sleep" id="wrap-a2">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -367,19 +444,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text id="a2-label" x="11" y="34" font-family="Jost,sans-serif" font-weight="800" font-size="30" fill="#2B5C8A" letter-spacing="-1">A2</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a2">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a2">AGENTE 2 &#x2014; Analyst</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Analizza i dati Instagram e genera il report mensile.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a2">AGENTE 2 &#x2014; Analyst</span></div>
+
     </div>
-    <div class="actions" id="actions-a2"></div>
+    <div class="actions" id="actions-a2" style="grid-template-columns:1fr;">
+      <a class="lg-btn lg-disabled" id="viewBtn-a2"><svg><use href="#ic-folder"/></svg><span id="viewBtnLbl-a2">Caricamento...</span></a>
+    </div>
     <div class="stato-row" id="stato-row-a2"></div>
     </div>
   </div></div>
   <!-- A3 -->
-  <div class="acard" id="card-a3"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a3"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a3')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a3"><div class="logo-wrap s-sleep" id="wrap-a3">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -397,19 +474,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text id="a3-label" x="97" y="33" font-family="Jost,sans-serif" font-weight="800" font-size="31" text-anchor="middle" fill="#2B5C8A" letter-spacing="-1.5">A3</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a3">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a3">AGENTE 3 &#x2014; Planner</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Genera il piano editoriale mensile su report A2 e calendario BPT.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a3">AGENTE 3 &#x2014; Planner</span></div>
+
     </div>
-    <div class="actions" id="actions-a3"></div>
+    <div class="actions" id="actions-a3" style="grid-template-columns:1fr;">
+      <a class="lg-btn lg-disabled" id="viewBtn-a3"><svg><use href="#ic-folder"/></svg><span id="viewBtnLbl-a3">Caricamento...</span></a>
+    </div>
     <div class="stato-row" id="stato-row-a3"></div>
     </div>
   </div></div>
   <!-- A4 -->
-  <div class="acard" id="card-a4"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a4"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a4')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a4"><div id="wrap-a4" class="a4-wrap s-sleep" style="width:100%;height:100%">
         <svg id="svg-a4" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -422,19 +499,25 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text class="lbl" x="66" y="95" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1">A4</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a4">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a4">AGENTE 4 &#x2014; Brief &amp; Script</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Scrive brief e script post del mese in formato DOCX.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a4">AGENTE 4 &#x2014; Brief &amp; Script</span></div>
+
     </div>
-    <div class="actions" id="actions-a4"></div>
+    <div class="actions" id="actions-a4" style="grid-template-columns:1fr;">
+      <a class="lg-btn lg-disabled" id="viewBtn-a4"><svg><use href="#ic-folder"/></svg><span id="viewBtnLbl-a4">Caricamento...</span></a>
+    </div>
     <div class="stato-row" id="stato-row-a4"></div>
     </div>
   </div></div>
+  </div>
+  <div class="team-band">
+  <span class="team-band-lbl">Team Commerciale</span>
+  <a class="pipeline-pill-wide" href="../page_pipeline_v1.html">
+    Pipeline Sponsorizzazioni
+  </a>
   <!-- A5 -->
-  <div class="acard" id="card-a5"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a5"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a5')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a5"><div class="s-sleep" id="wrap-a5" style="width:100%;height:100%">
         <svg id="svg-a5" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -446,27 +529,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text class="a5-lbl" x="24" y="102" font-family="Jost,sans-serif" font-weight="800" font-size="22" letter-spacing="-1">A5</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a5">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Pipeline sponsorizzazioni &#x2014; ricerca e qualifica aziende target.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a5">AGENTE 5 &#x2014; Pipeline</span></div>
     </div>
-    <div style="padding:0 10px 6px;">
-      <a class="lg-btn" href="https://supabase.com/dashboard/project/pnzabwfsgkvejnrtrjcp/editor" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gsheet" style="background:#3ECF8E;color:#000;margin:0">DB</span><span>Supabase Pipeline</span></a>
-    </div>
-    <div class="actions" id="actions-a5" style="grid-template-columns:1fr 1fr;">
-      <button class="lg-btn" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.1</span></button>
-      <button class="lg-btn" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A5.2</span></button>
-      <a class="lg-btn" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.1 Claude</span></a>
-      <a class="lg-btn" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A5.2 Claude</span></a>
+    <div class="actions-wrap">
+      <div class="agent-row"><span class="agent-row-name">A5.1 &#x2014; Ricerca azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A5_1','Messaggio A5.1',MSGS.A5_1)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019dd5f6-7930-7711-857d-481ddf34ca1f" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A5.1 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A5.2 &#x2014; Scheda azienda</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A5_2','Messaggio A5.2',MSGS.A5_2)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019dd937-8e8c-7369-88d0-9ae83e58915b" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A5.2 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
     </div>
     <div class="stato-row" id="stato-row-a5"></div>
     </div>
   </div></div>
   <!-- A6 -->
-  <div class="acard" id="card-a6"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a6"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a6')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a6"><div class="s-sleep" id="wrap-a6" style="width:100%;height:100%">
         <svg id="svg-a6" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -478,27 +553,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <rect id="c-r2-a6" class="a6-bar" x="34" y="88" width="52" height="6" rx="3" style="transform-origin:34px 91px"/>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a6">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span><span class="agent-tag">&#x1F464; Claude</span></div>
-      <div class="agent-desc">Genera media kit e gestisce le relazioni commerciali per azienda.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a6">AGENTE 6 &#x2014; Media Kit</span></div>
     </div>
-    <div style="padding:0 10px 6px;">
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1tHFoyvKc9ClKOWbcq5jsk28oC2iVfjB4" target="_blank" style="flex-direction:row;gap:6px;padding:6px 10px;font-size:.52rem;"><span class="fmt-badge fmt-gslide" style="margin:0">Slide</span><span>Drive A6 &#x2192; Output</span></a>
-    </div>
-    <div class="actions" id="actions-a6" style="grid-template-columns:1fr 1fr;">
-      <button class="lg-btn" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.1</span></button>
-      <button class="lg-btn" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)"><svg><use href="#ic-copy"/></svg><span>Messaggio A6.2</span></button>
-      <a class="lg-btn" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.1 Claude</span></a>
-      <a class="lg-btn" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; A6.2 Claude</span></a>
+    <div class="actions-wrap">
+      <div class="agent-row"><span class="agent-row-name">A6.1 &#x2014; Media kit</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A6_1','Messaggio A6.1',MSGS.A6_1)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.1 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
+      <div class="agent-row"><span class="agent-row-name">A6.2 &#x2014; Mail e trattativa</span><div class="agent-row-btns"><button class="agent-mini-btn copy" data-gate="ia" onclick="openMsg('A6_2','Messaggio A6.2',MSGS.A6_2)">&#128203; Messaggio</button><a class="agent-mini-btn" data-gate="ia" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.2 per lanciare l\'agente.')">&#128172; Apri chat</a></div></div>
     </div>
     <div class="stato-row" id="stato-row-a6"></div>
     </div>
   </div></div>
   <!-- A7 -->
-  <div class="acard" id="card-a7"><div class="acard-body">
+  <div class="acard acard-logo-round" id="card-a7"><div class="acard-body">
     <div class="logo-col" onclick="goToAgent('a7')" style="cursor:pointer">
       <div class="logo-box bg-sleep" id="box-a7"><div class="s-sleep" id="wrap-a7" style="width:100%;height:100%">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
@@ -508,34 +575,19 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <text class="a7-lbl" x="60" y="74" font-family="Jost,sans-serif" font-weight="800" font-size="24" text-anchor="middle" letter-spacing="-1">A7</text>
         </svg>
       </div></div>
-      <span class="logo-state-label" id="lbl-a7">Caricamento...</span>
     </div>
     <div class="right-col"><div class="info-row">
-      <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span><span class="agent-tag">&#x25B6; Manuale</span></div>
-      <div class="agent-desc">Genera bozza Gmail con TXT + PDF da Drive. Lancio manuale per azienda.</div>
-      
+      <div class="agent-title"><span class="agent-name" id="name-a7">AGENTE 7 &#x2014; Mail Generator</span></div>
     </div>
     <div class="actions" id="actions-a7">
-      <button class="lg-btn lg-primary" id="btn-a7-launch" onclick="openA7Picker()"><svg><use href="#ic-play"/></svg><span>Crea Bozza</span></button>
+      <button class="lg-btn lg-primary" id="btn-a7-launch" data-gate="ia" onclick="openA7Picker()"><svg><use href="#ic-play"/></svg><span>Crea Bozza</span></button>
       <a class="lg-btn" href="https://mail.google.com/mail/u/0/#drafts" target="_blank"><svg><use href="#ic-mail"/></svg><span>&#x2192; Gmail Bozze</span></a>
       <button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>Auto &#x2014; no chat</span></button>
     </div>
     <div class="stato-row" id="stato-row-a7"></div>
     </div>
   </div></div>
-</div>
-<div class="legend">
-  <div class="leg"><div class="legdot" style="background:#C7DFCF;border-color:#4A7C59"></div>Completato</div>
-  <div class="leg"><div class="legdot" style="background:#F5E0E6;border-color:#C2193A"></div>In coda</div>
-  <div class="leg"><div class="legdot" style="background:#E9DFC9;border-color:#C4A865"></div>In corso</div>
-  <div class="leg"><div class="legdot" style="background:#1C1C1C"></div>Riposo</div>
-  <div class="leg"><div class="legdot" style="background:#D9E6F3;border-color:#2B5C8A"></div>Inattivo</div>
-</div>
-<div style="display:flex;justify-content:center;padding:12px 16px 4px;">
-  <a href="../page_pipeline_v1.html" style="display:inline-flex;align-items:center;gap:7px;background:var(--bianco);border:1.5px solid var(--border);border-radius:10px;padding:9px 18px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;color:var(--sabbia-dk);text-decoration:none;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='var(--sabbia)';this.style.boxShadow='0 4px 14px rgba(196,168,101,.18)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/></svg>
-    Pipeline Sponsorizzazioni
-  </a>
+  </div>
 </div>
 <script>
 const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
@@ -558,12 +610,12 @@ const MSGS={
   A3:"Ciao A3. Piano editoriale.\n\nSheet Analytics:\n"+SHEET_A1+"\n\nReport A2:\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\nCALENDARIO: [caricamento...]\n\nSalva in:\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0,
   A4:"Ciao A4. Script mensili.\n\nGoogle Sheet Analytics A1:\n"+SHEET_A1+"\n\nReport A2 (mese corrente — "+M0+" "+A0+"):\n"+DRIVE.A2+"\n-> report_GDC_"+M0+"_"+A0+"\n\nReport A2 (mese precedente — "+Mm1+" "+Am1+"):\n"+DRIVE.A2+"\n-> report_GDC_"+Mm1+"_"+Am1+"\n\nPiano A3 (mese corrente — "+M0+" "+A0+"):\n"+DRIVE.A3+"\n-> piano_"+M0+"_"+A0+"\n\nPiano A3 (mese precedente — "+Mm1+" "+Am1+"):\n"+DRIVE.A3+"\n-> piano_"+Mm1+"_"+Am1+"\n\nMese: "+M0+" "+A0+"\n\nSalva in:\n"+DRIVE.A4+"\n-> brief_"+M0+"_"+A0+".docx",
   A5_1:"Ciao A5.1.\nFacciamo una ricerca sull'azienda: [NOME AZIENDA]\n\nDopo l'analisi, aggiorna la pipeline usando il connector Supabase GDC.\nTabella: companies\nProgetto: pnzabwfsgkvejnrtrjcp\n\nSe l'azienda non esiste: INSERT. Se esiste già: UPDATE.\nConferma in chat l'operazione eseguita con nome, score e step_attuale.",
-  A5_2:"Ciao A5.2.\nProduci la scheda aziendale per: [NOME AZIENDA]\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n\nPrima di produrre il DOCX:\n1. Cerca in Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L) la cartella [NOME AZIENDA]\n2. Se non esiste: creala\n3. Comunicami il percorso dove caricare il file\n\nPoi produci il DOCX completo con tutte le sezioni.",
-  A6_1:"Ciao A6.1.\nProduci il Media Kit per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nReport A2 (ultimi 2 mesi) in Drive:\nhttps://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC\n-> lista la cartella e identifica autonomamente i 2 report piu recenti.\n\nCartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):\nCerca se esiste gia la cartella [NOME AZIENDA]:\n- Se esiste: non fare nulla, indicami il link.\n- Se non esiste: creala e indicami il link.\n\nProduci il PPTX Media Kit e presentamelo via present_files.\n\nNota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sara il PDF ad essere allegato da A7 alla mail.",
-  A6_2:"Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: [NOME AZIENDA]\n\nScheda azienda (A5.2) in Drive A5:\nEntra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),\ncerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.\n\nMedia Kit (A6.1) in Drive A6 — opzionale ma consigliato:\nCerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].\nSe trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.\n\nDopo approvazione, salva il TXT nella sottocartella specifica dell'azienda:\nCartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella [NOME AZIENDA] -> salva li il file\n-> mail_[NOME AZIENDA]_YYYY-MM-DD.txt\nNon salvare nella radice di Aziende ne in altre cartelle.",
+  A5_2:"Ciao A5.2.\nProduci la scheda aziendale per: [NOME AZIENDA]\n\nReport A2 (ultimi 2 mesi): leggi da Supabase (tabella report_mensili, agente='a2').\n\nProduci la scheda come pagina HTML e scrivila su Supabase (tabella schede_aziendali) — non serve piu nessuna cartella Drive per questo documento, e niente DOCX.",
+  A6_1:"Ciao A6.1.\nProduci il Media Kit per: [NOME AZIENDA]\n\nScheda azienda (A5.2) su Supabase:\nLeggi la pagina HTML dalla tabella schede_aziendali per questa azienda.\n\nReport A2 (ultimi 2 mesi): leggi da Supabase (tabella report_mensili, agente='a2', i 2 piu recenti).\n\nCartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):\nCerca se esiste gia la cartella [NOME AZIENDA]:\n- Se esiste: non fare nulla, indicami il link.\n- Se non esiste: creala e indicami il link.\n\nProduci il PPTX Media Kit e presentamelo via present_files.\n\nNota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — sara il PDF ad essere allegato da A7 alla mail.",
+  A6_2:"Ciao A6.2.\nProduci la mail di proposta sponsorizzazione per: [NOME AZIENDA]\n\nScheda azienda (A5.2) su Supabase:\nLeggi la pagina HTML dalla tabella schede_aziendali per questa azienda.\n\nMedia Kit (A6.1) in Drive A6 — opzionale ma consigliato:\nCerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].\nSe trovi il PDF leggilo; se trovi solo la Slides leggi quella; se non trovi nulla procedi senza.\n\nDopo approvazione, salva il TXT nella sottocartella specifica dell'azienda:\nCartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) -> sottocartella [NOME AZIENDA] -> salva li il file\n-> mail_[NOME AZIENDA]_YYYY-MM-DD.txt\nNon salvare nella radice di Aziende ne in altre cartelle.",
 };
 
-const MSG_CICLO="Esegui il ciclo editoriale mensile.\n\n1. A2 - report del mese chiuso: "+Mm1+" "+Am1+"\n2. A3 - piano editoriale di: "+M0+" "+A0+"\n3. A4 - brief di apertura mese di: "+M0+" "+A0+"\n\nSegui l'ordine A2 -> A3 -> A4, leggendo prima docs/documento-sessione-gdc-ia-team.md e i prompt in docs/prompts/ come da tuo ruolo. Controlla agent_states su Supabase prima di ogni passaggio. Se manca un dato di input perche' il mese e' a cavallo della migrazione storica, chiedimi il link Drive diretto invece di bloccarti.";
+const MSG_CICLO="Esegui il ciclo editoriale mensile.\n\n1. A2 - report del mese chiuso: "+Mm1+" "+Am1+"\n2. A3 - piano editoriale di: "+M0+" "+A0+"\n3. A4 - brief di apertura mese di: "+M0+" "+A0+"\n\nSegui l'ordine A2 -> A3 -> A4, leggendo prima docs/documento-sessione-gdc-ia-team.md e i prompt in docs/prompts/ come da tuo ruolo (usa sempre la versione piu' recente di ciascun prompt in docs/prompts/, non fidarti di un numero di versione che potresti ricordare da una conversazione precedente). Controlla agent_states su Supabase prima di ogni passaggio. Se manca un dato di input, serve una categorizzazione non ancora fatta, o un passaggio richiede una mia conferma, fermati e dimmelo invece di procedere nel dubbio.";
 
 function buildMsgA3(calBpt){
   const cal=calBpt||'[calendario BPT non disponibile — esegui bpt_calendar.py]';
@@ -600,6 +652,52 @@ async function sbFetch(url, options){
   const res = await fetch(url, Object.assign({}, options, { headers: headers }));
   if (res.status === 401 || res.status === 403) { gdcSessionExpired(); throw new Error('session-expired'); }
   return res;
+}
+
+/* ── RUOLI COLLABORATORI (Step 11) ──
+   ia_team_ruolo letto da profiles: 'operatore' (o is_admin) può agire,
+   'osservatore'/'nessuno' vede ma non scrive/lancia agenti — al click,
+   popup esplicativo invece dell'azione. Fail-open su errore di rete
+   (resta operatore) per non bloccare l'unico utente reale di oggi. */
+let IA_TEAM_ROLE = 'operatore';
+let IS_ADMIN = true;
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
+  try{
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IS_ADMIN = !!p.is_admin;
+    IA_TEAM_ROLE = IS_ADMIN ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  applyRoleGateUI();
+}
+function applyRoleGateUI(){
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
+  document.querySelectorAll('[data-gate="admin"]').forEach(function(el){ el.classList.toggle('role-disabled', !IS_ADMIN); });
+}
+function showRoleInfo(msg, adminOnly){
+  document.getElementById('roleInfoTitle').textContent = adminOnly ? 'Azione riservata all\'amministratore' : 'Azione non disponibile in modalità visualizzatore';
+  document.getElementById('roleInfoIcon').textContent = adminOnly ? '\u{1F512}' : '\u{1F441}️';
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg, false);
+  return false;
+}
+function gateAdmin(msg){
+  if (IS_ADMIN) return true;
+  showRoleInfo(msg, true);
+  return false;
+}
+function gateIaLink(e, msg){
+  if (!canActIa()){ e.preventDefault(); showRoleInfo(msg, false); return false; }
+  return true;
 }
 
 /* ── PUSH NOTIFICATIONS ──
@@ -639,18 +737,20 @@ async function getExistingPushSubscription() {
 }
 
 async function updatePushButtonUI() {
-  const label = document.getElementById('pushBtnLabel');
-  if (!label) return;
+  const btn = document.getElementById('pushBtn');
+  if (!btn) return;
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    label.textContent = 'Notifiche non supportate';
+    btn.classList.add('notif-off');
+    btn.title = 'Notifiche non supportate su questo browser/dispositivo';
     return;
   }
   const sub = await getExistingPushSubscription();
-  label.textContent = sub ? 'Notifiche attive' : 'Attiva notifiche';
+  btn.classList.toggle('notif-off', !sub);
+  btn.title = sub ? 'Notifiche attive' : 'Attiva notifiche';
 }
 
 async function togglePushNotifications() {
-  const label = document.getElementById('pushBtnLabel');
+  const btn = document.getElementById('pushBtn');
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
     return;
@@ -664,7 +764,7 @@ async function togglePushNotifications() {
       await sbFetch(SUPA_URL + '/rest/v1/push_subscriptions?endpoint=eq.' + encodeURIComponent(existing.endpoint), { method: 'DELETE' });
     } catch (e) { console.warn('Errore rimozione subscription da Supabase:', e); }
     await existing.unsubscribe();
-    if (label) label.textContent = 'Attiva notifiche';
+    if (btn) { btn.classList.add('notif-off'); btn.title = 'Attiva notifiche'; }
     return;
   }
 
@@ -696,7 +796,7 @@ async function togglePushNotifications() {
       })
     });
 
-    if (label) label.textContent = 'Notifiche attive';
+    if (btn) { btn.classList.remove('notif-off'); btn.title = 'Notifiche attive'; }
   } catch (e) {
     console.error('Errore attivazione notifiche:', e);
     alert('Errore durante l\'attivazione delle notifiche. Riprova, o controlla la console per dettagli.');
@@ -750,6 +850,48 @@ function stopAnim(id){
     const dot=document.getElementById('c-dot');if(dot)dot.setAttribute('cy','46');
   }
 }
+/* ══ Gate del pulsante "Apri sessione" (ciclo editoriale): cliccabile solo
+   quando A1 ha finito la run del mese E non ci sono post da categorizzare.
+   L'MBS resta escluso di proposito — A2 è scritto per gestire l'assenza di
+   repost come caso normale, non un dato bloccante (vedi docs/prompts/
+   a2-analyst.md, sez. 3/7/9). ══ */
+let _a1Done=null, _catPending=null;
+function updateCicloGate(){
+  const btn=document.getElementById('cicloOpenBtn');
+  if(!btn) return;
+  const ready=_a1Done===true&&_catPending===0;
+  btn.classList.toggle('ciclo-disabled',!ready);
+  if(!ready){
+    btn.title=_a1Done!==true
+      ? 'A1 non ha ancora completato la run del mese'
+      : 'Ci sono ancora post da categorizzare';
+  } else {
+    btn.title='Apri sessione Claude Code';
+  }
+}
+
+async function loadCategorizePending(){
+  const btn=document.getElementById('catBtn-a1');
+  const badge=document.getElementById('catCount-a1');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/posts?select=id&categoria_primaria=is.null',{headers:{'Prefer':'count=exact'}});
+    const n=parseInt((res.headers.get('content-range')||'/0').split('/')[1],10)||0;
+    _catPending=n;
+    if(btn){
+      if(n>0){
+        btn.className='lg-btn lg-primary';
+        if(badge){ badge.textContent=n; badge.style.display='flex'; }
+      } else {
+        btn.className='lg-btn lg-done';
+        if(badge){ badge.style.display='none'; }
+      }
+    }
+  }catch(e){
+    console.error('loadCategorizePending',e);
+  }
+  updateCicloGate();
+}
+
 function setLogoState(id,st){
   const c=CFG[st]||CFG.sleep;
   const box=document.getElementById('box-'+id);
@@ -760,7 +902,7 @@ function setLogoState(id,st){
   if(box) box.className='logo-box '+c.bg;
   if(lbl) lbl.textContent=c.lbl;
   if(chip) chip.innerHTML=c.chip;
-  if(card) card.className='acard '+c.card;
+  if(card) card.className='acard acard-logo-round '+c.card;
   if(id==='a4'){
     if(wrap) wrap.className='a4-wrap '+c.css;
     if(st==='active') startA4Anim();
@@ -788,11 +930,13 @@ function renderStatoRow(id, supaStato){
   const cur=supaStato||'sleep';
   row.innerHTML=STATO_PILLS.map(p=>{
     const isActive=(p.supaKey===cur)||(p.supaKey==='sleep'&&(cur==='sleep'||cur===''||!cur));
-    return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
+    return`<button class="stato-pill ${p.cls}${isActive?' sp-active':''}" data-gate="admin" onclick="setStatoRaw('${id}','${p.supaKey}')" title="${p.label}"><div class="sp-dot"></div><span>${p.label}</span></button>`;
   }).join('');
+  applyRoleGateUI();
 }
 
 async function setStatoRaw(agentId, newStato){
+  if (!gateAdmin('Forza manualmente lo stato di un agente — strumento di debug riservato all\'amministratore.')) return;
   const ids=agentId==='A5'?['a5_1','a5_2']:agentId==='A6'?['a6_1','a6_2']:[agentId.toLowerCase()];
   try{
     await Promise.all(ids.map(aid=>
@@ -811,19 +955,32 @@ function renderActionsSimple(id,st){
   // aggiorna solo la stato-row
 }
 
-function renderActions(id,st){
-  const acts=document.getElementById('actions-'+id.toLowerCase());if(!acts)return;
-  const isQ=(st==='queued'),isA=(st==='active'),isD=(st==='done');
-  const fname=isD?(FILE_CUR[id]||''):'';
-  const fshort=fname.length>14?fname.slice(0,14)+'...':fname;
-  const fmt=FILE_FMT[id]||'pdf',fmtL=FILE_FMT_LBL[id]||'File';
-  const msgBtn=isD?'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-check"/></svg><span>Inviato &#x2713;</span></button>':('<button class="'+(isQ?'lg-btn lg-primary':isA?'lg-btn':'lg-btn lg-disabled')+'" '+((!isQ&&!isA)?'disabled':'')+' onclick="copyMsg(\''+id+'\')" ><svg><use href="#ic-copy"/></svg><span onclick="event.stopPropagation();openMsg(\''+id+'\',\'Messaggio '+id+'\',MSGS[\''+id+'\'])" class="show-msg-link">mostra</span></button>');
-  const driveBtn=fname?('<a class="'+(isD?'lg-btn lg-done':'lg-btn')+'" href="'+DRIVE[id]+'" target="_blank"><span class="fmt-badge fmt-'+fmt+'">'+fmtL+'</span><span>&#x2192; '+fshort+'</span></a>'):'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-folder"/></svg><span>Drive</span></button>';
-  const href=PROJ[id]||'#';
-  const chatBtn=(href!=='#'&&(isQ||isA||isD))?('<a class="'+(isD?'lg-btn lg-done':'lg-btn lg-primary')+'" href="'+href+'" target="_blank"><svg><use href="#ic-chat"/></svg><span>&#x2192; '+id+' in Claude</span></a>'):'<button class="lg-btn lg-disabled" disabled><svg><use href="#ic-chat"/></svg><span>&#x2192; '+id+' in Claude</span></button>';
-  acts.innerHTML=msgBtn+driveBtn+chatBtn;
+// A2/A3/A4: il pulsante "Vedi report/piano/brief" non dipende più dallo stato
+// dell'agente — punta sempre al mese più recente trovato su Supabase (vedi
+// loadLatestReports). Lo slot "Apri {agente} in Claude"/"Copia messaggio" si
+// è spostato nella tab LAVORO della pagina del singolo agente.
+const REPORT_PAGES={a2:{page:'agenti/a2-analyst/report.html',label:'report'},a3:{page:'agenti/a3-planner/piano.html',label:'piano'},a4:{page:'agenti/a4-brief/brief.html',label:'brief'}};
+async function loadLatestReports(){
+  for(const id of ['a2','a3','a4']){
+    const cfg=REPORT_PAGES[id];
+    const btn=document.getElementById('viewBtn-'+id), lbl=document.getElementById('viewBtnLbl-'+id);
+    if(!btn||!lbl) continue;
+    try{
+      const res=await sbFetch(SUPA_URL+'/rest/v1/report_mensili?agente=eq.'+id+'&select=mese,mese_num,anno&order=anno.desc,mese_num.desc&limit=1');
+      const rows=await res.json();
+      if(rows&&rows.length){
+        btn.href=cfg.page+'?mese='+encodeURIComponent(rows[0].mese);
+        btn.classList.remove('lg-disabled');
+        btn.classList.add('lg-done');
+        lbl.textContent='Vedi '+cfg.label+' — '+rows[0].mese;
+      } else {
+        btn.removeAttribute('href');
+        btn.classList.add('lg-disabled');
+        lbl.textContent='Nessun '+cfg.label+' ancora';
+      }
+    }catch(e){ console.error('loadLatestReports',id,e); }
+  }
 }
-function copyMsg(id){navigator.clipboard&&navigator.clipboard.writeText(MSGS[id]).catch(()=>{});}
 
 async function loadStates(){
   try{
@@ -831,6 +988,8 @@ async function loadStates(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const rows=await res.json();
     const byId={};rows.forEach(r=>{byId[r.agent_id]=r;});
+    _a1Done=!!(byId['a1']&&byId['a1'].stato==='done');
+    updateCicloGate();
     // Costruisce MSGS.A3 con calendario BPT reale
     const bptRow=byId['bpt_calendar'];
     buildMsgA3(bptRow?bptRow.calendario_bpt:null);
@@ -838,7 +997,6 @@ async function loadStates(){
       const row=byId[id];
       const st=mapState(row);
       setLogoState(id,st);
-      if(['a2','a3','a4'].includes(id)) renderActions(id.toUpperCase(),st);
       renderStatoRow(id.toUpperCase(), row?row.stato:'sleep');
     });
     const st5=worstState([byId['a5_1'],byId['a5_2']]);
@@ -853,16 +1011,17 @@ async function loadStates(){
     renderStatoRow('A5', raw5?raw5.stato:'sleep');
     renderStatoRow('A6', raw6?raw6.stato:'sleep');
     document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
-    document.getElementById('sysLabel').style.color='var(--maker)';
-    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sysMini').style.color='var(--maker)';
+    document.getElementById('sysMini').title='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
   }catch(e){
     console.error('Supabase:',e);
     ['a1','a2','a3','a4','a5','a6','a7'].forEach(id=>{setLogoState(id,'sleep');});
-    ['A2','A3','A4'].forEach(id=>renderActions(id,'sleep'));
     ['A1','A2','A3','A4','A5','A6','A7'].forEach(id=>renderStatoRow(id,'sleep'));
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
-    document.getElementById('sysLabel').style.color='var(--grigio)';
-    document.getElementById('sysMeta').textContent='';
+    document.getElementById('sysMini').style.color='var(--grigio)';
+    document.getElementById('sysMini').title='';
+    _a1Done=false;
+    updateCicloGate();
   }
 }
 
@@ -885,6 +1044,7 @@ function resetMsg(){
   setTimeout(()=>document.getElementById('msgEditHint').textContent=EDITABLE_IDS.includes(_curMsgId)?'Modificabile — le modifiche vengono salvate':'',1500);
 }
 function openMsg(id,title,msg){
+  if (!gateIa('Copia il messaggio da incollare in Claude.ai per avviare l\'agente — fa parte del lanciare un\'azione, non della sola visualizzazione.')) return;
   _curMsgId=id; _defaultMsg=msg;
   const saved=EDITABLE_IDS.includes(id)?getSavedMsg(id):null;
   const txt=saved||msg;
@@ -912,6 +1072,14 @@ function copyMsgPopup(){
   const btn=document.getElementById('msgCopyBtn');
   btn.textContent='Copiato \u2713';btn.className='msg-copy-btn copied';
   setTimeout(()=>{btn.textContent='Copia';btn.className='msg-copy-btn';},2000);
+}
+function copyCicloMsg(btn){
+  if (!gateIa('Copia il messaggio di avvio del ciclo editoriale mensile da incollare in Claude Code.')) return;
+  navigator.clipboard&&navigator.clipboard.writeText(MSG_CICLO).catch(()=>{});
+  const span=btn.querySelector('span');
+  const orig=span.textContent;
+  span.textContent='Copiato \u2713';
+  setTimeout(()=>{span.textContent=orig;},2000);
 }
 
 function startA4Anim(){
@@ -991,6 +1159,30 @@ function startA7Anim(){
   setTimeout(()=>G.style.opacity='1',200);setTimeout(()=>D.style.opacity='1',460);setTimeout(()=>C.style.opacity='1',720);setTimeout(()=>STUFF.style.opacity='1',980);setTimeout(()=>linee.style.opacity='1',1240);
 })();
 
+// ── LOGO: si rimpicciolisce mentre esce dallo schermo scorrendo in basso ──
+// Header in flusso normale (non più sticky/fixed, vedi nota CSS) — qui
+// anima solo l'aspetto del logo (transform+opacity, mai height/width) mentre
+// scorre via con il resto della pagina. Puramente cosmetico: nessun
+// posizionamento speciale coinvolto, quindi nessun rischio del glitch
+// osservato su iOS con sticky/fixed.
+(function(){
+  const wrap=document.getElementById('gdcLogoWrap');
+  if(!wrap) return;
+  const DIST=80; // px di scroll per l'eclissi completa
+  let ticking=false;
+  function update(){
+    const sc=Math.min(Math.max(window.scrollY,0),DIST);
+    const p=sc/DIST;
+    wrap.style.transform='scale('+(1-p*0.85)+')';
+    wrap.style.opacity=String(1-p);
+    ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ ticking=true; requestAnimationFrame(update); }
+  },{passive:true});
+  update();
+})();
+
 // ── CALENDARIO — eventi live da activity_log (Supabase) ────────────────
 // Palette: gruppo editoriale A1-A4 in blu (chiaro→scuro), gruppo
 // sponsorship A5-A7 in giallo/ambra, sistema/errori in rosso.
@@ -1010,8 +1202,8 @@ function colorForAgent(agentId){
 let calY=parseInt(YY),calM=parseInt(MM)-1,selDay=null;
 let calEventsCache={}; // { 'YYYY-MM': { 'YYYY-MM-DD':[{titolo,descrizione,link,agent}] } }
 
-function openCal(){calY=parseInt(YY);calM=parseInt(MM)-1;document.getElementById('calOverlay').classList.add('open');renderCal();}
-function closeCal(){document.getElementById('calOverlay').classList.remove('open');}
+function openCal(){calY=parseInt(YY);calM=parseInt(MM)-1;document.getElementById('calOverlay').classList.add('open');document.body.style.overflow='hidden';renderCal();}
+function closeCal(){document.getElementById('calOverlay').classList.remove('open');document.body.style.overflow='';}
 function closeCalIfBg(e){if(e.target===document.getElementById('calOverlay'))closeCal();}
 function calNav(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}selDay=null;renderCal();}
 
@@ -1118,6 +1310,7 @@ async function loadA7Companies() {
 }
 
 function openA7Picker() {
+  if (!gateIa('Avvia la generazione di una bozza mail reale su Gmail tramite l\'agente A7.')) return;
   document.getElementById('a7PickerOverlay').classList.add('open');
   document.getElementById('a7StatusMsg').textContent = '';
   document.getElementById('a7LaunchBtn').disabled = true;
@@ -1129,6 +1322,7 @@ function closeA7Picker() { document.getElementById('a7PickerOverlay').classList.
 function closeA7PickerIfBg(e) { if(e.target === document.getElementById('a7PickerOverlay')) closeA7Picker(); }
 
 function saveGhToken() {
+  if (!gateIa('Salva il token GitHub necessario per lanciare A7.')) return;
   const val = document.getElementById('a7TokenInput').value.trim();
   if (!val) return;
   localStorage.setItem('gdc_gh_token', val);
@@ -1138,6 +1332,7 @@ function saveGhToken() {
 }
 
 async function launchA7() {
+  if (!gateIa('Lancia A7 e genera una bozza mail reale su Gmail per l\'azienda selezionata.')) return;
   const sel = document.getElementById('a7CompanySelect');
   const company = sel.value;
   if (!company) return;
@@ -1190,7 +1385,10 @@ async function launchA7() {
 if (!gdcToken()) {
   window.location.href = '../page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadStates();
+  loadLatestReports();
+  loadCategorizePending();
 }
 </script>
 </body>

@@ -3,13 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
 <title>GDC WORKSPACE — Agente 2</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+#logoBoxHero{view-transition-name:agent-logo-a2;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
   --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
   --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
-  --athlete:#2B5F9E; --athlete-bg:#D9E6F3;
+  --athlete:#2B5C8A; --athlete-bg:#D9E6F3;
   --life:#C2193A; --life-bg:#F5E0E6; --life-mid:#E9415A;
   --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
   --grigio:#6B6B6B; --border:#ddd6cb;
@@ -23,32 +27,7 @@ body{
   display:flex; flex-direction:column; align-items:center;
   padding-bottom:60px;
 }
-@media(prefers-color-scheme:dark){
-  :root{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }
-  .system-bar,.date-chip{ background:#2E2E2E; border-color:var(--border); }
-  .hero-card,.section-card,.note-box{ background:var(--bianco); border-color:var(--border); }
-  .back-btn{ background:#2E2E2E; border-color:var(--border); }
-  .tab-btn{ background:#2E2E2E; }
-  .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
-  .io-block{ background:#1A1A1A; }
-  .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }
-  .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }
-  .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }
-  .lg-maker{ background:rgba(74,124,89,.18); border-color:rgba(74,124,89,.35); color:#5D9C71; }
-  .lg-cta{ background:var(--nero); color:var(--carta); border-color:var(--nero); }
-  .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }
-  .cal-popup{ background:#242424; border-color:var(--border); }
-  .cal-day.has-event{ background:#2E2E2E; }
-  .cal-day.has-event:hover{ background:#3A3A3A; }
-  .cal-events-panel{ border-color:var(--border); }
-  .cal-event-item{ border-color:var(--border); }
-  .msg-popup{ background:#242424; border-color:var(--border); }
-  #hub-master-svg .logo-G,
-  #hub-master-svg .logo-D,
-  #hub-master-svg .logo-C,
-  #hub-master-svg .logo-STUFF,
-  #hub-master-svg .logo-linee { fill:#F0EBE1; }
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }:root:not([data-theme="light"]) .date-chip{ background:#2E2E2E; border-color:var(--border); }:root:not([data-theme="light"]) .hero-card,:root:not([data-theme="light"]) .section-card,:root:not([data-theme="light"]) .note-box{ background:var(--bianco); border-color:var(--border); }:root:not([data-theme="light"]) .pill-hub{ background:var(--bianco); }:root:not([data-theme="light"]) .pill-notif.on{ background:var(--bianco); }:root:not([data-theme="light"]) .tab-btn{ background:#2E2E2E; }:root:not([data-theme="light"]) .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }:root:not([data-theme="light"]) .io-block{ background:#1A1A1A; }:root:not([data-theme="light"]) .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }:root:not([data-theme="light"]) .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }:root:not([data-theme="light"]) .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }:root:not([data-theme="light"]) .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }:root:not([data-theme="light"]) .cal-popup{ background:#242424; border-color:var(--border); }:root:not([data-theme="light"]) .cal-day.has-event{ background:#2E2E2E; }:root:not([data-theme="light"]) .cal-day.has-event:hover{ background:#3A3A3A; }:root:not([data-theme="light"]) .cal-events-panel{ border-color:var(--border); }:root:not([data-theme="light"]) .cal-event-item{ border-color:var(--border); }:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{ fill:#F0EBE1; }}:root[data-theme="dark"]{ --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A; }:root[data-theme="dark"] .date-chip{ background:#2E2E2E; border-color:var(--border); }:root[data-theme="dark"] .hero-card,:root[data-theme="dark"] .section-card,:root[data-theme="dark"] .note-box{ background:var(--bianco); border-color:var(--border); }:root[data-theme="dark"] .pill-hub{ background:var(--bianco); }:root[data-theme="dark"] .pill-notif.on{ background:var(--bianco); }:root[data-theme="dark"] .tab-btn{ background:#2E2E2E; }:root[data-theme="dark"] .tab-btn.active{ background:var(--nero); color:var(--carta); border-color:var(--nero); }:root[data-theme="dark"] .io-block{ background:#1A1A1A; }:root[data-theme="dark"] .lg-btn{ background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.12); color:var(--nero); box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.2); }:root[data-theme="dark"] .lg-btn::before{ background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.02) 50%,transparent 100%); }:root[data-theme="dark"] .lg-btn:hover:not(.lg-disabled){ background:rgba(255,255,255,0.12); }:root[data-theme="dark"] .lg-disabled{ background:rgba(255,255,255,.04) !important; border-color:rgba(255,255,255,.08) !important; color:#555 !important; }:root[data-theme="dark"] .cal-popup{ background:#242424; border-color:var(--border); }:root[data-theme="dark"] .cal-day.has-event{ background:#2E2E2E; }:root[data-theme="dark"] .cal-day.has-event:hover{ background:#3A3A3A; }:root[data-theme="dark"] .cal-events-panel{ border-color:var(--border); }:root[data-theme="dark"] .cal-event-item{ border-color:var(--border); }:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{ fill:#F0EBE1; }
 
 /* ══ HEADER ══ */
 .header{ width:100%; max-width:540px; padding:20px 16px 12px; display:flex; flex-direction:column; gap:10px; }
@@ -62,21 +41,29 @@ body{
 #hub-master-svg .logo-linee { opacity:0; transition:opacity .22s ease; }
 
 .date-chip{
-  display:flex; align-items:center; gap:6px;
+  display:flex; align-items:center; gap:6px; height:32px;
   background:var(--bianco); border:1.5px solid var(--border);
-  border-radius:999px; padding:5px 12px;
-  font-size:.75rem; font-weight:700;
-  cursor:pointer; transition:border-color .2s; user-select:none;
+  border-radius:999px; padding:0 14px;
+  font-size:.7rem; font-weight:700;
+  cursor:pointer; transition:border-color .2s; user-select:none; flex-shrink:0;
 }
 .date-chip:hover{ border-color:var(--nero); }
 .date-chip-dot{ width:7px; height:7px; border-radius:50%; background:var(--maker); flex-shrink:0; }
-.system-bar{ display:flex; align-items:center; gap:8px; background:var(--bianco); border:1.5px solid var(--border); border-radius:10px; padding:9px 13px; }
-.sys-dot-wrap{ position:relative; width:10px; height:10px; flex-shrink:0; }
-.sys-dot{ width:10px; height:10px; border-radius:50%; background:var(--maker); }
-.sys-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid var(--maker); animation:sysPulse 2s ease-out infinite; }
+.sys-mini{ display:flex; align-items:center; gap:6px; flex:1; min-width:0; justify-content:center; font-size:.72rem; font-weight:700; color:var(--maker); transition:color .3s; }
+.sys-mini span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sys-mini-dot{ position:relative; width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.sys-mini-dot::after{ content:''; position:absolute; inset:-3px; border-radius:50%; border:1.5px solid currentColor; animation:sysPulse 2s ease-out infinite; }
 @keyframes sysPulse{ 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(2)} }
-.sys-label{ font-weight:700; font-size:.82rem; color:var(--maker); flex:1; }
-.sys-meta{ font-size:.7rem; color:var(--grigio); }
+
+/* ══ Pillola Home a punta + pillola Notifiche (stesso pattern di A1/home) ══ */
+.pill-row{ width:100%; max-width:540px; padding:0 16px 10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.pill-hub-wrap{ display:inline-flex; padding:1.5px; background:var(--border); border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%); transition:background .2s; }
+.pill-hub{ display:inline-flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; height:32px; padding:0 14px 0 18px; background:var(--bianco); color:var(--nero); cursor:pointer; text-decoration:none; border:none; border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%); }
+.pill-hub svg{ width:12px; height:12px; flex-shrink:0; }
+.pill-notif{ display:inline-flex; align-items:center; gap:6px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; height:32px; padding:0 14px; border-radius:999px; border:1.5px solid var(--athlete); background:var(--athlete); color:#fff; cursor:pointer; transition:background .2s,color .2s,border-color .2s; }
+.pill-notif.on{ background:var(--bianco); border-color:var(--border); color:var(--nero); }
 
 /* ══ CALENDAR ══ */
 .cal-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.4); z-index:200; display:none; align-items:flex-start; justify-content:center; padding-top:70px; }
@@ -107,34 +94,18 @@ body{
 .cal-event-text{ font-weight:600; color:var(--nero); font-size:.74rem; }
 .cal-event-agent{ font-size:.64rem; color:var(--grigio); }
 
-/* ══ MSG POPUP ══ */
-.msg-overlay{ position:fixed; inset:0; background:rgba(28,28,28,.45); z-index:300; display:none; align-items:flex-end; justify-content:center; padding-bottom:0; }
-.msg-overlay.open{ display:flex; }
-.msg-popup{ background:var(--bianco); border:1.5px solid var(--border); border-radius:20px 20px 0 0; width:100%; max-width:540px; padding:20px 16px 32px; box-shadow:0 -4px 32px rgba(28,28,28,.16); }
-.msg-popup-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.msg-popup-title{ font-size:.75rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--maker); }
-.msg-popup-close{ background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--grigio); padding:2px 6px; border-radius:6px; }
-.msg-popup-close:hover{ background:var(--border); }
-.msg-textarea{ width:100%; background:var(--carta); border:1.5px solid var(--border); border-radius:12px; font-family:'Jost',sans-serif; font-size:.72rem; color:var(--nero); padding:12px 13px; resize:none; outline:none; min-height:200px; line-height:1.6; }
-.msg-actions{ display:flex; gap:8px; margin-top:10px; }
-.msg-copy-btn{ flex:1; background:var(--nero); color:var(--carta); border:none; border-radius:12px; padding:13px; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700; cursor:pointer; transition:background .15s; }
-.msg-copy-btn:hover{ background:#333; }
-.msg-open-btn{ background:rgba(74,124,89,.12); color:var(--maker); border:1.5px solid rgba(74,124,89,.25); border-radius:12px; padding:13px 16px; font-family:'Jost',sans-serif; font-size:.78rem; font-weight:700; cursor:pointer; text-decoration:none; display:flex; align-items:center; }
-
 /* ══ PAGE LAYOUT ══ */
 .page-content{ width:100%; max-width:540px; padding:0 16px; }
-.back-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:5px 12px 5px 9px; font-size:.72rem; font-weight:700; cursor:pointer; color:var(--grigio); text-decoration:none; transition:border-color .15s,color .15s; user-select:none; margin-bottom:12px; }
-.back-btn:hover{ border-color:var(--nero); color:var(--nero); }
 
 /* ══ HERO ══ */
-.hero-card{ background:var(--bianco); border:2px solid var(--maker); border-radius:20px; overflow:hidden; margin-bottom:12px; }
+.hero-card{ background:var(--bianco); border:2px solid var(--athlete); border-radius:20px; overflow:hidden; margin-bottom:12px; transition:border-color .3s; }
 .hero-inner{ display:flex; align-items:center; gap:14px; padding:14px 16px 10px; }
-.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; background:var(--athlete-bg); display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
+.logo-box-hero{ flex-shrink:0; width:80px; height:80px; border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; transition:background .4s ease; }
 .logo-active{ background:var(--sabbia-bg) !important; }
 .logo-queued{ background:var(--life-bg) !important; }
 .logo-done{ background:var(--maker-bg) !important; }
 .logo-sleep{ background:var(--athlete-bg) !important; }
-.logo-rest{ background:var(--carta) !important; }
+.logo-rest{ background:#1C1C1C !important; }
 
 /* ══ ICONA — esatta dalla home, per-forma + animazioni ══ */
 .logo-wrap svg #a2-bar1,.logo-wrap svg #a2-bar2,.logo-wrap svg #a2-bar3,.logo-wrap svg #a2-bar4,.logo-wrap svg #a2-label{transition:fill .6s,stroke .6s;}
@@ -152,8 +123,7 @@ body{
 @keyframes bF3{0%{transform:scaleY(0);opacity:0}25%{transform:scaleY(0);opacity:0}37.5%{transform:scaleY(1) translateX(0);opacity:1}55%{transform:scaleY(1) translateX(0);opacity:1}82%{transform:scaleY(1) translateX(60px);opacity:0}83%{transform:scaleY(0) translateX(0);opacity:0}100%{transform:scaleY(0) translateX(0);opacity:0}}
 @keyframes bF4{0%{transform:translateX(0);opacity:0}37.5%{transform:translateX(0);opacity:0}50%{transform:translateX(0);opacity:1}87%{transform:translateX(60px);opacity:0}88%{transform:translateX(0);opacity:0}100%{transform:translateX(0);opacity:0}}
 .hero-text{ flex:1; min-width:0; }
-.agent-id-lbl{ font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grigio); margin-bottom:2px; }
-.agent-name-big{ font-size:1.15rem; font-weight:800; line-height:1.1; margin-bottom:5px; color:var(--maker); }
+.agent-name-big{ font-size:1.1rem; font-weight:800; line-height:1.15; margin-bottom:5px; color:var(--athlete); transition:color .4s; }
 .agent-desc-big{ font-size:.71rem; color:var(--grigio); line-height:1.4; }
 .hero-meta{ display:flex; align-items:center; gap:7px; padding:0 16px 14px; flex-wrap:wrap; }
 .status-badge{ display:inline-flex; align-items:center; gap:5px; background:var(--bianco); border:1.5px solid var(--border); border-radius:999px; padding:4px 10px; font-size:.67rem; font-weight:700; }
@@ -161,13 +131,11 @@ body{
 .badge-done{ color:var(--maker); border-color:var(--maker-bg); }
 .badge-done .badge-dot{ background:var(--maker); }
 .badge-active{ color:var(--sabbia-dk); border-color:var(--sabbia-bg); } .badge-active .badge-dot{ background:var(--sabbia-dk); }
-.badge-queued{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-queued .badge-dot{ background:var(--athlete); }
-.badge-sleep{ color:var(--grigio); border-color:var(--border); } .badge-sleep .badge-dot{ background:var(--grigio); }
-.type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--maker-bg); color:var(--maker); border-radius:999px; padding:4px 9px; }
+.badge-queued{ color:var(--life); border-color:var(--life-bg); } .badge-queued .badge-dot{ background:var(--life); }
+.badge-sleep{ color:var(--athlete); border-color:var(--athlete-bg); } .badge-sleep .badge-dot{ background:var(--athlete); }
+.badge-rest{ color:var(--grigio); border-color:var(--border); } .badge-rest .badge-dot{ background:var(--grigio); }
+.type-tag{ font-size:.6rem; font-weight:700; letter-spacing:.07em; text-transform:uppercase; background:var(--border); color:var(--grigio); border-radius:999px; padding:4px 9px; }
 .last-run-lbl{ font-size:.65rem; color:var(--grigio); }
-.push-row{ width:100%; max-width:540px; padding:0 16px 6px; display:flex; justify-content:flex-end; }
-.push-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'Jost',sans-serif; font-size:.7rem; font-weight:700; color:var(--grigio); background:none; border:none; cursor:pointer; padding:0; transition:color .15s; }
-.push-btn:hover{ color:var(--nero); }
 .empty-note{ font-size:.72rem; color:var(--grigio); line-height:1.5; padding:6px 0; }
 
 /* ══ TABS ══ */
@@ -179,7 +147,8 @@ body{
 
 /* ══ PANELS ══ */
 .panel{ display:none; }
-.panel.active{ display:block; }
+.panel.active{ display:block; animation:gdcPanelIn .26s cubic-bezier(.2,.8,.2,1); }
+@keyframes gdcPanelIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
 
 /* ══ SECTION CARD ══ */
 .section-card{ background:var(--bianco); border:1.5px solid var(--border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
@@ -195,11 +164,6 @@ body{
 .lg-btn::before{ content:''; position:absolute; inset:0; border-radius:inherit; background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.1) 50%,transparent 100%); pointer-events:none; }
 .lg-btn:hover:not(.lg-disabled){ transform:translateY(-1px) scale(1.01); box-shadow:0 4px 12px rgba(28,28,28,.12),inset 0 1px 0 rgba(255,255,255,.9); background:rgba(255,255,255,.72); }
 .lg-btn:active:not(.lg-disabled){ transform:scale(.98); }
-.lg-maker{ background:rgba(74,124,89,.12); border-color:rgba(74,124,89,.25); color:var(--maker); box-shadow:0 1px 3px rgba(74,124,89,.1),inset 0 1px 0 rgba(255,255,255,.7); }
-.lg-maker:hover:not(.lg-disabled){ background:rgba(74,124,89,.18); box-shadow:0 4px 12px rgba(74,124,89,.15),inset 0 1px 0 rgba(255,255,255,.8); }
-.lg-cta{ background:var(--nero); color:var(--carta); border-color:var(--nero); box-shadow:0 2px 8px rgba(28,28,28,.2); }
-.lg-cta:hover:not(.lg-disabled){ background:#333; box-shadow:0 4px 14px rgba(28,28,28,.28); transform:translateY(-1px); }
-.lg-cta::before{ display:none; }
 .lg-disabled{ opacity:.45; cursor:not-allowed; background:rgba(200,200,200,.15); border-color:rgba(200,200,200,.25); color:var(--grigio); box-shadow:none; }
 .btn-icon{ font-size:1.1rem; flex-shrink:0; width:22px; text-align:center; }
 .btn-text{ flex:1; }
@@ -213,6 +177,7 @@ body{
 .file-item:hover{ opacity:.7; }
 .file-icon{ flex-shrink:0; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; }
 .fi-sheet{ background:#e8f4e8; }
+.fi-doc{ background:#e8f0fe; }
 .fi-slide{ background:#fff3e0; }
 .fi-pdf{ background:#fde8e8; }
 .file-info{ flex:1; min-width:0; }
@@ -290,20 +255,6 @@ body{
   </div>
 </div>
 
-<!-- ══ MSG POPUP ══ -->
-<div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
-  <div class="msg-popup">
-    <div class="msg-popup-head">
-      <span class="msg-popup-title">&#128203; Messaggio A2 — Analyst</span>
-      <button class="msg-popup-close" onclick="closeMsg()">&#10005;</button>
-    </div>
-    <textarea class="msg-textarea" id="msgText" readonly></textarea>
-    <div class="msg-actions">
-      <button class="msg-copy-btn" id="copyBtn" onclick="copyMsg()">Copia messaggio</button>
-      <a class="msg-open-btn" href="https://claude.ai/project/019daf24-2357-7778-bc6e-12d45625b40b" target="_blank">&#128279; Apri A2</a>
-    </div>
-  </div>
-</div>
 
 <!-- ══ HEADER ══ -->
 <div class="header">
@@ -337,19 +288,21 @@ body{
         </g>
       </svg>
     </div>
+    <div class="sys-mini" id="sysMini">
+      <span class="sys-mini-dot"></span><span id="sysLabel">Caricamento...</span>
+    </div>
     <div class="date-chip" id="dateChip" onclick="openCal()">
       <span class="date-chip-dot"></span>
       <span id="dateChipText"></span>
     </div>
   </div>
-  <div class="system-bar">
-    <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
-    <div class="sys-meta" id="sysMeta"></div>
-  </div>
 </div>
-<div class="push-row">
-  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
+<div class="pill-row">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="../../page_home_v25.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a></div>
+  <button id="pushBtn" class="pill-notif" onclick="togglePushNotifications()">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
     <span id="pushBtnLabel">Attiva notifiche</span>
   </button>
@@ -358,23 +311,10 @@ body{
 <!-- ══ PAGE CONTENT ══ -->
 <div class="page-content">
 
-  <a class="back-btn" href="../../page_home_v25.html">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-      <path d="M8 2.5L4.5 6.5L8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Home
-  </a>
-  <a class="back-btn" href="../../page_hub_v1.html" style="margin-left:8px;">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-    Hub
-  </a>
-
   <!-- HERO -->
-  <div class="hero-card">
+  <div class="hero-card" id="heroCard">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div class="logo-wrap s-sleep" id="logoWrap">
+      <div class="logo-box-hero logo-sleep" id="logoBoxHero"><div class="logo-wrap s-sleep" id="logoWrap">
         <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="64" height="64" overflow="visible">
           <rect id="a2-bar1" x="14" y="76" width="18" height="28" rx="4" fill="#2B5C8A"/>
           <rect id="a2-bar2" x="40" y="56" width="18" height="48" rx="4" fill="#4A86C6"/>
@@ -384,118 +324,88 @@ body{
         </svg>
       </div></div>
       <div class="hero-text">
-        <div class="agent-id-lbl">Agente 2</div>
-        <div class="agent-name-big">Analyst</div>
-        <div class="agent-desc-big">Analizza le metriche Instagram del mese precedente e genera il report mensile in formato presentazione.</div>
+        <div class="agent-name-big" id="agentTitle">AGENTE 2 &#x2014; Analyst</div>
+        <div class="agent-desc-big">Genera il report mensile del traffico Instagram come pagina HTML, scritta direttamente su Supabase — nessun file da scaricare o caricare.</div>
       </div>
     </div>
     <div class="hero-meta">
       <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
-      <span class="type-tag">&#9729;&#65039; Claude.ai</span>
+      <span class="type-tag">&#129302; Claude Code</span>
       <span class="last-run-lbl" id="lastRunLbl"></span>
     </div>
   </div>
 
   <!-- TABS -->
   <div class="tabs-row">
-    <button class="tab-btn active" onclick="switchTab('azioni',this)">Azioni</button>
-    <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
+    <button class="tab-btn active" onclick="switchTab('panoramica',this)">Panoramica</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
-    <button class="tab-btn" onclick="switchTab('run',this)">Run</button>
+    <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
-  <!-- TAB: AZIONI -->
-  <div id="panel-azioni" class="panel active">
-    <div class="action-row">
-
-      <a class="lg-btn" href="dashboard_kpi.html">
-        <span class="btn-icon">&#128200;</span>
-        <div class="btn-text">
-          <div class="btn-title">Dashboard KPI</div>
-          <div class="btn-sub">Grafici e numeri mese per mese</div>
+  <!-- TAB: PANORAMICA -->
+  <div id="panel-panoramica" class="panel active">
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#9889; Azioni</span></div>
+      <div class="sc-body">
+        <div class="action-row">
+          <a class="lg-btn" href="report.html">
+            <span class="btn-icon">&#128196;</span>
+            <div class="btn-text">
+              <div class="btn-title">Report mensili</div>
+              <div class="btn-sub">Report completo di ogni mese, in HTML</div>
+            </div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
+          <a class="lg-btn" href="dashboard_kpi.html">
+            <span class="btn-icon">&#128200;</span>
+            <div class="btn-text">
+              <div class="btn-title">Dashboard KPI</div>
+              <div class="btn-sub">Grafici e numeri mese per mese</div>
+            </div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
+          <a class="lg-btn" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
+            <span class="btn-icon">&#128202;</span>
+            <div class="btn-text">
+              <div class="btn-title">Apri Google Sheet A1</div>
+              <div class="btn-sub">Instagram_Analytics_GDC — dati input</div>
+            </div>
+            <span class="btn-arr">&#8594;</span>
+          </a>
         </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn" href="report.html">
-        <span class="btn-icon">&#128196;</span>
-        <div class="btn-text">
-          <div class="btn-title">Report mensili</div>
-          <div class="btn-sub">Report completo di ogni mese, in HTML</div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128200; Ultimo run registrato</span></div>
+      <div class="sc-body">
+        <div class="stat-grid">
+          <div><div class="stat-num" style="color:var(--maker);" id="statMese">&#8212;</div><div class="stat-lbl">Mese</div></div>
+          <div><div class="stat-num" id="statPost">&#8212;</div><div class="stat-lbl">Post</div></div>
+          <div><div class="stat-num" id="statStories">&#8212;</div><div class="stat-lbl">Stories</div></div>
         </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
-        <span class="btn-icon">&#128202;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri Google Sheet A1</div>
-          <div class="btn-sub">Instagram_Analytics_GDC — dati input</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-        <span class="btn-icon">&#128193;</span>
-        <div class="btn-text">
-          <div class="btn-title">Cartella Drive A2</div>
-          <div class="btn-sub" id="driveLbl">Report mensili — output</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn lg-cta" href="https://claude.ai/project/019daf24-2357-7778-bc6e-12d45625b40b" target="_blank">
-        <span class="btn-icon">&#9889;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri progetto Claude A2</div>
-          <div class="btn-sub">Analyst — claude.ai/project/...</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-maker" onclick="openMsg()">
-        <span class="btn-icon">&#128203;</span>
-        <div class="btn-text">
-          <div class="btn-title">Copia messaggio precompilato</div>
-          <div class="btn-sub" id="msgSubLbl">Launcher A2 — mese precedente</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </button>
-
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#8987; Attività recente (activity_log)</span></div>
+      <div class="sc-body" id="runList">
+        <div class="empty-note">Caricamento...</div>
+      </div>
     </div>
   </div>
 
   <!-- TAB: DOCUMENTI -->
   <div id="panel-file" class="panel">
     <div class="section-card">
-      <div class="sc-head">
-        <span class="sc-label">&#128196; Output — Cartella Drive A2</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">Apri &#8599;</a>
-      </div>
-      <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide">&#128203;</div>
-          <div class="file-info">
-            <div class="file-name" id="reportNomeLbl">report_GDC_[mese]_[anno]</div>
-            <div class="file-sub">Google Slides — output A2</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
-        <a class="file-item dim" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide" style="opacity:.5;">&#128203;</div>
-          <div class="file-info">
-            <div class="file-name" id="reportNomePrecLbl">report_GDC_[mese-1]_[anno]</div>
-            <div class="file-sub">Report mese precedente — Mm2</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+      <div class="sc-head"><span class="sc-label">&#128196; Report generati (report_mensili)</span></div>
+      <div class="sc-body" id="reportList">
+        <div class="empty-note">Caricamento...</div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128202; Input — Cartella Drive A1</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM" target="_blank">Apri &#8599;</a>
+        <span class="sc-label">&#128202; Input — Google Sheet A1</span>
+        <a class="sc-link" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">Apri &#8599;</a>
       </div>
       <div class="sc-body">
         <a class="file-item" href="https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit" target="_blank">
@@ -505,6 +415,19 @@ body{
             <div class="file-sub">Google Sheet — dati aggiornati da A1</div>
           </div>
           <span class="file-arr">&#8599;</span>
+        </a>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128196; Prompt dell'agente</span></div>
+      <div class="sc-body">
+        <a class="file-item" href="../../../docs/prompts/a2-analyst.md" download>
+          <div class="file-icon fi-doc">&#128196;</div>
+          <div class="file-info">
+            <div class="file-name">Prompt Agente 2 — Analyst</div>
+            <div class="file-sub">Sempre l'ultima versione — per ricreare il progetto su un altro account Claude.ai</div>
+          </div>
+          <span class="file-arr">&#8595;</span>
         </a>
       </div>
     </div>
@@ -523,60 +446,39 @@ body{
           </div>
           <div class="io-block">
             <div class="io-title out">&#9650; Output</div>
-            <div class="io-item"><span class="io-dot out"></span>report_GDC_[Mm1].pptx</div>
-            <div class="io-item"><span class="io-dot out"></span>→ Google Slides (Drive A2)</div>
+            <div class="io-item"><span class="io-dot out"></span>Pagina HTML &#8594; Supabase (report_mensili)</div>
+            <div class="io-item"><span class="io-dot out"></span>Stato Supabase &#8594; A3 notificato</div>
           </div>
         </div>
       </div>
     </div>
     <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128218; Procedura manuale</span></div>
+      <div class="sc-head"><span class="sc-label">&#9881;&#65039; Cosa fa</span></div>
       <div class="sc-body">
         <div class="work-step">
           <div class="work-num">1</div>
-          <div><div class="work-desc">Verifica che A1 abbia completato il sync</div><div class="work-sub">Controlla stato home — A1 deve essere "completato"</div></div>
+          <div><div class="work-desc">Gianluca apre la sessione Claude Code dedicata dalla pillola "Ciclo editoriale mensile" in home e incolla il messaggio precompilato.</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">2</div>
-          <div><div class="work-desc">Apri il progetto Claude A2</div><div class="work-sub">Tasto "Apri progetto Claude A2" qui sopra</div></div>
+          <div><div class="work-desc">A2 legge il documento di sessione e l'ultima versione del prompt in docs/prompts/ prima di iniziare.</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">3</div>
-          <div><div class="work-desc">Copia e incolla il messaggio precompilato</div><div class="work-sub">Tasto "Copia messaggio" — include link Sheet e mese automatico</div></div>
+          <div><div class="work-desc">Verifica il gate di categorizzazione su Supabase (posts.categoria_primaria). Se mancano categorie, si ferma e lo segnala invece di generare un report incompleto.</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">4</div>
-          <div><div class="work-desc">A2 genera il report .pptx</div><div class="work-sub">L'agente produce il file e lo offre in download</div></div>
+          <div><div class="work-desc">Legge i dati del mese dal Google Sheet A1 (5 sheet: Panoramica, Insights Post, Insights Stories, KPI Medi, Note Strategiche).</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">5</div>
-          <div><div class="work-desc">Scarica e carica su Drive A2</div><div class="work-sub">Drag &amp; drop nella cartella — conversione automatica in Slides</div></div>
+          <div><div class="work-desc">Genera il report come pagina HTML e lo scrive su Supabase (report_mensili).</div></div>
         </div>
         <div class="work-step">
           <div class="work-num">6</div>
-          <div><div class="work-desc">Aggiorna stato su Supabase</div><div class="work-sub">A2 → "done" — notifica disponibile per A3</div></div>
+          <div><div class="work-desc">Scrive su activity_log, segna agent_states a2=done e a3=ready — il report è già visibile sulla webapp, nessun caricamento manuale.</div></div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB: RUN -->
-  <div id="panel-run" class="panel">
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128200; Ultimo run registrato</span></div>
-      <div class="sc-body">
-        <div class="stat-grid">
-          <div><div class="stat-num" style="color:var(--maker);" id="statMese">&#8212;</div><div class="stat-lbl">Mese</div></div>
-          <div><div class="stat-num" id="statPost">&#8212;</div><div class="stat-lbl">Post</div></div>
-          <div><div class="stat-num" id="statStories">&#8212;</div><div class="stat-lbl">Stories</div></div>
-        </div>
-        <div class="empty-note" id="statMeta" style="margin-top:8px;"></div>
-      </div>
-    </div>
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128337; Storico run</span></div>
-      <div class="sc-body">
-        <div class="empty-note">Non ancora tracciato — A2 non scrive su activity_log al momento (introdotto solo per A1 e A6.2 finora). Qui sopra vedi solo l'ultimo stato noto da agent_states, non uno storico completo.</div>
       </div>
     </div>
   </div>
@@ -586,27 +488,23 @@ body{
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#9881; Configurazione agente</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai + launcher webapp</span></div>
+        <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#129302; Claude Code — sessione dedicata (da Hub)</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">Mensile — manuale (primi giorni del mese)</span></div>
         <div class="config-row"><span class="config-key">Mese riferimento</span><span class="config-val" id="configMeseLbl">Mm1 — mese precedente</span></div>
-        <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC</span></div>
         <div class="config-row"><span class="config-key">Sheet input</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30</span></div>
-        <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019daf24-2357-7778-bc6e-12d45625b40b</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
         <div class="config-row"><span class="cfg-dot" id="depA1Dot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">A1 completato (Sheet aggiornato)</span><span style="font-size:.62rem;font-weight:700;" id="depA1Lbl">Caricamento...</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Google Drive — cartella A2 accessibile</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Claude.ai — progetto A2 configurato</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Drive "converti in formati Google" attivo</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot" id="depCatDot" style="background:var(--grigio);"></span><span style="flex:1;font-size:.7rem;">Categorizzazione completata</span><span style="font-size:.62rem;font-weight:700;" id="depCatLbl">Caricamento...</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#9889; Posizione nel flusso A1&#8594;A4</span></div>
       <div class="sc-body">
-        <div style="font-size:.72rem;line-height:1.5;">A2 riceve il segnale di completamento da A1 via Supabase e genera il report del mese precedente (Mm1).<br><span style="color:var(--grigio);">Output: report_GDC_[Mm1].pptx → Google Slides</span></div>
+        <div style="font-size:.72rem;line-height:1.5;">A2 riceve il segnale di completamento da A1 via Supabase e genera il report del mese precedente (Mm1).<br><span style="color:var(--grigio);">Output: pagina HTML su report_mensili.</span></div>
         <div class="flow-row">
           <span class="flow-side">A1</span>
           <span class="flow-dash"></span>
@@ -645,49 +543,13 @@ const Am2=mm2d.getFullYear();
 // Aggiorna UI
 document.getElementById('dateChipText').textContent=`${DD}/${MM}/${YY}`;
 document.getElementById('lastRunLbl').textContent=`Ultima run: ${Mm1} ${Am1}`;
-document.getElementById('driveLbl').textContent=`report_GDC_${Mm1}_${Am1} — output`;
-document.getElementById('reportNomeLbl').textContent=`report_GDC_${Mm1}_${Am1}`;
-document.getElementById('reportNomePrecLbl').textContent=`report_GDC_${Mm2}_${Am2}`;
-document.getElementById('ioMeseLbl').textContent=`${Mm1} ${Am1}`;
 document.getElementById('configMeseLbl').textContent=`Mm1 — ${Mm1} ${Am1}`;
-document.getElementById('msgSubLbl').textContent=`Launcher A2 — ${Mm1} ${Am1}`;
-
-// Testo messaggio precompilato
-const MSG=`Ciao A2. È il momento del report mensile.
-
-Trovi il file dati aggiornato nella cartella Drive di A1:
-https://drive.google.com/drive/folders/1_WtU8UpLN8_kFxhDKo4aYC_r81N7PyEM
-→ file: Instagram_Analytics_GDC (Google Sheet)
-
-Link diretto al Google Sheet:
-https://docs.google.com/spreadsheets/d/1puwwEmieMPGIaY_xgBPO682HCZKDcIlDvJOWdu2lz30/edit
-
-Mese di riferimento: ${Mm1} ${Am1}
-
-Genera il report mensile completo come pagina HTML e scrivilo su Supabase (tabella report_mensili) tramite il connector MCP Supabase GDC, come da prompt v16.`;
-
-document.getElementById('msgText').value=MSG;
 
 function switchTab(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   el.classList.add('active');
-}
-
-/* ── MSG POPUP ── */
-function openMsg(){ document.getElementById('msgOverlay').classList.add('open'); }
-function closeMsg(){ document.getElementById('msgOverlay').classList.remove('open'); }
-function closeMsgIfBg(e){ if(e.target===document.getElementById('msgOverlay')) closeMsg(); }
-function copyMsg(){
-  navigator.clipboard.writeText(document.getElementById('msgText').value).then(()=>{
-    const btn=document.getElementById('copyBtn');
-    btn.textContent='✓ Copiato!';
-    setTimeout(()=>{ btn.textContent='Copia messaggio'; },2000);
-  }).catch(()=>{
-    document.getElementById('msgText').select();
-    document.execCommand('copy');
-  });
 }
 
 /* ══ GDC LOGO MASTER ANIM ══ */
@@ -790,10 +652,12 @@ async function getExistingPushSubscription(){
   return await reg.pushManager.getSubscription();
 }
 async function updatePushButtonUI(){
-  const label=document.getElementById('pushBtnLabel'); if(!label) return;
+  const label=document.getElementById('pushBtnLabel'); const btn=document.getElementById('pushBtn');
+  if(!label) return;
   if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
   const sub=await getExistingPushSubscription();
   label.textContent=sub?'Notifiche attive':'Attiva notifiche';
+  if(btn) btn.classList.toggle('on',!!sub);
 }
 let pushToggleInProgress=false;
 async function togglePushNotifications(){
@@ -812,7 +676,7 @@ async function togglePushNotifications(){
     const existing=await getExistingPushSubscription();
     if(existing){
       try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
-      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
+      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; if(btn) btn.classList.remove('on'); return;
     }
     try{
       const permission=await Notification.requestPermission();
@@ -822,11 +686,11 @@ async function togglePushNotifications(){
       const subJson=sub.toJSON();
       await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
-      if(label) label.textContent='Notifiche attive';
+      if(label) label.textContent='Notifiche attive'; if(btn) btn.classList.add('on');
     }catch(e){
       console.error('Errore attivazione notifiche:',e);
       const realSub=await getExistingPushSubscription();
-      if(realSub){ if(label) label.textContent='Notifiche attive'; }
+      if(realSub){ if(label) label.textContent='Notifiche attive'; if(btn) btn.classList.add('on'); }
       else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
     }
   } finally {
@@ -854,6 +718,7 @@ function mapState(row){
   if(!row) return 'sleep';
   const st=row.stato||'';
   const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='error') return 'error';
   if(st==='working') return 'active';
   if(st==='ready'||st==='queued') return 'queued';
   if(st==='done') return age<THREE_DAYS?'done':'sleep';
@@ -864,9 +729,13 @@ const STATE_CFG={
   active:{badge:'badge-active',logo:'logo-active',lbl:'In corso'},
   queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda'},
   done:{badge:'badge-done',logo:'logo-done',lbl:'Completato'},
-  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo'},
+  rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo'},
   sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo'},
+  error:{badge:'badge-queued',logo:'logo-queued',lbl:'Errore'},
 };
+const TITLE_COLOR={active:'var(--sabbia-dk)',queued:'var(--life)',done:'var(--maker)',rest:'var(--nero)',sleep:'var(--athlete)',error:'var(--life)'};
+const BORDER_COLOR={active:'var(--sabbia)',queued:'var(--life)',done:'var(--maker)',rest:'var(--nero)',sleep:'var(--athlete)',error:'var(--life)'};
+
 async function loadA2(){
   try{
     const res=await sbFetch(SUPA_URL+'/rest/v1/agent_states?agent_id=in.(a1,a2)&select=agent_id,stato,updated_at,mese,n_post,n_stories');
@@ -875,27 +744,30 @@ async function loadA2(){
     const a1=rows.find(r=>r.agent_id==='a1');
     const a2=rows.find(r=>r.agent_id==='a2');
 
-    document.getElementById('sysLabel').textContent='Connesso a Supabase';
-    document.getElementById('sysLabel').style.color='var(--maker)';
-    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sysLabel').textContent='Tutti i sistemi attivi';
+    document.getElementById('sysMini').style.color='var(--maker)';
+    document.getElementById('sysMini').title='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 
-    // Badge + logo — stessa categoria di stato, stessa palette della home
+    // Badge + logo + titolo — stessa categoria di stato, stessa palette della home
     const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
+    const title=document.getElementById('agentTitle');
+    const heroCard=document.getElementById('heroCard');
     const stCat=mapState(a2), c=STATE_CFG[stCat];
     badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
     if(logoBox) logoBox.className='logo-box-hero '+c.logo;
     if(logoWrap) logoWrap.className='logo-wrap s-'+stCat;
+    if(title) title.style.color=TITLE_COLOR[stCat];
+    if(heroCard) heroCard.style.borderColor=BORDER_COLOR[stCat];
     document.getElementById('lastRunLbl').textContent=a2&&a2.updated_at?('Ultimo aggiornamento: '+timeAgo(a2.updated_at)):'';
 
-    // Tab Run — dati reali
+    // Stat grid (Panoramica)
     document.getElementById('statMese').textContent=a2&&a2.mese?a2.mese:'—';
     document.getElementById('statPost').textContent=(a2&&a2.n_post!=null)?a2.n_post:'—';
     document.getElementById('statStories').textContent=(a2&&a2.n_stories!=null)?a2.n_stories:'—';
-    document.getElementById('statMeta').textContent=a2&&a2.updated_at?('Da agent_states — aggiornato '+timeAgo(a2.updated_at)):'Nessun dato ancora registrato.';
 
-    // Dipendenza A1 — check reale
+    // Dipendenza A1
     const dot=document.getElementById('depA1Dot'), depLbl=document.getElementById('depA1Lbl');
     const a1Age=a1&&a1.updated_at?Date.now()-new Date(a1.updated_at).getTime():Infinity;
     if(a1&&a1.stato==='done'&&a1Age<THREE_DAYS){
@@ -906,8 +778,69 @@ async function loadA2(){
   }catch(e){
     console.error('Errore caricamento A2:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
-    document.getElementById('sysLabel').style.color='var(--grigio)';
+    document.getElementById('sysMini').style.color='var(--grigio)';
+    document.getElementById('sysMini').title='';
     document.getElementById('statusBadgeLbl').textContent='Non disponibile';
+  }
+}
+
+async function loadActivity(){
+  const box=document.getElementById('runList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/activity_log?agent_id=eq.A2&order=created_at.desc&limit=15');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){
+      box.innerHTML='<div class="empty-note">Nessuna attività ancora registrata per A2. Apparirà qui dopo la prossima run del report mensile.</div>';
+      return;
+    }
+    box.innerHTML=rows.map(r=>{
+      const isWarn=/mancante|errore|fallit/i.test(r.titolo||'');
+      const icon=isWarn?'&#9888;&#65039;':'&#9989;';
+      const badgeCls=isWarn?'rb-err':'rb-ok';
+      const badgeTxt=isWarn?'Attenzione':'OK';
+      return '<div class="run-row"><span class="run-icon">'+icon+'</span><div class="run-info">'+
+        '<div class="run-title">'+(r.titolo||'')+'</div>'+
+        '<div class="run-meta">'+timeAgo(r.created_at)+(r.descrizione?(' · '+r.descrizione):'')+'</div>'+
+        '</div><span class="run-badge '+badgeCls+'">'+badgeTxt+'</span></div>';
+    }).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare activity_log al momento.</div>';
+  }
+}
+
+async function loadLatestReport(){
+  const box=document.getElementById('reportList');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/report_mensili?agente=eq.a2&select=mese,mese_num,anno&order=anno.desc,mese_num.desc&limit=2');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(!rows.length){ box.innerHTML='<div class="empty-note">Nessun report generato ancora.</div>'; return; }
+    box.innerHTML=rows.map((r,i)=>
+      '<a class="file-item'+(i>0?' dim':'')+'" href="report.html?mese='+encodeURIComponent(r.mese)+'">'+
+      '<div class="file-icon fi-slide">&#128196;</div>'+
+      '<div class="file-info"><div class="file-name">Report '+r.mese+'</div><div class="file-sub">Pagina HTML — report_mensili</div></div>'+
+      '<span class="file-arr">&#8594;</span></a>'
+    ).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty-note">Impossibile caricare i report al momento.</div>';
+  }
+}
+
+async function loadCategorizeDependency(){
+  const dot=document.getElementById('depCatDot'), lbl=document.getElementById('depCatLbl');
+  try{
+    const res=await sbFetch(SUPA_URL+'/rest/v1/posts?select=id&categoria_primaria=is.null', {
+      headers: { 'Prefer': 'count=exact' }
+    });
+    const n = parseInt((res.headers.get('content-range')||'/0').split('/')[1], 10) || 0;
+    if(n>0){
+      dot.style.background='var(--life)'; lbl.style.color='var(--life)'; lbl.textContent=n+' post da categorizzare';
+    } else {
+      dot.style.background='var(--maker)'; lbl.style.color='var(--maker)'; lbl.textContent='OK — nessun post pendente';
+    }
+  }catch(e){
+    dot.style.background='var(--sabbia)'; lbl.style.color='var(--sabbia-dk)'; lbl.textContent='Non verificabile';
   }
 }
 
@@ -915,6 +848,9 @@ if(!gdcToken()){
   window.location.href='../../../page_login_v6.html';
 } else {
   loadA2();
+  loadActivity();
+  loadLatestReport();
+  loadCategorizeDependency();
 }
 </script>
 </body>

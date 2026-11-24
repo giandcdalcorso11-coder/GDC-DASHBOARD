@@ -3,39 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var __t=localStorage.getItem('gdc_theme_cache');if(__t&&__t!=='auto')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
 <title>GDC WORKSPACE — Agente 6</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+@view-transition{navigation:auto;}
+#logoBoxHero{view-transition-name:agent-logo-a6;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
 :root{
-  --carta:#F5F0E8;--nero:#1C1C1C;--bianco:#FAFAF5;
-  --maker:#4A7C59;--maker-bg:#C7DFCF;--maker-mid:#5D9C71;
-  --athlete:#2B5F9E;--athlete-bg:#D9E6F3;
-  --life:#C2193A;--life-bg:#F5E0E6;
-  --sabbia:#C4A865;--sabbia-dk:#8A6D3B;--sabbia-bg:#E9DFC9;
-  --grigio:#6B6B6B;--border:#ddd6cb;
+  --carta:#F5F0E8; --nero:#1C1C1C; --bianco:#FAFAF5;
+  --maker:#4A7C59; --maker-bg:#C7DFCF; --maker-mid:#5D9C71;
+  --athlete:#2B5C8A; --athlete-bg:#D9E6F3;
+  --life:#C2193A; --life-bg:#F5E0E6;
+  --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
+  --grigio:#6B6B6B; --border:#ddd6cb;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
-@media(prefers-color-scheme:dark){
-  :root{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}
-  .system-bar,.date-chip{background:#2E2E2E;border-color:var(--border);}
-  .hero-card,.section-card,.sub-card{background:var(--bianco);border-color:var(--border);}
-  .back-btn{background:#2E2E2E;border-color:var(--border);}
-  .tab-btn{background:#2E2E2E;}
-  .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}
-  .io-block{background:#1A1A1A;}
-  .lg-btn{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);}
-  .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 100%);}
-  .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,0.12);}
-  .lg-sabbia{background:rgba(196,168,101,.18);border-color:rgba(196,168,101,.35);color:var(--sabbia);}
-  .lg-cta{background:var(--nero);color:var(--carta);border-color:var(--nero);}
-  .cal-popup,.msg-popup{background:#242424;border-color:var(--border);}
-  .cal-day.has-event{background:#2E2E2E;}.cal-day.has-event:hover{background:#3A3A3A;}
-  .cal-events-panel,.cal-event-item{border-color:var(--border);}
-  #hub-master-svg .logo-G,#hub-master-svg .logo-D,#hub-master-svg .logo-C,
-  #hub-master-svg .logo-STUFF,#hub-master-svg .logo-linee{fill:#F0EBE1;}
-  .mode-card{background:#1A1A1A;border-color:var(--border);}
-}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root:not([data-theme="light"]) .date-chip{background:#2E2E2E;border-color:var(--border);}:root:not([data-theme="light"]) .hero-card,:root:not([data-theme="light"]) .section-card{background:var(--bianco);border-color:var(--border);}:root:not([data-theme="light"]) .pill-hub,:root:not([data-theme="light"]) .pill-hub-r{background:var(--bianco);}:root:not([data-theme="light"]) .tab-btn{background:#2E2E2E;}:root:not([data-theme="light"]) .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}:root:not([data-theme="light"]) .lg-btn{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);}:root:not([data-theme="light"]) .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 100%);}:root:not([data-theme="light"]) .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,0.12);}:root:not([data-theme="light"]) .cal-popup,:root:not([data-theme="light"]) .msg-popup{background:#242424;border-color:var(--border);}:root:not([data-theme="light"]) .cal-day.has-event{background:#2E2E2E;}:root:not([data-theme="light"]) .cal-day.has-event:hover{background:#3A3A3A;}:root:not([data-theme="light"]) .cal-events-panel,:root:not([data-theme="light"]) .cal-event-item{border-color:var(--border);}:root:not([data-theme="light"]) #hub-master-svg .logo-G,:root:not([data-theme="light"]) #hub-master-svg .logo-D,:root:not([data-theme="light"]) #hub-master-svg .logo-C,:root:not([data-theme="light"]) #hub-master-svg .logo-STUFF,:root:not([data-theme="light"]) #hub-master-svg .logo-linee{fill:#F0EBE1;}:root:not([data-theme="light"]) .state-chip{background:#2E2E2E;}}:root[data-theme="dark"]{--carta:#1A1A1A;--bianco:#242424;--nero:#F0EBE1;--border:#3A3A3A;--grigio:#9A9A9A;}:root[data-theme="dark"] .date-chip{background:#2E2E2E;border-color:var(--border);}:root[data-theme="dark"] .hero-card,:root[data-theme="dark"] .section-card{background:var(--bianco);border-color:var(--border);}:root[data-theme="dark"] .pill-hub,:root[data-theme="dark"] .pill-hub-r{background:var(--bianco);}:root[data-theme="dark"] .tab-btn{background:#2E2E2E;}:root[data-theme="dark"] .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}:root[data-theme="dark"] .lg-btn{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.12);color:var(--nero);box-shadow:0 1px 3px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);}:root[data-theme="dark"] .lg-btn::before{background:linear-gradient(135deg,rgba(255,255,255,.07) 0%,transparent 100%);}:root[data-theme="dark"] .lg-btn:hover:not(.lg-disabled){background:rgba(255,255,255,0.12);}:root[data-theme="dark"] .cal-popup,:root[data-theme="dark"] .msg-popup{background:#242424;border-color:var(--border);}:root[data-theme="dark"] .cal-day.has-event{background:#2E2E2E;}:root[data-theme="dark"] .cal-day.has-event:hover{background:#3A3A3A;}:root[data-theme="dark"] .cal-events-panel,:root[data-theme="dark"] .cal-event-item{border-color:var(--border);}:root[data-theme="dark"] #hub-master-svg .logo-G,:root[data-theme="dark"] #hub-master-svg .logo-D,:root[data-theme="dark"] #hub-master-svg .logo-C,:root[data-theme="dark"] #hub-master-svg .logo-STUFF,:root[data-theme="dark"] #hub-master-svg .logo-linee{fill:#F0EBE1;}:root[data-theme="dark"] .state-chip{background:#2E2E2E;}
 
 /* ══ HEADER ══ */
 .header{width:100%;max-width:540px;padding:20px 16px 12px;display:flex;flex-direction:column;gap:10px;}
@@ -46,13 +31,11 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .date-chip{display:flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:5px 12px;font-size:.75rem;font-weight:700;cursor:pointer;transition:border-color .2s;user-select:none;}
 .date-chip:hover{border-color:var(--nero);}
 .date-chip-dot{width:7px;height:7px;border-radius:50%;background:var(--sabbia);flex-shrink:0;}
-.system-bar{display:flex;align-items:center;gap:8px;background:var(--bianco);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;}
-.sys-dot-wrap{position:relative;width:10px;height:10px;flex-shrink:0;}
-.sys-dot{width:10px;height:10px;border-radius:50%;background:var(--sabbia);}
-.sys-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--sabbia);animation:sysPulse 2s ease-out infinite;}
+.sys-mini{display:flex;align-items:center;gap:6px;flex:1;min-width:0;justify-content:center;font-size:.72rem;font-weight:700;color:var(--maker);transition:color .3s;}
+.sys-mini span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sys-mini-dot{position:relative;width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.sys-mini-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid currentColor;animation:sysPulse 2s ease-out infinite;}
 @keyframes sysPulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
-.sys-label{font-weight:700;font-size:.82rem;color:var(--sabbia-dk);flex:1;}
-.sys-meta{font-size:.7rem;color:var(--grigio);}
 
 /* ══ CALENDAR ══ */
 .cal-overlay{position:fixed;inset:0;background:rgba(28,28,28,.4);z-index:200;display:none;align-items:flex-start;justify-content:center;padding-top:70px;}
@@ -83,32 +66,52 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .cal-event-text{font-weight:600;color:var(--nero);font-size:.74rem;}
 .cal-event-agent{font-size:.64rem;color:var(--grigio);}
 
+/* ══ MSG POPUP ══ */
+.msg-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+.msg-overlay.open{display:flex;}
+.msg-popup{background:var(--bianco);border:1.5px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:20px 16px 32px;box-shadow:0 -4px 32px rgba(28,28,28,.16);}
+.msg-popup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.msg-popup-title{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sabbia-dk);}
+.msg-popup-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
+.role-disabled{opacity:.5;filter:saturate(.6);}
+.role-info-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.role-info-overlay.open{opacity:1;pointer-events:auto;}
+.role-info-card{background:var(--bianco);border-radius:18px;max-width:380px;width:100%;padding:22px 20px;text-align:center;box-shadow:0 8px 32px rgba(28,28,28,.18);transform:translateY(10px) scale(.96);opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .22s ease;}
+.role-info-overlay.open .role-info-card{transform:translateY(0) scale(1);opacity:1;}
+.role-info-icon{font-size:1.6rem;margin-bottom:10px;}
+.role-info-title{font-weight:800;font-size:.92rem;margin-bottom:8px;}
+.role-info-text{font-size:.8rem;color:var(--grigio);line-height:1.5;margin-bottom:18px;}
+.role-info-close{width:100%;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;padding:11px;border:none;border-radius:12px;background:var(--nero);color:var(--carta);cursor:pointer;}
+.msg-popup-close:hover{background:var(--border);}
+.msg-textarea{width:100%;background:var(--carta);border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:.72rem;color:var(--nero);padding:12px 13px;resize:none;outline:none;min-height:180px;line-height:1.6;}
+.msg-actions{display:flex;gap:8px;margin-top:10px;}
+.msg-copy-btn{flex:1;background:var(--nero);color:var(--carta);border:none;border-radius:12px;padding:13px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s;}
+.msg-copy-btn:hover{background:#333;}
+.msg-open-btn{background:rgba(196,168,101,.12);color:var(--sabbia-dk);border:1.5px solid rgba(196,168,101,.3);border-radius:12px;padding:13px 16px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;}
+
 /* ══ PAGE LAYOUT ══ */
 .page-content{width:100%;max-width:540px;padding:0 16px;}
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:5px 12px 5px 9px;font-size:.72rem;font-weight:700;cursor:pointer;color:var(--grigio);text-decoration:none;transition:border-color .15s,color .15s;user-select:none;margin-bottom:12px;}
-.back-btn:hover{border-color:var(--nero);color:var(--nero);}
 
-/* ══ HERO ══ */
-.hero-card{background:var(--bianco);border:2px solid var(--sabbia);border-radius:20px;overflow:hidden;margin-bottom:12px;}
+/* ══ HERO — A6.1/A6.2 uniti alla scheda principale, affiancati ══ */
+.hero-card{background:var(--bianco);border:2px solid var(--athlete);border-radius:20px;overflow:hidden;margin-bottom:12px;transition:border-color .3s;}
 .hero-inner{display:flex;align-items:center;gap:14px;padding:14px 16px 10px;}
-.logo-box-hero{flex-shrink:0;width:80px;height:80px;border-radius:14px;background:var(--maker-bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.logo-box-hero{flex-shrink:0;width:80px;height:80px;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .hero-text{flex:1;min-width:0;}
-.agent-id-lbl{font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grigio);margin-bottom:2px;}
-.agent-name-big{font-size:1.15rem;font-weight:800;line-height:1.1;margin-bottom:5px;color:var(--sabbia-dk);}
+.agent-name-big{font-size:1.15rem;font-weight:800;line-height:1.1;margin-bottom:5px;color:var(--athlete);transition:color .3s;}
 .agent-desc-big{font-size:.71rem;color:var(--grigio);line-height:1.4;}
-.hero-meta{display:flex;align-items:center;gap:7px;padding:0 16px 14px;flex-wrap:wrap;}
 .status-badge{display:inline-flex;align-items:center;gap:5px;background:var(--bianco);border:1.5px solid var(--border);border-radius:999px;padding:4px 10px;font-size:.67rem;font-weight:700;}
 .badge-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .badge-done{color:var(--maker);border-color:var(--maker-bg);}
 .badge-done .badge-dot{background:var(--maker);}
 .type-tag{font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:var(--sabbia-bg);color:var(--sabbia-dk);border-radius:999px;padding:4px 9px;}
-
-/* ══ SUB-AGENT CARDS ══ */
-.sub-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.sub-card{background:var(--bianco);border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;}
-.sub-id{font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);margin-bottom:3px;}
-.sub-name{font-size:.8rem;font-weight:800;color:var(--sabbia-dk);margin-bottom:3px;}
-.sub-desc{font-size:.63rem;color:var(--grigio);line-height:1.4;}
+.hero-subrow-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1.5px solid var(--border);}
+.hero-sub-col{padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0;}
+.hero-sub-col:first-child{border-right:1.5px solid var(--border);}
+.hero-sub-name{font-size:.76rem;font-weight:800;color:var(--athlete);line-height:1.25;transition:color .3s;}
+.hero-sub-desc{font-size:.62rem;color:var(--grigio);line-height:1.35;}
+.hero-sub-meta{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:2px;}
+.hero-sub-meta .status-badge{padding:3px 8px;font-size:.58rem;}
+.hero-sub-meta .type-tag{font-size:.5rem;padding:3px 7px;white-space:nowrap;}
 
 /* ══ TABS ══ */
 .tabs-row{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
@@ -117,7 +120,8 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .tab-btn.active{background:var(--nero);color:var(--carta);border-color:var(--nero);}
 .tab-btn:hover:not(.active){border-color:var(--nero);color:var(--nero);}
 .panel{display:none;}
-.panel.active{display:block;}
+.panel.active{display:block;animation:gdcPanelIn .26s cubic-bezier(.2,.8,.2,1);}
+@keyframes gdcPanelIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
 /* ══ SECTION CARD ══ */
 .section-card{background:var(--bianco);border:1.5px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;}
@@ -125,19 +129,18 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .sc-label{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grigio);flex:1;}
 .sc-link{font-size:.62rem;font-weight:700;color:var(--athlete);text-decoration:none;}
 .sc-link:hover{text-decoration:underline;}
+.sc-pill-wrap{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;flex-shrink:0;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,0 100%);}
+.sc-pill{display:inline-flex;align-items:center;font-family:'Jost',sans-serif;font-size:.62rem;font-weight:700;height:22px;padding:0 11px 0 8px;background:var(--bianco);color:var(--athlete);cursor:pointer;text-decoration:none;border:none;border-radius:999px;white-space:nowrap;
+  clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%);}
 .sc-body{padding:12px 14px;}
 
 /* ══ LIQUID GLASS BUTTONS ══ */
-.action-row{display:flex;flex-direction:column;gap:8px;}
+.action-pair{display:flex;flex-direction:column;gap:8px;}
 .lg-btn{position:relative;display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:14px;cursor:pointer;font-family:'Jost',sans-serif;font-size:.8rem;font-weight:700;text-align:left;line-height:1.2;text-decoration:none;border:1px solid rgba(255,255,255,.7);overflow:hidden;background:rgba(255,255,255,0.55);backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 1px 3px rgba(28,28,28,.08),inset 0 1px 0 rgba(255,255,255,.8),inset 0 -1px 0 rgba(28,28,28,.06);color:var(--nero);transition:transform .12s,box-shadow .15s,background .15s;width:100%;}
 .lg-btn::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.1) 50%,transparent 100%);pointer-events:none;}
 .lg-btn:hover:not(.lg-disabled){transform:translateY(-1px) scale(1.01);box-shadow:0 4px 12px rgba(28,28,28,.12),inset 0 1px 0 rgba(255,255,255,.9);background:rgba(255,255,255,.72);}
 .lg-btn:active:not(.lg-disabled){transform:scale(.98);}
-.lg-sabbia{background:rgba(196,168,101,.12);border-color:rgba(196,168,101,.28);color:var(--sabbia-dk);box-shadow:0 1px 3px rgba(196,168,101,.1),inset 0 1px 0 rgba(255,255,255,.7);}
-.lg-sabbia:hover:not(.lg-disabled){background:rgba(196,168,101,.2);}
-.lg-cta{background:var(--nero);color:var(--carta);border-color:var(--nero);box-shadow:0 2px 8px rgba(28,28,28,.2);}
-.lg-cta:hover:not(.lg-disabled){background:#333;transform:translateY(-1px);}
-.lg-cta::before{display:none;}
 .btn-icon{font-size:1.1rem;flex-shrink:0;width:22px;text-align:center;}
 .btn-text{flex:1;}
 .btn-title{font-size:.8rem;font-weight:700;}
@@ -148,23 +151,15 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .file-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--nero);transition:opacity .15s;}
 .file-item:last-child{border-bottom:none;}
 .file-item:hover{opacity:.7;}
+.file-item-static{cursor:default;}
+.file-item-static:hover{opacity:1;}
 .file-icon{flex-shrink:0;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
 .fi-pptx{background:#fff3e0;}
 .fi-doc{background:#e8f0fe;}
-.fi-slide{background:#fff3e0;}
 .file-info{flex:1;min-width:0;}
 .file-name{font-size:.72rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .file-sub{font-size:.62rem;color:var(--grigio);margin-top:1px;}
 .file-arr{font-size:.85rem;color:var(--grigio);flex-shrink:0;}
-
-/* ══ MODALITÀ CARDS ══ */
-.mode-card{background:var(--carta);border:1.5px solid var(--border);border-radius:12px;padding:12px 13px;margin-bottom:8px;}
-.mode-card:last-child{margin-bottom:0;}
-.mode-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.mode-badge{background:var(--sabbia-bg);color:var(--sabbia-dk);border-radius:999px;font-size:.6rem;font-weight:800;padding:3px 9px;letter-spacing:.06em;flex-shrink:0;}
-.mode-title{font-size:.78rem;font-weight:800;color:var(--nero);}
-.mode-desc{font-size:.68rem;color:var(--grigio);line-height:1.4;}
-.mode-trigger{font-size:.62rem;color:var(--sabbia-dk);font-weight:700;margin-top:4px;}
 
 /* ══ SLIDES GRID ══ */
 .slides-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
@@ -175,12 +170,12 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .slide-chip.dynamic{border-color:var(--sabbia);background:var(--sabbia-bg);}
 .slide-chip.dynamic .slide-type{color:var(--sabbia-dk);font-weight:700;}
 
-/* ══ WORK STEPS ══ */
+/* ══ LAVORO ══ */
 .work-step{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
 .work-step:last-child{border-bottom:none;}
 .work-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--nero);color:var(--carta);font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;}
-.work-num.s1{background:var(--sabbia-dk);}
-.work-num.s2{background:var(--sabbia);}
+.work-num.sub1{background:var(--sabbia-dk);}
+.work-num.sub2{background:var(--sabbia);}
 .work-desc{font-size:.72rem;line-height:1.4;color:var(--nero);}
 .work-sub{font-size:.63rem;color:var(--grigio);margin-top:1px;}
 
@@ -199,7 +194,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .logo-queued{background:var(--life-bg) !important;}
 .logo-done{background:var(--maker-bg) !important;}
 .logo-sleep{background:var(--athlete-bg) !important;}
-.logo-rest{background:var(--carta) !important;}
+.logo-rest{background:#1C1C1C !important;}
 
 /* ══ ICONA — esatta dalla home, animazione JS-driven ══ */
 .doc-path,.fold-path{transition:stroke .6s;}
@@ -210,17 +205,28 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .s-sleep .doc-path{stroke:#2B5C8A;}.s-sleep .fold-path{stroke:#2B5C8A;}.s-sleep .a6-lbl{fill:#2B5C8A;}.s-sleep .a6-bar{fill:#4A86C6;}
 .a6-lbl,.a6-bar{transition:fill .6s;}
 .badge-active{color:var(--sabbia-dk);border-color:var(--sabbia-bg);}.badge-active .badge-dot{background:var(--sabbia-dk);}
-.badge-queued{color:var(--athlete);border-color:var(--athlete-bg);}.badge-queued .badge-dot{background:var(--athlete);}
-.badge-sleep{color:var(--grigio);border-color:var(--border);}.badge-sleep .badge-dot{background:var(--grigio);}
+.badge-queued{color:var(--life);border-color:var(--life-bg);}.badge-queued .badge-dot{background:var(--life);}
+.badge-sleep{color:var(--athlete);border-color:var(--athlete-bg);}.badge-sleep .badge-dot{background:var(--athlete);}
+.badge-rest{color:var(--grigio);border-color:var(--border);}.badge-rest .badge-dot{background:var(--grigio);}
 
-/* ══ MINI-STATO SUB-AGENTI ══ */
-.sub-status{display:inline-flex;align-items:center;gap:4px;font-size:.6rem;font-weight:700;margin-top:5px;}
-.sub-status .sd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+/* ══ NAVIGAZIONE — stesso pattern di page_home_v25.html / A1-A4 / A5 ══ */
+.pill-row{width:100%;max-width:540px;padding:0 16px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.pill-hub-wrap{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
+  clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);transition:background .2s;}
+.pill-hub{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;height:32px;padding:0 14px 0 18px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
+  clip-path:polygon(12.5px 0,100% 0,100% 100%,12.5px 100%,0 50%);}
+.pill-hub svg{width:12px;height:12px;flex-shrink:0;}
+.pill-hub-wrap-r{display:inline-flex;padding:1.5px;background:var(--border);border-radius:999px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);transition:background .2s;}
+.pill-hub-r{display:inline-flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-size:.76rem;font-weight:700;height:32px;padding:0 18px 0 14px;background:var(--bianco);color:var(--nero);cursor:pointer;text-decoration:none;border:none;border-radius:999px;
+  clip-path:polygon(0 0,calc(100% - 12.5px) 0,100% 50%,calc(100% - 12.5px) 100%,0 100%);}
 
-/* ══ PUSH ══ */
-.push-row{width:100%;max-width:540px;padding:0 16px 6px;display:flex;justify-content:flex-end;}
-.push-btn{display:inline-flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:.7rem;font-weight:700;color:var(--grigio);background:none;border:none;cursor:pointer;padding:0;transition:color .15s;}
-.push-btn:hover{color:var(--nero);}
+/* ══ WORKFLOW — copia messaggio -> incolla -> produce (tab Lavoro) ══ */
+.flow-steps{display:flex;flex-direction:column;gap:0;}
+.flow-step{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);}
+.flow-step:last-child{border-bottom:none;}
+.flow-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--athlete);color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.flow-desc{font-size:.72rem;line-height:1.4;color:var(--nero);}
 
 /* ══ ATTIVITÀ ══ */
 .run-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
@@ -236,20 +242,6 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 .pipe-count-box{flex:1;background:var(--carta);border-radius:10px;padding:8px 10px;text-align:center;}
 .pipe-count-num{font-size:1.1rem;font-weight:800;color:var(--sabbia-dk);}
 .pipe-count-lbl{font-size:.58rem;color:var(--grigio);margin-top:1px;}
-
-/* ══ POPUP MESSAGGIO ══ */
-.msg-overlay{position:fixed;inset:0;background:rgba(28,28,28,.45);z-index:300;display:none;align-items:flex-end;justify-content:center;}
-.msg-overlay.open{display:flex;}
-.msg-popup{background:var(--bianco);border:1.5px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:20px 16px 32px;box-shadow:0 -4px 32px rgba(28,28,28,.16);}
-.msg-popup-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.msg-popup-title{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sabbia-dk);}
-.msg-popup-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--grigio);padding:2px 6px;border-radius:6px;}
-.msg-popup-close:hover{background:var(--border);}
-.msg-textarea{width:100%;background:var(--carta);border:1.5px solid var(--border);border-radius:12px;font-family:'Jost',sans-serif;font-size:.72rem;color:var(--nero);padding:12px 13px;resize:none;outline:none;min-height:180px;line-height:1.6;}
-.msg-actions{display:flex;gap:8px;margin-top:10px;}
-.msg-copy-btn{flex:1;background:var(--nero);color:var(--carta);border:none;border-radius:12px;padding:13px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:background .15s;}
-.msg-copy-btn:hover{background:#333;}
-.msg-open-btn{background:rgba(196,168,101,.12);color:var(--sabbia-dk);border:1.5px solid rgba(196,168,101,.3);border-radius:12px;padding:13px 16px;font-family:'Jost',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;}
 </style>
 </head>
 <body>
@@ -275,6 +267,29 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
   </div>
 </div>
 
+<!-- ══ MSG POPUP ══ -->
+<div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
+  <div class="msg-popup">
+    <div class="msg-popup-head">
+      <span class="msg-popup-title" id="msgPopupTitle">&#128203; Messaggio A6.1 — Media Kit</span>
+      <button class="msg-popup-close" onclick="closeMsg()">&#10005;</button>
+    </div>
+    <textarea class="msg-textarea" id="msgText" readonly></textarea>
+    <div class="msg-actions">
+      <button class="msg-copy-btn" id="copyBtn" onclick="copyMsg()">Copia messaggio</button>
+      <a class="msg-open-btn" id="msgOpenLink" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">&#128279; Apri A6.1</a>
+    </div>
+  </div>
+</div>
+<div class="role-info-overlay" id="roleInfoOverlay" onclick="closeRoleInfoIfBg(event)">
+  <div class="role-info-card">
+    <div class="role-info-icon">&#128065;</div>
+    <div class="role-info-title">Azione non disponibile in modalità visualizzatore</div>
+    <div class="role-info-text" id="roleInfoText"></div>
+    <button class="role-info-close" onclick="closeRoleInfo()">Ho capito</button>
+  </div>
+</div>
+
 <!-- ══ HEADER ══ -->
 <div class="header">
   <div class="header-top">
@@ -287,50 +302,31 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         <g class="logo-linee" fill="var(--nero)"><rect x="34.04" y="446.1" width="116.55" height="7.14"/><rect x="436.27" y="446.1" width="116.18" height="7.14"/></g>
       </svg>
     </div>
+    <div class="sys-mini" id="sysMini">
+      <span class="sys-mini-dot"></span><span id="sysLabel">Caricamento...</span>
+    </div>
     <div class="date-chip" onclick="openCal()">
       <span class="date-chip-dot"></span>
       <span id="dateChipText"></span>
     </div>
   </div>
-  <div class="system-bar">
-    <div class="sys-dot-wrap"><div class="sys-dot"></div></div>
-    <div class="sys-label" id="sysLabel">Connessione a Supabase...</div>
-    <div class="sys-meta" id="sysMeta"></div>
-  </div>
 </div>
-<div class="push-row">
-  <button class="push-btn" id="pushBtn" onclick="togglePushNotifications()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    <span id="pushBtnLabel">Attiva notifiche</span>
-  </button>
+<div class="pill-row">
+  <div class="pill-hub-wrap"><a class="pill-hub" href="app/page_home_v25.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </a></div>
+  <div class="pill-hub-wrap-r"><a class="pill-hub-r" href="page_pipeline_v1.html" style="color:var(--sabbia-dk);">
+    <span>Pipeline</span>
+  </a></div>
 </div>
 
 <!-- ══ PAGE CONTENT ══ -->
 <div class="page-content">
 
-  <a class="back-btn" href="app/page_home_v25.html">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-      <path d="M8 2.5L4.5 6.5L8 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Home
-  </a>
-  <a class="back-btn" href="app/page_hub_v1.html" style="margin-left:8px;">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-    Hub
-  </a>
-  <a class="back-btn" href="page_pipeline_v1.html" style="margin-left:8px;color:var(--sabbia-dk);border-color:var(--sabbia-bg);">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"/><path d="M8 12h8M14 8l4 4-4 4"/>
-    </svg>
-    Pipeline
-  </a>
-
-  <!-- HERO -->
-  <div class="hero-card">
+  <div class="hero-card" id="heroCard">
     <div class="hero-inner">
-      <div class="logo-box-hero" id="logoBoxHero"><div class="s-sleep" id="logoWrap" style="width:100%;height:100%">
+      <div class="logo-box-hero logo-sleep" id="logoBoxHero"><div class="s-sleep" id="logoWrap">
         <svg id="svg-a6" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="62" height="62" overflow="visible" font-family="Jost,sans-serif">
           <path class="doc-path" d="M21 9 H85 L104 28 V107 H21 Z" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linejoin="round"/>
           <path id="c-fold" class="fold-path" d="M85 9 L85 28 L104 28" fill="none" stroke="#2B5C8A" stroke-width="6.5" stroke-linejoin="round"/>
@@ -341,31 +337,27 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </svg>
       </div></div>
       <div class="hero-text">
-        <div class="agent-id-lbl">Agente 6</div>
-        <div class="agent-name-big">Company Relations</div>
+        <div class="agent-name-big" id="agentTitle">AGENTE 6 — Company Relations</div>
         <div class="agent-desc-big">Produce media kit PPTX personalizzati (A6.1) e gestisce tutta la comunicazione commerciale con le aziende target (A6.2).</div>
       </div>
     </div>
-    <div class="hero-meta">
-      <span class="status-badge badge-sleep" id="statusBadge"><span class="badge-dot"></span><span id="statusBadgeLbl">Caricamento...</span></span>
-      <span class="type-tag">&#9729;&#65039; Claude.ai</span>
-      <span class="last-run-lbl" id="lastRunLbl">On-demand — continuo</span>
-    </div>
-  </div>
-
-  <!-- SUB-AGENT CARDS -->
-  <div class="sub-cards">
-    <div class="sub-card">
-      <div class="sub-id">A6.1</div>
-      <div class="sub-name">Media Kit</div>
-      <div class="sub-desc">Genera media kit PPTX 8 slide personalizzato per ogni azienda, partendo dalla scheda A5.2.</div>
-      <div class="sub-status" id="statA61"><span class="sd" style="background:var(--grigio);"></span><span>Caricamento...</span></div>
-    </div>
-    <div class="sub-card">
-      <div class="sub-id">A6.2</div>
-      <div class="sub-name">Relazioni Commerciali</div>
-      <div class="sub-desc">Gestisce la comunicazione con le aziende: mail iniziale, follow-up, proposte e trattativa.</div>
-      <div class="sub-status" id="statA62"><span class="sd" style="background:var(--grigio);"></span><span>Caricamento...</span></div>
+    <div class="hero-subrow-grid">
+      <div class="hero-sub-col">
+        <div class="hero-sub-name" id="subNameA61">A6.1 — Media Kit</div>
+        <div class="hero-sub-desc">Genera il media kit PPTX 8 slide personalizzato, partendo dalla scheda A5.2.</div>
+        <div class="hero-sub-meta">
+          <span class="status-badge badge-sleep" id="statusA61Badge"><span class="badge-dot"></span><span id="statusA61Lbl">Caricamento...</span></span>
+          <span class="type-tag">Progetto in Claude.ai</span>
+        </div>
+      </div>
+      <div class="hero-sub-col">
+        <div class="hero-sub-name" id="subNameA62">A6.2 — Relazioni Commerciali</div>
+        <div class="hero-sub-desc">Gestisce mail, follow-up, proposta e trattativa con l'azienda.</div>
+        <div class="hero-sub-meta">
+          <span class="status-badge badge-sleep" id="statusA62Badge"><span class="badge-dot"></span><span id="statusA62Lbl">Caricamento...</span></span>
+          <span class="type-tag">Progetto in Claude.ai</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -374,83 +366,53 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <button class="tab-btn active" onclick="switchTab('azioni',this)">Azioni</button>
     <button class="tab-btn" onclick="switchTab('file',this)">Documenti</button>
     <button class="tab-btn" onclick="switchTab('lavoro',this)">Lavoro</button>
-    <button class="tab-btn" onclick="switchTab('modalita',this)">Modalità</button>
     <button class="tab-btn" onclick="switchTab('run',this)">Attività</button>
     <button class="tab-btn" onclick="switchTab('config',this)">Config</button>
   </div>
 
   <!-- TAB: AZIONI -->
   <div id="panel-azioni" class="panel active">
-    <div class="action-row">
-
-      <a class="lg-btn" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
-        <span class="btn-icon">&#128193;</span>
-        <div class="btn-text">
-          <div class="btn-title">Cartella Drive A6 — Aziende</div>
-          <div class="btn-sub">Sottocartella per azienda: media kit, PDF, TXT mail</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <a class="lg-btn lg-cta" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">
-        <span class="btn-icon">&#9889;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri A6.1 — Media Kit</div>
-          <div class="btn-sub">Produce PPTX 8 slide · input: scheda A5.2</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-sabbia" onclick="openMsg('A6_1')">
-        <span class="btn-icon">&#128203;</span>
-        <div class="btn-text">
-          <div class="btn-title">Copia messaggio A6.1</div>
-          <div class="btn-sub">Launcher — produzione media kit</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </button>
-
-      <a class="lg-btn lg-sabbia" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank">
-        <span class="btn-icon">&#128140;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri A6.2 — Relazioni Commerciali</div>
-          <div class="btn-sub">Mail · follow-up · proposta · trattativa</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-      <button class="lg-btn lg-sabbia" onclick="openMsg('A6_2')">
-        <span class="btn-icon">&#128203;</span>
-        <div class="btn-text">
-          <div class="btn-title">Copia messaggio A6.2</div>
-          <div class="btn-sub">Launcher — mail di proposta iniziale</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </button>
-
-      <a class="lg-btn" href="page_pipeline_v1.html">
-        <span class="btn-icon">&#128200;</span>
-        <div class="btn-text">
-          <div class="btn-title">Apri Pipeline aziende</div>
-          <div class="btn-sub">Lista completa — tutti gli step 1-13 — apri la scheda di ognuna</div>
-        </div>
-        <span class="btn-arr">&#8594;</span>
-      </a>
-
-    </div>
-  </div>
-
-  <!-- POPUP MESSAGGIO -->
-  <div class="msg-overlay" id="msgOverlay" onclick="closeMsgIfBg(event)">
-    <div class="msg-popup">
-      <div class="msg-popup-head">
-        <span class="msg-popup-title" id="msgPopupTitle">&#128203; Messaggio A6.1 — Media Kit</span>
-        <button class="msg-popup-close" onclick="closeMsg()">&#10005;</button>
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">A6.1 — Media Kit</span></div>
+      <div class="sc-body action-pair">
+        <a class="lg-btn" data-gate="ia" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.1 per lanciare l\'agente.')">
+          <span class="btn-icon">&#128172;</span>
+          <div class="btn-text">
+            <div class="btn-title">Apri progetto</div>
+            <div class="btn-sub">Produce PPTX 8 slide · input: scheda A5.2</div>
+          </div>
+          <span class="btn-arr">&#8594;</span>
+        </a>
+        <button class="lg-btn" data-gate="ia" onclick="openMsg('A6_1')">
+          <span class="btn-icon">&#128203;</span>
+          <div class="btn-text">
+            <div class="btn-title">Copia messaggio</div>
+            <div class="btn-sub">Launcher — produzione media kit</div>
+          </div>
+          <span class="btn-arr">&#8594;</span>
+        </button>
       </div>
-      <textarea class="msg-textarea" id="msgText" readonly></textarea>
-      <div class="msg-actions">
-        <button class="msg-copy-btn" id="copyBtn" onclick="copyMsg()">Copia messaggio</button>
-        <a class="msg-open-btn" id="msgOpenLink" href="https://claude.ai/project/019ddb94-e44c-73e3-97bf-926763d56159" target="_blank">&#128279; Apri A6.1</a>
+    </div>
+
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">A6.2 — Relazioni Commerciali</span></div>
+      <div class="sc-body action-pair">
+        <a class="lg-btn" data-gate="ia" href="https://claude.ai/project/019ddbb2-e37f-7194-8cc9-5516500a89d0" target="_blank" onclick="return gateIaLink(event,'Apre il progetto Claude.ai di A6.2 per lanciare l\'agente.')">
+          <span class="btn-icon">&#128172;</span>
+          <div class="btn-text">
+            <div class="btn-title">Apri progetto</div>
+            <div class="btn-sub">Mail · follow-up · proposta · trattativa</div>
+          </div>
+          <span class="btn-arr">&#8594;</span>
+        </a>
+        <button class="lg-btn" data-gate="ia" onclick="openMsg('A6_2')">
+          <span class="btn-icon">&#128203;</span>
+          <div class="btn-text">
+            <div class="btn-title">Copia messaggio</div>
+            <div class="btn-sub">Launcher — mail di proposta iniziale</div>
+          </div>
+          <span class="btn-arr">&#8594;</span>
+        </button>
       </div>
     </div>
   </div>
@@ -460,66 +422,67 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
     <div class="section-card">
       <div class="sc-head">
         <span class="sc-label">&#128196; Output — Drive A6 · Aziende</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">Apri &#8599;</a>
+        <div class="sc-pill-wrap"><a class="sc-pill" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">Apri</a></div>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
+        <div class="file-item file-item-static">
           <div class="file-icon fi-pptx">&#127775;</div>
           <div class="file-info">
             <div class="file-name">[azienda]/media_kit_[azienda].pptx + .pdf</div>
             <div class="file-sub">A6.1 — 8 slide, poi PDF dopo tua revisione manuale</div>
           </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
-        <a class="file-item" href="https://drive.google.com/drive/folders/1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_" target="_blank">
+        </div>
+        <div class="file-item file-item-static">
           <div class="file-icon fi-doc">&#128196;</div>
           <div class="file-info">
             <div class="file-name">[azienda]/mail_[azienda]_YYYY-MM-DD.txt</div>
             <div class="file-sub">A6.2 — testo mail approvato, pronto per A7</div>
           </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+        </div>
       </div>
+      <div style="padding:0 14px 12px;font-size:.62rem;color:var(--grigio);line-height:1.5;">Le due righe sopra sono solo un esempio di cosa trovi dentro — non sono link (ogni azienda ha la sua sottocartella). Usa "Apri ↗" qui sopra per andare alla cartella Drive A6 — Aziende.</div>
     </div>
     <div class="section-card">
       <div class="sc-head">
-        <span class="sc-label">&#128196; Input — Schede aziendali (A5.2)</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">Apri &#8599;</a>
+        <span class="sc-label">&#128196; Input — Scheda azienda (A5.2)</span>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L" target="_blank">
-          <div class="file-icon fi-doc">&#128196;</div>
-          <div class="file-info">
-            <div class="file-name">[azienda]/scheda_[azienda].docx</div>
-            <div class="file-sub">A5.2 — 4 sezioni: Profilo · Fit · Fiscale · Brief A6.1</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+        <div class="config-row"><span class="config-key">Fonte</span><span class="config-val">Supabase — tabella schede_aziendali (pagina HTML, non più DOCX su Drive)</span></div>
+        <div class="config-row"><span class="config-key">Contenuto</span><span class="config-val">4 sezioni: Profilo · Fit · Fiscale · Brief A6.1</span></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head">
         <span class="sc-label">&#128202; Input — Report A2 (per A6.1)</span>
-        <a class="sc-link" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">Apri &#8599;</a>
+        <div class="sc-pill-wrap"><a class="sc-pill" href="app/agenti/a2-analyst/report.html">Apri</a></div>
       </div>
       <div class="sc-body">
-        <a class="file-item" href="https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC" target="_blank">
-          <div class="file-icon fi-slide">&#128203;</div>
-          <div class="file-info">
-            <div class="file-name" id="repMm1Lbl">report_GDC_[mese-1]_[anno]</div>
-            <div class="file-sub">KPI IG — già incorporati nella scheda A5.2</div>
-          </div>
-          <span class="file-arr">&#8599;</span>
-        </a>
+        <div class="config-row"><span class="config-key">Fonte</span><span class="config-val">Supabase — tabella report_mensili (agente='a2', ultimi 2 mesi)</span></div>
+        <div class="config-row"><span class="config-key">Contenuto</span><span class="config-val">KPI IG — già incorporati nella scheda A5.2</span></div>
       </div>
     </div>
   </div>
 
-  <!-- TAB: LAVORO -->
+  <!-- TAB: LAVORO (ex Lavoro + Modalità, unite) -->
   <div id="panel-lavoro" class="panel">
+
     <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#127775; A6.1 — Struttura media kit (8 slide)</span></div>
+      <div class="sc-head"><span class="sc-label">&#128161; Come funziona, in breve</span></div>
       <div class="sc-body">
+        <p style="font-size:.72rem;line-height:1.5;margin-bottom:10px;">A6 non è uno script automatico: è un progetto Claude.ai dedicato con cui si lavora in chat, a richiesta. Il flusso è sempre lo stesso, sia per A6.1 sia per A6.2:</p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-num">1</div><div class="flow-desc">Dalla tab <strong>Azioni</strong>, copi il messaggio precompilato del sotto-agente che ti serve.</div></div>
+          <div class="flow-step"><div class="flow-num">2</div><div class="flow-desc">Apri il progetto Claude.ai corrispondente ("Apri progetto") e incolli il messaggio nella chat.</div></div>
+          <div class="flow-step"><div class="flow-num">3</div><div class="flow-desc">L'agente lavora nella chat — legge la scheda A5.2, produce il risultato e lo salva nella cartella Drive A6 — Aziende.</div></div>
+          <div class="flow-step"><div class="flow-num">4</div><div class="flow-desc">Ti conferma in chat cosa ha prodotto, con il link alla cartella — pronto per la revisione o il passo successivo.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#127775; A6.1 — Media Kit</span></div>
+      <div class="sc-body">
+        <p style="font-size:.71rem;line-height:1.5;margin-bottom:8px;">Genera il media kit PPTX 8 slide per l'azienda scelta, partendo dalla scheda A5.2 e dai KPI dei report A2:</p>
         <div class="slides-grid">
           <div class="slide-chip"><div class="slide-num">Slide 01</div><div class="slide-name">Cover</div><div class="slide-type">FISSA</div></div>
           <div class="slide-chip dynamic"><div class="slide-num">Slide 02</div><div class="slide-name">Chi sono</div><div class="slide-type">DINAMICA</div></div>
@@ -530,9 +493,34 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <div class="slide-chip"><div class="slide-num">Slide 07</div><div class="slide-name">Formati disponibili</div><div class="slide-type">FISSA</div></div>
           <div class="slide-chip dynamic"><div class="slide-num">Slide 08</div><div class="slide-name">Contatti</div><div class="slide-type">DINAMICA</div></div>
         </div>
-        <div style="margin-top:9px;font-size:.63rem;color:var(--grigio);">Slide <span style="color:var(--sabbia-dk);font-weight:700;">DINAMICHE</span> personalizzate per ogni azienda · <span style="font-weight:700;">FISSE</span> aggiornate ad ogni nuova scheda A5.2</div>
+        <p style="font-size:.68rem;color:var(--grigio);line-height:1.5;margin-top:9px;">Slide <span style="color:var(--sabbia-dk);font-weight:700;">DINAMICHE</span> personalizzate per ogni azienda · <span style="font-weight:700;">FISSE</span> aggiornate ad ogni nuova scheda A5.2. Risultato: PPTX nella cartella Drive A6 — Aziende, pronto per la tua revisione manuale.</p>
       </div>
     </div>
+
+    <div class="section-card">
+      <div class="sc-head"><span class="sc-label">&#128140; A6.2 — Relazioni Commerciali</span></div>
+      <div class="sc-body">
+        <p style="font-size:.71rem;line-height:1.5;margin-bottom:8px;">Gestisce tutta la comunicazione con l'azienda da contattare. Lavora in 4 modalità, a seconda di cosa le fornisci:</p>
+        <div class="work-step">
+          <div class="work-num sub1">A</div>
+          <div><div class="work-desc">Modalità A — Mail iniziale</div><div class="work-sub">Fornisci la scheda A5.2 a inizio conversazione — prima mail di contatto, personalizzata per angolazione, lingua e tono</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num sub1">B</div>
+          <div><div class="work-desc">Modalità B — Risposta ricevuta</div><div class="work-sub">Incolli il testo della mail ricevuta — l'agente suggerisce la contromossa, positiva o negativa che sia</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num sub1">C</div>
+          <div><div class="work-desc">Modalità C — Proposta commerciale</div><div class="work-sub">Indichi tipo collaborazione, compenso, durata, deliverable — costruisce la proposta completa</div></div>
+        </div>
+        <div class="work-step">
+          <div class="work-num sub1">D</div>
+          <div><div class="work-desc">Modalità D — Follow-up</div><div class="work-sub">Indichi i giorni trascorsi senza risposta — genera un follow-up calibrato al contesto</div></div>
+        </div>
+        <p style="font-size:.68rem;color:var(--grigio);line-height:1.5;margin-top:8px;">Risultato: testo mail pronto, salvato come TXT nella cartella Drive A6 — Aziende. Da lì A7 crea la bozza Gmail.</p>
+      </div>
+    </div>
+
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128218; Flusso A5 &#8594; A6 per singola azienda</span></div>
       <div class="sc-body">
@@ -545,23 +533,24 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
           <div><div class="work-desc">A5.2 produce la scheda approfondita</div><div class="work-sub">Step 2 — Scheda prodotta: 4 sezioni Profilo · Fit · Contesto Fiscale · Brief per A6.1</div></div>
         </div>
         <div class="work-step">
-          <div class="work-num s1">3</div>
+          <div class="work-num sub1">3</div>
           <div><div class="work-desc">A6.1 genera il media kit .pptx</div><div class="work-sub">Step 3 — Media kit prodotto: scarica, rivedi e carica il PDF su Drive Aziende</div></div>
         </div>
         <div class="work-step">
-          <div class="work-num s1">4</div>
+          <div class="work-num sub1">4</div>
           <div><div class="work-desc">Tu approvi il media kit (PDF in cartella Aziende)</div><div class="work-sub">Step 4 — Approvato: rilevato automaticamente da pipeline_watcher</div></div>
         </div>
         <div class="work-step">
-          <div class="work-num s2">5</div>
+          <div class="work-num sub2">5</div>
           <div><div class="work-desc">A6.2 scrive la mail iniziale (Mod. A)</div><div class="work-sub">Step 5 — Testo mail pronto: salva il TXT in cartella Aziende, poi A7 crea la bozza Gmail</div></div>
         </div>
         <div class="work-step">
-          <div class="work-num s2">6</div>
+          <div class="work-num sub2">6</div>
           <div><div class="work-desc">Gestisci la trattativa con A6.2 (Mod. B/C/D)</div><div class="work-sub">Step 8-13 — Risposta ricevuta → follow-up → proposta → trattativa → accordo/rifiuto</div></div>
         </div>
       </div>
     </div>
+
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128200; Pipeline — stato in tempo reale</span></div>
       <div class="sc-body">
@@ -571,47 +560,7 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- TAB: MODALITÀ -->
-  <div id="panel-modalita" class="panel">
-    <div class="section-card">
-      <div class="sc-head"><span class="sc-label">&#128140; A6.2 — 4 modalità operative</span></div>
-      <div class="sc-body" style="padding:10px 14px;">
-        <div class="mode-card">
-          <div class="mode-head">
-            <span class="mode-badge">MOD. A</span>
-            <span class="mode-title">Mail iniziale</span>
-          </div>
-          <div class="mode-desc">Prima mail di contatto verso l'azienda. Personalizzata per angolazione (ATLETA / MAKER / ENTRAMBI), lingua e tono indicati nella scheda A5.2.</div>
-          <div class="mode-trigger">&#9889; Attivazione: fornisci la scheda A5.2 a inizio conversazione</div>
-        </div>
-        <div class="mode-card">
-          <div class="mode-head">
-            <span class="mode-badge">MOD. B</span>
-            <span class="mode-title">Risposta ricevuta</span>
-          </div>
-          <div class="mode-desc">Analizza la risposta dell'azienda e suggerisce la contromossa — che sia positiva, tiepida o negativa.</div>
-          <div class="mode-trigger">&#9889; Attivazione: incolla il testo della mail ricevuta</div>
-        </div>
-        <div class="mode-card">
-          <div class="mode-head">
-            <span class="mode-badge">MOD. C</span>
-            <span class="mode-title">Proposta commerciale</span>
-          </div>
-          <div class="mode-desc">Costruisce la proposta completa con compenso, deliverable e durata su indicazione di Gianluca.</div>
-          <div class="mode-trigger">&#9889; Attivazione: indica tipo collaborazione, compenso, durata, deliverable</div>
-        </div>
-        <div class="mode-card">
-          <div class="mode-head">
-            <span class="mode-badge">MOD. D</span>
-            <span class="mode-title">Follow-up</span>
-          </div>
-          <div class="mode-desc">Genera un follow-up calibrato se l'azienda non ha risposto dopo N giorni. Tono adatto al contesto.</div>
-          <div class="mode-trigger">&#9889; Attivazione: indica i giorni trascorsi senza risposta</div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- TAB: ATTIVITÀ -->
@@ -631,9 +580,10 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-body">
         <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai — progetto dedicato</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">On-demand — per ogni azienda</span></div>
-        <div class="config-row"><span class="config-key">Output</span><span class="config-val">media_kit_[azienda].pptx → Google Slides</span></div>
+        <div class="config-row"><span class="config-key">Output</span><span class="config-val">media_kit_[azienda].pptx + .pdf su Drive</span></div>
         <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_</span></div>
         <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019ddb94-e44c-73e3-97bf-926763d56159</span></div>
+        <div class="config-row"><span class="config-key">Prompt agente</span><a class="config-val" href="docs/prompts/a6-1-media-kit.md" download style="text-decoration:underline;cursor:pointer;">Scarica &#8595;</a></div>
       </div>
     </div>
     <div class="section-card">
@@ -641,17 +591,18 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
       <div class="sc-body">
         <div class="config-row"><span class="config-key">Tipo</span><span class="config-val">&#9729;&#65039; Claude.ai — progetto dedicato</span></div>
         <div class="config-row"><span class="config-key">Frequenza</span><span class="config-val">On-demand — continuo per ogni azienda</span></div>
-        <div class="config-row"><span class="config-key">Output</span><span class="config-val">Testo mail / proposta — pronto da inviare</span></div>
+        <div class="config-row"><span class="config-key">Output</span><span class="config-val">mail_[azienda]_YYYY-MM-DD.txt su Drive</span></div>
         <div class="config-row"><span class="config-key">Drive folder</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_</span></div>
         <div class="config-row"><span class="config-key">Progetto Claude</span><span class="config-val" style="font-family:monospace;font-size:.6rem;">019ddbb2-e37f-7194-8cc9-5516500a89d0</span></div>
+        <div class="config-row"><span class="config-key">Prompt agente</span><a class="config-val" href="docs/prompts/a6-2-relazioni-commerciali.md" download style="text-decoration:underline;cursor:pointer;">Scarica &#8595;</a></div>
       </div>
     </div>
     <div class="section-card">
       <div class="sc-head"><span class="sc-label">&#128994; Dipendenze</span></div>
       <div class="sc-body">
-        <div class="config-row"><span class="cfg-dot cfg-ok" id="depSupaDot"></span><span style="flex:1;font-size:.7rem;">Connessione Supabase (tabella companies)</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;" id="depSupaLbl">Verifica in corso...</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-ok" id="depSupaDot"></span><span style="flex:1;font-size:.7rem;">Connessione Supabase (scheda A5.2 + report A2)</span><span style="font-size:.62rem;color:var(--maker);font-weight:700;" id="depSupaLbl">Verifica in corso...</span></div>
         <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Scheda A5.2 disponibile (azienda selezionata)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
-        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Report A2 Mm1 + Mm2 (KPI già in scheda A5.2)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
+        <div class="config-row"><span class="cfg-dot cfg-warn"></span><span style="flex:1;font-size:.7rem;">Cartella Drive azienda creata (A6.1 la crea se manca)</span><span style="font-size:.62rem;color:var(--grigio);font-weight:700;">Non verificabile qui</span></div>
       </div>
     </div>
   </div>
@@ -659,30 +610,23 @@ body{font-family:'Jost',sans-serif;background:var(--carta);color:var(--nero);min
 </div>
 
 <script>
-const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 const MESI_S=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 const now=new Date();
 const DD=String(now.getDate()).padStart(2,'0');
 const MM=String(now.getMonth()+1).padStart(2,'0');
 const YY=now.getFullYear();
-const mm1d=new Date(now.getFullYear(),now.getMonth()-1,1);
-const Mm1=MESI[mm1d.getMonth()]; const Am1=mm1d.getFullYear();
 
 document.getElementById('dateChipText').textContent=`${DD}/${MM}/${YY}`;
-document.getElementById('repMm1Lbl').textContent=`report_GDC_${Mm1}_${Am1}`;
 
 /* ══ MESSAGGI — stessi testi reali usati in page_home_v25.html ══ */
 const MSGS={
   A6_1:`Ciao A6.1.
 Produci il Media Kit per: [NOME AZIENDA]
 
-Scheda azienda (A5.2) in Drive A5:
-Entra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),
-cerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.
+Scheda azienda (A5.2) su Supabase:
+Leggi la pagina HTML dalla tabella schede_aziendali per questa azienda.
 
-Report A2 (ultimi 2 mesi) in Drive:
-https://drive.google.com/drive/folders/1LbqPLG4L9hcjlwJLJF2PZiSAnNvOs6fC
--> lista la cartella e identifica autonomamente i 2 report più recenti.
+Report A2 (ultimi 2 mesi): leggi da Supabase (tabella report_mensili, agente='a2', i 2 più recenti).
 
 Cartella output Drive A6 — Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_):
 Cerca se esiste già la cartella [NOME AZIENDA]:
@@ -695,9 +639,8 @@ Nota: dopo la revisione manuale del PPTX salvo il PDF nella stessa cartella — 
   A6_2:`Ciao A6.2.
 Produci la mail di proposta sponsorizzazione per: [NOME AZIENDA]
 
-Scheda azienda (A5.2) in Drive A5:
-Entra nella cartella Schede aziendali (ID: 1vhFJfmRcKltRpHooPRX6RKtt4UHPCh9L),
-cerca la sottocartella [NOME AZIENDA] e leggi il file scheda_[NOME AZIENDA].docx.
+Scheda azienda (A5.2) su Supabase:
+Leggi la pagina HTML dalla tabella schede_aziendali per questa azienda.
 
 Media Kit (A6.1) in Drive A6 — opzionale ma consigliato:
 Cerca nella cartella Aziende (ID: 1BdHr1tG_EjTzRzaVgk368TtL1DaJzFP_) la sottocartella [NOME AZIENDA].
@@ -720,6 +663,7 @@ function switchTab(id,el){
   el.classList.add('active');
 }
 function openMsg(id){
+  if (!gateIa('Copia il messaggio da incollare in Claude.ai per avviare l\'agente — fa parte del lanciare un\'azione, non della sola visualizzazione.')) return;
   document.getElementById('msgText').value=MSGS[id];
   document.getElementById('msgPopupTitle').innerHTML=MSG_META[id].title;
   const link=document.getElementById('msgOpenLink');
@@ -794,73 +738,34 @@ async function sbFetch(url,options){
   return res;
 }
 
-/* ══ PUSH NOTIFICATIONS (stesso pattern di page_home_v25.html) ══ */
-const VAPID_PUBLIC_KEY='BDGq01VvDaYFX1UlTkoI7Va9Q_djO8Vx_fDzcenL373pFuaChgQ1-5uggM6QRJefTzR3w4TFPgWF3K7i7PbHa3o';
-function urlBase64ToUint8Array(base64String){
-  const padding='='.repeat((4-base64String.length%4)%4);
-  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
-  const rawData=atob(base64); const outputArray=new Uint8Array(rawData.length);
-  for(let i=0;i<rawData.length;i++) outputArray[i]=rawData.charCodeAt(i);
-  return outputArray;
-}
-function guessDeviceLabel(){
-  const ua=navigator.userAgent||''; let device='Dispositivo';
-  if(/iPad/.test(ua)) device='iPad'; else if(/iPhone/.test(ua)) device='iPhone';
-  else if(/Android/.test(ua)) device='Android'; else if(/Macintosh/.test(ua)) device='Mac';
-  else if(/Windows/.test(ua)) device='PC Windows';
-  const d=new Date(); return device+' — '+d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
-}
-async function getExistingPushSubscription(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return null;
-  const reg=await navigator.serviceWorker.getRegistration(); if(!reg) return null;
-  return await reg.pushManager.getSubscription();
-}
-async function updatePushButtonUI(){
-  const label=document.getElementById('pushBtnLabel'); if(!label) return;
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)){ label.textContent='Notifiche non supportate'; return; }
-  const sub=await getExistingPushSubscription();
-  label.textContent=sub?'Notifiche attive':'Attiva notifiche';
-}
-let pushToggleInProgress=false;
-async function togglePushNotifications(){
-  if(pushToggleInProgress) return;
-  pushToggleInProgress=true;
-  const label=document.getElementById('pushBtnLabel');
-  const btn=document.getElementById('pushBtn');
-  if(btn) btn.disabled=true;
-  const prevLabel=label?label.textContent:'';
-  if(label) label.textContent='Attivazione in corso...';
+/* ── RUOLI COLLABORATORI (Step 11) — vedi app/page_home_v25.html per i dettagli ── */
+let IA_TEAM_ROLE = 'operatore';
+function canActIa(){ return IA_TEAM_ROLE === 'operatore'; }
+async function loadIaTeamRole(){
   try{
-    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-      alert('Le notifiche push non sono supportate su questo browser/dispositivo.\n\nSu iPhone/iPad: assicurati di aver aperto la app dalla Home Schermata (non da Safari), con iOS 16.4 o superiore.');
-      if(label) label.textContent=prevLabel; return;
-    }
-    const existing=await getExistingPushSubscription();
-    if(existing){
-      try{ await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions?endpoint=eq.'+encodeURIComponent(existing.endpoint),{method:'DELETE'}); }catch(e){}
-      await existing.unsubscribe(); if(label) label.textContent='Attiva notifiche'; return;
-    }
-    try{
-      const permission=await Notification.requestPermission();
-      if(permission!=='granted'){ alert('Permesso notifiche negato.'); return; }
-      const reg=await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
-      const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
-      const subJson=sub.toJSON();
-      await sbFetch(SUPA_URL+'/rest/v1/push_subscriptions',{method:'POST',headers:{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-        body:JSON.stringify({endpoint:subJson.endpoint,p256dh:subJson.keys.p256dh,auth:subJson.keys.auth,device_label:guessDeviceLabel()})});
-      if(label) label.textContent='Notifiche attive';
-    }catch(e){
-      console.error('Errore attivazione notifiche:',e);
-      const realSub=await getExistingPushSubscription();
-      if(realSub){ if(label) label.textContent='Notifiche attive'; }
-      else{ if(label) label.textContent=prevLabel; alert('Errore durante l\'attivazione delle notifiche: '+(e&&e.message?e.message:e)+'\n\nRiprova tra qualche secondo.'); }
-    }
-  } finally {
-    if(btn) btn.disabled=false;
-    pushToggleInProgress=false;
-  }
+    const uid = sessionStorage.getItem('gdc_uid');
+    const r = await sbFetch(SUPA_URL + '/rest/v1/profiles?user_id=eq.' + encodeURIComponent(uid) + '&select=is_admin,ia_team_ruolo');
+    const rows = r.ok ? await r.json() : [];
+    const p = rows[0] || { is_admin: false, ia_team_ruolo: 'nessuno' };
+    IA_TEAM_ROLE = p.is_admin ? 'operatore' : (p.ia_team_ruolo || 'nessuno');
+  }catch(e){ console.error('Errore caricamento ruolo:', e); }
+  document.querySelectorAll('[data-gate="ia"]').forEach(function(el){ el.classList.toggle('role-disabled', !canActIa()); });
 }
-document.addEventListener('DOMContentLoaded',updatePushButtonUI);
+function showRoleInfo(msg){
+  document.getElementById('roleInfoText').textContent = msg;
+  document.getElementById('roleInfoOverlay').classList.add('open');
+}
+function closeRoleInfo(){ document.getElementById('roleInfoOverlay').classList.remove('open'); }
+function closeRoleInfoIfBg(e){ if (e.target === document.getElementById('roleInfoOverlay')) closeRoleInfo(); }
+function gateIa(msg){
+  if (canActIa()) return true;
+  showRoleInfo(msg);
+  return false;
+}
+function gateIaLink(e, msg){
+  if (!canActIa()){ e.preventDefault(); showRoleInfo(msg); return false; }
+  return true;
+}
 
 /* ══ DATI REALI — agent_states (a6_1 + a6_2) + conteggi pipeline ══ */
 function timeAgo(iso){
@@ -880,11 +785,12 @@ function fmtDateTime(iso){
   return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 }
 const THREE_DAYS=3*24*60*60*1000;
-const PRI={active:5,queued:4,done:3,rest:2,sleep:1};
+const PRI={error:6,active:5,queued:4,done:3,rest:2,sleep:1};
 function mapState(row){
   if(!row) return 'sleep';
   const st=row.stato||'';
   const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():Infinity;
+  if(st==='error') return 'error';
   if(st==='working') return 'active';
   if(st==='ready'||st==='queued') return 'queued';
   if(st==='done') return age<THREE_DAYS?'done':'sleep';
@@ -894,10 +800,19 @@ function mapState(row){
 function worstState(rows){ let b='sleep'; rows.forEach(r=>{ if(!r) return; const s=mapState(r); if((PRI[s]||0)>(PRI[b]||0)) b=s; }); return b; }
 const STATE_CFG={
   active:{badge:'badge-active',logo:'logo-active',lbl:'In corso',dot:'var(--sabbia-dk)'},
-  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda',dot:'var(--athlete)'},
+  queued:{badge:'badge-queued',logo:'logo-queued',lbl:'In coda',dot:'var(--life)'},
   done:{badge:'badge-done',logo:'logo-done',lbl:'Completato',dot:'var(--maker)'},
-  rest:{badge:'badge-sleep',logo:'logo-rest',lbl:'Riposo',dot:'var(--grigio)'},
-  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo',dot:'var(--grigio)'},
+  rest:{badge:'badge-rest',logo:'logo-rest',lbl:'Riposo',dot:'var(--grigio)'},
+  sleep:{badge:'badge-sleep',logo:'logo-sleep',lbl:'Inattivo',dot:'var(--athlete)'},
+  error:{badge:'badge-queued',logo:'logo-queued',lbl:'Errore',dot:'var(--life)'},
+};
+const INK_CFG={
+  active:{border:'var(--sabbia)',title:'var(--sabbia-dk)'},
+  queued:{border:'var(--life)',title:'var(--life)'},
+  done:{border:'var(--maker)',title:'var(--maker)'},
+  rest:{border:'var(--nero)',title:'var(--nero)'},
+  sleep:{border:'var(--athlete)',title:'var(--athlete)'},
+  error:{border:'var(--life)',title:'var(--life)'},
 };
 /* ══ ANIMAZIONE ICONA — esatta dalla home ══ */
 var a6RAF=null;
@@ -933,30 +848,38 @@ async function loadA6(){
 
     document.getElementById('sysLabel').textContent='Connesso a Supabase';
     document.getElementById('sysLabel').style.color='var(--maker)';
-    document.getElementById('sysMeta').textContent='Aggiornato alle '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('depSupaDot').style.background='var(--maker)';
     document.getElementById('depSupaLbl').textContent='OK — connessione riuscita';
     document.getElementById('depSupaLbl').style.color='var(--maker)';
 
-    const st=worstState([a61,a62]), c=STATE_CFG[st];
-    const badge=document.getElementById('statusBadge'), lbl=document.getElementById('statusBadgeLbl');
+    // Logo hero + contorno + titolo — stato peggiore tra A6.1/A6.2 (c'è un'unica icona condivisa)
+    const st=worstState([a61,a62]);
     const logoBox=document.getElementById('logoBoxHero');
     const logoWrap=document.getElementById('logoWrap');
-    badge.className='status-badge '+c.badge; lbl.textContent=c.lbl;
-    if(logoBox) logoBox.className='logo-box-hero '+c.logo;
+    const heroCard=document.getElementById('heroCard');
+    const title=document.getElementById('agentTitle');
+    if(logoBox) logoBox.className='logo-box-hero '+STATE_CFG[st].logo;
     if(logoWrap) logoWrap.className='s-'+st;
+    if(heroCard) heroCard.style.borderColor=INK_CFG[st].border;
+    if(title) title.style.color=INK_CFG[st].title;
     if(st==='active') startA6Anim(); else stopA6Anim();
-    const latest=[a61,a62].filter(Boolean).sort((x,y)=>new Date(y.updated_at)-new Date(x.updated_at))[0];
-    document.getElementById('lastRunLbl').textContent=latest?('Ultimo aggiornamento: '+timeAgo(latest.updated_at)):'Nessun dato ancora';
 
-    const cA61=STATE_CFG[mapState(a61)], cA62=STATE_CFG[mapState(a62)];
-    document.getElementById('statA61').innerHTML=`<span class="sd" style="background:${cA61.dot};"></span><span style="color:${cA61.dot};">${cA61.lbl}${a61&&a61.updated_at?' · '+timeAgo(a61.updated_at):''}</span>`;
-    document.getElementById('statA62').innerHTML=`<span class="sd" style="background:${cA62.dot};"></span><span style="color:${cA62.dot};">${cA62.lbl}${a62&&a62.updated_at?' · '+timeAgo(a62.updated_at):''}</span>`;
+    // Badge per sotto-agente — indipendenti
+    const stA61=mapState(a61), stA62=mapState(a62);
+    const cA61=STATE_CFG[stA61], cA62=STATE_CFG[stA62];
+    const badgeA61=document.getElementById('statusA61Badge'), lblA61=document.getElementById('statusA61Lbl');
+    badgeA61.className='status-badge '+cA61.badge; lblA61.textContent=cA61.lbl+(a61&&a61.updated_at?' · '+timeAgo(a61.updated_at):'');
+    const badgeA62=document.getElementById('statusA62Badge'), lblA62=document.getElementById('statusA62Lbl');
+    badgeA62.className='status-badge '+cA62.badge; lblA62.textContent=cA62.lbl+(a62&&a62.updated_at?' · '+timeAgo(a62.updated_at):'');
+    const subNameA61=document.getElementById('subNameA61'), subNameA62=document.getElementById('subNameA62');
+    if(subNameA61) subNameA61.style.color=INK_CFG[stA61].title;
+    if(subNameA62) subNameA62.style.color=INK_CFG[stA62].title;
   }catch(e){
     console.error('Errore caricamento A6:',e);
     document.getElementById('sysLabel').textContent='Offline — dati non disponibili';
     document.getElementById('sysLabel').style.color='var(--grigio)';
-    document.getElementById('statusBadgeLbl').textContent='Non disponibile';
+    document.getElementById('statusA61Lbl').textContent='Non disponibile';
+    document.getElementById('statusA62Lbl').textContent='Non disponibile';
     document.getElementById('depSupaDot').style.background='var(--life)';
     document.getElementById('depSupaLbl').textContent='Errore connessione';
     document.getElementById('depSupaLbl').style.color='var(--life)';
@@ -1001,6 +924,7 @@ async function loadActivity(){
 if(!gdcToken()){
   window.location.href='page_login_v6.html';
 } else {
+  loadIaTeamRole();
   loadA6();
   loadPipelineCounts();
   loadActivity();

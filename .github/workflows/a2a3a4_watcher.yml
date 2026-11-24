@@ -1,0 +1,38 @@
+name: A2/A3/A4 Watcher
+
+# A2, A3 e A4 non sono workflow GitHub: sono sessioni Claude Code che
+# Gianluca avvia lui stesso. Nessun evento GitHub segna il loro
+# completamento, quindi — come Pipeline Watcher per la pipeline
+# commerciale — un controllo leggero e periodico su agent_states è
+# l'unico modo per accorgersi di un nuovo completamento e mandare la
+# push. Vedi scripts/a2a3a4_watcher.py per i dettagli.
+
+on:
+  schedule:
+    - cron: '20 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-watcher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pywebpush
+
+      - name: Run A2/A3/A4 Watcher
+        env:
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          VAPID_PRIVATE_KEY:    ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_EMAIL:          ${{ secrets.VAPID_EMAIL }}
+        run: python scripts/a2a3a4_watcher.py
