@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 56
-**Ultimo aggiornamento:** 2026-11-24 09:23
+**Versione:** 57
+**Ultimo aggiornamento:** 2026-11-24 18:46
 
 ## Vision
 
@@ -439,8 +439,36 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 - [2026-11-24] **Implementati su file reali**: count-up anche sulle 5 voci + il netto del Bilancio di Studio; scorrimento direzionale tra Hub e Studio/IA TEAM (flag `nav-forward`/`nav-back` scritto in `sessionStorage` dai link di navigazione, letto da uno script sincrono in testa a ciascuna pagina — stesso meccanismo già in uso per il tema chiaro/scuro — e applicato a `::view-transition-old/new(root)`); morph tra la Home IA TEAM e ciascuna delle 7 pagine agente, dando lo stesso `view-transition-name` al logo piccolo nella home (`#box-a1`…`#box-a7`) e al logo grande di ogni pagina agente (`#logoBoxHero`, già presente identico su tutte e 7 con lo stesso id) — il browser anima il passaggio da solo, nessun JS aggiuntivo.
   - **Nota tecnica scoperta durante il test**: aprendo i file in locale via `file://`, il flag di direzione non sopravvive quando la navigazione cambia cartella (es. Hub in `app/` → Studio nella root) per come Chrome partiziona lo storage dei file locali in quel contesto. Verificato con un mini server HTTP locale usato solo per il test: con un dominio unico (come sarà la webapp online) funziona correttamente anche lì. Non è un bug, solo un limite del testare in locale — nessuna azione necessaria.
 - [2026-11-24] Su richiesta di Gianluca, semplificati i testi della pagina di login: rimossa la scritta "GDC Workspace · Sistema Agenti" sotto il logo; il footer ora dice "GDC webapp · uso privato" invece di "GDC IA TEAM · uso privato" (la pagina dà accesso anche a Studio, non solo a IA TEAM).
+- [2026-11-24] **Bug: loghi agenti tagliati nella wave di accensione (card "GDC IA TEAM" dell'hub).**
+  **Sintomo:** i 7 loghi, ingrandendosi e diventando verdi in sequenza, venivano tagliati nella parte alta.
+  **Causa:** `overflow:hidden` sulla card (presente solo per arrotondare il gradiente decorativo `::after` agli angoli) tagliava anche i loghi quando la loro scala superava lo spazio disponibile.
+  **Fix applicato:** dopo un primo tentativo diretto sulla pagina reale (crescita ancorata dall'alto invece che dal centro, per evitare il taglio) — **scartato da Gianluca**, che preferiva la crescita simmetrica dal centro — si è passati a iterare su un mockup dedicato (`docs/mockup-agenti-hub.html`), replicando fedelmente le due card reali (stesso markup/SVG/colori) per un confronto onesto. Decisioni finali, poi applicate alla pagina reale: la riga degli agenti vive in una **finestra fissa delle stesse dimensioni del logo GDC nella card Studio** (160×80.72px, calcolate dal suo `viewBox` 555×280 alla larghezza resa di 160px); i loghi sono ingranditi (65px) per riempirla in verticale; la riga, più larga della finestra, **scorre automaticamente avanti e indietro** al suo interno; il fade ai bordi vive **fuori** dalla zona "piena" (margine aggiunto, 40px per lato, non sottratto) così il rettangolo confrontabile col logo Studio resta sempre intatto; ogni logo o è **completamente visibile o invisibile**, mai mostrato a metà/tagliato, mentre scorre (eliminato così anche un primo tentativo di fade/mask sui bordi, giudicato da Gianluca ancora troppo simile a un taglio). Un tentativo di unificare scorrimento e accensione in un'unica animazione guidata dalla geometria (per evitare desync tra le due) è stato **scartato da Gianluca** dopo averlo provato: preferita la versione precedente con i due cicli indipendenti (wave colore/scala + scorrimento), accettando il piccolo rischio di deriva nel tempo tra i due.
+  Per bilanciare le velocità (ingrandimento, scorrimento andata/ritorno, cambio colore rosso→verde e verde→rosso separatamente) il mockup è stato dotato di uno slider per ciascuno dei 12 parametri esistenti, con riepilogo testuale copiabile — Gianluca ha restituito i valori scelti (stagger 210ms, hold 1200/1000ms, pop 750ms/picco 1,23×, scorrimento andata 2050ms/ritorno 300ms, margine fade 40px, loghi 65px), applicati 1:1 alla pagina reale.
+- [2026-11-24] **Forma delle card dell'hub**: su richiesta di Gianluca, rimosso il pallino con l'icona freccia da entrambe le card e sostituita la forma rettangolare con un'unica forma SVG (angoli sinistri arrotondati 20px come il resto dell'app, punta a destra **a tutta altezza** con angolo a 45° — lo stesso della vecchia freccia nel pallino rimosso, scelto per coerenza col resto della webapp dopo una verifica nel codice). Un primo tentativo con un piccolo triangolo CSS separato attaccato al bordo destro è stato **scartato da Gianluca**: lasciava un'interruzione visibile nel contorno dove iniziava la punta. Nella versione finale bordo e sfumatura decorativa fanno parte della stessa forma SVG (un unico `path`), quindi restano continui anche in hover. La card non occupa più spazio di prima (la punta "scava" nell'angolo destro invece di aggiungersi oltre il bordo originale), e il contenuto si restringe della stessa misura della punta restando centrato nello spazio utile rimasto — nessun bisogno di ricentrare la pagina.
 
 ## Storico sessioni
+
+### [2026-11-24 18:46] Card "GDC IA TEAM": fix del taglio loghi, finestra come logo Studio, nuova forma a punta delle card hub
+
+**Riepilogo:** risolto il taglio dei loghi agenti nella card "GDC IA TEAM" dell'hub iterando su un mockup dedicato (finestra dimensionata come il logo Studio, scorrimento automatico, loghi mai mostrati a metà, velocità regolate con slider su richiesta di Gianluca), poi applicato alla pagina reale; su ulteriore richiesta, tolto il pallino con la freccia dalle due card dell'hub e sostituita la forma rettangolare con una forma a punta (angolo 45°, coerente con la vecchia freccia), sempre validata su mockup prima.
+
+**Cosa è stato fatto:**
+- Diagnosticato e risolto il taglio dei loghi agenti (vedi Sintomo/Causa/Fix nello Step 13).
+- Costruiti e iterati più mockup (`docs/mockup-agenti-hub.html`, 10 versioni pubblicate) fino alla versione approvata: finestra fissa 160×80,72px (= logo Studio), loghi a 65px, scorrimento automatico andata/ritorno, fade fuori dalla zona piena, comparsa/sparizione netta dei loghi (mai tagliati).
+- Aggiunto al mockup un pannello con 12 slider (uno per parametro: durata/picco ingrandimento, colore sfondo nelle due direzioni, colore disegno icona, stagger, pause onda, scorrimento andata/ritorno, margine fade, dimensione loghi) con esportazione testuale dei valori, su richiesta esplicita di Gianluca ("mettimi dei campi modificabili con degli slider... li sistemo come mi piace e ti invio i valori").
+- Applicati alla pagina reale (`app/page_hub_v1.html`) i valori scelti da Gianluca, oltre al disegno finale approvato (finestra/fade/scorrimento/scala dal centro).
+- Rimosso il pallino con l'icona freccia da entrambe le card dell'hub; mockup e poi implementazione reale di una nuova forma a punta (angolo 45° preso dalla vecchia freccia, per coerenza), con bordo SVG continuo e contenuto ricentrato nello spazio utile rimasto.
+- Verificato ogni passaggio con screenshot Playwright (più larghezze, hover, dark mode, nessun errore console) prima di consegnare.
+
+**Decisioni prese:**
+- Contesto: come animare l'ingrandimento dei loghi senza tagli.
+- Decisione: crescita dal centro (non ancorata in alto/basso); loghi mai mostrati tagliati durante lo scorrimento (o completamente visibili o invisibili); fade decorativo fuori dalla zona "piena" confrontabile col logo Studio.
+- Alternative scartate: crescita ancorata dall'alto (risolveva il taglio ma cambiava l'effetto visivo, non gradita); fade/mask che assottiglia i loghi ai bordi (ancora percepito come un taglio); sistema unificato scorrimento+accensione guidato dalla geometria (provato per eliminare ogni rischio di desync, ma scartato in favore dei due cicli indipendenti già noti); un piccolo triangolo CSS separato per la punta delle card (lasciava un'interruzione nel bordo).
+- Da rivedere se: in futuro si cambiano significativamente le dimensioni del logo Studio (la finestra degli agenti è parametrata su quelle) o l'altezza tipica delle card hub (la lunghezza della punta è metà dell'altezza di ciascuna card, ricalcolata via JS a ogni resize).
+
+**File consegnati/modificati:** `docs/mockup-agenti-hub.html` (nuovo, 10 versioni), `docs/mockup-card-arrow-shape.html` (nuovo, 2 versioni), `app/page_hub_v1.html`.
+
+---
 
 ### [2026-11-24 09:23] Animazioni e transizioni UI: 9 tipi approvati e implementati, più ritocchi al login
 
