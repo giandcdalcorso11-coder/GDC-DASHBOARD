@@ -151,6 +151,8 @@ input,textarea,button{font-family:inherit;}
 .stat-l{font-size:10px;color:var(--grigio-lt);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
 
 /* ORDER CARD */
+.num-box{display:inline-block;min-width:56px;min-height:30px;line-height:20px;padding:4px 9px;border:1.5px solid var(--bordo);border-radius:9px;background:var(--carta);color:var(--nero);cursor:text;text-align:center;outline:none;vertical-align:middle;transition:border-color .15s;}
+.num-box:focus{border-color:var(--sabbia);background:var(--bianco);}
 .order-card{background:var(--bianco);border-radius:12px;border:1.5px solid var(--bordo);padding:12px;margin-bottom:8px;}
 
 /* RESPONSIVE */
@@ -867,9 +869,9 @@ function renderOrders(el){
     const cliRow=mk('div','');cliRow.style.cssText='font-size:12px;color:var(--grigio-lt);margin-bottom:3px;display:flex;align-items:center;gap:4px';
     cliRow.innerHTML='<span>👤</span>';const cliEl=mk('span','');cliEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;flex:1';cliEl.contentEditable='true';cliEl.textContent=o.cliente||'';cliEl.onblur=()=>updOrder(o.id,{cliente:cliEl.textContent.trim()});gateEditableField(cliEl,EDIT_MSG);cliRow.appendChild(cliEl);
     // Pezzi e prezzo
-    const prRow=mk('div','');prRow.style.cssText='font-size:12px;color:var(--grigio-lt);display:flex;gap:12px';
-    const pzSpan=mk('span','');pzSpan.innerHTML='Pezzi: ';const pzEl=mk('span','');pzEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;min-width:20px';pzEl.contentEditable='true';pzEl.textContent=o.pezzi||'';pzEl.onblur=()=>updOrder(o.id,{pezzi:pzEl.textContent.trim()});gateEditableField(pzEl,EDIT_MSG);pzSpan.appendChild(pzEl);
-    const prSpan=mk('span','');prSpan.innerHTML='€ ';const prEl=mk('span','');prEl.style.cssText='border-bottom:1px dashed var(--bordo);cursor:text;min-width:20px';prEl.contentEditable='true';prEl.textContent=o.prezzo||'';prEl.onblur=()=>updOrder(o.id,{prezzo:prEl.textContent.trim()});gateEditableField(prEl,EDIT_MSG);prSpan.appendChild(prEl);
+    const prRow=mk('div','');prRow.style.cssText='font-size:12px;color:var(--grigio-lt);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px';
+    const pzSpan=mk('span','');pzSpan.style.cssText='display:inline-flex;align-items:center;gap:6px;';pzSpan.innerHTML='Pezzi: ';const pzEl=mk('span','');pzEl.className='num-box';pzEl.contentEditable='true';pzEl.textContent=o.pezzi||'';pzEl.onblur=()=>updOrder(o.id,{pezzi:pzEl.textContent.trim()});gateEditableField(pzEl,EDIT_MSG);pzSpan.appendChild(pzEl);
+    const prSpan=mk('span','');prSpan.style.cssText='display:inline-flex;align-items:center;gap:6px;';prSpan.innerHTML='€ ';const prEl=mk('span','');prEl.className='num-box';prEl.contentEditable='true';prEl.textContent=o.prezzo||'';prEl.onblur=()=>updOrder(o.id,{prezzo:prEl.textContent.trim()});gateEditableField(prEl,EDIT_MSG);prSpan.appendChild(prEl);
     prRow.appendChild(pzSpan);prRow.appendChild(prSpan);
     ohdr.appendChild(nomeEl);ohdr.appendChild(subEl);ohdr.appendChild(cliRow);ohdr.appendChild(prRow);
     c.appendChild(ohdr);
