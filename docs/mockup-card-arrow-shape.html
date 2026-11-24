@@ -1,5 +1,5 @@
 <!doctype html>
-<title>Forma schede — mockup</title>
+<title>Forma schede — mockup v2</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700;800&display=swap">
 <style>
 :root{
@@ -7,8 +7,6 @@
   --maker:#4A7C59; --maker-bg:#C7DFCF;
   --sabbia:#C4A865; --sabbia-dk:#8A6D3B; --sabbia-bg:#E9DFC9;
   --grigio:#6B6B6B; --border:#ddd6cb;
-  --tip: 16px;   /* quanto sporge la punta fuori dal bordo destro */
-  --tip-h: 40px; /* altezza totale della punta (base del triangolo) */
 }
 @media(prefers-color-scheme:dark){:root{
   --carta:#1A1A1A; --bianco:#242424; --nero:#F0EBE1; --border:#3A3A3A; --grigio:#9A9A9A;
@@ -20,45 +18,32 @@ body{
   padding:32px max(16px,env(safe-area-inset-left,0px)) 60px max(16px,env(safe-area-inset-right,0px));
 }
 h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
-.sub{ font-size:.82rem; color:var(--grigio); text-align:center; max-width:460px; line-height:1.5; margin:0; }
+.sub{ font-size:.82rem; color:var(--grigio); text-align:center; max-width:480px; line-height:1.5; margin:0; }
 
-.cards-wrap{ width:100%; max-width:420px; display:flex; flex-direction:column; gap:14px; padding-right:var(--tip); }
+/* la card occupa la STESSA larghezza di sempre (nessuna larghezza extra, nessun bisogno
+   di ricentrare la pagina): la punta nasce "scavando" nell'angolo destro della card,
+   e il contenuto si restringe di conseguenza restando centrato nello spazio rimasto */
+.cards-wrap{ width:100%; max-width:480px; display:flex; flex-direction:column; gap:14px; }
 
-/* niente più overflow:hidden sulla card: serve spazio per la punta che sporge.
-   Il gradiente decorativo (::after) prende lo stesso border-radius della card
-   per restare "tagliato" agli angoli senza bisogno del clip del genitore. */
 .hub-card{
   position:relative;
-  background:var(--bianco); border:1.5px solid var(--border); border-radius:20px;
-  padding:20px 20px 18px;
   cursor:pointer; text-decoration:none; color:inherit;
-  transition:border-color .2s, transform .18s, box-shadow .18s;
   min-height:148px;
   display:flex; flex-direction:column; justify-content:space-between;
+  padding:20px 20px 18px;
+  transition:transform .18s;
 }
-.hub-card::after{
-  content:''; position:absolute; inset:0; border-radius:20px;
-  background:linear-gradient(135deg,rgba(255,255,255,.14) 0%,transparent 55%);
-  pointer-events:none;
-}
-.hub-card:hover{ transform:translateY(-2px); box-shadow:0 8px 28px rgba(28,28,28,.1); }
-.card-ia:hover     { border-color:var(--maker); }
-.card-studio:hover { border-color:var(--sabbia); }
+.hub-card:hover{ transform:translateY(-2px); }
+.hub-card-bg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.hub-card-bg path.fill{ fill:var(--bianco); }
+.hub-card-bg path.sheen{ fill:url(#sheenGrad); }
+.hub-card-bg path.stroke{ fill:none; stroke:var(--border); stroke-width:1.5; transition:stroke .2s; }
+.card-ia:hover .hub-card-bg path.stroke{ stroke:var(--maker); }
+.card-studio:hover .hub-card-bg path.stroke{ stroke:var(--sabbia); }
 
-/* ══ la punta a destra, al posto del pallino con la freccia ══ */
-.hub-card::before{
-  content:'';
-  position:absolute;
-  top:50%; right:calc(-1 * var(--tip));
-  transform:translateY(-50%);
-  width:0; height:0;
-  border-top:calc(var(--tip-h)/2) solid transparent;
-  border-bottom:calc(var(--tip-h)/2) solid transparent;
-  border-left:var(--tip) solid var(--bianco);
-  transition:filter .18s, transform .18s;
-}
-.hub-card:hover::before{ transform:translateY(-50%) translateX(3px); }
-
+/* il contenuto si restringe della lunghezza della punta (impostata via JS), restando
+   centrato nello spazio utile rimasto invece che nella larghezza intera della card */
+.card-content{ position:relative; z-index:1; display:flex; flex-direction:column; justify-content:space-between; flex:1; width:100%; }
 .card-top{ display:flex; align-items:center; margin-bottom:14px; }
 .card-title{ font-size:1.18rem; font-weight:800; letter-spacing:-.02em; }
 
@@ -67,7 +52,7 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 .agent-chip{ width:52px; height:52px; border-radius:14px; background:var(--maker-bg); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.8rem; color:var(--maker); }
 
 .panel{
-  width:100%; max-width:420px; background:var(--bianco);
+  width:100%; max-width:480px; background:var(--bianco);
   border:1.5px solid var(--border); border-radius:16px; padding:16px 18px;
   display:flex; flex-direction:column; gap:10px;
 }
@@ -76,36 +61,75 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82em; }
 </style>
 
-<h1>Forma schede hub — niente pallino, punta a destra</h1>
-<p class="sub">Passa il mouse sulle card (o toccale) per vedere l'hover: la punta si sposta leggermente verso destra invece del pallino con la freccia.</p>
+<h1>Forma schede hub — punta a tutta altezza, bordo continuo</h1>
+<p class="sub">Angolo della punta preso dalla stessa freccia a 45° già usata nel pallino rimosso (<code>M8 3.5 L11.5 7 L8 10.5</code>), per coerenza col resto della webapp. Nessuna larghezza extra: la card resta della stessa dimensione di prima, il contenuto si ridistribuisce restando centrato nello spazio utile.</p>
 
-<div class="cards-wrap">
+<div class="cards-wrap" id="cardsWrap">
   <a class="hub-card card-ia" href="#" onclick="return false">
-    <div class="card-top">
-      <div class="card-title">GDC IA TEAM</div>
-    </div>
-    <div class="agent-row-demo">
-      <div class="agent-chip">A1</div>
-      <div class="agent-chip">A2</div>
-      <div class="agent-chip">A3</div>
+    <svg class="hub-card-bg" id="bg-ia"><path class="fill"/><path class="sheen"/><path class="stroke"/></svg>
+    <div class="card-content" id="content-ia">
+      <div class="card-top"><div class="card-title">GDC IA TEAM</div></div>
+      <div class="agent-row-demo">
+        <div class="agent-chip">A1</div>
+        <div class="agent-chip">A2</div>
+        <div class="agent-chip">A3</div>
+      </div>
     </div>
   </a>
 
   <a class="hub-card card-studio" href="#" onclick="return false">
-    <div class="card-top">
-      <div class="card-title">GDC STUDIO</div>
-    </div>
-    <div class="studio-logo-box">
-      <div style="font-family:Jost,sans-serif;font-weight:800;font-size:2.4rem;letter-spacing:-.03em;">GDC</div>
+    <svg class="hub-card-bg" id="bg-studio"><path class="fill"/><path class="sheen"/><path class="stroke"/></svg>
+    <div class="card-content" id="content-studio">
+      <div class="card-top"><div class="card-title">GDC STUDIO</div></div>
+      <div class="studio-logo-box">
+        <div style="font-family:Jost,sans-serif;font-weight:800;font-size:2.4rem;letter-spacing:-.03em;">GDC</div>
+      </div>
     </div>
   </a>
 </div>
 
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="sheenGrad" x1="0%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="#fff" stop-opacity=".14"/>
+      <stop offset="55%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>
+
 <div class="panel">
   <div class="panel-label">Come funziona</div>
   <div class="note">
-    Tolto il pallino <code>.card-arrow</code> con l'icona freccia. Al suo posto, un piccolo triangolo (<code>::before</code>) sporge dal bordo destro della card, dello stesso colore dello sfondo: è la stessa tecnica del triangolino CSS a bordi, nessuna immagine o SVG in più.<br><br>
-    Per farlo sporgere senza essere tagliato ho dovuto togliere <code>overflow:hidden</code> dalla card (serviva solo per arrotondare gli angoli del gradiente decorativo): ora il gradiente (<code>::after</code>) ha il suo stesso <code>border-radius</code>, quindi resta arrotondato lo stesso senza bisogno del clip del genitore — lo stesso trucco usato per risolvere il taglio dei loghi agenti.<br><br>
-    Al passaggio del mouse la punta scivola leggermente verso destra (3px), al posto dell'animazione che prima spostava il pallino.
+    Ogni card è un'unica forma SVG (angoli sinistri arrotondati a 20px come il resto dell'app, bordo e sfumatura inclusi nello stesso percorso), quindi il contorno è continuo: nessuna interruzione dove inizia la punta.<br><br>
+    La punta è lunga la metà dell'altezza della card (angolo 45°, identico alla vecchia freccia nel pallino): parte esattamente dagli angoli in alto/basso a destra, quindi "occupa" tutta l'altezza invece di una piccola zona centrale.<br><br>
+    La card non diventa più larga di prima — niente da ricentrare nella pagina: la punta nasce scavando nell'angolo destro, e il contenuto (titolo, icone/logo) si restringe della stessa misura, restando centrato nello spazio utile rimasto.<br><br>
+    Uno script misura altezza/larghezza reali di ciascuna card e ridisegna tutto di conseguenza, al caricamento e al resize.
   </div>
 </div>
+
+<script>
+function buildPath(w,h,r,l){
+  const xr = w - l;
+  return `M ${r} 0 L ${xr} 0 L ${w} ${h/2} L ${xr} ${h} L ${r} ${h} A ${r} ${r} 0 0 1 0 ${h-r} L 0 ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`;
+}
+function layoutCard(card, svgId, contentId){
+  const content = document.getElementById(contentId);
+  content.style.width = '100%'; // reset prima di misurare, per avere l'altezza "naturale"
+  const w = card.clientWidth, h = card.offsetHeight;
+  const r = 20;
+  const l = h/2; // punta a 45°: lunga quanto metà dell'altezza
+  content.style.width = 'calc(100% - ' + l + 'px)';
+  const svg = document.getElementById(svgId);
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h);
+  const d = buildPath(w,h,r,l);
+  svg.querySelectorAll('path').forEach(p=>p.setAttribute('d', d));
+}
+function updateAll(){
+  layoutCard(document.querySelector('.card-ia'), 'bg-ia', 'content-ia');
+  layoutCard(document.querySelector('.card-studio'), 'bg-studio', 'content-studio');
+}
+window.addEventListener('load', updateAll);
+window.addEventListener('resize', updateAll);
+</script>
