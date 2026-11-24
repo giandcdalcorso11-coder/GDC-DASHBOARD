@@ -48,6 +48,9 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 /* finestra visibile della riga agenti = dimensioni del logo GDC nella card Studio (160 × 80.72px, viewBox 555×280) */
 .agent-window{
   width:160px; height:80.72px; overflow:hidden; display:flex; align-items:center;
+  /* fade ai due lati: non sembra un taglio ma un reveal */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
 }
 .agent-strip{ display:flex; gap:8px; align-items:center; will-change:transform; }
 
@@ -55,12 +58,10 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
   flex-shrink:0;
   width:62px; height:62px; border-radius:14px;
   display:flex; align-items:center; justify-content:center;
-  transition: background .5s, opacity .28s ease;
+  transition: background .5s;
   background: var(--life-bg);
 }
 .agent-icon.icon-done{ background: var(--maker-bg); }
-/* comparsa completa: un logo a cavallo del bordo non si vede tagliato, sparisce del tutto finché non è intero in finestra */
-.agent-icon.hidden-edge{ opacity:0; }
 .agent-icon svg{ width:42px; height:42px; }
 
 /* colori — stato life (rosso), identici alla pagina reale */
@@ -98,10 +99,6 @@ h1{ font-size:1.05rem; font-weight:800; margin:0; text-align:center; }
 .panel-label{ font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--grigio); }
 .metrics{ font-size:.82rem; line-height:1.6; }
 .metrics b{ font-variant-numeric:tabular-nums; }
-.opt{ display:flex; align-items:flex-start; gap:10px; font-size:.86rem; line-height:1.4; cursor:pointer; }
-.opt input{ margin-top:3px; accent-color:var(--maker); }
-.opt b{ display:block; }
-.opt span.d{ color:var(--grigio); font-size:.78rem; }
 .btn{
   font-family:inherit; font-size:.86rem; font-weight:700;
   padding:11px; border:none; border-radius:12px;
@@ -264,13 +261,9 @@ code{ background:var(--carta); padding:1px 5px; border-radius:5px; font-size:.82
 <div class="panel">
   <div class="panel-label">Confronto dimensioni finestra</div>
   <div class="metrics" id="metrics">calcolo in corso…</div>
-  <label class="opt">
-    <input type="checkbox" id="revealToggle" checked>
-    <span><b>Comparsa completa (niente loghi tagliati)</b><span class="d">Disattivalo per vedere il taglio netto di prima e confrontare: un logo a cavallo del bordo spariva, ma mostrandosi tagliato.</span></span>
-  </label>
   <button class="btn" id="play">Prova accensione + scorrimento</button>
   <div class="note">
-    Ogni logo sparisce del tutto (invece di mostrarsi tagliato) finché non è completamente dentro la finestra, poi compare intero e in quel momento esatto si accende (scala + colore) — niente più timer separati per accensione e scorrimento, è tutto guidato dalla stessa animazione quindi resta sincronizzato anche con andata e ritorno a velocità diverse.
+    La finestra <code>.agent-window</code> ha le stesse dimensioni (160 × 80.72px) del logo GDC nella card Studio, calcolate dal suo <code>viewBox</code> (555 × 280) alla larghezza resa di 160px. I loghi degli agenti sono stati ingranditi (62px, prima 46px) per riempire la finestra in verticale, lasciando lo spazio minimo necessario perché la scala 1.22× dell'accensione non venga tagliata. Essendo la riga (7 agenti) più larga della finestra, scorre orizzontalmente avanti e indietro al suo interno — lo "scorrimento nello spazio" richiesto.
   </div>
 </div>
 
@@ -318,110 +311,43 @@ function startBarAnim(clipId, hotendId, x0, barW, hotY){
 }
 startBarAnim('card-clip-rect','card-hotend',34.04,518.41,428);
 
-/* ══ scorrimento + accensione: UN'UNICA animazione, niente timer indipendenti ══
-   L'accensione (scala+colore) scatta esattamente quando un logo diventa
-   completamente visibile in finestra; finché è a cavallo del bordo resta
-   invisibile (opacity:0) invece di mostrarsi tagliato. */
+/* ══ wave agenti: life → done in sequenza, scala dal centro (variante approvata) ══ */
 const N = 7;
-const iconEls = Array.from({length:N}, (_,i)=>document.getElementById('icon-'+i));
-let baseRects = [];     // {left,right} di ogni icona rispetto alla finestra, a riposo (x=0)
-let fullyVisible = new Array(N).fill(false);
-let revealMode = true;  // toggle "comparsa completa"
-
-function computeBaseRects(){
-  const win = document.getElementById('agentWindow');
-  const strip = document.getElementById('strip');
-  const prevTransform = strip.style.transform;
-  strip.style.transform = 'translateX(0px)';
-  const winRect = win.getBoundingClientRect();
-  baseRects = iconEls.map(el=>{
-    const r = el.getBoundingClientRect();
-    return { left: r.left - winRect.left, right: r.right - winRect.left };
-  });
-  strip.style.transform = prevTransform;
-}
-
-function updateIcons(x, winWidth){
+const STAGGER = 280, HOLD_ON = 3200, HOLD_OFF = 1400;
+let waveTimer = null;
+function waveOn(){
   for(let i=0;i<N;i++){
-    const left  = baseRects[i].left  + x;
-    const right = baseRects[i].right + x;
-    const fullyIn = left >= -0.5 && right <= winWidth + 0.5;
-    const el = iconEls[i];
-    if(fullyIn && !fullyVisible[i]){
-      fullyVisible[i] = true;
-      el.classList.remove('hidden-edge');
+    setTimeout(()=>{
+      const el=document.getElementById('icon-'+i);
       el.classList.remove('icon-life'); el.classList.add('icon-done');
       el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
       setTimeout(()=>{ el.classList.remove('pop'); }, 550);
-    } else if(!fullyIn && fullyVisible[i]){
-      fullyVisible[i] = false;
-      if(revealMode) el.classList.add('hidden-edge');
-      el.classList.remove('icon-done','pop'); el.classList.add('icon-life');
-    }
+    }, i*STAGGER);
   }
+  waveTimer = setTimeout(waveOff, (N-1)*STAGGER + HOLD_ON);
+}
+function waveOff(){
+  for(let i=0;i<N;i++){
+    setTimeout(()=>{
+      const el=document.getElementById('icon-'+i);
+      el.classList.remove('icon-done'); el.classList.add('icon-life');
+    }, i*STAGGER);
+  }
+  waveTimer = setTimeout(waveOn, (N-1)*STAGGER + HOLD_OFF);
 }
 
-function easeInOutCubic(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
-function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
-
-/* andata (svela gli agenti) più lenta, ritorno all'inizio più veloce */
-const T_HOLD_START=400, T_FORWARD=3200, T_HOLD_END=500, T_BACK=1300;
-let cycleGen = 0;
-function initVisibility(winWidth){
-  fullyVisible = baseRects.map(r => r.left >= -0.5 && r.right <= winWidth + 0.5);
-  iconEls.forEach((el,i)=>{
-    if(fullyVisible[i]){
-      el.classList.remove('hidden-edge');
-      el.classList.remove('icon-life'); el.classList.add('icon-done');
-      el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
-      setTimeout(()=>{ el.classList.remove('pop'); }, 550);
-    } else {
-      el.classList.remove('icon-done','pop'); el.classList.add('icon-life');
-      if(revealMode){
-        el.style.transition = 'none';
-        el.classList.add('hidden-edge');
-        void el.offsetWidth;
-        el.style.transition = '';
-      }
-    }
-  });
-}
-
-function runCycle(){
-  const myGen = ++cycleGen;
+/* ══ scorrimento di tutta la riga dentro la finestra fissa ══ */
+let panAnim = null;
+function startPan(){
   const win = document.getElementById('agentWindow');
   const strip = document.getElementById('strip');
-  computeBaseRects();
   const shift = strip.scrollWidth - win.clientWidth;
+  if(panAnim) panAnim.cancel();
   if(shift <= 0) return;
-  initVisibility(win.clientWidth);
-
-  let phase='holdStart', phaseStart=null;
-  function tick(ts){
-    if(cycleGen !== myGen) return;
-    if(phaseStart===null) phaseStart=ts;
-    const dt = ts - phaseStart;
-    let x;
-    if(phase==='holdStart'){
-      x = 0;
-      if(dt>=T_HOLD_START){ phase='forward'; phaseStart=ts; }
-    } else if(phase==='forward'){
-      const p = Math.min(dt/T_FORWARD,1);
-      x = -shift*easeInOutCubic(p);
-      if(p>=1){ phase='holdEnd'; phaseStart=ts; }
-    } else if(phase==='holdEnd'){
-      x = -shift;
-      if(dt>=T_HOLD_END){ phase='back'; phaseStart=ts; }
-    } else { // back
-      const p = Math.min(dt/T_BACK,1);
-      x = -shift + shift*easeOutCubic(p);
-      if(p>=1){ phase='holdStart'; phaseStart=ts; }
-    }
-    strip.style.transform = 'translateX('+x+'px)';
-    updateIcons(x, win.clientWidth);
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+  panAnim = strip.animate(
+    [{ transform:'translateX(0px)' }, { transform:'translateX(-'+shift+'px)' }],
+    { duration: 4200, direction:'alternate', iterations:Infinity, easing:'ease-in-out' }
+  );
 }
 
 function printMetrics(){
@@ -434,35 +360,16 @@ function printMetrics(){
 
 window.addEventListener('load', ()=>{
   printMetrics();
-  runCycle();
+  startPan();
+  setTimeout(waveOn, 600);
 });
 document.getElementById('play').addEventListener('click', ()=>{
+  if(waveTimer) clearTimeout(waveTimer);
   for(let i=0;i<N;i++){
     const el=document.getElementById('icon-'+i);
     el.classList.remove('icon-done','pop'); el.classList.add('icon-life');
-    fullyVisible[i]=false;
   }
-  runCycle();
-});
-document.getElementById('revealToggle').addEventListener('change', (e)=>{
-  revealMode = e.target.checked;
-  const win = document.getElementById('agentWindow');
-  const strip = document.getElementById('strip');
-  const m = /translateX\((-?\d+(?:\.\d+)?)px\)/.exec(strip.style.transform);
-  const x = m ? parseFloat(m[1]) : 0;
-  if(!revealMode){
-    iconEls.forEach(el=>el.classList.remove('hidden-edge'));
-  } else {
-    for(let i=0;i<N;i++){
-      const left = baseRects[i].left + x, right = baseRects[i].right + x;
-      const fullyIn = left >= -0.5 && right <= win.clientWidth + 0.5;
-      if(!fullyIn){
-        iconEls[i].style.transition='none';
-        iconEls[i].classList.add('hidden-edge');
-        void iconEls[i].offsetWidth;
-        iconEls[i].style.transition='';
-      }
-    }
-  }
+  startPan();
+  waveOn();
 });
 </script>
