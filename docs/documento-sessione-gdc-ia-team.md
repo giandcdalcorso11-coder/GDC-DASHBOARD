@@ -1,7 +1,7 @@
 # Documento di Sessione — GDC IA TEAM
 
-**Versione:** 55
-**Ultimo aggiornamento:** 2026-11-21 15:28
+**Versione:** 56
+**Ultimo aggiornamento:** 2026-11-24 09:23
 
 ## Vision
 
@@ -415,7 +415,54 @@ Vincolo esplicito: nessun costo API a consumo aggiuntivo — si resta dentro l'a
 **Note (cronologia dello step):**
 - [2026-11-21] Solo analisi e decisione di rimandare, nessuna riga di codice scritta per questo step specifico (il pulsante "Scarica prompt", che era il punto di partenza della discussione, è registrato nello Step 11 — risolve solo l'ultimo miglio, non i gap di questo step).
 
+### Step 13 — Animazioni e transizioni UI
+
+**Stato:** in corso — filone iterativo su richiesta, nessun criterio di chiusura netto.
+
+**Obiettivo:** rendere la webapp più fluida con micro-animazioni e transizioni tra pagine, senza modificare grafica/colori/layout esistenti, verificando ogni proposta con un mockup prima di toccarla sui file reali.
+
+**Decisioni progettuali:**
+- **Metodo di lavoro concordato con Gianluca**: ogni proposta viene prima mostrata come mockup HTML interattivo (artifact), solo dopo la sua approvazione viene applicata ai file reali.
+- **Niente librerie esterne** (valutata e scartata `motion`/`motion-ai`, vedi nota sotto) **né build step**: solo CSS puro + vanilla JS, coerente con l'architettura statica della webapp (nessun npm/bundler oggi presente).
+- **Transizioni tra pagine tramite la View Transitions API nativa del browser** (`@view-transition{navigation:auto;}`), non simulate via JS — degrado controllato sui browser che non la supportano (nessun errore, torna al comportamento di sempre).
+- **`prefers-reduced-motion` rispettato ovunque**, sia per le transizioni/animazioni CSS sia per i count-up guidati da JS.
+- **Ambito volutamente selettivo**: animazioni applicate solo dove c'era un vuoto di feedback reale o dove l'elemento esiste già identico su due pagine — esplicitamente **non** aggiunto un toast dove esisteva già un feedback testuale adeguato (Settings, categorizzazione A1, export PDF, lancio A7); **non** applicato un pulse allo stato ordine/hardware di Studio perché cambiare quei valori sposta l'elemento in un altro gruppo o (per l'hardware) manca un re-render — avrebbe richiesto toccare logica, non solo grafica.
+- **Morph (elemento condiviso) scelto da Gianluca** come la transizione tra pagine più interessante, dopo un confronto tra 4 tipi (dissolvenza, scorrimento direzionale, morph, scala). Realizzato dove un elemento identico esiste già su due pagine, sfruttando il supporto nativo del browser per `view-transition-name` condiviso (nessun JS di "finto morph" necessario, a differenza del mockup che invece doveva simularlo con un ghost JS perché viveva in una sola pagina).
+
+**Criterio di completamento:** nessuno — prosegue finché Gianluca continua a chiedere nuove animazioni o transizioni.
+
+**Note (cronologia dello step):**
+- [2026-11-23] Valutata la richiesta "npm install motion && npx motion-ai": spiegato che la webapp non ha npm/build step, che `motion` è la libreria JS (ex Framer Motion) e `motion-ai` è uno strumento per l'agente di coding (skill + MCP, nessun effetto sul sito). Deciso di procedere invece con mockup HTML in puro CSS, senza installare nulla.
+- [2026-11-23] **Mockup 1** (4 tipi: transizione tab, hover su card, skeleton di caricamento, popup più morbido) approvato e implementato su 22 pagine: fade+scala sul popup di blocco ruolo ovunque; fade-in sui cambi tab/pannello (incluso un adattamento JS per `gdc_studio.html`, che ricostruisce il contenuto via JS invece di pannelli statici); skeleton al posto di "Caricamento..." nella lista aziende di Pipeline e nel caricamento iniziale di Studio; `@view-transition` (dissolvenza) su tutte le pagine reali per gli spostamenti tra pagine. Scoperto che l'hover sulle card era già implementato (Hub/Pipeline) — nessuna modifica necessaria lì.
+- [2026-11-23] **Mockup 2** (5 tipi: toast di conferma, cambio di stato, numeri che contano, riordino liste, reveal allo scroll) approvato e implementato: toast nuovo in Studio (agganciato al meccanismo di salvataggio già esistente `setSS`, copre filamenti/ordini/componenti/spese) e riuso di un toast già presente ma usato solo per un errore in `page_company_v2.html` (`pipShowToast`, ora agganciato anche ai salvataggi riusciti); pulse sul badge step della Company page (centralizzato in un nuovo helper `setStepBadge`, condiviso dai 3 punti del codice che lo scrivevano separatamente) e sulla pillola "Saldato/Non saldato" degli ordini in Studio; numeri che contano sulle statistiche di Pipeline e sul riepilogo Ordini di Studio; riordino con tecnica FLIP sulla lista aziende di Pipeline quando cambia l'ordinamento; reveal allo scroll sulle 3 sezioni principali di `page_company_v2.html` (con fallback sicuro se l'observer non parte).
+- [2026-11-23] Mockup di 4 tipi di transizione tra pagine (dissolvenza, scorrimento direzionale, elemento condiviso/morph, scala) mostrato come confronto. **Gianluca ha scelto il morph.** Approfondimento su dove si applica davvero: controllato il codice e trovato che Hub e Studio condividono già lo stesso identico logo SVG (morph pronto senza aggiunte), mentre la card "GDC IA TEAM" nell'Hub mostra le iconcine A1-A7 invece del logo (per un morph solo-icona servirebbe aggiungerlo) — mockup aggiornato con 4 confronti affiancati (Studio/IA TEAM × icona-sola/intera-card) per farlo valutare a colpo d'occhio.
+- [2026-11-24] **Implementati su file reali**: count-up anche sulle 5 voci + il netto del Bilancio di Studio; scorrimento direzionale tra Hub e Studio/IA TEAM (flag `nav-forward`/`nav-back` scritto in `sessionStorage` dai link di navigazione, letto da uno script sincrono in testa a ciascuna pagina — stesso meccanismo già in uso per il tema chiaro/scuro — e applicato a `::view-transition-old/new(root)`); morph tra la Home IA TEAM e ciascuna delle 7 pagine agente, dando lo stesso `view-transition-name` al logo piccolo nella home (`#box-a1`…`#box-a7`) e al logo grande di ogni pagina agente (`#logoBoxHero`, già presente identico su tutte e 7 con lo stesso id) — il browser anima il passaggio da solo, nessun JS aggiuntivo.
+  - **Nota tecnica scoperta durante il test**: aprendo i file in locale via `file://`, il flag di direzione non sopravvive quando la navigazione cambia cartella (es. Hub in `app/` → Studio nella root) per come Chrome partiziona lo storage dei file locali in quel contesto. Verificato con un mini server HTTP locale usato solo per il test: con un dominio unico (come sarà la webapp online) funziona correttamente anche lì. Non è un bug, solo un limite del testare in locale — nessuna azione necessaria.
+- [2026-11-24] Su richiesta di Gianluca, semplificati i testi della pagina di login: rimossa la scritta "GDC Workspace · Sistema Agenti" sotto il logo; il footer ora dice "GDC webapp · uso privato" invece di "GDC IA TEAM · uso privato" (la pagina dà accesso anche a Studio, non solo a IA TEAM).
+
 ## Storico sessioni
+
+### [2026-11-24 09:23] Animazioni e transizioni UI: 9 tipi approvati e implementati, più ritocchi al login
+
+**Riepilogo:** sessione interamente dedicata a rendere la webapp più fluida — 9 tipi di micro-animazioni/transizioni (sempre prima mostrate come mockup, poi implementate solo dopo approvazione) più due piccole modifiche di testo alla pagina di login.
+
+**Cosa è stato fatto:**
+- Valutata e scartata l'idea di installare la libreria `motion`/`motion-ai` (nessun npm nella webapp) a favore di CSS puro + vanilla JS.
+- Mockup e implementazione di 4 micro-animazioni (transizione tab, hover card, skeleton di caricamento, popup più morbido) su 22 pagine.
+- Mockup e implementazione di altre 5 (toast di conferma, cambio di stato, numeri che contano, riordino liste con tecnica FLIP, reveal allo scroll).
+- Mockup di 4 tipi di transizione tra pagine (dissolvenza, scorrimento direzionale, morph, scala); scelto il morph dopo un confronto basato sul codice reale (Hub↔Studio pronto subito, Hub↔IA TEAM richiederebbe un'aggiunta).
+- Implementati su file reali: count-up nel Bilancio di Studio, scorrimento direzionale Hub↔Studio/IA TEAM, morph tra Home IA TEAM e le 7 pagine agente (sfruttando `view-transition-name` nativo, nessun JS di supporto necessario).
+- Pagina di login: rimossa la scritta "GDC Workspace · Sistema Agenti"; footer cambiato da "GDC IA TEAM · uso privato" a "GDC webapp · uso privato".
+
+Dettagli completi (decisioni, file toccati per ciascun tipo di animazione, note tecniche) nel nuovo **Step 13** della Pipeline, non ripetuti qui.
+
+**File consegnati/modificati:** `docs/mockup-animazioni.html`, `docs/mockup-animazioni-2.html`, `docs/mockup-transizioni-pagina.html` (nuovi, mockup); `app/page_hub_v1.html`, `app/page_home_v25.html`, `app/page_scheda_azienda_v1.html`, `app/page_settings_v1.html`, `gdc_studio.html`, `gdc_reset_tool.html`, `page_agent_a5_v1.html`, `page_agent_a6_v1.html`, `page_agent_a7_v1.html`, `page_company_v2.html`, `page_pipeline_v1.html`, `page_login_v6.html`, `app/agenti/a1-analytics/carica_mbs.html`, `app/agenti/a1-analytics/categorizza.html`, `app/agenti/a1-analytics/page_agent_a1_v1.html`, `app/agenti/a2-analyst/{dashboard_kpi,page_agent_a2_v3,report}.html`, `app/agenti/a3-planner/{page_agent_a3_v1,piano}.html`, `app/agenti/a4-brief/{brief,page_agent_a4_v1}.html`.
+
+**Impatto su Vision/Pipeline:** aggiunto il nuovo **Step 13 — Animazioni e transizioni UI** alla Pipeline (stato: in corso, nessun criterio di chiusura netto — filone iterativo su richiesta).
+
+---
+
+
 
 ### [2026-11-21 15:28] Step 11 chiuso: pulsante "Scarica prompt", enforcement completo di GDC Studio, etichette ruolo per area
 
