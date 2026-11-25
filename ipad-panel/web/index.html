@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Pannello</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Pannello">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <section id="clockcard" class="card">
+    <div id="clock"><span id="hm">--:--</span><span id="ss">--</span></div>
+    <div id="date">&nbsp;</div>
+    <div id="stats">
+      <div class="stat"><span class="sl">CPU</span><span class="bar"><i id="cpubar"></i></span><span class="sv" id="cpuval">--</span></div>
+      <div class="stat"><span class="sl">RAM</span><span class="bar"><i id="rambar"></i></span><span class="sv" id="ramval">--</span></div>
+    </div>
+  </section>
+  <section id="music" class="card">
+    <div id="nowrow">
+      <div id="art">&#9835;</div>
+      <div id="meta">
+        <div id="song">Spotify</div>
+        <div id="artist">&nbsp;</div>
+      </div>
+    </div>
+    <div id="controls">
+      <button class="ctl small" data-cmd="voldown">&#128265;</button>
+      <button class="ctl" data-cmd="prev">&#9198;</button>
+      <button class="ctl big" data-cmd="playpause" id="ppbtn">&#9199;</button>
+      <button class="ctl" data-cmd="next">&#9197;</button>
+      <button class="ctl small" data-cmd="volup">&#128266;</button>
+      <button class="ctl small" data-cmd="mute">&#128263;</button>
+    </div>
+  </section>
+  <section id="deck"></section>
+</div>
+<div id="dim"></div>
+<div id="offline"><div><b>PC non raggiungibile</b><br>Controlla che il server sia acceso. Riprovo...</div></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "port": 8080,
+    "token": "",
+    "columns": 4,
+    "columnsPortrait": 3
+  },
+  "buttons": [
+    { "id": "desktop",  "label": "Desktop",     "icon": "🖥", "color": "#2a3550", "action": { "type": "hotkey", "keys": "win+d" } },
+    { "id": "explorer", "label": "File",        "icon": "📁", "color": "#3a4a2a", "action": { "type": "hotkey", "keys": "win+e" } },
+    { "id": "shot",     "label": "Screenshot",  "icon": "✂️", "color": "#4a3a2a", "action": { "type": "hotkey", "keys": "win+shift+s" } },
+    { "id": "taskmgr",  "label": "Task",        "icon": "📊", "color": "#2a4a4a", "action": { "type": "hotkey", "keys": "ctrl+shift+esc" } },
+    { "id": "calc",     "label": "Calcolatrice","icon": "🧮", "color": "#4a2a4a", "action": { "type": "run", "path": "calc.exe" } },
+    { "id": "youtube",  "label": "YouTube",     "icon": "▶️", "color": "#5a2020", "action": { "type": "url", "url": "https://www.youtube.com" } },
+    { "id": "gmail",    "label": "Gmail",       "icon": "✉️", "color": "#3a2a2a", "action": { "type": "url", "url": "https://mail.google.com" } },
+    { "id": "lock",     "label": "Blocca PC",   "icon": "🔒", "color": "#2a2a2a", "action": { "type": "lock" } }
+  ]
+}
